@@ -161,9 +161,11 @@ Coates drawing, and nothing enters the model that we cannot defend in a written 
 - [ ] Build a validation table mapping each sea-trial measurement to a model prediction:
       max ~8.9–9.6 kts, 0→7 kts in 32 s, 180° in ~60 s within 2.5 boat-lengths, turning
       diameter 62–120 m, bilge-water +8% turn time, endurance profiles.
-- [ ] Maintain an **uncertainties register**: every [?] number gets a flag, its source
+- [x] Maintain an **uncertainties register**: every [?] number gets a flag, its source
       caveat, and its sensitivity in the model (e.g. GM −0.1 m Mark IIb change, hull weight
-      debate, oar efficiency vs speed).
+      debate, oar efficiency vs speed). **DONE (S13)** —
+      `research/lane-6-validation/uncertainties-register.md` (25 items, A1–D5, each with
+      [H]/[M]/[L] sensitivity).
 - [ ] Sensitivity: vary displacement ±2% (model build tolerance), GM, oar efficiency
       (40%→54% as speed falls), crew power (S5/S6), and report which dominate.
 
@@ -283,6 +285,13 @@ All searches are independent of each other and of the decode work.
       **Update (S12): confirmed a 1:10 hull model was tank-tested in Athens (NTUA ship tank,
       1985) as part of the design process (UChicago Animus retrospective); the tank-test numbers
       themselves remain to be pulled from Coates 1990 ch. — see S12.**
+      **Update (S13): tank test identified by primary source = Grekoussis, C. & Loukakis, T.
+      (1985) "Athenian Trireme Calm Water Tests Without Ram", NTUA Report No. NAL 06-F-1985
+      (bibliography, ch.7 p.79: Shaw's W = 155V³+4.13V⁵ hull-power law was deduced from these
+      bare-hull model tests; graph reproduced by Lowry & Squire 1988; resistance/speed curves
+      published in Shaw 1993, The Trireme Project). Report not online (NTUA library/hardcopy);
+      raw resistance points remain the one unrecovered element — the law itself is validated by
+      trial speeds (8.32 vs 8.2–8.3 kt). See S13 + uncertainties register B2.**
 - [ ] **Timothy Taylor's Excel dynamics model** (W5/D4): locate the actual spreadsheet behind
       ch.31 — check tDAR record 424186 for supplementary files, Trireme Trust archive, and
       ancientportsantiques.com (source of our PDF); if found, extract the workbook (see W5).
@@ -658,6 +667,42 @@ content; two produced new reconciliation/validation data.
 - **Towing-tank (W2/D1) lead**: UChicago Animus retrospective confirms a **hull model tested in
   a ship tank in Athens** (NTUA) during design — primary resistance data behind Coates 1990
   ch. remains to be extracted from that chapter's text/tables (see W2/D1 next step).
+
+### S13 — Uncertainties register + tank-test identification + Taylor-model external check [x]
+
+Three-step session (steps 1–3 of the "next steps" list). Repo is consolidated (commits through
+2e02774); all research now lives under `~/projects/sandbox/trireme/`.
+
+1. **Uncertainties register created (W6)** [x]: `research/lane-6-validation/uncertainties-register.md`
+   — 25 items A1–D5, each with value, flag, source, caveat, and [H]/[M]/[L] model sensitivity.
+   [H] items: B1 (displacement — but primary anchors 25.798/42.25/43 t now solid), B2 (hull law —
+   itself trial-validated 8.32 vs 8.2–8.3 kt), B4 (light-laced-hull scenario), C1 (Table 31.1
+   row-12 units "kg m²" should be kg m² s⁻¹), D1 (8.9 kt peak suspect → use 8.2–8.3 sustained).
+   Register replaces the scattered per-lane `[?]` flags as the single source of truth for
+   uncertainty.
+2. **Towing-tank identified (W2/D1)** [x]: primary reference = **Grekoussis, C. & Loukakis, T.
+   (1985), "Athenian Trireme Calm Water Tests Without Ram", NTUA Report No. NAL 06-F-1985**
+   (Rankov 2012 bibliography; ch.7 p.79: Shaw's **W = 155V³+4.13V⁵** hull-power law was deduced
+   from these bare-hull model tests; graph reproduced by Lowry & Squire 1988; resistance/speed
+   curves published in Shaw 1993, *The Trireme Project*). Ch.22 (Coates): power determined "with
+   some certainty for calm water and wind by towing tests of a model and by towing the ship
+   herself". **Report not online** (NTUA library/hardcopy) — raw resistance points remain the one
+   unrecovered element; the law's shape is validated by trial speeds. Logged in lane-3 note (open
+   item 7 → RESOLVED) and uncertainties register B2.
+3. **Taylor Excel workbook (W5/D4) — conclusion confirmed** [x]: tDAR records 424186 (whole
+   book) and 424277 (this chapter) are **citation-only**, "Center for Digital Antiquity does not
+   have a copy"; ancientportsantiques.com hosts only the PDF; Trireme Trust archive catalogue
+   (triremetrust.org.uk, now at Wolfson College) has no Excel entry. Best remaining leads:
+   Wolfson archivist (archivist@wolfson.cam.ac.uk) or author Andrew Taylor. **External check of
+   Taylor's model outputs** [x]: Alke Dominis blog ("what the diekplous are you talking about",
+   2022) independently reproduces the chapter's tactical numbers — 0→full ~9.5 kt in ~40 s,
+   reverse 80% of full speed, fast 180° turn @ full speed = 145 m diameter, tight turn @6–7 kt =
+   60 m, diekplous gap ≥150 m (130 m aggressive) — all matching lane-5 note §6. Feed: W5/D4
+   (workbook leads unchanged), W6 (tactical-turn validation targets independently confirmed).
+   Also confirmed from the search: **Coates, Platis & Shaw 1990 (*Trireme Trials 1988*,
+   ISBN 0-946897-21-2)** exists (OBNB); **Shaw 1993 (*The Trireme Project*, Oxbow,
+   ISBN 9780946897582)** is the volume holding the published resistance/speed curve — both are
+   physical-only acquisition targets.
 
 ---
 

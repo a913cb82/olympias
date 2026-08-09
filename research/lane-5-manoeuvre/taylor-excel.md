@@ -168,6 +168,11 @@ Fitting observations and additional model detail from a complete read of the cha
 - **UCL comparison (4)**: Simon Rusling & Tristan Smith (pers. com. 2006), Mechanical
   Engineering, UCL — more conventional approach, close agreement because both fit the same
   Olympias trial data. [x]
+- **External confirmation of model outputs (S13)** [x]: Alke Dominis blog ("what the diekplous
+  are you talking about", part 2, 2022) independently reproduces the chapter's tactical numbers
+  from the published text — 0→full ~9.5 kt in ~40 s, reverse at 80% of full speed, fast 180° turn
+  @ full speed = 145 m diameter, tight 180° turn @6–7 kt = 60 m, diekplous gap ≥150 m (130 m with
+  aggressive turn). All match §6 above.
 
 ## 6. Open questions / next steps for the orchestrator
 

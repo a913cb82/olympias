@@ -121,5 +121,10 @@ Offsets / lines plan are **not freely downloadable**. The authoritative path is:
    primary resistance-vs-speed numbers live in Coates 1990 (Taylor ch.31 cites its p.54) — next
    action: extract from the Coates 1990 text/tables in our Rankov 2012 PDF (ch. on design) or
    the 1990 volume, rather than searching the open web.
+   **RESOLVED (S13)**: primary tank-test identified = **Grekoussis, C. & Loukakis, T. (1985),
+   "Athenian Trireme Calm Water Tests Without Ram", NTUA Report No. NAL 06-F-1985** — Shaw's
+   W = 155V³+4.13V⁵ law was deduced from these bare-hull model tests (Rankov 2012 ch.7 p.79);
+   resistance/speed curves also published in Shaw 1993 (*The Trireme Project*). Report is not
+   online; raw resistance points remain unrecovered → uncertainties register B2.
 5. No published **numerical offset table** is openly available — expect to derive offsets from Fig. 17.1 / frontispiece of the Final Report PDF (low-res) or from the archive originals; a DWL draft ~1.05–1.25 m and beam ~5.5 m bound the reconstruction.
 6. E&H give no quantitative resistance penalty — Lane 3 must compute resistance itself (e.g. from hull form) rather than adopt a literature figure; their weight delta (laced 8.1 t vs MT basic 15 t, ~46–50% lighter) is the anchor for "light vs heavy trireme" scenarios.
