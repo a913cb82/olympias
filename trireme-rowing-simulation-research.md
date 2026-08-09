@@ -148,8 +148,14 @@ Coates drawing, and nothing enters the model that we cannot defend in a written 
       thalmian-head level are 10% closer than the 0.888 m interscalmium → 0.80 m gap = the
       design stroke; head-room caps real stroke → power losses. Sweep angles 48.1/48.4/55.6°
       (recomputed). See `research/lane-4-oars/rig-geometry.md`.
-- [ ] Adopt the Baudouin & Hawkins / Caplan & Gardner / 2019 NJP rigid-oar framework (S2);
+- [x] **Adopt the Baudouin & Hawkins / Caplan & Gardner / 2019 NJP rigid-oar framework (S2)**;
       fixed-seat constraint (max V̇O2 ≈ 65% of sliding-seat, S6) sets the force envelope.
+      **DONE — `research/lane-4-oars/rigid-oar-refinement.md` + `rigid_oar_model.py`:**
+      per-stroke flat-plate blade-force integration (C_N=1.8, Table 9.6 pull durations,
+      W3 rig geometry) independently reproduces Shaw's bulk efficiency at the Olympias
+      design point (76.2% vs 75.6%), mean handle force (224 vs 214 N) and hull-power
+      balance (102%); also adds the per-stroke force envelope and quantifies the Mark IIb
+      need for larger blades (×3.3 area, matching ch.9's note). Bulk chain unchanged.
 - [ ] Oar inertia & blade data: 12.3 kg/oar full-size (model scales to 11.71 kg), blade
       geometry from Plan 15.
 - [ ] Ergonomics: 50th-percentile US-marine body scaled to classical Greek male (~5'7")
@@ -385,7 +391,7 @@ All searches are independent of each other and of the decode work.
       1987 oars were too light and were redesigned for 1990 (UChicago Animus) — the 12.3 kg/oar
       figure itself remains uncorroborated, flag for uncertainty register. Per-tier lever detail
       is in S9/S10.**
-- [ ] **Rowing propulsion models & simulation papers** (W3/D9): oared-warship propulsion
+- [x] **Rowing propulsion models & simulation papers** (W3/D9): oared-warship propulsion
       simulations built on Coates/Morrison design data — oar lengths and inboard/outboard lever
       ratios per tier, interscalmium, blade areas, stroke limits. Extends S2 (sport-rowing models)
       to trireme-specific dynamics; also pin down the design data in Morrisson & Coates (2000)
@@ -396,6 +402,39 @@ All searches are independent of each other and of the decode work.
       **Update (S12): external confirmation of the Mark II design targets — 18.4° cant → 9.7 kt
       short sprint, 7.5 kt sustained cruise (Trireme Trust "Lessons from Olympias" summary,
       ttrankov2.html). Matches S9/S10 IIb targets.**
+      **DONE (W3): the per-stroke rigid-oar refinement layer is implemented and validated
+      against the bulk chain at the Olympias design point (`rigid-oar-refinement.md`); this
+      search item is closed. Residual open items: Mark IIb blade area (flat-plate model implies
+      ×3.3 vs Olympias — a design requirement, not measured) and the F/G per-turn raw data
+      (print-only), both tracked in the uncertainty register.**
+
+#### Still-open web-search items (consolidated list)
+
+These are the only items that still need an external lookup; everything else in this section is
+closed. Each is blocked only on finding the source online or in a physical archive — the email /
+archivist step is deliberately left to the user.
+
+1. **Towing-tank raw resistance points** (W2/D1) — Coates et al. 1990 report p.54 resistance-vs-
+   speed table; source = Grekoussis & Loukakis 1985 NTUA NAL 06-F-1985 (not online; NTUA library /
+   hardcopy). The W = 155V³+4.13V⁵ law derived from it is already validated by trial speeds
+   (8.32 vs 8.2–8.3 kt), so this is a precision/completeness item, not a correctness risk.
+2. **Timothy Taylor's Excel dynamics workbook** (W5/D4) — best lead remains the Trireme Trust
+   archive (triremetrust.org.uk) / tDAR 424186 supplementary files; would let us take the
+   ch.31 coefficients verbatim rather than re-derived.
+3. **Hull offsets & lines, Coates Plans 2 & 7** (W2/D8) — online (archive/tDAR) vs archivist
+   request; our parametric hull form is already validated against BMT displacement (+0.3%),
+   so this refines the form only.
+4. **Olympias full weight breakdown** (W1/D9) — empty 25.8 t / trial 42.25 t / laden 47 t
+   reconciled (S12); the detailed mass budget (BMT report TR01/R1952) is in the archive and
+   only needed if a full weight audit is desired.
+5. **Mark IIb blade area** (W3/D9) — flat-plate rigid model implies ×3.3 vs Olympias 0.078 m²;
+   no primary dimension exists (Mark II was never built). Could be cross-checked against
+   Shaw 1993 "Rowing in Ships and Boats" RINA paper if obtainable.
+6. **Per-turn F1–F6 / G1–G5 raw trial data** (W5) — print-only tables F & G in Coates et al.
+   1990 (*The Trireme Trials 1988*, ISBN 0946897212); no online copy found. Already handled by
+   scenario-space re-run (≤7% on all anchors) — a cell-by-cell fit is the only lost capability.
+7. **"12.3 kg/oar" origin** (W3) — build-log figure, source not stated; likely Shaw/Coates 1990
+   or a Trireme Trust newsletter. Consistency-only (12.3 consistent with ">12 kg").
 
 ### Active TODOs (current session — decoding Rankov 2012 tables)
 
