@@ -1,0 +1,12 @@
+# Step 0 sample script — cruise, burst, sprint, oar-assisted turn, ease, halt.
+# Format: plain text, one command per line; `#` comments; fields comma- or
+# space-separated: <time_s> <verb> [args...]. See trireme-simulation-plan.md §3.5.
+0, rate, 30
+600, pressure, spoude
+900, rate, 44
+1020, helm, port
+1200, oars, hold starboard
+1260, oars, back starboard
+1440, rate, 24
+1500, pressure, steady, port
+1800, oars, bank

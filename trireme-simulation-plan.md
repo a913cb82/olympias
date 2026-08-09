@@ -407,11 +407,13 @@ trireme-sim/
   position and heading, the helmsman's held course. Lives in `common/`; never in the
   verb set.
 
-## Next actions for the next session
+## Next actions
 
-1. Freeze the **verb set** (§3.2: 4 crew verbs). oQ-1, 2, 5, 6, 7 resolved; only
-   oQ-4 remains for the schema round.
-2. Freeze `commands/schema.json` v0.1.
-3. Stand the **“LL first”** skeleton: `ll/` per-oar loop with the flat-blade law running
-   a fixed 30-spm line, compared to the rigid-model numbers — before any HL work.
-4. Sketch the HL tolerance/labels format (§4 / §6 annotations).
+- [x] Freeze the **verb set** (§3.2: 4 crew verbs). oQ-1, 2, 5, 6, 7 resolved; only
+      oQ-4 remains for the schema round.
+- [x] Freeze `commands/schema.json` v0.1 + parser + sample script (`trireme-sim/`;
+      parser: 19 checks passing, fail-fast + deterministic).
+- [ ] **Phase 1 — LL skeleton**: `ll/` one-oar loop with the flat-blade law at a fixed
+      30-spm line, compared to the rigid-model numbers (mean handle force
+      210–225 N, P = 7.43·r) — before any HL work.
+- [ ] Sketch the HL tolerance/labels format (§4 / §6 annotations).
