@@ -852,32 +852,26 @@ anchor), the W' fade (in), the sway/CLR physics (in), the turn build-up
 units hint — the printed 'kg m²' fits a linear coefficient) is an untested
 hypothesis, not a cause.
 
-## 18. The yaw-induced oar/water differential (implemented, quantified)
+## 18. The yaw-induced oar/water differential — **investigated, ruled out, reverted**
 
 During a turn the oar stations carry the yaw's tangential velocity: the
 outside oars travel faster through the water, the inside slower — the blade
 flow becomes vn = (u − ω·y)·cosC − l_cp·ω_drive (the arm = the mean
-athwartships oar offset, LEVER_HOLD = 1.5 m — `flow_arm` in the ship, 0
-disables the term). Correction record: an earlier draft had the sign
+athwartships oar offset). Correction record: an earlier draft had the sign
 backwards (the outside oars' force was mis-stated); the correct physics is
 that the outside oars see a LOWER oar/water differential → less force — a
-**yaw damper**.
+**yaw damper** (the inside oars ~3.15 % stronger in the G1 steady turn,
+measured).
 
-**Quantified contribution** (flow_arm 0 vs 1.5, measured):
+**Quantified contribution** (measured, term on vs off): G1 D +0.35 m
+(+0.39 %), F1 D +0.51 m (+0.44 %), tightest D +0.73 m (+1.08 %), t_360
++1.0 s (+1.0 %); the damper moment ~83 N·m = 0.3 % of the rudder torque.
 
-| scenario | no flow | flow on | delta |
-| --- | --- | --- | --- |
-| G1 D | 89.75 m | 90.10 m | +0.35 m (+0.39 %) |
-| F1 D | 117.37 m | 117.88 m | +0.51 m (+0.44 %) |
-| tightest D | 67.81 m | 68.54 m | +0.73 m (+1.08 %) |
-| t_360 | 98.2 s | 99.2 s | +1.0 s (+1.0 %) |
-
-- Per-side force asymmetry in the G1 steady turn: **3.15 %** (the inside
-  oars stronger — the damper direction).
-- The damper moment: ~83 N·m — **0.3 % of the rudder torque** (28 kN·m).
-- Conclusion: a real physical term, **in the right direction for the t_360
-  discrepancy but a minor contributor (~1 s of the ~30 s gap)** — recorded,
-  not the cause. The tightest-D gates allow its documented shift.
+**Conclusion**: a real physical term, in the right direction for the t_360
+discrepancy but far from the ~30 s needed (~1 s — the complexity is not
+justified): **ruled out and reverted** (the code, the bands and the
+telemetry removed). The t_360 remains an open discrepancy with no known
+cause.
 
 ## Next actions
 

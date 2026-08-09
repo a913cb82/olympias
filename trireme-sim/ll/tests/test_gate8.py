@@ -48,7 +48,7 @@ def test_adopted_turns():
     s = Ship(rate=44.5, oar_state=("row", "hold"), helm=("starboard", 1.0))
     s.V = 6.5 * KT
     d_t, t360, v = sprint_tightest(s)
-    assert 55.0 <= d_t <= 69.0, f"tightest D {d_t:.1f} m (damper shift, plan 18)"
+    assert 55.8 <= d_t <= 68.2, f"tightest D {d_t:.1f} m"
     # the residual vs the trial's 128 s: the turn build-up (documented)
     assert 85 <= t360 <= 115, f"t_360 = {t360:.0f} s"
     assert v < 4.0, "the speed must halve (the trial's character)"

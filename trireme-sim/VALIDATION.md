@@ -121,14 +121,14 @@ caveat mechanism, now integrated).
 2. **Tightest-turn 360° time** — **closed by the sway DOF** (plan 15.3):
    the physical CLR restoring moment + the C3 lever decomposition (4.8 →
    1.8 m) + the ship's effective Ω 3.2e6: D = 67.8 m ✓ and the speed
-   halves ✓; t_360 = 99 vs 128 s — **an OPEN discrepancy with no known
-   cause**: the turn build-up was implemented and ruled out (its share
-   ~2 s, plan 17, reverted); the hold fraction, W' fade and sway physics
-   are all in. The yaw-induced oar/water differential (plan 18 — the
-   inside oars ~3 % stronger, a yaw damper) is a real, quantified minor
-   contributor in the right direction (+1.0 s, ~1 %), not the cause. A
-   linear yaw-damping form is an untested hypothesis (register C1's units
-   hint). The drift emerges (−2.2°) and the lateral velocity damps.
+   halves ✓; t_360 = 98 vs 128 s — **an OPEN discrepancy with no known
+   cause**: the turn build-up (its share ~2 s, plan 17) and the yaw-
+   induced oar/water differential (its share ~1 s, plan 18) were both
+   implemented, measured and ruled out — real, right-direction, minor
+   (~1–2 s of the ~30 s gap), their complexity reverted; the hold
+   fraction, W' fade and sway physics are all in. A linear yaw-damping
+   form is an untested hypothesis (register C1's units hint). The drift
+   emerges (−2.2°) and the lateral velocity damps.
 3. **Sprint t_drive gap** — **closed**: t_drive(44.5) = 0.371 s calibrated
    to the trial (8.30 kt at 130 oars, in the 8.2–8.4 band); the assumption
    is now a pinned, tagged schedule entry (register A8).

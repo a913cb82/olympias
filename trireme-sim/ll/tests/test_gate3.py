@@ -58,9 +58,7 @@ def test_f1():
 
 def test_tightest():
     r = turn(6.5, rate=RT, oar_state=("row", "hold"), helm=("starboard", 1.0))
-    # the differential-flow yaw damper shifts the tightest D to ~68.5
-    # (plan 18) — the band allows it, documented
-    assert 55.0 <= r["D"] <= 69.0, f"tightest D = {r['D']:.1f} m"
+    assert 62.0 * 0.90 <= r["D"] <= 62.0 * 1.10, f"tightest D = {r['D']:.1f} m"
     assert r["V_end"] < 6.5, "tightest turn must decelerate (hold brake)"
 
 
@@ -77,7 +75,7 @@ def test_tightest_sprint_protocol():
     while abs(ship.psi) < 2 * math.pi:
         ship.step(0.02)
         ymax = max(ymax, abs(ship.y))
-    assert 55.0 <= ymax <= 69.0, f"D = {ymax:.1f} m (damper shift, plan 18)"
+    assert 62.0 * 0.90 <= ymax <= 62.0 * 1.10, f"D = {ymax:.1f} m"
     assert ship.V / KT < 4.0, f"speed must halve: V_360 = {ship.V/KT:.2f} kt"
     assert 70 <= ship.t <= 110, f"t_360 = {ship.t:.0f} s (residual band)"
 
