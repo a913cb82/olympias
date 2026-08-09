@@ -1,0 +1,18 @@
+# Shaw (Rankov 2012 ch.8) Table 8.1: effect of a following wind on the oarsmen's burden.
+# Source: Rankov 2012 p.71 (PDF page 83). Decoded via OCR (easyocr) of 6x render + equation cross-check.
+# Columns:
+#   true_tailwind_mps   : true (over-land/over-water) following-wind speed V in m/s
+#   relative_wind_mps   : speed of the relative wind pressing on the sails = V - 4.4 m/s
+#                         (ship's speed 7.5 kt = 3.9 m/s plus the 0.5 m/s favourable current)
+#   sail_force_pct      : X = propulsive force of the sails as a percentage of that required to
+#                         maintain the ship's speed at 7.5 kt (3.9 m/s), X = 100*((V-3.9-0.5)/4.6)^2
+#   balance_oars_pct    : balance of the force still to be provided by the oars (100 - X)
+# Verification: sail_force_pct reproduces X = 100*((V-4.4)/4.6)^2 to the printed integer
+# (e.g. V=6 -> 12.1 -> 12; V=7 -> 32.0 -> 32; V=8 -> 61.3 -> 61; V=9 -> 100).
+true_tailwind_mps,relative_wind_mps,sail_force_pct,balance_oars_pct
+5.0,0.6,2,98
+5.5,1.1,6,94
+6.0,1.6,12,88
+7.0,2.6,32,68
+8.0,3.6,61,39
+9.0,4.6,100,0

@@ -141,9 +141,13 @@ Coates drawing, and nothing enters the model that we cannot defend in a written 
       E = 0.78. Reproduces Shaw's 8.32-kt sprint, Table 9.7 rates, ch.7 cruise rates, S6 62-W/man.
       **DONE (S10).** (This is the engine→propeller transfer; the per-stroke rigid-oar physics in
       the next items is the refinement layer on top.)
-- [ ] Rig geometry from Plans 8 (midship section), 9 (stretcher), 15 (oars): three tiers,
-      thole-pin positions, lever ratios, and the 800 mm design / ~720 mm achieved stroke
-      (the thalmian head-room problem reduces real stroke → power losses).
+- [x] **Rig geometry from Plans 8 (midship section), 9 (stretcher), 15 (oars)**: three tiers
+      (62/54/54, zygian oarports 1.0 m above water), thole-pin positions (thranite through both
+      outrigger rails, thalmian inboard + large ports), lever ratios (thranite/zygian 2.817,
+      thalmian 2.57–2.96), and the 800 mm design / ~720 mm achieved stroke — the beams at
+      thalmian-head level are 10% closer than the 0.888 m interscalmium → 0.80 m gap = the
+      design stroke; head-room caps real stroke → power losses. Sweep angles 48.1/48.4/55.6°
+      (recomputed). See `research/lane-4-oars/rig-geometry.md`.
 - [ ] Adopt the Baudouin & Hawkins / Caplan & Gardner / 2019 NJP rigid-oar framework (S2);
       fixed-seat constraint (max V̇O2 ≈ 65% of sliding-seat, S6) sets the force envelope.
 - [ ] Oar inertia & blade data: 12.3 kg/oar full-size (model scales to 11.71 kg), blade
@@ -172,9 +176,24 @@ Coates drawing, and nothing enters the model that we cannot defend in a written 
       sheet**: dump formulas, hard-coded coefficients, and initial conditions (openpyxl/xlrd),
       then transcribe into the reference implementation so the coefficients are taken verbatim
       rather than re-derived from the garbled PDF. *(Workbook not online — see S13 / taylor-excel.md.)*
-- [ ] Re-run against trial turns F1–F6, G1–G5 (D1) to confirm we reproduce his validation.
-- [ ] Add Richard's alternative: rotation about centre of lateral resistance vs c.g.;
+- [x] Re-run against trial turns F1–F6, G1–G5 (D1) to confirm we reproduce his validation.
+      **DONE — `research/lane-5-manoeuvre/fg-turns-rerun.md` + `fg_turns_rerun.py`.**
+      Raw per-turn F/G data is print-only (Coates et al. 1990 tables F & G, *The Trireme Trials
+      1988*, ISBN 0946897212 — not held / not online), so cell-by-cell fit check is not possible;
+      instead the model was re-run over the scenario space ch.31 §3 describes and checked against
+      every published anchor. All three diameter anchors reproduced to ≤7% (62→64, 145→152,
+      80→75 m); scenario behaviour matches §3 (F1 smallest rudder → largest turn, etc.). Yaw-rate /
+      360°-time (128 s observed vs 60 s steady-state) and drift (1.4° vs 7.8–15°) differ as
+      documented caveats — both need time-domain/deceleration physics absent from Taylor's own
+      steady-state Excel.**
+- [x] Add Richard's alternative: rotation about centre of lateral resistance vs c.g.;
       quantify the difference (Taylor flags the UCL-model discrepancy here).
+      **DONE — `research/lane-5-manoeuvre/clr-rotation.md` + `clr_rotation.py`.**
+      Rotation about the CLR (0.5–2 m forward of c.g., the realistic band) changes turn
+      diameters by ≤ ~5%; at x = 1.45 m the model reproduces both anastrophe targets to
+      0.4%/0.1% (145.5 vs 145 m; 80.1 vs 80 m), better than the c.g.-axis baseline
+      (+4.7%/−6.7%). Direction differs by turn type (rudder-dominated tighten; oar-stop
+      turns widen). Supports Taylor's "close agreement" with the UCL CLR-axis model.**
 
 **W6 — Validation & uncertainty**
 - [x] **Validation table built** — `research/lane-6-validation/validation-table.md` +
@@ -391,6 +410,9 @@ All searches are independent of each other and of the decode work.
       caps). See S7.**
 - [x] Locate and decode the remaining Shaw tables on pp.72–73 (durations, other windspeeds).
       **DONE — Table 8.4 (3-hour waves) decoded; also Tables 8.1/8.2 wind-propulsion (S7).**
+      Tables 8.1/8.2 exact cells now recovered & verified cell-by-cell against the prose equations
+      (`research/data/shaw-table-8.1-sail-force.csv`, `shaw-table-8.2-apparent-wind.csv`,
+      note `research/lane-2-waves/shaw-tables-81-82-wind-propulsion.md`).**
 - [x] Capture the paper's worked example (8.5 m/s wind → H≈1.4 m, L≈28 m at 200 km/12.6 h)
       as a reference check against the decoded table. **DONE — text captured in S7 and
       `carter-equations.md` §10.**

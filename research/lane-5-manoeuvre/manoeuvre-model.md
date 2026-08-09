@@ -69,8 +69,54 @@ The implementation reproduces all headline manoeuvrability numbers from
 was required.  This is strong evidence the model captures Taylor's
 mechanics correctly.
 
+## F1–F6 / G1–G5 trial-turn re-run
+
+ch.31 §3 fits the model to the eleven trial turns of Coates et al. (1990,
+87–88) tables F & G (F1–F6 Hellenic Navy crew, G1–G5 Trust crew).  The raw
+per-turn data (entry speed, applied rudder angle, diameter, duration) is
+**print-only** (*The Trireme Trials 1988*, ISBN 0946897212 — we do not hold
+it), so a cell-by-cell fit check is impossible from our sources.  What we
+can do — and did (`fg_turns_rerun.py`) — is run the model over the scenario
+space ch.31 §3 describes and check every quantitative anchor published in the
+book/trial reports:
+
+| Quantity | Model | Published anchor | Note |
+|---|---|---|---|
+| Tightest Olympias turn | **64.0 m** (6.5 kt, 67.5°, one-side stops) | **62 m**; also 1.9×32.2 m LWL (Morrison 1988) | **+3%** — headline validation |
+| Fast anastrophe D | **151.8 m** (9.5 kt, 22.5°, Mark IIb) | **145 m** | **+5%** |
+| Tight anastrophe D | **74.6 m** (6.5 kt, 67.5°, one-side, Mark IIb) | **80 m** | **−7%** |
+| G1–G3 full rudder | 89.4 m (6 kt), yaw 3.6–4.0°/s | — (raw data in print report) | consistent with §3 |
+| G4/G5 45° | 93.5 m | — | larger than full-rudder, as expected |
+| F1 (22.5°) | 111.9 m | §3: "smallest applied rudder angle" | largest diameter of F set ✓ |
+| F2–F4 (45°) | 93.5 m | §3 notes 45°-angle turns | ✓ |
+| F5/F6 thranites-only | 89.4 m (5.5 kt, 67.5°) | §3: lower thrust, low entry speed | ✓ |
+| 360° time (Morrison 1988) | 60 s @ 6.5 kt steady | **128 s** (avg 2.91 kt, 2.81°/s) | see caveat below |
+| Yaw rate fast tight turns | 3.2–6.0°/s (steady) | ~2.6–3°/s observed | see caveat below |
+| G1/G2 drift angle | 1.4° (force balance) | 15°±2° reported (Taylor uses ~7.8°) | known caveat (below) |
+
+**Conclusion:** the model reproduces all three DIAMETER anchors to ≤7% — the
+headline W5 validation — and its scenario space behaves consistently with
+ch.31 §3 (smaller rudder angle ⇒ larger turn; full rudder + one-side-stops ⇒
+tightest).  This is what the tactical numbers (145/80/62 m) rest on.
+
 ## Caveats
 
+- **Yaw-rate / 360°-time**: the model's ω is fixed by torque balance at a
+  *constant* speed, so it predicts ~60 s per 360° at 6.5 kt entry, whereas the
+  observed tightest turn took 128 s.  ch.31 §6.2 states the tightest turn
+  "halves speed"; at an average 2.91 kt the observed yaw is 2.81°/s (≈360° in
+  128 s) — consistent with the trial reports' "2.6–3°/s".  Reproducing the
+  time history would need a full time-domain yaw integration with
+  deceleration, which Taylor's Excel (steady-state) model also did not
+  provide.  The diameter, the quantity the tactical analysis uses, still
+  matches.
+- **Drift angles** computed (1.1–4.2°) are lower than the measured 7.8–15°
+  the chapter quotes for full-rudder turns — the chapter itself notes the
+  wide scatter (3 s × 2.6 °/s = 7.8° vs stated 15°±2°, "assume the lower
+  value").  The model's drift comes out of the force balance; matching the
+  measured drift would require a lower A_lat or a different lateral-force
+  split.  Drift is secondary to the turn diameter, which is what the
+  tactical numbers validate.
 - **Heel slightly over-predicts** (4.0° vs 3.5° for the fast anastrophe,
   5.4° for the max-speed tight turn vs Taylor's "≤3° with deck-crew move
   to the inside beam").  The simplified lateral-force balance treats the

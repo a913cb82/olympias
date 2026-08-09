@@ -1,0 +1,15 @@
+# Shaw (Rankov 2012 ch.8) Table 8.2: direction of the apparent wind relative to the ship's course,
+# for a following wind. Source: Rankov 2012 p.71 (PDF page 83). Decoded via OCR (easyocr) of 6x render
+# + equation cross-check.
+# Columns:
+#   true_wind_mps          : true following-wind speed in m/s
+#   apparent_wind_deg      : angle of the apparent wind measured from the ship's course
+# Verification: apparent_wind_deg = atan(true_wind / ship_speed_past_land). With ship speed 4.4 m/s
+# (8.5 kt = 7.5 kt + 1 kt favourable current):
+#   V=6 -> atan(6/4.4) = 53.7 deg; V=7 -> 57.8; V=8 -> 61.2; V=9 -> 63.9; V=10 -> 66.3. All match.
+true_wind_mps,apparent_wind_deg
+6.0,53.7
+7.0,57.8
+8.0,61.2
+9.0,63.9
+10.0,66.3
