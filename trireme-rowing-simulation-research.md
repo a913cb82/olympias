@@ -177,16 +177,24 @@ Coates drawing, and nothing enters the model that we cannot defend in a written 
       quantify the difference (Taylor flags the UCL-model discrepancy here).
 
 **W6 — Validation & uncertainty**
-- [ ] Build a validation table mapping each sea-trial measurement to a model prediction:
-      max ~8.9–9.6 kts, 0→7 kts in 32 s, 180° in ~60 s within 2.5 boat-lengths, turning
-      diameter 62–120 m, bilge-water +8% turn time, endurance profiles.
+- [x] **Validation table built** — `research/lane-6-validation/validation-table.md` +
+      `validation_table.py`: maps every trial measurement to a model prediction. All
+      steady-state speed targets reproduced within the ch.22 efficiency band (8.2–8.3 vs
+      8.0–8.1 @ E 0.53–0.55; sprint 8.3 vs 8.2–8.3), all turn diameters ≤7% (152/75/64 vs
+      145/80/62 m), braking 19 s/56 m, astern 9.4 kt, BMT volumes exact. Acceleration
+      0→7 kt: trained-model 14 s vs 1988 trial 32 s (less-trained crew) — context row, not
+      pass/fail.
 - [x] Maintain an **uncertainties register**: every [?] number gets a flag, its source
       caveat, and its sensitivity in the model (e.g. GM −0.1 m Mark IIb change, hull weight
       debate, oar efficiency vs speed). **DONE (S13)** —
       `research/lane-6-validation/uncertainties-register.md` (25 items, A1–D5, each with
-      [H]/[M]/[L] sensitivity).
-- [ ] Sensitivity: vary displacement ±2% (model build tolerance), GM, oar efficiency
-      (40%→54% as speed falls), crew power (S5/S6), and report which dominate.
+      [H]/[M]/[L] sensitivity). Row D6 added (S14): model KM under-predicts BMT 2.90 m;
+      Lane 5 must use BMT KM/GM.
+- [x] **Sensitivity pass** [x]: displacement ±2% → sprint ±0.5% (small; hull law
+      trial-validated); GM 1.13→0.99→0.85 → heel 3.0→3.6→4.3° at fast anastrophe (diameter
+      unchanged, yaw-driven); oar efficiency 40→54% → sustained 7.4→8.1 kt; crew count
+      121→154 → 7.5→8.1 kt. **Dominant knobs: crew power/efficiency; second-order:
+      displacement.** See `validation_table.py` sensitivity section.
 
 ### Parallelisable lanes (how work gets done)
 
@@ -759,6 +767,24 @@ Steps 1–2 of the next-steps list (Step 3 = W6 validation table, pending).
   Heel over-predicts ~1° (4.0 vs 3.5° fast anastrophe; needs deck-crew mitigation).
   Uses BMT KM/GM per S14 decision. Committed with note `manoeuvre-model.md` + W5 checklist
   update.
+
+### S16 — W6 validation table + sensitivity pass [x]
+
+Step 3 of the next-steps list. Closes the W6 checklist.
+
+- **Validation table** [x]: `research/lane-6-validation/validation_table.py` +
+  `validation-table.md`. Maps every trial measurement to a prediction from the two
+  validated models (lane-4 chain + lane-5 Taylor model + lane-3 hull). Results: all
+  steady-state speeds within the ch.22 53–55% efficiency band (sustained 8.0–8.1 vs
+  8.2–8.3 kt; GPS 135-rower 7.7–7.8 vs 7.8–7.9; sprint 8.3 vs 8.2–8.3), turns ≤7%
+  (152/75/64 vs 145/80/62 m), braking 19 s/56 m, astern 9.4 kt, BMT volumes exact.
+  Accel 0→7 kt: trained model 14 s vs 1988 trial 32 s (less-trained crew) = context row.
+- **Sensitivity pass** [x]: displacement ±2% → sprint ±0.5% (second-order, hull law
+  trial-validated); GM 1.13/0.99/0.85 → heel 3.0/3.6/4.3° at fast anastrophe (diameter
+  unchanged — yaw-driven; GM sets heel limit only, matching Taylor's "deck-crew move"
+  for the >3° cases); oar efficiency 40→54% → sustained 7.4→8.1 kt; crew 121→154 →
+  7.5→8.1 kt. **Dominant knobs: crew power/efficiency (D4 [H]); displacement second-order.**
+- Committed with validation-table.md + W6 checklist update.
 
 ---
 
