@@ -90,6 +90,9 @@ research until it has a source citation or a validated run.
 - Typed arguments (number, enumeration, side, bearing) with sensible defaults: "just
   sprint" must not require a form.
 - A human, a script, and later an AI, all speak the same vocabulary.
+- **v1 interface: CLI only** — commands arrive as a timestamped text file (one
+  command per line: time, verb, args); output is text. No GUI, no web console
+  (see §3.5 for the file format).
 
 ### 3.2 Proposed vocabulary (v1) — to be argued down or up
 
@@ -112,7 +115,7 @@ contract §6).
 | `rest` | full or rest a half-bank | way off the oars | feathered blades up, no work | |
 | `anchor` | location | approach and stop | hold + back sequence | |
 | `go` / `stop` | — | master start / stop, sync | global phase reset; "ready … pull" | |
-| `report` | — | status: speed, rate, position, ETA, force envelope | both output a summary | the commander console |
+| `report` | — | status: speed, rate, position, ETA, force envelope | both output a text summary | CLI output |
 
 ### 3.3 Rhythm and cadence
 
@@ -132,6 +135,31 @@ contract §6).
   *anastrophe* family (oQ-3).
 - The mapping from one commander order to per-bank steps is a design target and a prime
   validation case against the F/G-turn records.
+
+### 3.5 Script file format (v0) — the CLI input
+
+No fancy UI for now: the commander's orders arrive in a **plain-text file**, one
+command per line, `#` comments allowed, timestamps in seconds from script start:
+
+```
+# time_s, verb, args...        (comma- or space-separated as you prefer)
+0, rate, 30
+0.5, go
+120, pressure, sprint
+900, oars, bank starboard
+1500, rudder, full port
+1800, rate, 24
+3600, stop
+```
+
+- The schema parser (`commands/schema.json`) validates every line before the run:
+  unknown verbs, bad arguments, out-of-range rates are rejected up front
+  (deterministic, no silent mid-run surprises).
+- Commands at the same timestamp apply in file order; the file is read once into an
+  event list and consumed on the shared clock.
+- The same file drives the HL, the LL and the harness — one script, two ships.
+- A later v2 nicety: an interactive stdin loop ("type a command, advance time") —
+  not needed for v1.
 
 ## 4. High-level simulator — the fast and efficient one
 
@@ -225,7 +253,7 @@ trireme-sim/
   ll/             # per-oar low-level simulator (§4b)
     oar.py, rower.py, blade.py, hull.py, rudder.py
   harness/        # script loader, runner, comparator, calibrate (§6)
-  ui/             # commander console — thin CLI now, richer later
+  cli/            # CLI driver: run a script file (§3.5) on hl|ll, print text output
 ```
 
 - Determinism: fixed dt, fixed ordering, seeded RNG; state is a plain record for
@@ -234,7 +262,8 @@ trireme-sim/
 ## 8. Roadmap (draft)
 
 0. **Phase 0 — command language & contract.** Freeze the verbs (§3.2), write the schema,
-   fix the equivalence targets (oQ-1, 2, 4, 5, 7 here). Deliverable: `schema.json` v0.1.
+   fix the equivalence targets (oQ-1, 2, 4, 5, 7 here) and freeze the §3.5 script-file
+   format. Deliverable: `commands/schema.json` v0.1 + a sample script.
 1. **Phase 1 — LL first.** Get the per-oar sandbox working and validated against ch.9
    tables (blade forces, drive times, hand-rule). This is the truth engine; best to own
    it before the HL extrapolates from it.
@@ -310,8 +339,9 @@ trireme-sim/
   8.3 kt (Mark IIb needs ×3.3 area per ch.9 note) — tune above the documented band,
   or stay strict and journal.
 - oQ-19 — LL budget: run length and dt targets, wall-clock budget, tier-symmetry plan.
-- oQ-20 — UI/console priority: headless → thin CLI → web/API; what is the commander
-  console for each?
+- oQ-20 — **Resolved ('no fancy UI'): v1 is a CLI** — timestamped text script (§3.5)
+  in, text summary out. Only remaining question: the interactive "type a command,
+  advance time" stdin loop — a v2 nice-to-have or never?
 
 **The pair**
 
