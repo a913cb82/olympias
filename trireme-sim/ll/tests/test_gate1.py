@@ -123,8 +123,8 @@ def test_mark2_shortfall_persists():
         got = simulate(Oar(rig, r, t_drive), V, t_drive / 600, n_cycles=4)
         assert rel(got["mean_thrust"], ref["mean_thrust"]) < 0.005
         need = hull_power(V, hull=1.08) / 170.0
-        assert got["mean_thrust"] * V / need < 0.35, \
-            "Mark IIb shortfall changed — update OQ18 documentation first"
+        assert 0.45 < got["mean_thrust"] * V / need < 0.60, \
+            "Mark IIb fraction changed — update OQ18 documentation first"
 
 print(f"note: {OQ18}")
 

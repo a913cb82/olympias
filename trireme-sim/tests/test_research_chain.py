@@ -57,10 +57,11 @@ def test_oar_absorbed():
 # --- rigid-oar model (the four Table 9.6 points) ---
 
 REF_MEANS = {
-    ("Olympias", 7.2): (17.46, 223.7, 76.2),
+    ("Olympias", 7.2): (17.46, 223.7, 76.2),      # cant 0 — unchanged
     ("Olympias", 8.2): (18.37, 207.9, 79.1),
-    ("MarkIIb", 7.5): (6.14, 62.8, 85.7),
-    ("MarkIIb", 9.7): (13.23, 108.5, 85.6),
+    # the Mark IIb WITH the 18.4-deg cant (plan 16.1): ~1.7x the thrust
+    ("MarkIIb", 7.5): (10.40, 105.5, 81.8),
+    ("MarkIIb", 9.7): (22.20, 181.3, 81.6),
 }
 
 
@@ -74,13 +75,15 @@ def test_rigid_model_means():
 
 
 def test_mark2_area_sensitivity():
-    """The oQ-18 note: the flat-plate law needs ~x3.3 area at the Mark IIb
-    cruise point. Locked so the documented shortfall cannot silently move."""
+    """oQ-18 with the cant (plan 16.1): the prop fraction rose from ~0.30
+    to ~0.51 (the 18.4-deg cant term). The residual to the chain is the
+    aggregate of the A5 area gap + the slip assumptions — locked so the
+    documented shortfall cannot silently move."""
     s = rigid_stroke(V=7.5 * KT, rig=RIGS["MarkIIb"], r_spm=SPM["MarkIIb"][7.5],
                      t_drive=T_DRIVE[("MarkIIb", 7.5)])
     need = hull_power(7.5 * KT, hull=1.08) / 170.0
     ratio = s["mean_thrust"] * 7.5 * KT / need
-    assert 0.25 < ratio < 0.35, f"Mark IIb prop fraction {ratio:.2f}"
+    assert 0.45 < ratio < 0.60, f"Mark IIb prop fraction {ratio:.2f}"
 
 
 # --- Table 3.1 oar inertia families ---

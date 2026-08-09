@@ -752,7 +752,13 @@ The Mark IIb shortfall (oQ-18) is the aggregate of missing physics at its
 points, expressed as the ×3.3 area-equivalent (register A5). Two named
 mechanisms to incorporate into the LL code.
 
-### 16.1 The cant term (physical, first — the blade law)
+### 16.1 The cant term — **implemented** (Gate 7, 4 checks; commit …)
+
+RIGS gained `cant` (0.0 / 18.4); the blade law and the rigid reference
+use vn = V·cosC·cos(φ) − l_cp·ω with the thrust carrying cosφ (identity at
+φ = 0 by construction). The Mark IIb prop fraction rose ~0.30 → **0.51–0.54**
+(~1.7× — the deadspot shallows). The OQ18 lock, the research-chain band
+and the Gate-1 band all moved TOGETHER with the docs.
 
 The Mark IIb rig is canted 18.4° (tan = 1/3): the oar's sweep plane is tilted
 about the athwartships axis, so the blade-face normal is not horizontal. The
@@ -771,7 +777,14 @@ flat-plate law gains a geometry term:
 - The handle force lever (l_cp/lin) and the Fy unchanged in v1; the vertical
   force component Fz = Fn·sinφ (a small heel moment) is v2.
 
-### 16.2 The slip-assumption analysis (honest, second)
+### 16.2 The slip-assumption analysis — **implemented** (the scenario knob)
+
+The slip-factor is a rig key (default 1.0 — identity); the sensitivity
+(G7-3): prop fraction 0.51 → 0.85 at f = 1.3 (monotonic, ~f²). The
+**"Mark IIb as designed" scenario** (G7-4): cant + area 1.3× (the A5
+estimate) + slip 1.2 → the equilibrium at 46.3 spm lands on the chain's
+9.7 kt — every factor labelled, the slip ~1.2 is the aggregate of the
+unmodelled taper and attack-angle dynamics, NOT a blade dimension.
 
 The model's slip = vn from the prescribed (measured) ω — proven right at the
 Olympias points (15.2). The Mark IIb's residual after the cant is exactly
@@ -794,19 +807,18 @@ Mark IIb needs a consistent thrust to be usable there. The scenario's
 acceptance: the equilibrium at 46.3 spm lands near the chain's 9.7 kt
 (Table 9.7) — then the turn gates at the Mark IIb points open up.
 
-### 16.4 Validation gates (Gate 7, `ll/tests/test_gate7.py`)
+### 16.4 Validation gates — **all passing (4 checks, `ll/tests/test_gate7.py`) + regression**
 
-- G7-1 the cant term is identity at Olympias (φ = 0): the four Table 9.6
-  means unchanged (< 0.1 % — by construction, asserted).
-- G7-2 the Mark IIb prop fraction WITH the cant: the measured improvement
-  recorded (expect ~30 % → 55–65 %); the OQ18 lock and the research-chain
-  band update TOGETHER with the docs (no silent shift).
-- G7-3 the slip sensitivity: the f → thrust table printed (diagnostic, no
-  adoption).
-- G7-4 the "as-designed" scenario: cant + area 1.3× + the residual f
-  reproduces the chain's 9.7 kt at 46.3 spm (within 2 %); every factor's
-  provenance in the test's docstring.
-- G7-5 regression: all 79 tests.
+- G7-1 ✓ the cant's measured effect: 0.51 with vs 0.30 without (ratio
+  1.7×, asserted); the identity at φ = 0 (< 1e-9 — the Olympias anchors
+  untouched by construction).
+- G7-2 ✓ (folded into the research-chain + Gate-1 bands, moved together
+  with the OQ18 doc): the Mark IIb prop fraction now 0.51–0.54, locked.
+- G7-3 ✓ the slip sensitivity: 0.51 → 0.85 at f = 1.3 (monotonic ~f²,
+  diagnostic only).
+- G7-4 ✓ the as-designed scenario: cant + area 1.3× + slip 1.2 → the
+  equilibrium at 46.3 spm lands on the chain's 9.7 kt.
+- G7-5 ✓ regression: 79 + 4 = 83 tests.
 
 ### 16.5 Sequence and dependencies
 
