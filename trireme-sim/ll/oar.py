@@ -37,8 +37,12 @@ class OarStep:
 
 
 class Oar:
-    def __init__(self, rig: dict, r_spm: float, t_drive: float | None = None):
+    def __init__(self, rig: dict, r_spm: float, t_drive: float | None = None,
+                 direction: int = 1):
+        """direction = +1 forward stroke; -1 backing water (drive sweeps the
+        other way — the blade force law then gives negative thrust naturally)."""
         self.rig = rig
+        self.dir = direction
         self.cycle = 60.0 / r_spm
         self.t_drive = t_drive if t_drive is not None else self.cycle * 0.333
         self.t_recovery = self.cycle - self.t_drive
@@ -54,13 +58,13 @@ class Oar:
 
     def _angle(self) -> float:
         if self.phase < self.t_drive:
-            return self.sweep / 2 - self.omega_drive * self.phase
-        return -self.sweep / 2 + self.omega_recover * (self.phase - self.t_drive)
+            return self.dir * (self.sweep / 2 - self.omega_drive * self.phase)
+        return self.dir * (-self.sweep / 2 + self.omega_recover * (self.phase - self.t_drive))
 
     def step(self, dt: float, V: float) -> OarStep:
         immersed = self.phase < self.t_drive
         C = self._angle()
-        omega = -self.omega_drive if immersed else self.omega_recover
+        omega = -self.dir * self.omega_drive if immersed else self.dir * self.omega_recover
         f = blade_force(C, omega, V, self.rig, immersed)
         self.phase += dt
         if self.phase >= self.cycle:

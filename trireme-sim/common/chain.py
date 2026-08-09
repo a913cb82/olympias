@@ -7,12 +7,15 @@ only re-exports them (plan §2.3: shared assets, no duplicated numbers).
 import sys
 from pathlib import Path
 
-_RESEARCH = Path(__file__).resolve().parents[2] / "research" / "lane-4-oars"
-if str(_RESEARCH) not in sys.path:
-    sys.path.insert(0, str(_RESEARCH))
+_RESEARCH = Path(__file__).resolve().parents[2] / "research"
+for _sub in ("lane-4-oars", "lane-5-manoeuvre"):
+    _p = str(_RESEARCH / _sub)
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
 
 import rigid_oar_model as _rom  # noqa: E402
 import lane4_propulsion as _lp  # noqa: E402
+import manoeuvre_model as _mm  # noqa: E402
 
 # --- units / blade law ---
 KT = _rom.KT                 # 0.5148 m/s per knot
@@ -33,6 +36,9 @@ speed_from_power = _lp.speed_from_power
 oar_power = _lp.oar_power                 # W = n P L r E / 60
 mean_pull = _lp.mean_pull                 # P = 7.43 r  (N at butt)
 oar_absorbed = _lp.oar_absorbed           # non-propulsive oar losses, W
+
+# --- Taylor ch.31 manoeuvring vessels (turn-validated parameters) ---
+VESSELS = {"Olympias": _mm.olympias(), "MarkIIb": _mm.mark_iib()}
 
 # --- documented open items the sims must inherit honestly ---
 OQ18 = (

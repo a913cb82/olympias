@@ -85,5 +85,14 @@ errors raise `ScriptError` naming the offending line.)
       Findings: stroke surge ripple ~0.2 kt; start-from-rest needs the oQ-13
       force ceiling (crude clamp exists, demo only); Table 9.6 data gap at
       44.5 spm (uncertainties register A8).
+- [x] Phase 1 Gate 3 — 170-oar surge+yaw ship (`ll/ship.py` + `rig.py`, 9
+      checks): time-domain turns reproduce the W5 anchors within 5 % —
+      G1 93.5 vs 89.4 m, F1 117.2 vs 111.9 m, tightest 64.4 vs 62 m — with
+      the oQ-4 hold-water brake (hold_frac = 0.02, diameter-anchored) and
+      Taylor's fitted oar-race lever (4.8 m; decomposition open, register
+      C3). Oar-only turns (hold/back per side) physically consistent;
+      back-water = force-limited 80 % astern (manoeuvre 5.x). First
+      command-language → physics pipeline: the sample script runs end-to-end
+      (`ll/run_turn.py script`); rest-start still needs the oQ-13 ceiling.
 - [ ] Phase 2 — HL from LL;  [ ] Phase 3 — harness;  [ ] Phase 4 — crew & environment;
       [ ] Phase 5 — oar-manoeuvres

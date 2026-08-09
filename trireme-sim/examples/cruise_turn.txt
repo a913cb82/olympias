@@ -2,7 +2,7 @@
 # Format: plain text, one command per line; `#` comments; fields comma- or
 # space-separated: <time_s> <verb> [args...]. See trireme-simulation-plan.md §3.5.
 0, rate, 30
-600, pressure, spoude
+600, pressure, fast
 900, rate, 44
 1020, helm, port
 1200, oars, hold starboard

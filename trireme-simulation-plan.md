@@ -452,4 +452,13 @@ Two expectations that shape the build:
       flat-plate 0.078 m2 law suffices there (Mark IIb shortfall stands).
       Stroke surge ripple ≈ 0.2 kt; start-from-rest deferred to the oQ-13
       force ceiling (crude provisional clamp exists for demos).
+- [x] **Phase 1 Gate 3 — 170-oar surge+yaw ship** (`ll/ship.py`, `rig.py`, 9
+      checks): time-domain turns reproduce the W5 anchors within 5 % (G1
+      93.5 m vs 89.4; F1 117.2 vs 111.9; tightest 64.4 vs 62). oQ-4 gets its
+      first quantitative answer: hold-water = trailing + a 2 % brake
+      fraction calibrated to the tightest-turn diameter (the speed history
+      still needs the trial's rate + the hold spectrum). Oar yaw uses
+      Taylor's fitted lever 4.8 m (decomposition open — register C3);
+      back-water = force-limited 80 % astern (manoeuvre 5.x). Sample script
+      runs end-to-end: first command-language → LL pipeline.
 - [ ] Sketch the HL tolerance/labels format (§4 / §6 annotations).
