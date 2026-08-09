@@ -55,9 +55,23 @@ Decoded from the PDF glyph layer (PUA subset font) via `research/data/shaw-table
 | B | old zygian | 22 | 9.6 | 1.38 | 1.57 | 17.8 | +0.24 |
 | C | old thranite | 17 | 7.4 | 1.46 | 1.57 | 13.1 | +0.40 |
 
-Notes: oars 1–9 spruce, A–C the old Douglas-fir oars (2 zygian + 1 thranite). Rows 7 & 8 have no measured data in the original table ("Missing"). The X sign convention: **negative = centre of percussion within the blade** (all spruce oars, best ≈ −0.35 to −0.62 m from tip); the old fir oars have X **positive** (+0.15…+0.40 m), i.e. their centre of percussion falls beyond the blade tip — the handiness problem the redesign addressed. Spruce oars 1 & 2 (with fir oars A–C) have squared looms. `[x]`
+Notes: oars 1–9 spruce, A–B the old Douglas-fir oars (2 zygian + 1 thrane). Rows 7 & 8 have no measured data in the original table ("Missing"). The X sign convention: **negative = centre of percussion within the blade** (all spruce oars, best ≈ −0.35 to −0.62 m from tip); the old fir oars have X **positive** (+0.15…+0.40 m), i.e. their centre of percussion falls beyond the blade tip — the handiness problem the redesign addressed. Spruce oars 1 & 2 (with fir oars A–C) have squared looms. `[x]`
 
-Verification: all **7 complete spruce rows and old thranite C verify internally at inboard 1.092 m** — MIT = W_kgf·(k²+c²) reproduces the tabulated MIT, and the X column is consistent with the **4.22 m** actual spruce oar length (implied length = COG_from_butt + k²/c − X = 4.20–4.24 m, i.e. the existing 4.22 m oars). **Flag:** old *zygian* rows A & B are internally inconsistent in the source — their MIT implies inboard ≈ 0.94 m while their weight-in-hand matches 1.092 m; both rows also imply short oars (3.5–3.6 m). Record the values as printed; do not force them through the 1.092 m relation. Independently, the weight-in-hand column is internally exact under inboard 1.092 m — W·(COG−1.092)/1.092 with the tabulated W and C of G reproduces every printed weight-in-hand (A → 10.15 vs 10.2 lbf, B → 9.63 vs 9.6, C → 7.44 vs 7.4) — so the A/B disagreement is confined to the MIT cell, and both rows deviate by the same ≈ −9.7 % (A −9.5 %, B −9.8 %), pointing to a shared basis or transcription error in the source's MIT column rather than in the weights or C of G. `[?]`
+Verification: all **7 complete spruce rows and old thranite C verify internally at inboard 1.092 m** — MIT = W_kgf·(k²+c²) reproduces the tabulated MIT, and the X column is consistent with the **4.22 m** actual oar length: implied length = COG_from_butt + k²/c − X = 4.20–4.24 m for the spruce, **and the reconstruction also closes for the old fir oars** (A → 4.216 m, B → 4.217 m, C → 4.224 m) — the measured X, C of G and k² of all ten oars describe the existing 4.22 m oars. **Flag:** old *zygian* rows A & B are internally inconsistent in the source — their MIT implies inboard ≈ 0.94 m while their weight-in-hand matches 1.092 m exactly and their X/C of G/k² reconstruct 4.22 m (the earlier "short 3.5–3.6 m oar" inference came from trusting the MIT cell — superseded). Record the values as printed; do not force them through the 1.092 m relation. Independently, the weight-in-hand column is internally exact under inboard 1.092 m — W·(COG−1.092)/1.092 with the tabulated W and C of G reproduces every printed weight-in-hand (A → 10.15 vs 10.2 lbf, B → 9.63 vs 9.6, C → 7.44 vs 7.4) — so the A/B disagreement is confined to the MIT cell, and both rows deviate by the same ≈ −9.7 % (A −9.5 %, B −9.8 %), pointing to a shared basis or transcription error in the source's MIT column rather than in the weights or C of G. `[?]`
+
+#### Handiness — what the inertias mean at the handle (Table 3.1 → `oar_inertia.py`) `[x]`
+
+- **Equivalent inertial mass at the handle, m_h = MIT/1.092²**: spruce **8.2 kg** (7.0–9.1 per oar), old fir zygian **15.1 kg**, old fir thranite **11.0 kg**. The static weight-in-hand is only 3.5–5.6 kgf — the *dynamic* mass the rower plays with is set by MIT, and the old fir oars carry ≈×1.8 the spruce inertia.
+- **Catch-phase inertia spike**: in the drive the oar runs at roughly constant angular speed (ω = sweep/t_drive from Table 9.6, 1.95–2.14 rad/s), so the inertia term I·ω̇ ≈ 0 mid-stroke — the inertia is paid at the *catch flip*, spinning the oar from rest up to ω over the water-entry time t_rise: F_spike = MIT·ω/(t_rise·1.092). With the measured drive times and t_rise = 0.15 s:
+
+  | point | spm | ω (rad/s) | spruce F | old zygian F | old thranite F |
+  | --- | --- | --- | --- | --- | --- |
+  | Olympias 7.2 kt | 28.8 | 1.95 | 116 N | 215 N | 156 N |
+  | Olympias 8.2 kt | 36.0 | 2.14 | 127 N | 235 N | 171 N |
+  | Mark IIb 9.7 kt | 46.3 | 2.06 | 122 N | 226 N | 164 N |
+
+  (t_rise 0.10 s → ×1.7 of these; 0.20 s → ×0.75.) The old-fir spike is **≈×1.9 the spruce** and of the same order as the whole drive mean handle force (~210–225 N) — the quantitative content of “handiness”: Shaw’s 4.66 m spruce spec (MIT ≈ 8 kg·m²) cuts both. The bulk/rigid chains are massless (static torque balance) and are unchanged; this block is the input for any future stroke-end dynamics.
+- **X = centre of percussion from the blade tip** (spruce −0.35…−0.62 m → COP 2.51–2.78 m from the thole, inside the 3.13 m outboard length; old fir +0.15…+0.40 m → COP 3.28–3.53 m, i.e. 0.15–0.40 m *beyond the blade tip*) — a percussive blow at the catch lands outboard of the blade, the second reason the fir oars felt heavy in the hands.
 
 ### Shaw's suggested specification for a 4.66 m spruce oar (Rankov ch.3 App.2, p.61) — verified
 
@@ -109,6 +123,7 @@ Verification: all **7 complete spruce rows and old thranite C verify internally 
   - Rhythm factor: 30 spm → 3.42 (0.99 m) / 4.01 (0.87 m); 32 → 3.21 / 3.76; 34 → 3.02 / 3.53; 36 → 2.85 / 3.34; 38 → 2.70 / 3.16.
   - Mean couple on the oar-handle (N·m): 30 spm → 215 (0.99 m) / 246 (0.87 m); 32 → 202 / 231; 34 → 190 / 218; 36 → 180 / 206; 38 → 172 / 196.
   - Ratio of rhythm factors at fixed rate = 4.01/3.42 = **1.17** — matches the prose "the ratio of rhythm factors at a given stroke rate is 1.17". The couple rows are the mean bending stress on the oar at the thole; greatest value during a stroke is considerably higher. `[x]`
+  - Internal consistency with the rigid-oar layer: mean couple / 1.092 m = mean handle force — 246 N·m (30 spm, 0.87 m) / 1.092 = 225 N; the rigid flat-plate model’s mean handle force × lever = 224 × 1.092 = **244.6 N·m vs 246 (0.6 %)**. The 0.99-m-stroke couples (215/202/… → ~197 N at 30 spm) sit ~12 % lower, consistent with the longer canted stroke’s lower handle forces. (`oar_inertia.py` part C.) `[x]`
 
 ### Mark II / canted rig
 

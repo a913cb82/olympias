@@ -161,8 +161,22 @@ Coates drawing, and nothing enters the model that we cannot defend in a written 
       balance (102%); also adds the per-stroke force envelope and quantifies the Mark IIb
       need for larger blades (×3.3 area, matching ch.9's note). Bulk chain unchanged.
 - [x] **Oar inertia & blade data**: Rankov Table 3.1 (ten-oar measured table: weight, weight-in-hand, C of G, k², MIT, X) fully decoded from the PDF glyph layer (OCR + PUA-glyph cell confirmation) — `research/data/shaw-table-3.1-oar-inertia.csv`; spruce oars 9–12 lbf, old fir 17–22 lbf, MIT 8.3–18.2 kg-m². 8 of 10 data rows reproduce MIT = W_kgf·(k²+c²) at 1.092 m inboard (spruce 1–6 & 9, old thrane C); **flag: old zygians A/B MIT implies ≈0.94 m inboard while their weight-in-hand cross-checks at 1.092 m** (A: 10.15 vs 10.2 lbf; B: 9.63 vs 9.6) — likely source MIT error, values recorded as printed (oar-data.md §3). (12.3 kg/oar build-log figure is implausible for the 1994 spruce oars.) Blade geometry from Plan 15. **DONE.**
-- [ ] Ergonomics: 50th-percentile US-marine body scaled to classical Greek male (~5'7")
-      for reach/stroke limits (Richard's manikin method).
+- [x] **Inertia layer**: `research/lane-4-oars/oar_inertia.py` — Rankov Table 3.1 fed into
+      the massless chain: handle-equivalent inertia m_h = MIT/1.092² is 8.2 kg (spruce),
+      15.1 kg (old zygian), 11.0 kg (old fir thranite); catch-flip spike ≈116 N spruce vs
+      ≈215–235 N fir at 0.15 s rise (×1.9 — same order as the mean drive force); COG+k²+X
+      reconstruct 4.22 m oars for every data row (A/B MIT cells excepted); Table 3.2
+      couple cross-check 244.6 vs 246 N·m (0.6 %). **DONE — see oar-data.md §3 (Handiness).**
+- [x] **Ergonomics: anthropometry captured, scaling to run** — the analytical stroke model already
+      uses a **167 cm man** (Rankov ch.3 App.3: his 1.1 m unrestricted / 0.99 m effective stroke
+      basis — `oar-data.md` §6), the operative reach reference for the rig; **US-marine scaling
+      anchor**: US Army 1988 anthropometric survey (ANSUR), report **DTIC ADA225094 (Gordon et
+      al. 1989)**, n = 1,774 male + 2,208 female — male 50th-percentile stature ≈ 69.1 in
+      (175.6 cm), mass ≈ 78 kg `[?]` (digits pending a primary-table read; the report PDF is
+      20 MB+). **Greek reference ≈ 1.70 m (5 ft 7 in)** as Shaw assumes (`[x]` in his stroke model),
+      so scale ≈ 170/175.6 ≈ 0.97 on the US body. Manikin reach/stroke run (Richard's method)
+      still to do; `[?]` on the Greek-mean-height source sample (e.g. s12520-023-01744-1,
+      population-specific stature equations for ancient Greek material).
 
 **W4 — Environment: Shaw's wave tables**
 

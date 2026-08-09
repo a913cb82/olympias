@@ -60,6 +60,30 @@ Energy check (propulsive power/oar from the rigid model vs. hull requirement):
   such as will enable the blades to absorb the required power" and may need different
   widths.
 
+## 2b. Oar inertia — Table 3.1 layer (`oar_inertia.py`)
+
+The chain is massless: the torque balance about the thole is static, so the
+measured rotational inertia plays no role in the drive force. Table 3.1 (Rankov
+2012 ch.3, p.48, decoded) quantifies what the rower actually feels, per family:
+
+| family (n) | mean W | MIT | m_hand = MIT/1.092² | X (COP from blade tip) |
+|---|---|---|---|---|
+| spruce (7) | 4.7 kgf | 9.7 kg·m² | 8.2 kg | −0.35…−0.62 m |
+| old fir zygian (2) | 9.8 kgf | 18.0 kg·m² | 15.1 kg | +0.15…+0.24 m |
+| old fir thranite (1) | 7.7 kgf | 13.1 kg·m² | 11.0 kg | +0.40 m |
+
+- Catch in a constant-ω drive: I·ω̇ ≈ 0 through the stroke, so the inertia is paid
+  at the *catch flip* — F_spike = MIT·ω/(t_rise·l_in). At the Table 9.6 drive
+  times and a 0.15 s water-entry, the spike is ≈116 N (spruce) vs ≈215–235 N
+  (old zygians) — ≈×1.9, same order as the whole mean handle force. This is the
+  quantitative content of “handiness”: Shaw's 4.66 m spruce spec (MIT ≈ 8 kg·m²)
+  halves it.
+- The flat-plate drive envelope above is unchanged (massless model); Table 3.1
+  enters stroke-end/transition dynamics and any inertia-aware refinement. See
+  `oar_inertia.py` (loads `research/data/shaw-table-3.1-oar-inertia.csv`).
+- Couple cross-check: mean_couple / 1.092 m = mean handle force; Table 3.2's 246
+  N·m (30 spm, 0.87 m) ↔ model 224 N × 1.092 = 244.6 N·m → 0.6 % agreement.
+
 ## 3. What this means for the simulation
 
 - **The bulk lever-chain E is independently confirmed** at the Olympias design point
@@ -97,4 +121,5 @@ Energy check (propulsive power/oar from the rigid model vs. hull requirement):
   pressure-drag vs added-mass regimes.
 - Baudouin & Hawkins (2002), *Br J Sports Med* 36:396–402 — oar as 2nd-class lever.
 - Rankov 2012 ch.9 (Table 9.1 oar dims, Table 9.6 pull durations), ch.1 §1.4.2
-  (blade CP 260 mm), ch.10 p.85 (blade area 0.078 m²); W3 `rig-geometry.md`.
+  (blade CP 260 mm), ch.10 p.85 (blade area 0.078 m²); **ch.3 Table 3.1 (p.48,
+  decoded) loaded per-row in `oar_inertia.py`**; W3 `rig-geometry.md`.
