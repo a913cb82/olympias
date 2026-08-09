@@ -104,11 +104,15 @@ output is the CLI's business, not the commander's — no `report` verb (dropped 
 
 | verb | arguments | the shout | what the crew does | notes |
 | --- | --- | --- | --- | --- |
-| `rate` | spm (0–50); aliases slow/working/racing | "σπούδην!" (pipe speeds up) | every rower takes the cadence: cycle = 60/spm, drive/recovery split (Table 9.6 ≈ 33–45 %) | THE verb; sets the phase clock |
-| `oars` | state: row / hold / back / bank; optional side or tier | "καθίετε!" (oars down), "ἔχε!" (hold!), "πρύμναν ἀνακρούου!" (back water!), "ἄρατε κώπας!" (oars up!) | per-bank blade hydro regime: driving / stopped / backing / out of water | four states only — a rower cannot distinguish more mid-battle |
-| `pressure` | rest / steady / fast / spoude, or 0–1 | "σπουδῇ!" (with haste!) | effort per stroke: scale the mean handle-force profile, P = 7.43·r·pressure | rate = frequency, pressure = effort; distinct axes, both attested |
+| `rate` | spm (0–50); aliases slow/working/racing | "σπούδην!" (pipe speeds up) | every rower takes the cadence: cycle = 60/spm, drive/recovery split (Table 9.6 ≈ 33–45 %) | ship-global: both sides listen to the same pipe — no per-side rate |
+| `oars` | state: row / hold / back / bank; optional side (port \| starboard; default both) | "καθίετε!" (oars down), "ἔχε!" (hold!), "πρύμναν ἀνακρούου!" (back water!), "ἄρατε κώπας!" (oars up!) | per-side blade hydro regime: driving / stopped / backing / out of water | per side, never per tier: a side's tiers share one state — their blades share that side's water (per-tier states would collide). Tiers differ in phasing and reach, not in commanded state |
+| `pressure` | rest / steady / fast / spoude, or 0–1; optional side (default both) | "σπουδῇ!" (with haste!) | effort per stroke on the given side: scale the mean handle-force profile, P = 7.43·r·pressure | per-side effort is a steering tool — one side pulling harder turns the ship (differential oar-work) |
 | `helm` | port / starboard / midship; fraction optional | "πηδάλιον ἐπὶ δεξιά!" (helm to starboard!) | the helmsman puts the rudders over (F/G-validated rudder model) | oar-assisted turns are expressed via per-side `oars`, not here |
 
+
+Scoping: `rate` is ship-global; `oars` and `pressure` take an optional `port` /
+`starboard` (default: both); `helm` is the rudder. There is no per-tier scope — the
+tiers of a side always share a state.
 
 **Dropped from the v0 list, and why** (replacement in parentheses):
 
@@ -154,11 +158,11 @@ output is the CLI's business, not the commander's — no `report` verb (dropped 
 
 ### 3.4 Manoeuvring by oars
 
-- The LL must support **turn on the oars**: one bank rows while the other holds or
+- The LL must support **turn on the oars**: one side rows while the other holds or
   backs (`oars hold|back <side>`) → asymmetric thrust → yaw; hold water on one side
   to brake-turn. The *anastrophe* family (quick reversal) = `oars back` on one side
   while the other rows.
-- The mapping from one commander order to per-bank steps is a design target and a prime
+- The mapping from one commander order to per-side steps is a design target and a prime
   validation case against the F/G-turn records.
 
 ### 3.5 Script file format (v0) — the CLI input
@@ -175,6 +179,7 @@ command per line, `#` comments allowed, timestamps in seconds from script start:
 1200, oars, hold starboard
 1260, oars, back starboard
 1440, rate, 24
+1500, pressure, steady, port
 1800, oars, bank
 ```
 
@@ -226,9 +231,10 @@ command per line, `#` comments allowed, timestamps in seconds from script start:
   5. rower output: mean-force × stroke-shape profile, capped by crew state and VO2;
   6. sum all 170 oar forces and moments onto the hull (per-side sums → yaw);
   7. hull update: surge/sway/yaw, resistance, rudder, waves at each blade.
-- **Per-tier heterogeneity**: thranite/zygian/thalamite stroke limits (e.g., thalmian
-  head-room limit ≈ 720 mm vs 800 mm design), oar-inertia families (spruce vs old firs —
-  handiness), per-oar fatigue.
+- **Per-tier heterogeneity** — capability only, never commanded state: the tiers of a
+  side always share one state (their blades share that side's water). Thranite/zygian/
+  thalamite stroke limits (e.g., thalmian head-room limit ≈ 720 mm vs 800 mm design),
+  oar-inertia families (spruce vs old firs — handiness), per-oar fatigue.
 - **Waves**: water velocity at each blade from the shared environment; wave induced
   drag/thrust content comes out of the flat-plate force law naturally.
 - **Speed budget**: 170 oars is feasible in Python at the dt above; per-tier symmetry
@@ -392,6 +398,7 @@ trireme-sim/
 - **oar state** — the four blade states a rower can execute: `row` (driving),
   `hold` (blade stopped in water — a brake), `back` (driven the other way),
   `bank` (out of water). The feather is part of the recovery, not a separate command.
+  Scoped per side (default both); the tiers of a side always share a state.
 - **anastrophe** — the ordered, quick-reversal turn; in commands it is a combination
   (one bank holding / banked), not a primitive.
 - **oracle** (in this plan) — the simulator that other things are judged against: the
