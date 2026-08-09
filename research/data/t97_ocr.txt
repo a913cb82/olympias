@@ -1,0 +1,15 @@
+Table 9.7. Rates of striking etc required at 7.5 knots and 9.7 knots
+                        Mark IIa         Mark IIb
+                       7.5      9.7     7.5      9.7
+Speed, knots           7.5      9.7     7.5      9.7
+Speed, m/s             3.86     5.00    3.86     5.00
+Watts                  13460    34860   13460    34860
+L, m                   0.87     0.87    0.99     0.99
+E                      0.780    0.780   0.780    0.780
+Therefore Pr (P x r, N*spm)  7001     18130   6152     15930
+therefore r^2          942      2440    828      2144
+therefore r (spm)      30.7     49.4    28.8     46.3
+therefore P (newtons)  228      367     214      344
+P in pounds force      51.3     82.5    48.1     77.3
+And rhythm factor      3.82     3.07    3.40     2.75
+Duration of run, sec   1.44     0.819   1.47     0.824

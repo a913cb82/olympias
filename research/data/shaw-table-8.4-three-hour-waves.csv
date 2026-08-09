@@ -1,0 +1,20 @@
+# Shaw (Rankov 2012 ch.8) Table 8.4: "3 hour" wave heights H, wavelength L, wave velocity C
+# vs windspeed W (m/s relative to water), fetch and duration.
+# Source: Rankov 2012 p.73 (PDF page 85). Decoded via OCR (easyocr) of 8x render.
+# Table 8.4 H, L, C = Table 8.3 values x 1.8, 1.2, 1.1 respectively (Shaw: "For these factors
+# I am indebted to Carter"). Asterisk = sea at full development.
+# Worked example in text: 8.5 m/s wind at 200 km / 12.6 h -> 3-hour height 2.5 m, wavelength ~34 m.
+# Notes: W is wind RELATIVE to the water (true wind minus 0.5 m/s favourable current).
+fetch_km,duration_h,windspeed_W_mps,H_m,L_m,C_mps,full_development
+50,3.2,4.5,0.42,5.0,2.8,no
+50,3.2,5.0,0.48,5.7,3.0,no
+50,3.2,5.5,0.54,6.3,3.1,no
+100,6.3,4.5,0.68,9.0,3.7,no
+100,6.3,5.0,0.78,10.1,4.0,no
+100,6.3,5.5,0.88,11.3,4.2,no
+150,9.5,4.5,0.87,12.2,4.4,yes
+150,9.5,5.0,1.04,14.4,4.7,no
+150,9.5,5.5,1.17,16.0,5.0,no
+200,12.6,4.5,0.87,12.2,4.4,yes
+200,12.6,5.0,1.08,15.1,4.9,yes
+200,12.6,5.5,1.31,18.3,5.3,yes

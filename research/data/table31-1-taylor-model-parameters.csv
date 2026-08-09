@@ -1,0 +1,18 @@
+parameter,olympias,fast,units,confidence
+"Mass of vessel",42.0,44.0,tonnes,ocr-clear
+"Apparent dynamical mass for forward linear motion",46.2,48.4,tonnes,ocr-clear
+"Drag for bare hull (v in knots) - up to 6.7 knots",40.2 v^2,44.7 v^2,N,ocr-clear
+"Drag for bare hull (v in knots) - 6.7-9.0 knots",(blank),83.6 v^2 - 1733,N,ocr-clear
+"Drag for bare hull (v in knots) - over 9.0 knots",(blank),98.4 v^2 - 2933,N,ocr-clear
+"Drag from straight rudders deflecting water in a turn",(79.6 - 40.2) v^2,10 v^2,N,ocr-clear
+"Effective lateral cross-section deflecting water in a turn",35,39,m^2,ocr-clear
+"Waterline length",32.2,35.2,m,ocr-clear
+"Draft",1.1,1.1,m,ocr-clear
+"Height of centre of gravity above keel (KG) for ship plus 200 crew",1.94,1.9,m,ocr-clear
+"Distance from centre of mass to the rudder (along centre line)",14.9,16.5,m,ocr-clear
+"Lever arm from centre of mass to the centre of the oar race",4.8,5.4,m,ocr-clear
+"Moment of inertia about vertical axis",4e6,5e6,kg m^2,ocr-clear
+"Coefficient for resistance of water to angular velocity",5e6,6e6,kg m^2,units-possibly-per-s
+"Vertical lever arm from C of M to lateral resistance of water on ship's hull",1.46,1.42,m,ocr-clear
+"Vertical lever arm from C of M to middle of rudder lateral resistance",1.16,1.12,m,ocr-clear
+"Metacentric height",0.97,0.9,m,ocr-clear

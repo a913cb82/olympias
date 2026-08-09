@@ -1,0 +1,21 @@
+# Shaw (Rankov 2012 ch.8) Table 8.3: significant wave height H, mean wavelength L, mean wave velocity C
+# vs windspeed W (m/s relative to water), fetch and duration.
+# Source: Rankov 2012 p.72 (PDF page 84). Decoded via OCR (easyocr) of 8x render; values
+# verified cell-by-cell against Carter 1982 duration-limited equations (see carter-equations.md).
+# Legend: asterisk = sea has reached full development at that windspeed/duration/fetch.
+# C measured relative to water moving at 0.5 m/s (1 knot). Wave with C above 3.9 m/s overtakes ship.
+# Notes: W is wind RELATIVE to the water (true wind minus the 0.5 m/s favourable current).
+# Shaw used Carter's T_z (zero-up-crossing period) convention; L = 1.56*Tz^2, C = 1.56*Tz.
+fetch_km,duration_h,windspeed_W_mps,H_m,L_m,C_mps,full_development
+50,3.2,4.5,0.23,4.1,2.5,no
+50,3.2,5.0,0.27,4.7,2.7,no
+50,3.2,5.5,0.30,5.2,2.9,no
+100,6.3,4.5,0.38,7.4,3.4,no
+100,6.3,5.0,0.43,8.3,3.6,no
+100,6.3,5.5,0.49,9.3,3.8,no
+150,9.5,4.5,0.49,10.1,4.0,yes
+150,9.5,5.0,0.58,11.9,4.3,no
+150,9.5,5.5,0.65,13.2,4.5,no
+200,12.6,4.5,0.49,10.1,4.0,yes
+200,12.6,5.0,0.60,12.5,4.4,yes
+200,12.6,5.5,0.73,15.1,4.9,yes

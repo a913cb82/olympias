@@ -1,0 +1,6 @@
+Table 9.6. Duration of the effective pull
+Duration of effective pull, sec:
+            Olympias  Mark IIa  Mark IIb
+at 7.5 knots  0.428    0.512     0.612
+at 8.2 knots  0.392    0.469     0.560
+at 9.7 knots   (—)     0.396     0.472

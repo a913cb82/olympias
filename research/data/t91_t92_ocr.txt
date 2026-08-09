@@ -1,0 +1,15 @@
+Table 9.1. Main dimensions of oars (values in brackets = horizontal projection = x cos 30 deg)
+All lengths in m.
+                                Olympias       Mark IIa / IIb
+cubit                            0.444          0.49
+length overall                   4.218 (3.653)  4.655 (4.031)
+length outboard                  3.113 (2.696)  3.430 (2.970)
+length of blade                  0.550 (0.476)  0.550 (0.476)
+length inboard                   1.105 (0.957)  1.225 (1.061)
+length between thole and neck    2.563 (2.220)  2.880 (2.494)
+
+Table 9.2. Lengths and arcs of the pull
+                        Interscalmium (m)   Chord between deadpoints (m)
+Olympias                0.89                0.89
+Mark IIa                0.98                0.98
+Mark IIb                0.98                1.10
