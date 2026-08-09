@@ -30,9 +30,19 @@ M_APP_FACTOR = 1.10        # apparent-mass factor (plan §2.3)
 N_OARS = 170               # Olympias oar count
 
 
+# Calibrated entries beyond Table 9.6 (mismatch #2, register A8):
+# t_drive(44.5) = 0.371 s chosen so the LL reproduces the ch.9 four-run
+# sprint (8.2-8.3 kt at 44.5 spm, ~130 effective rowers) — the value the
+# Gate-2 bracket analysis already pointed to, now pinned (calibrate_tdrive.py).
+CALIBRATED_T_DRIVE = {("Olympias", 44.5): 0.371}
+
+
 def t_drive_for(rig_name: str, spm: float) -> tuple[float, str]:
     """Effective-pull time for rate spm (Table 9.6): exact at the rig's measured
-    points, linear interpolation/extrapolation between them, flagged."""
+    points, calibrated beyond them (CALIBRATED_T_DRIVE), linear
+    interpolation/extrapolation otherwise, flagged."""
+    if (rig_name, spm) in CALIBRATED_T_DRIVE:
+        return CALIBRATED_T_DRIVE[(rig_name, spm)], "calibrated"
     pts = sorted((SPM[rn][vkt], td) for (rn, vkt), td in T_DRIVE.items()
                  if rn == rig_name)
     for r, td in pts:
@@ -58,10 +68,12 @@ def drag_force(V: float, hull: float = 1.0) -> float:
 
 
 def equilibrium_speed(rig_name: str, spm: float, n_oars: int = N_OARS,
-                      hull: float = 1.0) -> dict:
+                      hull: float = 1.0, t_drive: float | None = None) -> dict:
     """Mean-force equilibrium: solve n_oars·T̄(V) = D(V) by bisection.
-    T̄(V) is the time-stepped oar's cycle-mean thrust at fixed V (Gate-1 oar)."""
-    td, _ = t_drive_for(rig_name, spm)
+    T̄(V) is the time-stepped oar's cycle-mean thrust at fixed V (Gate-1 oar).
+    t_drive: override the Table 9.6 schedule (calibration use — A8)."""
+    td, _ = (t_drive_for(rig_name, spm) if t_drive is None
+             else (t_drive, "override"))
 
     def g(V: float) -> float:
         res = simulate(Oar(RIGS[rig_name], spm, td), V, td / 600, n_cycles=4)

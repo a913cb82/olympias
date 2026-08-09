@@ -133,7 +133,7 @@ def test_ceiling():
         for _ in range(3000):                     # 30 s burst
             fx = {}
             for side, crew in ship.crew.items():
-                fx[side], fh = crew.step(0.01, ship.V)
+                fx[side], fh, _ = crew.step(0.01, ship.V)
                 pk = max(pk, fh)
             for crew in ship.crew.values():
                 crew.end_of_step(0.01)

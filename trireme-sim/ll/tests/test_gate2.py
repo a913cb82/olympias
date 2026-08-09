@@ -69,17 +69,18 @@ def test_sprint_brackets_trial():
     hi = _v_star(44.5, 130, 0.347) / KT
     assert hi > 8.4 and lo < 8.2, f"bracket [{lo:.2f}, {hi:.2f}] kt must span 8.2-8.4"
 def test_sprint_default_locked():
-    """Lock the default (extrapolated t_drive) result so a silent change to
-    the t_drive policy fails here until the docs change."""
+    """The calibrated t_drive(44.5) = 0.371 s (register A8, mismatch #2)
+    reproduces the trial: the default sprint equilibrium sits IN the
+    8.2-8.4 kt band (the extrapolated 0.347 s gave 8.76 kt)."""
     eq = equilibrium_speed("Olympias", 44.5, n_oars=130)
-    assert 8.5 <= eq["V"] / KT <= 9.0, f"sprint V* = {eq['V']/KT:.2f} kt"
+    assert 8.2 <= eq["V"] / KT <= 8.4, f"sprint V* = {eq['V']/KT:.2f} kt"
 
 
 def test_sprint_170_overshoot():
     """The full 170-oar crew exceeds the trial band — the ch.9 trial was
     rowed by ~130; the difference is crew count, not physics."""
     eq = equilibrium_speed("Olympias", 44.5, n_oars=170)
-    assert eq["V"] / KT > 8.6
+    assert eq["V"] / KT > 8.4, f"170-oar sprint {eq['V']/KT:.2f} kt"
 
 
 def test_cruise_monotonic():

@@ -647,6 +647,17 @@ the drive and its means are untouched by construction.
   energy, notes the eccentric part.
 - The A/B anomaly stays recorded-as-printed (the zygian family inherits it).
 
+## 14. Mismatch-closure roadmap (VALIDATION.md §7) — status
+
+| # | Mismatch | Path | Status |
+| --- | --- | --- | --- |
+| 1 | Tightest-turn 360°-time (73 vs 128 s) | **done**: two-lever decomposition (brake yaw arm 1.5 m ≠ fitted 4.8 m thrust lever — register C3) + two-anchor hold fraction f = 0.05 → sprint-protocol turn: D = 61.3 m ✓ and the speed halves (V_360 = 3.7 kt, trial mean 2.9) ✓; t_360 = 85 s vs 128 — residual now diagnosed as the fitted-Ω yaw-resistance question (register C1), not the hold physics | [x] mostly — residual documented |
+| 2 | Sprint t_drive data gap (A8) | **done**: t_drive(44.5) = 0.371 s calibrated to the trial speed (8.30 kt at 130 oars — IN the 8.2–8.4 band); wired into t_drive_for as a tagged entry; matches the bracket analysis's 0.375 estimate | [x] |
+| 3 | 2-parameter CP tension (D7) | **done (no model change)**: the ¾-NM's 4–5-kt tailwind gives ~0.5–1.5 kW assistance (the ch.4 1.3–4.4 kW band is for a 10–15-kt wind) → true crew power 91–100 W/man → W′ = 5 kJ predicts 4–7.5 min; the observed 6.5 min sits inside the band. The 2-min rule and the 45-s sprint also check out | [x] |
+| 4 | Mark IIb shortfall (oQ-18) | **diagnosed**: ch.9 §3 gives the exact blade-force structure k·(q/p)²·V²·sin²C — the turning-point ratio enters the force, and 1/E = 1 + q/p with q/p ∝ 1/√n (E(170) = 0.756 → E(116) = 0.719 reproduced, locked as a research-chain test). The Mark IIb's different geometry changes q/p — the flat-plate law is an Olympias-calibrated equivalent. Implementation = the ch.9 turning-point blade law as a flagged variant (next physics layer) | [x] diagnosis / implementation open |
+| 5 | Per-tier factors (v2) | pending — next session | [ ] |
+| 6 | Archival (F/G raw data, Plan 8 stations, trials video) | Wolfson archive / Oxbow / Actium team; t_rise from film | background |
+
 ## Next actions
 
 - [x] Freeze the **verb set** (§3.2: 4 crew verbs). oQ-1, 2, 5, 6, 7 resolved; only

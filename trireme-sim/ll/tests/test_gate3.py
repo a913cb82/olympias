@@ -62,6 +62,24 @@ def test_tightest():
     assert r["V_end"] < 6.5, "tightest turn must decelerate (hold brake)"
 
 
+def test_tightest_sprint_protocol():
+    """The trial's tightest turn was a max-effort sprint (Morrison 1988:
+    D = 62 m AND 360 deg in 128 s — mean speed 2.9 kt, the speed halves).
+    The sprint protocol + W' fade + the two-anchor hold fraction reproduce
+    the diameter and the halving; the t_360 residual (85 vs 128 s) is the
+    fitted-Omega yaw-resistance question (register C1), documented, not
+    retuned."""
+    ship = Ship(rate=44.5, oar_state=("row", "hold"), helm=("starboard", 1.0))
+    ship.V = 6.5 * KT
+    ymax = 0.0
+    while abs(ship.psi) < 2 * math.pi:
+        ship.step(0.02)
+        ymax = max(ymax, abs(ship.y))
+    assert 62.0 * 0.90 <= ymax <= 62.0 * 1.10, f"D = {ymax:.1f} m"
+    assert ship.V / KT < 4.0, f"speed must halve: V_360 = {ship.V/KT:.2f} kt"
+    assert 70 <= ship.t <= 110, f"t_360 = {ship.t:.0f} s (residual band)"
+
+
 # --- 2. oar-only turns (no anchors — physical consistency, oQ-3) ---
 
 def test_oar_hold():

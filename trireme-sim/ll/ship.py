@@ -27,10 +27,15 @@ from ll.hull import t_drive_for
 from ll.oar import simulate
 from common.chain import OAR_TIER_MIT
 from ll.rig import LEVER_OAR
-from ll.rower import PRESSURE, SideCrew
+from ll.rower import HOLD_FRAC as HOLD_FRAC_DEFAULT, PRESSURE, SideCrew
 
 FULL_RUDDER_DEG = 67.5     # "full rudder" in the trials
 RUDDER_FAC = 1.4           # Olympias applied-rudder drag factor (W5 set)
+LEVER_HOLD = 1.5           # m — yaw arm of the held blades' keel-aligned drag
+                           # (mean athwartships oar-station arm; the fitted
+                           # 4.8 m thrust lever folds in drift/lateral
+                           # dynamics and must NOT apply to the brake —
+                           # register C3 refinement)
 TEMPO_CALLDOWN_SPM = 2.0   # sustained per-side rate gap that triggers a call-down
 
 
@@ -38,7 +43,8 @@ class Ship:
     def __init__(self, rig_name: str = "Olympias", n_oars: int = 170,
                  rate: float = 28.8, pressure: tuple = ("spoude", "spoude"),
                  oar_state: tuple = ("row", "row"), helm: tuple = ("midship", 0.0),
-                 fleet: str = "spruce"):
+                 fleet: str = "spruce", hold_frac: float | None = None):
+        # hold_frac default: the calibrated value (ll/rower.HOLD_FRAC)
         """fleet: 'spruce' (all tiers, MIT 9.7 — the 1994 setup) or
         'old-fir' (thranites 13.1, zygians 18.0, thalmians 13.1 approx —
         Table 3.1 tier labels). None: massless oars (pre-Gate-5)."""
@@ -65,9 +71,11 @@ class Ship:
         self.mit = mit
         self.crew = {
             "port": SideCrew(rig_name, self.n_side, rate, td,
-                             pressure=pressure[0], state=oar_state[0], mit=mit),
+                             pressure=pressure[0], state=oar_state[0], mit=mit,
+                             hold_frac=hold_frac if hold_frac is not None else HOLD_FRAC_DEFAULT),
             "star": SideCrew(rig_name, self.n_side, rate, td,
-                             pressure=pressure[1], state=oar_state[1], mit=mit),
+                             pressure=pressure[1], state=oar_state[1], mit=mit,
+                             hold_frac=hold_frac if hold_frac is not None else HOLD_FRAC_DEFAULT),
         }
         self.helm_dir, self.helm_frac = helm
         self.V = 0.0
@@ -80,12 +88,15 @@ class Ship:
 
     # ------------------------------------------------------------------
     def step(self, dt: float) -> None:
-        fx_p, peak_p = self.crew["port"].step(dt, self.V)
-        fx_s, peak_s = self.crew["star"].step(dt, self.V)
+        fx_p, peak_p, br_p = self.crew["port"].step(dt, self.V)
+        fx_s, peak_s, br_s = self.crew["star"].step(dt, self.V)
         for crew in self.crew.values():
             crew.end_of_step(dt)
-        Fx = self.n_side * (fx_p + fx_s)
-        Q_oar = self.n_side * self.lever * (fx_p - fx_s)      # + = starboard
+        Fx = self.n_side * (fx_p + fx_s + br_p + br_s)
+        # rowing asymmetry: the fitted thrust lever (4.8 m, C3);
+        # held-blade brake: the athwartships station arm (LEVER_HOLD)
+        Q_oar = self.n_side * (self.lever * (fx_p - fx_s)
+                               + LEVER_HOLD * (br_p - br_s))  # + = starboard
         # rudder (Taylor ch.31 model; straight-rudder drag at midship)
         vkt = abs(self.V) / KT
         if self.helm_dir == "midship":

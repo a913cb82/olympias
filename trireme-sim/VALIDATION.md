@@ -111,19 +111,27 @@ caveat mechanism, now integrated).
 
 1. **Mark IIb under-predicts** (~30 % of hull need — oQ-18; ch.9 notes Mark II
    needs ~×3.3 blade area). Locked by test: no silent tuning.
-2. **Tightest-turn 360° time** ~73 s vs Morrison's 128 s — the real turn
-   halved speed harder; needs the hold-water spectrum (oQ-4) + the trial's
-   unknown rate.
-3. **Sprint default 8.76 kt** vs 8.2–8.4 — a data gap: Table 9.6 has no
-   44.5-spm effective-pull entry (register A8); the trial lies inside the
-   model's t_drive bracket.
-4. **2-parameter CP tension**: W′ = 5 kJ fits the 45-s sprint; the ¾-NM
-   6.5-min run implies ~9.5 kJ (register D7) — a 3-parameter model would fit
-   both.
+2. **Tightest-turn 360° time** — **mostly closed**: two-lever decomposition
+   (the held blades' drag uses the athwartships arm ~1.5 m, not the fitted
+   4.8 m thrust lever — register C3) + the two-anchor hold fraction 0.05 +
+   the sprint protocol (W' fade): D = 61.3 m ✓ and the speed halves
+   (V_360 = 3.7 kt vs the trial mean 2.9) ✓. Residual: t_360 = 85 vs 128 s —
+   now diagnosed as the fitted Ω yaw-resistance question (register C1), not
+   the hold physics.
+3. **Sprint t_drive gap** — **closed**: t_drive(44.5) = 0.371 s calibrated
+   to the trial (8.30 kt at 130 oars, in the 8.2–8.4 band); the assumption
+   is now a pinned, tagged schedule entry (register A8).
+4. **2-parameter CP tension** — **resolved without a model change**: the
+   ¾-NM's 4–5-kt tailwind (≈0.5–1.5 kW) puts the crew's true power at
+   91–100 W/man, and W′ = 5 kJ predicts 4–7.5 min at that level — the
+   observed 6.5 min sits inside the wind-uncertainty band (register D7).
 5. **F/G per-turn raw data** unavailable (1990 report is print-only) —
    diameters validated, not cell-by-cell.
-6. **t_rise = 0.15 s** provisional (register D10); **lever 4.8 m**
-   decomposition open (register C3); **per-tier factors** v2 (plan §12.6).
+6. **t_rise = 0.15 s** provisional (register D10); **lever 4.8 m** partially
+   decomposed (the brake arm is now physical — register C3; the thrust
+   lever's drift component still open); **per-tier factors** v2 (plan §12.6);
+   **Mark IIb** diagnosed as the ch.9 turning-point (q/p)² blade law —
+   implementation is the next blade-physics layer.
 
 ## 8. Status
 

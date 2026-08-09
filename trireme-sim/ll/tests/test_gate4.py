@@ -36,7 +36,7 @@ def loop(ship, t_end, dt=0.01, v0_kt=0.0, on_step=None):
     while ship.t < t_end:
         fx = {}
         for side, crew in ship.crew.items():
-            fx[side], _ = crew.step(dt, ship.V)
+            fx[side], _, _ = crew.step(dt, ship.V)
         for crew in ship.crew.values():
             crew.end_of_step(dt)
         q, drag = rudder_q(ship)

@@ -40,7 +40,12 @@ W_MAX = 5_000.0         # J/man anaerobic capacity — anchored to the ch.9 four
 TAU = 120.0             # s W' refill time constant
 T_REC_MIN = 0.5         # s recovery floor (body mechanics)
 B_FLOOR_FRAC = 0.4      # usable-stroke floor as a fraction of the sweep
-HOLD_FRAC = 0.02        # hold-water brake fraction (oQ-4, Gate-3 calibration)
+HOLD_FRAC = 0.05        # hold-water brake fraction — two-anchor calibration
+                        # (tightest turn: D = 61.3 m vs 62 anchor AND the speed
+                        # halves to ~3.7 kt, matching the trial's mean 2.9 kt;
+                        # t_360 residual 85 vs 128 s -> the fitted Omega yaw
+                        # resistance question, register C1). f = 0.05 ~= held
+                        # blades at ~12-13 deg to the flow.
 
 # pressure levels: anchors relative to the validated chain (spoude = 1.0);
 # steady = sustainable envelope (<= P_crit), spoude = W'-limited burst
@@ -71,7 +76,8 @@ class SideCrew:
 
     def __init__(self, rig_name: str, n_side: int, rate: float, t_drive: float,
                  pressure: str = "spoude", state: str = "row",
-                 direction: int = 1, mit: float = 0.0, t_rise: float = 0.15):
+                 direction: int = 1, mit: float = 0.0, t_rise: float = 0.15,
+                 hold_frac: float = HOLD_FRAC):
         rig = RIGS[rig_name]
         self.rig_name = rig_name
         self.rig = rig
@@ -88,11 +94,14 @@ class SideCrew:
         self.W_max = W_MAX
         self.tau = TAU
         self.hold_k = HOLD_FRAC * self.k                 # brake N/(m/s)^2 per oar
+        self.hold_frac = HOLD_FRAC
         self.rate_cmd = rate
         self.pressure = pressure
         self.state = state
         self.mit = mit
         self.t_rise = t_rise
+        self.hold_frac = hold_frac
+        self.hold_k = hold_frac * self.k
         self.oar = Oar(rig, rate, t_drive, direction=direction, mit=mit,
                        t_rise=t_rise)
         self.omega_cmd = self.oar.omega_cmd
@@ -218,17 +227,21 @@ class SideCrew:
                           limited_by=limited)
 
     # ------------------------------------------------------------------
-    def step(self, dt: float, V: float) -> tuple[float, float]:
-        """Advance one step; returns (force on hull N/oar, fh_peak N)."""
+    def step(self, dt: float, V: float) -> tuple[float, float, float]:
+        """Advance one step; returns (rowing force N/oar, fh_peak N,
+        hold-brake force N/oar — split so the ship can use different yaw
+        levers for the two: the brake is a keel-aligned drag at the oar
+        stations (athwartships arm), not the fitted thrust lever."""
         if self.pressure == "rest":
             self.p_gross_current = 0.0
             self.plan = None
-            return 0.0, 0.0
+            return 0.0, 0.0, 0.0
         if self.state in ("bank", "hold"):
             self.p_gross_current = 0.0
             if self.state == "hold":
-                return -self.hold_k * V * abs(V), 0.0
-            return 0.0, 0.0
+                brake = -self.hold_k * V * abs(V)
+                return 0.0, 0.0, brake
+            return 0.0, 0.0, 0.0
         # plan at the catch (first stroke, or the step after a catch crossing)
         if self.plan is None or (self.oar.in_drive
                                  and self.oar.t_since_catch <= dt + 1e-12):
@@ -241,13 +254,14 @@ class SideCrew:
             # blade (the brake); the oar must not be stepped (a parked blade
             # would compute the full flow drag, not the held brake)
             self.p_gross_current = 0.0
-            return -self.hold_k * V * abs(V), 0.0
+            brake = -self.hold_k * V * abs(V)
+            return 0.0, 0.0, brake
         s = self.oar.step(dt, V)
         self.p_gross_current = (self.plan.p_ext
                                + self.oar.flip_power(self.plan.rate_eff)
                                + oar_absorbed(self.plan.rate_eff))
         self.last_fh = s.Fh
-        return s.Fx, s.Fh
+        return s.Fx, s.Fh, 0.0
 
     def end_of_step(self, dt: float) -> None:
         """W' tank update (drain on gross excess, refill at rest)."""

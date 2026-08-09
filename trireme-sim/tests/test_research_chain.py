@@ -121,6 +121,15 @@ def test_manoeuvre_acceleration():
     assert abs(prof[-1][1] - 9.9) < 0.3
 
 
+def test_ch9_efficiency_consistency():
+    """ch.9 §3: 1/E = 1 + q/p with q/p proportional to 1/sqrt(n). The text
+    states E(170) = 0.756 and that reducing to 116 rowers raises q/p by
+    1.21 — giving E = 0.719, exactly the 3/4-NM calibration value."""
+    qp170 = 1.0 / 0.756 - 1.0
+    e116 = 1.0 / (1.0 + qp170 * 1.21)
+    assert abs(e116 - 0.719) < 0.001, f"E(116) = {e116:.3f}"
+
+
 def test_apparent_mass():
     for name in ("Olympias", "MarkIIb"):
         v = VESSELS[name]
