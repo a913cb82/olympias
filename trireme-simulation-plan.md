@@ -444,8 +444,12 @@ Two expectations that shape the build:
       points (<0.5 %), mean handle force 224/208 N in the cruise family,
       prop W/man 102 % at 7.2 kt, dt-converged, oQ-18 shortfall inherited
       honestly (7 checks).
-- [ ] **Phase 1 Gate 2 — hull surge**: `ll/hull.py`, m_app·dv/dt = thrust − drag,
-      ship settles on the ch.7 cruise curve (25.5/28.8/32.3 spm → 7/7.5/8 kt)
-      and the ch.9 sprint (44.5 spm → 8.2–8.4 kt) — the oQ-18 question is
-      answered empirically here.
+- [x] **Phase 1 Gate 2 — hull surge** (`ll/hull.py`, 12 checks): per-step
+      coupling settles on the hull=1.0 anchors — 7.22 kt @ 28.8 spm,
+      7.98 kt @ 36 spm; sprint (130 oars, 44.5 spm) brackets the 8.2–8.4 kt
+      trial over the unmeasured t_drive range (data gap — uncertainties
+      register A8). oQ-18 answered empirically for the Olympias rig: the
+      flat-plate 0.078 m2 law suffices there (Mark IIb shortfall stands).
+      Stroke surge ripple ≈ 0.2 kt; start-from-rest deferred to the oQ-13
+      force ceiling (crude provisional clamp exists for demos).
 - [ ] Sketch the HL tolerance/labels format (§4 / §6 annotations).

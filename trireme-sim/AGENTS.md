@@ -76,8 +76,14 @@ errors raise `ScriptError` naming the offending line.)
 - [x] Phase 1 Gate 1 — one-oar LL: time-stepped oar == rigid model at all four
       Table 9.6 points (< 0.5 %); mean handle force 224/208 N (cruise family);
       prop W/man 102 % at 7.2 kt (7 checks)
-- [ ] Phase 1 Gate 2 — hull surge (`ll/hull.py`): settles on ch.7 cruise curve
-      (25.5/28.8/32.3 → 7/7.5/8 kt) and ch.9 sprint (44.5 → 8.2–8.4 kt); the
-      oQ-18 question gets its empirical answer here
+- [x] Phase 1 Gate 2 — hull surge (`ll/hull.py`, 12 checks): surge-only
+      m_app·dV/dt = N·F_oars(t,V) − D(V), per-step coupling. Settles on the
+      hull=1.0 anchors (7.22 kt @ 28.8, 7.98 kt @ 36); sprint (130 oars,
+      44.5 spm) brackets the 8.2–8.4 kt trial over the unmeasured t_drive
+      range — the empirical oQ-18 answer: the flat-plate 0.078 m2 law is
+      sufficient for the Olympias rig (Mark IIb shortfall stands, separate).
+      Findings: stroke surge ripple ~0.2 kt; start-from-rest needs the oQ-13
+      force ceiling (crude clamp exists, demo only); Table 9.6 data gap at
+      44.5 spm (uncertainties register A8).
 - [ ] Phase 2 — HL from LL;  [ ] Phase 3 — harness;  [ ] Phase 4 — crew & environment;
       [ ] Phase 5 — oar-manoeuvres

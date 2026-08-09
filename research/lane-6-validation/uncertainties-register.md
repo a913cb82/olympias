@@ -19,6 +19,7 @@ Compiled 2026-08-09 (S13) from lane notes; keep this in sync whenever a `[?]` is
 | A5 | Blade areas (spade vs teardrop) + exact taper | (missing) | `[?]` | only Coates Plans 15/15d/15e/15g (Wolfson archive) | Not recovered as text; needed if blade-force/angle refinement is built. | [M] per-stroke rigid-oar refinement only |
 | A6 | Roman-wreck interscalmia (parallels) | Mainz 0.84–0.96, Oberstimm 0.94–0.99, Vechten/Yverdon/Herculaneum 0.92–1.125 m | `[?]` | secondary summary (Bockius via build log) | For calibration only; get primary wreck reports if they enter the model. | [L] |
 | A7 | Ch.9 Table 9.6/9.7 decoded rates (30.7/49.4, 28.8/46.3 spm; P 228/367, 214/344 N) | verified to OCR precision | `[?]` (minor) | OCR of corrupted table body | Agreement to ~0.1 spm / 1–2 N; digit-level OCR uncertainty on `5/6`, `0/9`. | [L] |
+| A8 | Table 9.6 effective-pull time at 44.5 spm | **missing — no entry** | `[?]` (data gap) | Shaw ch.9 Table 9.6 (Olympias entries: 0.430 s @ 28.8 spm, 0.392 s @ 36 spm) | Surfaced by Gate 2: the LL sprint prediction (130 oars) spans 7.9–8.8 kt over the plausible t_drive range (0.347 s extrapolated … 0.392 s); the ch.9 trial band 8.2–8.4 kt lies inside (t_drive ≈ 0.375 s reproduces it exactly). Default (extrapolated) gives 8.76 kt — locked by test. | [M] sprint-regime predictions |
 
 ## B. Hull & hydrostatics (Lane 3)
 
