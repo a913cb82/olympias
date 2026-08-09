@@ -550,6 +550,94 @@ per-side stroke adaptation + weakest-governs + telemetry, physiological
 pressure anchors in `schema.json`, `ll/tests/test_gate4.py`, register rows
 (W′, τ, Fh_max status), oQ-13/14 resolution notes.
 
+## 13. Phase 1 Gate 5 — the oar inertia layer: plan
+
+The massless lever becomes a rigid body about the thole:
+
+    Fh = (Fn·l_cp + I_thole·θ-ddot) / lin
+
+which adds the catch-phase inertia spike (spinning the oar from rest to the
+drive speed over the water-entry time t_rise), the finish-phase release (the
+oar's momentum assists), and the handiness differences between the Table 3.1
+oar families. The research is done — this gate wires it into the LL.
+
+### 13.1 The research (done, decoded & verified)
+
+- Table 3.1 (ten oars, MIT about the thole): family means — **spruce 9.7,
+  old-zygian 18.0, old-thranite 13.1 kg·m²** (m_hand 8.2 / 15.1 / 11.0 kg at
+  1.092 m). A/B MIT anomaly recorded as printed (register; zygian mean uses
+  the printed values).
+- `oar_inertia.py` spike formula: F_spike = I·ω/(t_rise·lin). At the 28.8-spm
+  drive (ω = 1.95 rad/s), t_rise 0.15 s: **spruce ≈ 116 N, old-zygian ≈ 215 N,
+  old-thranite ≈ 156 N** — 52–96 % of the 224 N mean handle force; the
+  zygian/spruce ratio 1.85× is the "old fir ≈ 2× spruce handiness" (plan §6
+  Level-1 acceptance).
+- Flip energy per stroke ½·I·ω² → the extra metabolic cost of flipping the
+  heavy oars: spruce ≈ 9 W/man, old-zygian ≈ 16 W/man at 28.8 spm (≈ 7 W/man
+  handiness penalty) — the W′ tank must pay it.
+- Couple cross-check (Table 3.2) stands at 0.6 % — the mean handle force must
+  survive the layer.
+
+### 13.2 Implementation design — two options
+
+**Option B — hybrid (recommended for the LL):** keep the validated prescribed
+kinematics, add smooth catch/finish transitions (finite t_rise) and the
+inertia torque term in Fh. The spike emerges from θ-ddot at the catch; the net
+inertia work over a cycle ≈ 0 (energy-conserving). The means stay within the
+Gate-1 tolerance of the rigid model — the layer is a labelled refinement, not
+a re-anchoring. The rise transitions must preserve the swept angle (the
+constant-ω mid-drive shortens by the rise times).
+
+**Option A — force-driven (companion validation):** solve the torque-balance
+ODE I·θ-ddot = τ_rower(t) − τ_blade(θ, ω) with the physiology's demand force
+profile; the emerging drive time must land near Table 9.6 — validating that
+the measured kinematics are consistent with the rower forces + inertia. A
+companion script, not the LL's production path.
+
+### 13.3 The layer in the LL
+
+- `ll/oar.py`: `mit` parameter; rise-time transitions (t_rise 0.10–0.20 s
+  band, 0.15 s nominal — source flag, §13.5); Fh = (Fn·l_cp + I·θ-ddot)/lin;
+  `simulate()` gains an inertial variant.
+- `common/chain.py`: load the Table 3.1 CSV (shared asset — the oar families
+  and their tier labels: old-zygian → zygian tier, old-thranite → thranite).
+- `ll/ship.py` / `rower.py`: the fleet = per-family assignment (v1 scenarios:
+  all-spruce = the 1994 setup; old-fir mixed = the 1990 setup); the force
+  ceiling applies to the **total** instantaneous Fh (blade + spike — separate
+  instants: catch spike vs mid-drive blade peak); the W′ drain includes the
+  flip energy ½·I·ω²·r/60 per man.
+
+### 13.4 Validation gates (Gate 5 tests)
+
+- G5-1 spike magnitudes: reproduce `oar_inertia.py` (116 / 215 / 156 N at
+  t_rise 0.15 s, 28.8 spm) within 2 %.
+- G5-2 handiness ratio: zygian/spruce spike ≈ 1.85× within 3 % (the §6
+  Level-1 "old-fir ≈ 2× spruce handiness" acceptance).
+- G5-3 means preserved: mean thrust / Fh / eff at the four Table 9.6 points
+  within 1 % of the rigid model with the inertia layer ON.
+- G5-4 energy closure: net inertia work over a full cycle < 0.5 % of the
+  cycle blade work (the oar returns to rest; conservation).
+- G5-5 couple anchor: mean Fh at 30 spm ≈ 225 N (Table 3.2) within 3 %.
+- G5-6 ceiling interplay: total peak Fh (blade + spike) ≤ Fh_max through a
+  spoude burst for both fleets; the spike-aware ω_p documented (the catch
+  spike consumes part of the ceiling at the catch instant).
+- G5-7 companion (Option A): with the demand force profile, the torque-balance
+  drive time within ±15 % of Table 9.6.
+- G5-8 regression: all 55 checks stay green; inertia OFF = exact current
+  behaviour (a config flag, not a fork).
+
+### 13.5 Open items
+
+- t_rise source: 0.10–0.20 s band is the plausible water-entry / flip time
+  (the 1994 trials describe the hands "coming up hard at the end of the
+  recovery" — line 3262 of the txt dump); no measured value — flag `[?]`.
+- Fleet assignment: the 1994 trials' tier→oar mapping (spruce new-builds vs
+  the old-fir oars' tier labels in Table 3.1) — check the ch.4/ch.3 text.
+- Recovery-phase inertia (the swing reversal costs the rower work both ways;
+  the finish braking is eccentric — cheaper): v1 counts the concentric flip
+  energy, notes the eccentric part.
+- The A/B anomaly stays recorded-as-printed (the zygian family inherits it).
+
 ## Next actions
 
 - [x] Freeze the **verb set** (§3.2: 4 crew verbs). oQ-1, 2, 5, 6, 7 resolved; only
