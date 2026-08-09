@@ -16,9 +16,10 @@ intent: whatever a trireme commander can order (stroke rhythm, oar state, helm, 
 rest, hold or back water), either simulator must execute faithfully — one at ship level,
 the other at the level of every oar.
 
-Status: **first draft.** Every section is a proposal for the next discussion round; open
-questions are numbered oQ-1…oQ-21 in §10 and flagged inline. Nothing here is accepted
-research until it has a source citation or a validated run.
+Status: **draft v0.4.** Step 0 (command language scaffold, `trireme-sim/`) is
+implemented and tested; open questions are numbered oQ-1…oQ-21 in §10 and flagged
+inline; research gaps are tracked in §9. Nothing here is accepted research until it
+has a source citation or a validated run.
 
 ---
 
@@ -327,8 +328,33 @@ trireme-sim/
   document (part of oQ-15).
 - **Turn data** — F/G sets are 6–6.5 kt and specific water; turn-by-oars data are
   thinner (oQ-3).
-- **HL "good-enough" set**: the HL e-approx must not drift silently over long scripts;
-  the equivalence table is checked on every calibration.
+- **HL "good-enough" set**: the HL approximation must not drift silently over long
+  scripts; the equivalence table is checked on every calibration.
+
+### 9.1 Research gaps vs implementation readiness
+
+**Verdict: nothing here blocks Phases 1–3.** The LL skeleton, the HL-from-LL build and
+the pair harness consume only the validated chain (§2.3); the acceptance floor becomes
+executable fixtures in `ll/tests/`. The gaps below all bite in Phase 4 or later, or are
+parked items that do not affect the build.
+
+| gap | needed by | status | what would close it |
+| --- | --- | --- | --- |
+| **Crew endurance/duration model** — how long a given `rate`+`pressure` is sustainable before output drops | Phase 4 crew model; HL long-run scenarios | open — power-at-rate (115/145/180 W/man) and VO2 ceiling exist, but no validated duration curve | primary-source work: ch.7/9 Olympias sustained-run records; S6 fixed-seat ergometer studies |
+| **Wave-induced added resistance** — drag penalty of a sea state at a heading | Phase 4 environment | open — Shaw tables give sea *states*, not resistance penalties | standard naval-architecture added-resistance estimate as labelled tuning (layered fidelity), or dedicated research if fidelity demands |
+| **Ergonomics digits** — ANSUR 1988 50th-percentile values; Greek mean height ≈ 1.70 m | Phase 4 / oQ-13 (reach, stroke length) | flagged [?] in `trireme-rowing-simulation-research.md` | focused primary-table read (DTIC ADA225094) |
+| **Turn-by-oars (anastrophe) quantitative data** | Phase 5 oar-manoeuvres | thin — F/G sets are rudder turns at 6–6.5 kt | qualitative validation vs ancient descriptions + physics consistency; F/G sets remain the quantitative floor |
+| **A/B MIT anomaly** (Table 3.1, confined to the MIT cell, ≈ −9.7 % deviation) | none | resolved as recorded-as-printed, flagged in `oar-data.md` | only the physical 1994/1996 report raw appendix could settle it; parked |
+| **Taylor Excel workbook** (yaw-resistance coefficient 5×10⁶–6×10⁶ kg·m² [?]) | Phase 5 yaw fidelity (nice-to-have) | leads exist (Wolfson archive) | contact archivist@wolfson.cam.ac.uk; not required — F/G turns validated ≤ 7 % cover the turn model |
+
+Two expectations that shape the build:
+
+- **Phases 1–3 need no new research by design** — the HL's response curves come from LL
+  runs, and the LL reproduces numbers we already hold.
+- **The LL generates the next research questions.** oQ-18 is the first example: whether
+  the flat-plate law + deadspot reproduces 8.2–8.4 kt at 44.5 spm *without* the ×3.3
+  Mark IIb tuning is answered by running Gate 2, not by reading. New gaps discovered in
+  runs go into this table with their closing evidence.
 
 ## 10. Open questions (first pass, oQ-1…oQ-21)
 
