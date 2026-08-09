@@ -82,13 +82,15 @@ check("G4-1: steady pressure = sustainable envelope (W' full, speed stable)", t_
 # --- G4-2 sprint burst + fade ---
 
 def t_sprint():
-    s60 = loop(Ship(rate=44.5), 60, v0_kt=8.5)
+    s30 = loop(Ship(rate=44.5), 30, v0_kt=8.5)
     s = loop(Ship(rate=44.5), 900, v0_kt=8.5)
     assert s.crew["port"].W_frac < 0.1, f"W_frac {s.crew['port'].W_frac:.3f}"
-    assert s.V / KT < 0.9 * (s60.V / KT), \
-        f"V(900) {s.V/KT:.2f} vs V(60) {s60.V/KT:.2f} kt"
-    assert s60.V / KT > 8.0, f"burst speed {s60.V/KT:.2f} kt"
-check("G4-2: spoude bursts (W' drains ~90 s), speed fades toward sustainable", t_sprint)
+    # the trials sustained 8.2-8.3 kt for ~45 s before fading; with
+    # W' = 5 kJ the sim's burst window is ~43 s, then the speed decays
+    assert s.V / KT < 0.9 * (s30.V / KT), \
+        f"V(900) {s.V/KT:.2f} vs V(30) {s30.V/KT:.2f} kt"
+    assert s30.V / KT > 8.0, f"burst speed {s30.V/KT:.2f} kt"
+check("G4-2: spoude bursts (~45 s, matching the trials), then fades", t_sprint)
 
 
 def t_sprint_peak():

@@ -32,7 +32,11 @@ Fh_MAX = 700.0          # N peak handle force per rower
 Fh_BURST = 330.0        # N max mean handle force (chain sprint pull at 44.5 spm;
                         # the W'-limited burst level, any rate)
 P_CRIT = 80.0           # W/man external sustainable power (R&W ch.23, primary)
-W_MAX = 10_000.0        # J/man anaerobic capacity
+W_MAX = 5_000.0         # J/man anaerobic capacity — anchored to the ch.9 four-run
+                        # sprint (8.2-8.3 kt sustained ~45 s at 44.5 spm:
+                        # excess 116.6 W/man x 45 s ~= 5.2 kJ); the 3/4-NM 6.5-min
+                        # run implies up to ~9.5 kJ — 2-parameter CP tension,
+                        # uncertainties register D6
 TAU = 120.0             # s W' refill time constant
 T_REC_MIN = 0.5         # s recovery floor (body mechanics)
 B_FLOOR_FRAC = 0.4      # usable-stroke floor as a fraction of the sweep

@@ -434,13 +434,14 @@ Two expectations that shape the build:
   verb set.
 
 
-## 12. Phase 1 Gate 4 — the rower physiology layer (oQ-13): plan
+## 12. Phase 1 Gate 4 — the rower physiology layer (oQ-13): **implemented**
 
-Replace the crude demo clamp with a physiological rower: peak force ceiling,
-endurance/fatigue, and their effect on stroke length and rate. Resolves oQ-13,
-answers oQ-14 (impossible commands → physical consequence + telemetry), and
-unlocks rest-starts, honest backing, sprint time-history, and asymmetric-side
-behaviour.
+`ll/rower.py` (SideCrew) + `ll/ship.py` integration, 8 Gate-4 checks, all 55
+checks green (commit 438585a). Replaced the crude demo clamp with a
+physiological rower: peak force ceiling, endurance/fatigue, and their effect
+on stroke length and rate. Resolves oQ-13, answers oQ-14 (impossible commands
+→ physical consequence + telemetry), and unlocks rest-starts, honest backing,
+sprint time-history, and asymmetric-side behaviour.
 
 ### 12.1 The anchors (all from our own chain, all consistent)
 
@@ -451,15 +452,18 @@ behaviour.
 | Gross at 7 kt | 115 W/man (80 external + 34.8 oar-absorbed) | ch.7 | `[x]` |
 | Sprint external power | ~190 W/man @ 44.5 spm (L = 0.78 Olympias); ~240 W (L = 0.99 Mark IIb) | ch.9 | `[x]` |
 | Sprint gross | ~265–320 W/man (D4 "300 W/rower Mark IIb short sprint") | register D4 | `[x]`/`[?]` |
-| Anaerobic capacity W′ | ≈ 7–14 kJ/man | implied by sprint excess × duration; **needs the ch.9 four-run sprint durations** | `[?]` research |
-| Peak handle force Fh_max | ≈ 600–700 N | model-implied: cruise mean 224 N (peak ≈ 2×), tightest-turn protocol 640 N; S6 force curves to pin | `[?]` research |
-| Recovery floor | ~0.5 s | body mechanics | `[?]` |
-| W′ refill time constant | ~1–3 min | literature (Monod/MacFarlane/Nadel family, via Coates ch.22) | `[?]` |
+| Anaerobic capacity W′ | **5 kJ/man in use** — anchored | ch.9 four-run sprint: 8.2–8.3 kt sustained ~45 s at 44.5 spm → excess 116.6 W/man × 45 s ≈ 5.2 kJ; ¾-NM 6.5-min run implies ~9.5 kJ (2-parameter CP tension — register D7) | `[x]` anchor / tension noted |
+| Peak handle force Fh_max | **700 N in use** (model-implied) | chain max mean pull 330 N × peak ≈ 2×; no force traces in our sources (ch.4 ergometer = 6-min power tests only; S6 = session marker, not a source) — register D8 | `[?]` |
+| Recovery floor | ~0.5 s (in use) | body mechanics | `[?]` |
+| W′ refill time constant | **120 s in use** (provisional) | literature band ~1–3 min; ch.22 sources (Monod/MacFarlane/Nadel, Daedalus) constrain long-term endurance only — register D9 | `[?]` |
 
 ### 12.2 The model (per side in v1 — the Ship's existing structure)
 
-1. **Command → demanded mean handle force**: P = 7.43·r·pressure (unchanged
-   chain; the pressure anchors become physiological, §12.4).
+1. **Command → demanded mean handle force**: steady/fast = P = 7.43·r·pressure
+   (unchanged chain); **spoude = the burst level Fh_BURST = 330 N** (the chain's
+   sprint mean pull at 44.5 spm — the W′-limited maximum at any rate). The
+   demand sets the drive ω via the blade resistance (the stroke follows the
+   force), not the other way round.
 2. **Instantaneous ceiling**: Fh_max (per-rower equal in v1; per-tier factors
    as parameters — the thalmian head-room limit already lives in the rig data).
 3. **Endurance state**: a W′ tank per side — drains when gross power exceeds
@@ -494,32 +498,50 @@ behaviour.
 - `pressure spoude` = W′-limited burst (the ch.9 sprint is its anchor);
 - `fast` between; `rest` = minimal. Schema numeric anchors replaced.
 
-### 12.5 Validation gates (Gate 4 tests)
+### 12.5 Validation gates — **all passing (8 checks, `ll/tests/test_gate4.py`)**
 
-- G4-1 sustained: 25.5/28.8 spm steady — W′ stays full, speeds hold the
-  7.0/7.2 kt anchors over 30+ min.
-- G4-2 sprint: 44.5 spm spoude — 8.2–8.4 kt for the W′ window (~60–90 s),
-  then decay toward the sustainable cruise: the time-history the trials show.
-- G4-3 rest start: short choppy strokes (B_eff ≈ 40 % at rest) lengthening as
-  V builds; peak Fh ≤ Fh_max; no absurd acceleration.
-- G4-4 backing: force-limited weak backing (weaker than the ideal −0.8×).
-- G4-5 asymmetric: one side W′-depleted → shorter B_eff → a yaw moment;
-  if the rate is unattainable, achieved rate = the weaker side's.
-- G4-6 tightest-turn re-check: does W′ drain narrow the 360°-time gap to the
-  trial's "halves speed"?
-- G4-7 impossible command: `rate 50` + spoude → telemetry achieved < commanded.
-- G4-8 regression: all 47 existing checks stay green — the ceiling must not
-  bite at the validated cruise points.
+- G4-1 ✓ sustained: steady = the sustainable envelope — W′ full, speed stable
+  over 30 min at 25.5/28.8 spm.
+- G4-2 ✓ sprint: spoude bursts (W′ drains in ~90 s), speed fades toward the
+  sustainable cruise — the trials' time-history.
+- G4-3 ✓ rest start: short stretched strokes (sweep shrinks to ~57 %, drive
+  stretches to the tempo slot); peak Fh ≤ 700 N; launch **slower than Taylor's
+  bulk law** (7.2 kt @ 30 s vs 9 kt @ 24 s) — the physiology governs the start.
+- G4-4 ✓ backing: **degenerates to the hold-brake at speed** (the flow drag
+  exceeds the rower's grip); active + weak at low speed.
+- G4-5 ✓ asymmetric: exhausted side strokes slower (mean-limited) → differential
+  thrust → yaw (~215° in 3 min at 40 spm); tiny deadspot refills snap the W′
+  step-function back to full demand (classic critical-power behaviour).
+- G4-6 ✓ tightest-turn re-check: W′ drains at sprint effort → speed fades to
+  ~4.4 kt from 6.6 kt peak — the "halves speed" mechanism, now emergent.
+- G4-7 ✓ impossible command: `rate 50` + exhausted from rest → tempo lost
+  (achieved ~40 spm), telemetry shows commanded vs achieved — oQ-14's answer.
+- G4-8 ✓ regression: 19 + 7 + 12 + 9 checks green with the physiology on.
+
+Implementation notes: the Oar became angle-based (effective ω per catch);
+the keleustes call-down re-syncs both sides at the weaker side's rate; two
+real bugs fixed en route (stale t_drive in the sweep-shortening branch;
+pressure now scales force through the demand).
 
 ### 12.6 Research to run alongside (small, mostly in-house)
 
-1. Extract R&W ch.23 via the playbook decode and pin the 80 W context (VO2,
-   threshold numbers if present) — verify the [x].
-2. Ch.9 four-run sprint durations from the txt dump → W′ magnitude.
-3. Identify the "S6" force-curve source (lane-4 notes) → Fh_max anchor.
-4. W′ refill τ from the Monod/MacFarlane/Nadel literature (via Coates ch.22).
-5. Per-tier stroke factors: thalmian head-room already quantified (effective
-   L); per-tier Fh factor = open.
+1. [x] Extract R&W ch.23 and pin the 80 W context — done during planning
+   ("maximum estimate of ~80 W per oarsman … for external power production",
+   below lactate threshold, RER ≤ 0.74; self-consistent with ch.7 to 0.6 %).
+2. [x] **Ch.9 four-run sprint durations → W′**: each run sustained max speed
+   ~45 s (8.2/8.3 kt) → W′ = 5 kJ/man (sim burst window now ~43 s, matching);
+   the ¾-NM 6.5-min calibration run (104.3 W/man, P = 288 N = 7.43·38.75 ✓)
+   implies up to ~9.5 kJ — 2-parameter CP tension recorded (register D7).
+3. [x] **"S6" identified**: a session marker (paleo-bioenergetics session),
+   not a force-curve source. Ch.4 ergometer tests report 6-min POWER outputs
+   (16–29 % efficiency) but no force traces → Fh_max = 700 N stays
+   model-implied (chain max mean pull 330 N × peak ≈ 2×), register D8.
+4. [x] **W′ refill τ**: ch.22's Monod/MacFarlane/Nadel/Daedalus sources
+   constrain long-term endurance (4-h-on/2-h-off shifts) and the
+   "2-min ≈ 1.2× 6-min" power rule (ch.4), not W′-kinetics; τ = 120 s stays
+   literature-based (register D9).
+5. [ ] Per-tier stroke factors: thalmian head-room already quantified
+   (effective L); per-tier Fh factor = open (v2).
 
 ### 12.7 Deliverables
 
