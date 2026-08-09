@@ -88,11 +88,22 @@ class Ship:
         # the centre of lateral resistance, forward of the CG (m) — the
         # sway-calibrated value (plan 15.3); Coates plans would pin it [?]
         self.clr_offset = 0.8
+        # the differential-flow arm: the yaw-induced oar/water speed split
+        # (plan 18) uses the same mean athwartships arm as the brake;
+        # set 0 to disable the term (for its quantified contribution)
+        self.flow_arm = LEVER_HOLD
 
     # ------------------------------------------------------------------
     def step(self, dt: float) -> None:
-        fx_p, peak_p, br_p, fy_p = self.crew["port"].step(dt, self.V)
-        fx_s, peak_s, br_s, fy_s = self.crew["star"].step(dt, self.V)
+        # the yaw-induced differential flow: an oar station at athwartships
+        # offset y sees the ship's velocity u - omega·y — the outside oars
+        # travel faster through the water (more thrust), the inside slower
+        # (plan 18). The arm is the oar stations' mean athwartships offset
+        # (LEVER_HOLD — the same physical arm as the held-blade brake).
+        u_p = self.V + self.omega * self.flow_arm    # port: y < 0
+        u_s = self.V - self.omega * self.flow_arm    # starboard: y > 0
+        fx_p, peak_p, br_p, fy_p = self.crew["port"].step(dt, u_p)
+        fx_s, peak_s, br_s, fy_s = self.crew["star"].step(dt, u_s)
         for crew in self.crew.values():
             crew.end_of_step(dt)
         Fx = self.n_side * (fx_p + fx_s + br_p + br_s)
@@ -116,6 +127,7 @@ class Ship:
             Q_rud = f_rud * self.vessel.lever_rudder
         self.hull_advance(dt, Fx, Fy_oars, f_rud, Q_oar + Q_rud, rud_drag)
         self._keleustes(dt)
+        self.fx_side = {"port": fx_p, "star": fx_s}   # per-oar, telemetry
 
     def hull_advance(self, dt: float, Fx: float, Fy_oars: float, f_rud: float,
                      Q: float, rud_drag: float) -> None:
