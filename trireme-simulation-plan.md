@@ -83,8 +83,8 @@ research until it has a source citation or a validated run.
 
 - One vocabulary for both simulators; the LL adds detail, never verbs the commander
   cannot give.
-- Complete enough for real operational phases: cruise, sprint, turn, land, anchor, rest,
-  emergency.
+- Complete enough for the operational phases that matter: cruise, sprint, turn
+  (rudder and oar-assisted), come to a halt, emergency.
 - Composable: a rhythm (cadence) layer, an oar-state layer (global or per side), and a
   helm layer (rudder only, oars only, or both).
 - Typed arguments (number, enumeration, side, bearing) with sensible defaults: "just
@@ -94,28 +94,42 @@ research until it has a source citation or a validated run.
   command per line: time, verb, args); output is text. No GUI, no web console
   (see §3.5 for the file format).
 
-### 3.2 Proposed vocabulary (v1) — to be argued down or up
+### 3.2 Proposed vocabulary (v1) — the battle set
 
-Each command has: (a) the commander's intent; (b) a nominal expansion into physical
-directives; (c) the expected consequence both simulators must satisfy (equivalence
-contract §6).
+Filter: what can a trierarch **shout**, and what can 170 rowers **act on**, in the din
+of battle? The rhythm comes from the pipe (*auloi*), the keleustēs relays short shouts
+bank by bank, and the helmsman works the rudders. Anything that cannot be heard once
+and executed without a manual is out. Result: **6 crew verbs + 1 console verb**, down
+from 14.
 
-| verb | arguments | intent | physical expansion | flags |
+| verb | arguments | the shout | what the crew does | notes |
 | --- | --- | --- | --- | --- |
-| `rate` | spm (0–50) | set the stroke cadence | per rower: cadence, cycle = 60/spm, phase offsets | rhythm/pipe-drum analogue |
-| `pressure` | 0–1, or named (resting/steady/fast/sprint) | work per stroke | scale the mean handle-force profile, P = 7.43·r·pressure | vs `speed` autopilot: oQ-2 |
-| `speed` | knots target | captain's intent ("make good X kt") | guidance derives rate + pressure | oQ-2 decides if it exists |
-| `oars` | rowing / banked / holding / backing / trailing / feathered | blade-water state | per-oar blade pose & hydro regime | hold-water & back-water are the hard cases; LL behaviour is the validation target |
-| `oars` side/level | e.g. bank starboard; thranites rest | asymmetric or tier-specific states | per-bank oar state | feeds turn-by-oars |
-| `rudder` | left/right, angle 0–22° | helm order | rudder force (F/G validated) | also "no rudder — oars only" |
-| `oar-assist` | on/off, side | combine oars with rudder for steering | uneven port/starboard stroke shaping | how anastrophe is expressed (oQ-3) |
-| `course` | bearing or waypoint | navigation goal | same guidance loop in both | helmsman's layer? (oQ-6) |
-| `sea` | state (height, length) or look up Shaw tables | environment | wave drag; per-blade water speeds | shared environment entity (oQ-5) |
-| `crew` | effective fraction / watch plan | crew condition ceiling | HL: aggregate; LL: per-rower | semantics to freeze (oQ-15) |
-| `rest` | full or rest a half-bank | way off the oars | feathered blades up, no work | |
-| `anchor` | location | approach and stop | hold + back sequence | |
-| `go` / `stop` | — | master start / stop, sync | global phase reset; "ready … pull" | |
-| `report` | — | status: speed, rate, position, ETA, force envelope | both output a text summary | CLI output |
+| `rate` | spm (0–50); aliases slow/working/racing | "σπούδην!" (pipe speeds up) | every rower takes the cadence: cycle = 60/spm, drive/recovery split (Table 9.6 ≈ 33–45 %) | THE verb; sets the phase clock |
+| `oars` | state: row / hold / back / bank; optional side or tier | "καθίετε!" (oars down), "ἔχε!" (hold!), "πρύμναν ἀνακρούου!" (back water!), "ἄρατε κώπας!" (oars up!) | per-bank blade hydro regime: driving / stopped / backing / out of water | four states only — a rower cannot distinguish more mid-battle |
+| `pressure` | rest / steady / fast / spoude, or 0–1 | "σπουδῇ!" (with haste!) | effort per stroke: scale the mean handle-force profile, P = 7.43·r·pressure | rate = frequency, pressure = effort; distinct axes, both attested |
+| `helm` | port / starboard / midship; fraction optional | "πηδάλιον ἐπὶ δεξιά!" (helm to starboard!) | the helmsman puts the rudders over (F/G-validated rudder model) | oar-assisted turns are expressed via per-side `oars`, not here |
+| `course` | bearing (deg) or waypoint | "head for the enemy line…" | the guidance loop steers the ship toward it | navigation intent; the one order a commander gives between battles |
+| `go` | — | "ready … pull!" | keleustēs count-in; global phase sync; all blades to the catch | master start only — see dropped list for stopping |
+| `report` | — | (CLI telemetry, not a shout) | print status: speed, rate, position, ETA | console verb: not crew vocabulary, not in the equivalence contract |
+
+**Dropped from the v0 list, and why** (replacement in parentheses):
+
+- `speed` — nobody shouts a knots target at a battle; rate + pressure *produce* speed.
+  Derived output only (oQ-2 resolved).
+- `oar-assist` — redundant: turn-by-oars is exactly per-side `oars hold/back/bank`.
+  (oQ-7 resolved: no named attack verb either — a ram run is `rate 44` + `pressure
+  spoude` + `course`.)
+- `rest` — a consequence, not a command: `oars bank` (+ `rate 0`). A resting half-bank
+  is `oars bank` + side (oQ-8 partly resolved).
+- `crew` — watch planning is scenario state, not battle vocabulary; crew condition
+  stays an internal model (oQ-15).
+- `sea` — the environment is input, not an order: a shared file both sims read (oQ-5
+  resolved).
+- `anchor` — not worrying about anchoring for now: coming to a halt is `course` +
+  `oars bank`; dropping the anchor stone is ship state, not a rower action.
+- `stop` — covered: `oars bank` ends rowing; the end of the script ends the run.
+- `trailing` / `feathered` oar states — not distinctly executable mid-battle: the
+  feather is part of the recovery, trailing ≈ hold or bank.
 
 ### 3.3 Rhythm and cadence
 
@@ -130,9 +144,10 @@ contract §6).
 
 ### 3.4 Manoeuvring by oars
 
-- The LL must support **turn on the oars**: one bank rows, the other banks/holds →
-  asymmetrical thrust → yaw; "hold water" on one side to brake-turn; the attestable
-  *anastrophe* family (oQ-3).
+- The LL must support **turn on the oars**: one bank rows while the other holds or
+  backs (`oars hold|back <side>`) → asymmetric thrust → yaw; hold water on one side
+  to brake-turn. The *anastrophe* family (quick reversal) = `oars back` on one side
+  while the other rows.
 - The mapping from one commander order to per-bank steps is a design target and a prime
   validation case against the F/G-turn records.
 
@@ -145,11 +160,14 @@ command per line, `#` comments allowed, timestamps in seconds from script start:
 # time_s, verb, args...        (comma- or space-separated as you prefer)
 0, rate, 30
 0.5, go
-120, pressure, sprint
-900, oars, bank starboard
-1500, rudder, full port
-1800, rate, 24
-3600, stop
+600, pressure, spoude
+900, rate, 44
+1020, helm, port
+1200, oars, hold starboard
+1260, oars, back starboard
+1440, rate, 24
+1800, oars, bank
+2400, report
 ```
 
 - The schema parser (`commands/schema.json`) validates every line before the run:
@@ -160,6 +178,8 @@ command per line, `#` comments allowed, timestamps in seconds from script start:
 - The same file drives the HL, the LL and the harness — one script, two ships.
 - A later v2 nicety: an interactive stdin loop ("type a command, advance time") —
   not needed for v1.
+- No `stop` or `anchor` in v1: coming to a halt is `oars bank`; the run ends when the
+  script ends.
 
 ## 4. High-level simulator — the fast and efficient one
 
@@ -188,7 +208,7 @@ command per line, `#` comments allowed, timestamps in seconds from script start:
   170 rowers / 170 oars (id ↔ tier per rig geometry), the rudder per manoeuvre model.
 - **Per-oar loop** (dt ≈ 0.01–0.05 s):
   1. cadence phase from `rate` and stroke length (catch, drive, finish, recover);
-  2. blade state from `oars` → hydro regime (driving / stopped / backing / out of water);
+  2. blade state from `oars` → hydro regime (row / hold / back / banked);
   3. blade force from the flat-plate model: Fn = 0.5·ρ·A·C_N·|v_n|·v_n at the blade
      centre of pressure (0.26 m from tip), including the phase where the blade would
      otherwise outrun the ship (drag, not thrust — the "deadspot" regime);
@@ -261,9 +281,10 @@ trireme-sim/
 
 ## 8. Roadmap (draft)
 
-0. **Phase 0 — command language & contract.** Freeze the verbs (§3.2), write the schema,
-   fix the equivalence targets (oQ-1, 2, 4, 5, 7 here) and freeze the §3.5 script-file
-   format. Deliverable: `commands/schema.json` v0.1 + a sample script.
+0. **Phase 0 — command language & contract.** Freeze the verb set (§3.2: 6 crew + 1
+   console), write the schema, settle the remaining semantics (oQ-4, oQ-6) and freeze
+   the §3.5 script-file format. Deliverable: `commands/schema.json` v0.1 + a sample
+   script.
 1. **Phase 1 — LL first.** Get the per-oar sandbox working and validated against ch.9
    tables (blade forces, drive times, hand-rule). This is the truth engine; best to own
    it before the HL extrapolates from it.
@@ -298,22 +319,24 @@ trireme-sim/
 
 **Command language**
 
-- oQ-1 — How granular must the vocabulary be? Start at 14 verbs (§3.2); 8-verb minimum?
-- oQ-2 — Who controls power: commander gives `rate` (drum style) or `speed` (autopilot),
-  and who converts? Does `speed` exist in v1 at all?
+- oQ-1 — **Resolved (for now): 6 crew verbs + 1 console verb (§3.2).** Can it go below
+  6 without losing an attested capability?
+- oQ-2 — **Resolved: `rate` + `pressure` are the power controls** (pipe + shout);
+  `speed` is a derived output, not a verb.
 - oQ-3 — Attested-ancient mapping: which commands map to attested signals (*keleustēs*
   signals, "bend to the oars", "hold water", "back water", *anastrophe*)? Deliverable:
   the mapping table; a "historic mode" accepts attested phrases as aliases.
 - oQ-4 — Oar-state semantics: is "hold water" one hydro state or a spectrum (flat,
   crossed, partly)? The per-oar specs the LL must implement.
-- oQ-5 — Is the environment a command or an injected input? Both must use the shared
-  sea entity.
+- oQ-5 — **Resolved: the environment is input, not a verb** — a shared file both sims
+  read (oQ-16 covers where it lives; format still open).
 - oQ-6 — Who is "the commander"? Trierarch alone, or + helmsman + keleutes (roles with
   different permissions)? Affects which verb belongs in the commander console.
-- oQ-7 — Is a named attack order needed ("ram that ship" -> final burst) or are
-  rate + pressure + course sufficient?
-- oQ-8 — Half-ships / watch changes: attested [7]? How to model a half-bank that rests
-  mid-trip? [?]
+- oQ-7 — **Resolved for v1: no named attack verb**; a ram run is compositional
+  (`rate 44` + `pressure spoude` + `course`). Revisit only if diekplous/periplous
+  formations need distinct behaviour.
+- oQ-8 — **Partly resolved:** a resting half-bank is expressed as per-side `oars bank`;
+  the watch/fatigue *scheduling* model stays an internal question (oQ-15).
 
 **Physics / model**
 
@@ -330,7 +353,8 @@ trireme-sim/
   sustained VO2).
 - oQ-14 — Impossible-command behaviour: hard error vs warning+clamp? (must match in
   both simulators).
-- oQ-15 — Freeze displacement/mass baseline and `crew` semantics (fraction vs schedule).
+- oQ-15 — Freeze displacement/mass baseline; define the internal crew-condition model
+  (no `crew` verb in v1).
 - oQ-16 — Where does the environment state live? (recommend a shared `common/` environment entity)
   — one entity for both sims.
 - oQ-17 — Role model detail: trierarch-permission split for the console; what the
@@ -355,9 +379,9 @@ trireme-sim/
   drive and recovery time; carries phase synchronisation.
 - **pressure** — multiplier on the mean pull relative to the nominal schedule
   P = 7.43·r·pressure.
-- **oar state** — `rowing`, `banked` (out of water), `holding` (stopped in water),
-  `backing` (driven the other way), `trailing` (feathered, loose), `feather` (flat on
-  the recovery — meaningful for the trireme's near-flat blades).
+- **oar state** — the four blade states a rower can execute: `row` (driving),
+  `hold` (blade stopped in water — a brake), `back` (driven the other way),
+  `bank` (out of water). The feather is part of the recovery, not a separate command.
 - **anastrophe** — the ordered, quick-reversal turn; in commands it is a combination
   (one bank holding / banked), not a primitive.
 - **oracle** (in this plan) — the simulator that other things are judged against: the
@@ -365,8 +389,8 @@ trireme-sim/
 
 ## Next actions for the next session
 
-1. Argue the **command list** (§3.2) and the blocking questions oQ-1, oQ-2, oQ-4, oQ-5,
-   oQ-7.
+1. Freeze the **verb set** (§3.2: 6 crew + 1 console). oQ-1, 2, 5, 7 resolved; oQ-4
+   and oQ-6 remain for the schema round.
 2. Freeze `commands/schema.json` v0.1.
 3. Stand the **“LL first”** skeleton: `ll/` per-oar loop with the flat-blade law running
    a fixed 30-spm line, compared to the rigid-model numbers — before any HL work.
