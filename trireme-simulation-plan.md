@@ -433,6 +433,101 @@ Two expectations that shape the build:
   position and heading, the helmsman's held course. Lives in `common/`; never in the
   verb set.
 
+
+## 12. Phase 1 Gate 4 — the rower physiology layer (oQ-13): plan
+
+Replace the crude demo clamp with a physiological rower: peak force ceiling,
+endurance/fatigue, and their effect on stroke length and rate. Resolves oQ-13,
+answers oQ-14 (impossible commands → physical consequence + telemetry), and
+unlocks rest-starts, honest backing, sprint time-history, and asymmetric-side
+behaviour.
+
+### 12.1 The anchors (all from our own chain, all consistent)
+
+| Quantity | Value | Source | Status |
+| --- | --- | --- | --- |
+| Sustainable external power P_crit | **≈ 80 W/man** | Rossiter & Whipp, Rankov ch.23 (verified in our text dump: "maximum estimate of ~80 W per oarsman … for external power production", below lactate threshold, RER ≤ 0.74) | `[x]` primary |
+| Self-check | 7-kt cruise = 79.5 W handle power (ch.7, 25.5 spm) | matches R&W to 0.6 % | `[x]` |
+| Gross at 7 kt | 115 W/man (80 external + 34.8 oar-absorbed) | ch.7 | `[x]` |
+| Sprint external power | ~190 W/man @ 44.5 spm (L = 0.78 Olympias); ~240 W (L = 0.99 Mark IIb) | ch.9 | `[x]` |
+| Sprint gross | ~265–320 W/man (D4 "300 W/rower Mark IIb short sprint") | register D4 | `[x]`/`[?]` |
+| Anaerobic capacity W′ | ≈ 7–14 kJ/man | implied by sprint excess × duration; **needs the ch.9 four-run sprint durations** | `[?]` research |
+| Peak handle force Fh_max | ≈ 600–700 N | model-implied: cruise mean 224 N (peak ≈ 2×), tightest-turn protocol 640 N; S6 force curves to pin | `[?]` research |
+| Recovery floor | ~0.5 s | body mechanics | `[?]` |
+| W′ refill time constant | ~1–3 min | literature (Monod/MacFarlane/Nadel family, via Coates ch.22) | `[?]` |
+
+### 12.2 The model (per side in v1 — the Ship's existing structure)
+
+1. **Command → demanded mean handle force**: P = 7.43·r·pressure (unchanged
+   chain; the pressure anchors become physiological, §12.4).
+2. **Instantaneous ceiling**: Fh_max (per-rower equal in v1; per-tier factors
+   as parameters — the thalmian head-room limit already lives in the rig data).
+3. **Endurance state**: a W′ tank per side — drains when gross power exceeds
+   P_crit_gross (= 80 W + oar_absorbed(r)), refills at rest with time constant
+   τ. Available mean force = f(W′ state).
+4. **Stroke adaptation at fixed tempo** (the pipe is master): Fh_max →
+   ω_max(V) → B_eff = min(B, ω_max·t_drive) — the stroke shortens, not the
+   tempo. If B_eff < B_floor (~40 % of B) the rate is unattainable at that
+   pressure → achieved rate falls; the **weakest side governs** the common
+   rate.
+5. **Power accounting**: P_external = Fh·B_eff·lin·r/60 (the oar-level form of
+   the L·P·r chain); gross = external + oar_absorbed(r); W′ drains on gross
+   excess.
+6. **Backing**: force-limited weak backing (the 12× problem disappears — the
+   ceiling governs ω, exactly as in the start).
+7. **Hold**: the calibrated 2 % brake stays (isometric fatigue cost = v2).
+
+### 12.3 What this changes in the ship
+
+- `Ship` gains per-side: B_eff, achieved_rate, W′ state; telemetry reports
+  **commanded vs achieved** for rate and pressure (oQ-14's answer: physical
+  consequence + explicit report — never an error, never a silent clamp).
+- The crude `--fh-max` clamp is deleted; `ll/rower.py` replaces it.
+- `rate` remains a demand; achieved tempo is output, not input. (The
+  equivalence contract's "settled stroke rate within 1 spm" needs care when
+  the crew legitimately falls off tempo — HL must mirror the physiology or the
+  tolerance applies to achieved rate.)
+
+### 12.4 Command semantics become physiological
+
+- `pressure steady` = sustainable (P ≤ P_crit; the ch.7 cruise envelope);
+- `pressure spoude` = W′-limited burst (the ch.9 sprint is its anchor);
+- `fast` between; `rest` = minimal. Schema numeric anchors replaced.
+
+### 12.5 Validation gates (Gate 4 tests)
+
+- G4-1 sustained: 25.5/28.8 spm steady — W′ stays full, speeds hold the
+  7.0/7.2 kt anchors over 30+ min.
+- G4-2 sprint: 44.5 spm spoude — 8.2–8.4 kt for the W′ window (~60–90 s),
+  then decay toward the sustainable cruise: the time-history the trials show.
+- G4-3 rest start: short choppy strokes (B_eff ≈ 40 % at rest) lengthening as
+  V builds; peak Fh ≤ Fh_max; no absurd acceleration.
+- G4-4 backing: force-limited weak backing (weaker than the ideal −0.8×).
+- G4-5 asymmetric: one side W′-depleted → shorter B_eff → a yaw moment;
+  if the rate is unattainable, achieved rate = the weaker side's.
+- G4-6 tightest-turn re-check: does W′ drain narrow the 360°-time gap to the
+  trial's "halves speed"?
+- G4-7 impossible command: `rate 50` + spoude → telemetry achieved < commanded.
+- G4-8 regression: all 47 existing checks stay green — the ceiling must not
+  bite at the validated cruise points.
+
+### 12.6 Research to run alongside (small, mostly in-house)
+
+1. Extract R&W ch.23 via the playbook decode and pin the 80 W context (VO2,
+   threshold numbers if present) — verify the [x].
+2. Ch.9 four-run sprint durations from the txt dump → W′ magnitude.
+3. Identify the "S6" force-curve source (lane-4 notes) → Fh_max anchor.
+4. W′ refill τ from the Monod/MacFarlane/Nadel literature (via Coates ch.22).
+5. Per-tier stroke factors: thalmian head-room already quantified (effective
+   L); per-tier Fh factor = open.
+
+### 12.7 Deliverables
+
+`ll/rower.py` (Fh_max, P_crit, W′, τ; per-side aggregates), `ll/ship.py`
+per-side stroke adaptation + weakest-governs + telemetry, physiological
+pressure anchors in `schema.json`, `ll/tests/test_gate4.py`, register rows
+(W′, τ, Fh_max status), oQ-13/14 resolution notes.
+
 ## Next actions
 
 - [x] Freeze the **verb set** (§3.2: 4 crew verbs). oQ-1, 2, 5, 6, 7 resolved; only
@@ -461,4 +556,9 @@ Two expectations that shape the build:
       Taylor's fitted lever 4.8 m (decomposition open — register C3);
       back-water = force-limited 80 % astern (manoeuvre 5.x). Sample script
       runs end-to-end: first command-language → LL pipeline.
+- [ ] **Phase 1 Gate 4 — rower physiology layer** (plan §12): ll/rower.py with
+      Fh_max, P_crit ≈ 80 W/man (R&W ch.23, primary), W′ tank; per-side stroke
+      adaptation (B_eff), weakest-side-governs, commanded-vs-achieved
+      telemetry; physiological pressure anchors. Research subtasks: ch.9
+      sprint durations → W′; S6 force-curve source → Fh_max; τ.
 - [ ] Sketch the HL tolerance/labels format (§4 / §6 annotations).
