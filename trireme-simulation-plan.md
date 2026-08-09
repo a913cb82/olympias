@@ -731,14 +731,15 @@ VALIDATION.md ledger row moves from [!] to [x] with the residual documented.
   resistance law's validity at high drift; the largest re-validation of the
   turn gates.
 
-### 15.4 Archival trio (background, anytime)
+### 15.4 Archival items (background, anytime — **no email outreach**)
 
-- Draft the Wolfson archive email (F/G tables + Plan 8 stations — the leads
-  are in the lane-3/lane-5 notes); Oxbow out-of-print copies; U. Crete
-  catalogue; the Actium/CNRS team.
-- The 1990 trials video → t_rise from film (the catch-flip time).
-- Acceptance: the replies → the per-turn F/G data (per-angle rudder drag
-  factors), the station plan (sway moments, C3 closure), a measured t_rise.
+- The print-only F/G report: Oxbow out-of-print copies, the U. Crete
+  catalogue record, the Actium/CNRS team — only if they surface without an
+  email campaign.
+- The 1990 trials video → t_rise from film (the catch-flip time), if the
+  footage surfaces in our own sources.
+- Acceptance: the per-turn F/G data (per-angle rudder drag factors), the
+  station plan (sway moments, C3 closure), a measured t_rise.
 
 ### 15.5 Sequence
 

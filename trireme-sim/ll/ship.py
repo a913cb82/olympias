@@ -25,7 +25,6 @@ import math
 from common.chain import KT, RIGS, VESSELS
 from ll.hull import t_drive_for
 from ll.oar import simulate
-from common.chain import OAR_TIER_MIT
 from ll.rig import LEVER_OAR
 from ll.rower import HOLD_FRAC as HOLD_FRAC_DEFAULT, PRESSURE, SideCrew
 
@@ -59,22 +58,16 @@ class Ship:
         self.rate = rate
         self.fleet = fleet
         td, _ = t_drive_for(rig_name, rate)
-        # tier-weighted mean MIT over one side's 85 oars
-        # (31 thranites + 27 zygians + 27 thalmians)
-        if fleet == "old-fir":
-            mit = (31 * OAR_TIER_MIT["thranite"] + 27 * OAR_TIER_MIT["zygian"]
-                   + 27 * OAR_TIER_MIT["thalmian"]) / 85.0
-        elif fleet == "spruce":
-            mit = OAR_TIER_MIT["spruce"]
-        else:
-            mit = 0.0
-        self.mit = mit
+        self.mit = ({"spruce": 9.7, "old-fir": 14.7, None: 0.0}[fleet]
+                    if fleet in ("spruce", "old-fir", None) else 9.7)
         self.crew = {
             "port": SideCrew(rig_name, self.n_side, rate, td,
-                             pressure=pressure[0], state=oar_state[0], mit=mit,
+                             pressure=pressure[0], state=oar_state[0],
+                             fleet=fleet,
                              hold_frac=hold_frac if hold_frac is not None else HOLD_FRAC_DEFAULT),
             "star": SideCrew(rig_name, self.n_side, rate, td,
-                             pressure=pressure[1], state=oar_state[1], mit=mit,
+                             pressure=pressure[1], state=oar_state[1],
+                             fleet=fleet,
                              hold_frac=hold_frac if hold_frac is not None else HOLD_FRAC_DEFAULT),
         }
         self.helm_dir, self.helm_frac = helm

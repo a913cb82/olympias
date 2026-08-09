@@ -24,7 +24,7 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass
 
-from common.chain import CN, RHO, RIGS
+from common.chain import CN, OAR_TIER_MIT, RHO, RIGS
 from ll.oar import Oar
 
 # --- anchors (plan §12.1; provisional except P_CRIT) ---
@@ -71,17 +71,22 @@ class StrokePlan:
     limited_by: str       # none | peak | mean | tempo | back-hold
 
 
-class SideCrew:
-    """One side's crew: owns the Oar, the stroke plan, and the W' tank."""
+class TierCrew:
+    """One tier's crew on one side: owns the Oar, the stroke plan, and the
+    W' tank. Parameterized by the tier size n, the oar inertia mit, and a
+    sweep factor (the thalmian head-room stroke-length limit)."""
 
-    def __init__(self, rig_name: str, n_side: int, rate: float, t_drive: float,
+    def __init__(self, rig_name: str, n: int, rate: float, t_drive: float,
                  pressure: str = "spoude", state: str = "row",
                  direction: int = 1, mit: float = 0.0, t_rise: float = 0.15,
-                 hold_frac: float = HOLD_FRAC):
+                 hold_frac: float = HOLD_FRAC, power_factor: float = 1.0):
         rig = RIGS[rig_name]
         self.rig_name = rig_name
         self.rig = rig
-        self.n = n_side
+        self.n = n
+        self.power_factor = power_factor   # the ch.9 L-model: a reduced
+                                           # effective pull scales the POWER,
+                                           # not the kinematics
         self.lin = rig["lin"]
         self.l_cp = rig["lout"] - (rig["blade"] - 0.260)
         self.k = 0.5 * RHO * rig["area"] * CN            # N/(m/s)^2 per blade
@@ -173,8 +178,10 @@ class SideCrew:
                                   p_ext=0.0, limited_by="back-hold")
             fh_avail = self.fh_demanded()
             if self.W <= 0.0:
-                fh_avail = min(fh_avail,
-                               self.P_crit * 60.0 / (B * lin * self.rate_cmd))
+                # the L-model: a reduced pull scales the sustainable POWER
+                # too (the tier sustains power_factor x P_crit)
+                fh_avail = min(fh_avail, self.P_crit * self.power_factor * 60.0
+                               / (B * lin * self.rate_cmd))
             w_m = self._omega_for_mean(V, B, fh_avail, backing=True)
             if math.isnan(w_m):
                 w_m = 0.0
@@ -188,8 +195,8 @@ class SideCrew:
             w_p = (V + math.sqrt(self.Fh_max * lin / (k * l_cp))) / l_cp
             fh_avail = self.fh_demanded()
             if self.W <= 0.0:
-                fh_avail = min(fh_avail,
-                               self.P_crit * 60.0 / (B * lin * self.rate_cmd))
+                fh_avail = min(fh_avail, self.P_crit * self.power_factor * 60.0
+                               / (B * lin * self.rate_cmd))
             w_m = self._omega_for_mean(V, B, fh_avail)
             if math.isnan(w_m):
                 w_m = 0.0
@@ -219,6 +226,18 @@ class SideCrew:
             rate_eff = self.rate_cmd
             w_rec = B / (60.0 / self.rate_cmd - t_drive)
 
+        # feather clamp: the deadspot — if the blade cannot outrun the water
+        # (the mean normal flow at the blade stays positive at the plan's
+        # omega), the rowers slip the blade: zero contribution, as the trials
+        # observed ("the thalmian tier's power contribution fell sharply at
+        # higher speeds")
+        a = B_eff / 2.0
+        vn_mean = V * (math.sin(a) / a) - l_cp * w
+        if vn_mean > 0.0 and not backing:
+            return StrokePlan(omega=w, sweep=B_eff, t_drive=t_drive,
+                              omega_recover=w_rec, rate_eff=rate_eff,
+                              fh_peak=0.0, fh_mean=0.0, p_ext=0.0,
+                              limited_by="feathered")
         # achieved power (per man, cycle-averaged)
         p_ext = abs(fh_mean) * B_eff * lin * rate_eff / 60.0
         return StrokePlan(omega=w, sweep=B_eff, t_drive=t_drive,
@@ -256,12 +275,17 @@ class SideCrew:
             self.p_gross_current = 0.0
             brake = -self.hold_k * V * abs(V)
             return 0.0, 0.0, brake
+        if self.plan.limited_by == "feathered":
+            self.oar.step(dt, V)                  # cadence continues, no force
+            self.p_gross_current = 0.0
+            self.last_fh = 0.0
+            return 0.0, 0.0, 0.0
         s = self.oar.step(dt, V)
-        self.p_gross_current = (self.plan.p_ext
+        self.p_gross_current = (self.plan.p_ext * self.power_factor
                                + self.oar.flip_power(self.plan.rate_eff)
                                + oar_absorbed(self.plan.rate_eff))
-        self.last_fh = s.Fh
-        return s.Fx, s.Fh, 0.0
+        self.last_fh = s.Fh * self.power_factor
+        return s.Fx * self.power_factor, s.Fh * self.power_factor, 0.0
 
     def end_of_step(self, dt: float) -> None:
         """W' tank update (drain on gross excess, refill at rest)."""
@@ -299,3 +323,107 @@ class SideCrew:
         self.omega_cmd = self.oar.omega_cmd
         self.rate_eff = rate
         self.plan = None
+
+
+# --- per-tier crew structure (plan 15.1) ---
+TIER_SPLIT = {"thranite": 31, "zygian": 27, "thalmian": 27}   # per side
+
+
+def thalmian_power_factor(rate: float) -> float:
+    """Thalmian head-room factor (the ch.9 L-model: a reduced effective pull
+    scales the POWER, not the kinematics): the manikin reaches 720 mm of the
+    800 mm design stroke (0.9 — rig-geometry §4); 'the thalmian tier's power
+    contribution fell sharply at higher speeds' (ch.9 p.77) — linear decline
+    to 0.6 at 44.5 spm. Flag [?]: the exact rate-shape is unmeasured."""
+    if rate <= 32.0:
+        return 0.9
+    return max(0.6, 0.9 - 0.3 * (rate - 32.0) / 12.5)
+
+
+class SideCrew:
+    """One side's crew: three TierCrews (thranite 31 / zygian 27 / thalmian
+    27 per side). Exposes the old single-crew API — the returned forces are
+    per-oar averages over the side's 85 rowers, so the ship's math is
+    unchanged; the tier split lives inside (per-tier W', rate, power)."""
+
+    def __init__(self, rig_name: str, n_side: int, rate: float, t_drive: float,
+                 pressure: str = "spoude", state: str = "row",
+                 direction: int = 1, fleet: str = "spruce",
+                 t_rise: float = 0.15, hold_frac: float = HOLD_FRAC):
+        self.rig_name = rig_name
+        self.n = n_side
+        self.state = state
+        self.pressure = pressure
+        self.rate_cmd = rate
+        if fleet == "spruce":
+            mit = {t: OAR_TIER_MIT["spruce"] for t in TIER_SPLIT}
+        elif fleet == "old-fir":
+            mit = {"thranite": OAR_TIER_MIT["thranite"],
+                   "zygian": OAR_TIER_MIT["zygian"],
+                   "thalmian": OAR_TIER_MIT["thranite"]}
+        else:
+            mit = {"thranite": 0.0, "zygian": 0.0, "thalmian": 0.0}
+        self.tiers = {
+            "thranite": TierCrew(rig_name, TIER_SPLIT["thranite"], rate,
+                                 t_drive, pressure, state, direction,
+                                 mit=mit["thranite"], t_rise=t_rise,
+                                 hold_frac=hold_frac, power_factor=1.0),
+            "zygian": TierCrew(rig_name, TIER_SPLIT["zygian"], rate,
+                               t_drive, pressure, state, direction,
+                               mit=mit["zygian"], t_rise=t_rise,
+                               hold_frac=hold_frac, power_factor=1.0),
+            "thalmian": TierCrew(rig_name, TIER_SPLIT["thalmian"], rate,
+                                 t_drive, pressure, state, direction,
+                                 mit=mit["thalmian"], t_rise=t_rise,
+                                 hold_frac=hold_frac,
+                                 power_factor=thalmian_power_factor(rate)),
+        }
+        self.rate_eff = rate
+        self.W_frac = 1.0
+        self.last_fh = 0.0
+        self.plan = None
+
+    def step(self, dt: float, V: float) -> tuple[float, float, float]:
+        fx = br = 0.0
+        fh = 0.0
+        for t in self.tiers.values():
+            f, h, b = t.step(dt, V)
+            fx += t.n * f
+            br += t.n * b
+            fh = max(fh, h)
+        self.last_fh = fh
+        weakest = min(self.tiers.values(), key=lambda t: t.rate_eff)
+        self.plan = weakest.plan
+        self.rate_eff = weakest.rate_eff
+        return fx / self.n, fh, br / self.n
+
+    def end_of_step(self, dt: float) -> None:
+        for t in self.tiers.values():
+            t.end_of_step(dt)
+        self.W_frac = min(t.W_frac for t in self.tiers.values())
+
+    def set_state(self, state: str) -> None:
+        self.state = state
+        for t in self.tiers.values():
+            t.set_state(state)
+
+    def set_pressure(self, level: str) -> None:
+        self.pressure = level
+        for t in self.tiers.values():
+            t.set_pressure(level)
+
+    def set_rate(self, rate: float, t_drive: float) -> None:
+        self.rate_cmd = rate
+        self.tiers["thalmian"].power_factor = thalmian_power_factor(rate)
+        for t in self.tiers.values():
+            t.set_rate(rate, t_drive)
+        self.rate_eff = rate
+
+    def tier_telemetry(self) -> dict:
+        return {
+            name: dict(W_frac=t.W_frac, rate_eff=t.rate_eff,
+                       p_ext=t.plan.p_ext * t.power_factor if t.plan else 0.0,
+                       power_factor=t.power_factor,
+                       limited=t.plan.limited_by if t.plan else "parked")
+            for name, t in self.tiers.items()
+        }

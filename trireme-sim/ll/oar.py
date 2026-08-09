@@ -43,7 +43,8 @@ class OarStep:
 
 class Oar:
     def __init__(self, rig: dict, r_spm: float, t_drive: float | None = None,
-                 direction: int = 1, mit: float = 0.0, t_rise: float = 0.15):
+                 direction: int = 1, mit: float = 0.0, t_rise: float = 0.15,
+                 sweep_factor: float = 1.0):
         """direction = +1 forward stroke; -1 backing water (drive sweeps the
         other way — the blade force law then gives negative thrust naturally).
 
@@ -60,7 +61,7 @@ class Oar:
         self.cycle = 60.0 / r_spm
         self.t_drive = t_drive if t_drive is not None else self.cycle * 0.333
         self.t_recovery = self.cycle - self.t_drive
-        self.sweep = math.radians(rig["sweep"])          # commanded sweep B
+        self.sweep = math.radians(rig["sweep"]) * sweep_factor  # tier sweep
         self.omega_cmd = self.sweep / self.t_drive        # commanded drive speed
         self.omega_rec_cmd = self.sweep / self.t_recovery
         # effective kinematics (the crew model may override per stroke)
