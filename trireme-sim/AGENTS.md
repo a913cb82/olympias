@@ -94,5 +94,16 @@ errors raise `ScriptError` naming the offending line.)
       back-water = force-limited 80 % astern (manoeuvre 5.x). First
       command-language → physics pipeline: the sample script runs end-to-end
       (`ll/run_turn.py script`); rest-start still needs the oQ-13 ceiling.
+- [x] Phase 1 Gate 4 — rower physiology (`ll/rower.py`, 8 checks): peak
+      ceiling Fh_max = 700 N + W' endurance tank (P_crit = 80 W/man, R&W
+      ch.23 primary; W_max = 10 kJ, tau = 120 s — provisional) + stroke
+      adaptation (demand-limited drive, sweep shortening, tempo loss).
+      Findings: steady = sustainable envelope (W' full, 30-min runs);
+      spoude = W'-limited burst (~90 s then fade); rest start = short
+      stretched strokes, Fh capped, launch slower than the bulk law;
+      backing degenerates to the hold-brake at speed; exhausted side
+      strokes slower -> differential yaw; tightest-turn W' drain narrows
+      the halves-speed gap; rate 50 + exhausted = tempo lost (oQ-14:
+      physical consequence, telemetry commanded vs achieved).
 - [ ] Phase 2 — HL from LL;  [ ] Phase 3 — harness;  [ ] Phase 4 — crew & environment;
       [ ] Phase 5 — oar-manoeuvres

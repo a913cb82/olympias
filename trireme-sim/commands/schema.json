@@ -6,7 +6,13 @@
       "intent": "set the stroke cadence; ship-global — both sides listen to the same pipe",
       "scope": "ship-global",
       "args": [
-        { "name": "spm", "type": "number", "min": 0, "max": 50, "required": true }
+        {
+          "name": "spm",
+          "type": "number",
+          "min": 0,
+          "max": 50,
+          "required": true
+        }
       ],
       "aliases": {
         "slow": 24,
@@ -19,26 +25,87 @@
       "intent": "blade-water state, per side; tiers of a side share one state — their blades share that side's water (per-tier states would collide)",
       "scope": "per-side (default both)",
       "args": [
-        { "name": "state", "type": "enum", "values": ["row", "hold", "back", "bank"], "required": true },
-        { "name": "side", "type": "enum", "values": ["port", "starboard"], "optional": true, "default": "both" }
+        {
+          "name": "state",
+          "type": "enum",
+          "values": [
+            "row",
+            "hold",
+            "back",
+            "bank"
+          ],
+          "required": true
+        },
+        {
+          "name": "side",
+          "type": "enum",
+          "values": [
+            "port",
+            "starboard"
+          ],
+          "optional": true,
+          "default": "both"
+        }
       ]
     },
     "pressure": {
       "intent": "effort per stroke; optional side — differential effort steers (one side pulling harder turns the ship)",
       "scope": "per-side (default both)",
       "args": [
-        { "name": "level", "type": "enum-or-number", "values": ["rest", "steady", "fast", "spoude"], "min": 0, "max": 1, "required": true },
-        { "name": "side", "type": "enum", "values": ["port", "starboard"], "optional": true, "default": "both" }
+        {
+          "name": "level",
+          "type": "enum-or-number",
+          "values": [
+            "rest",
+            "steady",
+            "fast",
+            "spoude"
+          ],
+          "min": 0,
+          "max": 1,
+          "required": true
+        },
+        {
+          "name": "side",
+          "type": "enum",
+          "values": [
+            "port",
+            "starboard"
+          ],
+          "optional": true,
+          "default": "both"
+        }
       ],
-      "numeric_anchors": { "rest": 0.0, "steady": 0.7, "fast": 0.85, "spoude": 1.0 },
-      "comment": "numeric anchors provisional; the ch.7 chain P = 7.43r anchors the steady reference and the absolute mapping is calibrated in Phase 2 (oQ-13)."
+      "numeric_anchors": {
+        "rest": 0.0,
+        "steady": 0.7,
+        "fast": 0.85,
+        "spoude": 1.0
+      },
+      "comment": "physiological anchors: spoude = the W'-limited burst (max mean handle force ~330 N — the ch.9 sprint level, any rate); steady/fast = fractions of the chain's P = 7.43r law within the sustainable envelope (P_crit = 80 W/man, R&W ch.23); rest = minimal. Backing is force-limited by the rower ceiling and degenerates to a hold-brake at speed (Gate 4)."
     },
     "helm": {
       "intent": "rudder order",
       "scope": "ship-global",
       "args": [
-        { "name": "direction", "type": "enum", "values": ["port", "starboard", "midship"], "required": true },
-        { "name": "fraction", "type": "number", "min": 0, "max": 1, "optional": true, "default": 1 }
+        {
+          "name": "direction",
+          "type": "enum",
+          "values": [
+            "port",
+            "starboard",
+            "midship"
+          ],
+          "required": true
+        },
+        {
+          "name": "fraction",
+          "type": "number",
+          "min": 0,
+          "max": 1,
+          "optional": true,
+          "default": 1
+        }
       ]
     }
   }

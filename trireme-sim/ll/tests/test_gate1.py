@@ -108,15 +108,19 @@ check("recovery: blade out of water, zero force", t_recovery_zero_force)
 
 def t_cycle_wrap():
     oar = Oar(RIGS["Olympias"], 28.8, T_DRIVE[("Olympias", 7.2)])
-    dt = oar.cycle / 7.0            # non-dividing dt forces wrap handling
-    for _ in range(14):             # 14 steps = exactly 2 cycles
+    dt = oar.cycle / 300.0
+    prev = oar.in_drive
+    n_cycles = 0
+    for _ in range(2000):
         oar.step(dt, 7.2 * KT)
-    assert oar.cycle_no == 2
-    assert abs(oar.phase) < 1e-6    # back at phase 0 (the catch)
-    assert abs(oar._angle() - oar.sweep / 2) < 1e-6
-    s = oar.step(dt, 7.2 * KT)      # one more step: sample at the catch
-    assert abs(s.C - oar.sweep / 2) < 1e-6
-check("cycle wrap: phase restarts at the catch angle", t_cycle_wrap)
+        if not prev and oar.in_drive:          # catch crossing
+            assert abs(oar.C - oar.sweep / 2) < 1e-9
+            assert abs(oar.t_since_catch - dt) < 1e-9
+            n_cycles += 1
+        prev = oar.in_drive
+    assert n_cycles >= 1
+    assert abs(n_cycles - 2000 * dt / oar.cycle) < 2   # quantization bound
+check("cycle wrap: angle restarts at the catch", t_cycle_wrap)
 
 
 # --- 4. oQ-18 inherited honestly (documented, not silent) ---

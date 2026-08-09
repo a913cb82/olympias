@@ -45,6 +45,14 @@ def turn(V0_kt, **kw):
     return run_turn(ship)
 
 
+def speed_after_kt(V0_kt, t_end, **kw):
+    ship = Ship(**kw)
+    ship.V = V0_kt * KT
+    for _ in range(int(t_end / 0.01)):
+        ship.step(0.01)
+    return ship.V / KT
+
+
 # --- 1. rudder turns (W5 anchors) ---
 
 def t_g1():
@@ -76,12 +84,25 @@ check("oar-only hold: turns toward the stopped side, D ~ 93 m", t_oar_hold)
 
 
 def t_back_water():
+    """Backing degenerates to the hold-brake at speed (the flow drag exceeds
+    the rower's grip — the physiology); at low speed it is active and turns
+    tighter than hold while decelerating."""
     r_hold = turn(6.5, rate=RT, oar_state=("row", "hold"), helm=("midship", 0.0))
-    r = turn(6.5, rate=RT, oar_state=("row", "back"), helm=("midship", 0.0))
-    assert r["track"][1] > 0
-    assert r["D"] < r_hold["D"], f"back D {r['D']:.1f} must beat hold D {r_hold['D']:.1f}"
-    assert r["V_end"] < 0.9 * 6.5, f"backing must decelerate (V_end {r['V_end']:.2f})"
-check("back-water: tighter than hold and decelerates (astern thrust)", t_back_water)
+    r_back = turn(6.5, rate=RT, oar_state=("row", "back"), helm=("midship", 0.0))
+    assert r_back["track"][1] > 0
+    assert abs(r_back["D"] / r_hold["D"] - 1) < 0.15, \
+        f"back @6.5kt D {r_back['D']:.1f} must ~= hold D {r_hold['D']:.1f} (degenerates)"
+    rl_hold = turn(2.0, rate=RT, oar_state=("row", "hold"), helm=("midship", 0.0))
+    rl_back = turn(2.0, rate=RT, oar_state=("row", "back"), helm=("midship", 0.0))
+    assert rl_back["D"] < rl_hold["D"], f"low-speed back D {rl_back['D']:.1f} < hold {rl_hold['D']:.1f}"
+    # active backing cancels much of the forward thrust: the ship stays slow
+    # (the forward-stroke side still dominates, so it does not stop)
+    v_hold = speed_after_kt(2.0, 120, rate=RT, oar_state=("row", "hold"),
+                            helm=("midship", 0.0))
+    v_back = speed_after_kt(2.0, 120, rate=RT, oar_state=("row", "back"),
+                            helm=("midship", 0.0))
+    assert v_back < 0.6 * v_hold, f"V@120s back {v_back:.2f} vs hold {v_hold:.2f} kt"
+check("back-water: degenerates at speed; active + tighter at low speed", t_back_water)
 
 
 # --- 3. dynamics properties ---
@@ -129,7 +150,7 @@ def t_script_smoke():
             assert math.isfinite(v), f"non-finite {k}"
     assert 0.0 < snap["V"] / KT < 12.0, f"speed {snap['V']/KT:.2f} kt"
     assert abs(snap["x"]) < 4e4 and abs(snap["y"]) < 4e4
-    assert snap["state"]["star"] == "bank"      # final command executed
+    assert snap["crew"]["star"]["state"] == "bank"   # final command executed
 check("sample script runs on the Ship (parser → commands → physics)", t_script_smoke)
 
 

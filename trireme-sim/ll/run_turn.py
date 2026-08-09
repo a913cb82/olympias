@@ -58,7 +58,7 @@ def main() -> None:
         s = ship.snap()
         print(f"script cruise_turn.txt: t={s['t']:.0f} s  pos=({s['x']:.0f}, {s['y']:.0f}) m  "
               f"V={s['V']/KT:.2f} kt  heading={math.degrees(s['psi'])%360:.0f} deg  "
-              f"state={s['state']}")
+              f"crew={ {k: v['state'] for k, v in s['crew'].items()} }")
         return
     if args.scenario == "table":
         for name in SCENARIOS:

@@ -1,45 +1,36 @@
-"""The 170-oar ship: surge + yaw (Phase 1 Gate 3).
+"""The 170-oar ship: surge + yaw with the physiological crew (Gates 3-4).
 
 States: V (surge), omega (yaw, + = bow to starboard), psi (heading), x, y
-(track). Two oar instances (port/starboard — the pipe keeps the crew in
-unison, and backing reverses one side's sweep) summed over 85 oars per side.
+(track). Two SideCrews (port/starboard, 85 rowers each) own the oars, the
+per-side oar state / pressure from the command language, the stroke plan
+(force ceiling + W' endurance -> stroke length / rate), and the W' tanks.
 
     m_app·dV/dt  = F_oars − D(V)
     I·d(omega)/dt = Q_oar + Q_rudder − Omega·omega·|omega|
-    d(psi)/dt = omega;   dx/dt = V·cos psi;   dy/dt = V·sin psi
 
-Per-side oar states (command language): row / hold / back / bank; per-side
-pressure scales effort. Hold = trailing in v1 (near-zero force — the brake
-spectrum is oQ-4); back = reversed sweep at 80 % astern (manoeuvre model 5.x).
+Per-side states: row / hold / back / bank; hold = trailing + calibrated 2 %
+brake (oQ-4); back = physiology-limited (degenerates to a hold-brake at
+speed); rate is ship-global — the pipe — and the keleustes calls down the
+rate when one side cannot hold the tempo (weakest side governs).
 
 Hull-side forces are the Taylor ch.31 set (turn-validated): 3-band drag,
 straight-rudder drag at midship, applied-rudder drag + lateral force +
 torque at helm. Oar yaw torque via the fitted oar-race lever (ll/rig.py).
-The drag law is Taylor's for turns (the F/G domain); the ch.7 155-law is the
-speed-power domain (Gate 2) — the two are documented companions, not the same
-curve (see uncertainties register B2/C3 discussion).
 """
 
 from __future__ import annotations
 
 import math
 
-from common.chain import CN, KT, RHO, RIGS, VESSELS
+from common.chain import KT, RIGS, VESSELS
 from ll.hull import t_drive_for
-from ll.oar import Oar, simulate
+from ll.oar import simulate
 from ll.rig import LEVER_OAR
+from ll.rower import PRESSURE, SideCrew
 
-# per-side oar states
-BACK_FRACTION = 0.8        # astern thrust fraction, force-limited (manoeuvre 5.x)
-HOLD_FRAC = 0.02           # hold-water brake fraction of full-square blade drag
-                           # (provisional oQ-4 calibration: anchors the tightest
-                           # turn 62 m + the "halves speed" observation)
 FULL_RUDDER_DEG = 67.5     # "full rudder" in the trials
 RUDDER_FAC = 1.4           # Olympias applied-rudder drag factor (W5 set)
-
-# pressure levels: anchors relative to the validated chain (spoude = 1.0);
-# endurance semantics arrive with Phase 4 (oQ-13)
-PRESSURE = {"rest": 0.0, "steady": 0.7, "fast": 0.85, "spoude": 1.0}
+TEMPO_CALLDOWN_SPM = 2.0   # sustained per-side rate gap that triggers a call-down
 
 
 class Ship:
@@ -54,36 +45,29 @@ class Ship:
         self.Omega = self.vessel.Omega
         self.n = n_oars
         self.n_side = n_oars // 2
-        td, _ = t_drive_for(rig_name, rate)
-        self.port_oar = Oar(RIGS[rig_name], rate, td, direction=1)
-        self.star_oar = Oar(RIGS[rig_name], rate, td, direction=1)
-        self.state = {"port": oar_state[0], "star": oar_state[1]}
-        self.pressure = {"port": pressure[0], "star": pressure[1]}
-        self.helm_dir, self.helm_frac = helm
         self.rate = rate
-        self.hold_k = HOLD_FRAC * 0.5 * RHO * RIGS[rig_name]["area"] * CN  # N/(m/s)^2 per oar
+        td, _ = t_drive_for(rig_name, rate)
+        self.crew = {
+            "port": SideCrew(rig_name, self.n_side, rate, td,
+                             pressure=pressure[0], state=oar_state[0]),
+            "star": SideCrew(rig_name, self.n_side, rate, td,
+                             pressure=pressure[1], state=oar_state[1]),
+        }
+        self.helm_dir, self.helm_frac = helm
         self.V = 0.0
         self.omega = 0.0
         self.psi = 0.0
         self.x = 0.0
         self.y = 0.0
         self.t = 0.0
+        self._tempo_violation = 0.0
 
     # ------------------------------------------------------------------
-    def _side_force(self, oar: Oar, dt: float, state: str, level: str) -> float:
-        s = oar.step(dt, self.V)
-        if state == "bank":                  # out of water: no force
-            return 0.0
-        if state == "hold":                  # trailing + calibrated brake (oQ-4)
-            return -self.hold_k * self.V * abs(self.V)
-        mult = PRESSURE[level]
-        if state == "back":
-            mult = -BACK_FRACTION * mult      # astern, force-limited (manoeuvre 5.x)
-        return s.Fx * mult
-
     def step(self, dt: float) -> None:
-        fx_p = self._side_force(self.port_oar, dt, self.state["port"], self.pressure["port"])
-        fx_s = self._side_force(self.star_oar, dt, self.state["star"], self.pressure["star"])
+        fx_p, peak_p = self.crew["port"].step(dt, self.V)
+        fx_s, peak_s = self.crew["star"].step(dt, self.V)
+        for crew in self.crew.values():
+            crew.end_of_step(dt)
         Fx = self.n_side * (fx_p + fx_s)
         Q_oar = self.n_side * self.lever * (fx_p - fx_s)      # + = starboard
         # rudder (Taylor ch.31 model; straight-rudder drag at midship)
@@ -97,8 +81,15 @@ class Ship:
             Q_rud = self.vessel.rudder_coeff(phi) * rud_drag * self.vessel.lever_rudder
             if self.helm_dir == "port":
                 Q_rud = -Q_rud
+        self.hull_advance(dt, Fx, Q_oar, Q_rud, rud_drag)
+        self._keleustes(dt)
+
+    def hull_advance(self, dt: float, Fx: float, Q_oar: float,
+                     Q_rud: float, rud_drag: float) -> None:
+        """Integrate the hull state from the summed forces (exposed so
+        observation loops can step the crews themselves)."""
+        vkt = abs(self.V) / KT
         drag = self.vessel.hull_drag(vkt) + rud_drag
-        # integrate
         self.V += (Fx - drag) / self.m_app * dt
         self.omega += (Q_oar + Q_rud - self.Omega * self.omega * abs(self.omega)) / self.I * dt
         self.psi += self.omega * dt
@@ -106,6 +97,27 @@ class Ship:
         self.y += self.V * math.sin(self.psi) * dt
         self.t += dt
 
+    def _keleustes(self, dt: float) -> None:
+        """Weakest side governs: if one side cannot hold the tempo for more
+        than a couple of cycles, the pipe calls the lower rate on both sides."""
+        c_p, c_s = self.crew["port"], self.crew["star"]
+        if c_p.state != "row" or c_s.state != "row":
+            self._tempo_violation = 0.0
+            return
+        rp, rs = c_p.rate_eff, c_s.rate_eff
+        if abs(rp - rs) > TEMPO_CALLDOWN_SPM:
+            self._tempo_violation += dt
+            if self._tempo_violation > 2.0 * 60.0 / max(min(rp, rs), 1.0):
+                r_new = min(rp, rs)
+                td, _ = t_drive_for(self.rig_name, r_new)
+                c_p.set_rate(r_new, td)
+                c_s.set_rate(r_new, td)
+                self.rate = r_new
+                self._tempo_violation = 0.0
+        else:
+            self._tempo_violation = 0.0
+
+    # ------------------------------------------------------------------
     def apply(self, cmd) -> None:
         """Apply one parsed command (commands.parser.Command) to the ship."""
         if cmd.verb == "rate":
@@ -113,11 +125,11 @@ class Ship:
         elif cmd.verb == "oars":
             state, side = cmd.args
             for s_ in self._sides(side):
-                self.state[s_] = state
+                self.crew[s_].set_state(state)
         elif cmd.verb == "pressure":
             level, side = cmd.args
             for s_ in self._sides(side):
-                self.pressure[s_] = level
+                self.crew[s_].set_pressure(level)
         elif cmd.verb == "helm":
             self.helm_dir, self.helm_frac = cmd.args
 
@@ -129,16 +141,8 @@ class Ship:
     def _set_rate(self, rate: float) -> None:
         self.rate = rate
         td, _ = t_drive_for(self.rig_name, rate)
-        for oar, side in ((self.port_oar, "port"), (self.star_oar, "star")):
-            self._replace_oar(oar, side, rate, td)
-
-    def _replace_oar(self, oar: Oar, side: str, rate: float, td: float) -> None:
-        direction = oar.dir
-        new = Oar(RIGS[self.rig_name], rate, td, direction=direction)
-        if side == "port":
-            self.port_oar = new
-        else:
-            self.star_oar = new
+        for crew in self.crew.values():
+            crew.set_rate(rate, td)
 
     def run_script(self, commands, dt: float = 0.01, until: float | None = None,
                    V0: float = 0.0) -> None:
@@ -155,9 +159,14 @@ class Ship:
 
     # ------------------------------------------------------------------
     def snap(self) -> dict:
+        c = {}
+        for side, crew in self.crew.items():
+            c[side] = dict(state=crew.state, pressure=crew.pressure,
+                           rate_eff=crew.rate_eff, W_frac=crew.W_frac,
+                           sweep=crew.plan.sweep if crew.plan else 0.0,
+                           limited=crew.plan.limited_by if crew.plan else "parked")
         return dict(t=self.t, V=self.V, omega=self.omega, psi=self.psi,
-                    x=self.x, y=self.y, rate=self.rate,
-                    state=dict(self.state), pressure=dict(self.pressure),
+                    x=self.x, y=self.y, rate=self.rate, crew=c,
                     helm=(self.helm_dir, self.helm_frac))
 
 
@@ -174,7 +183,7 @@ def rate_for_speed(rig_name: str, V_kt: float, pressure: str = "spoude",
 
     def g(rate: float) -> float:
         td, _ = t_drive_for(rig_name, rate)
-        res = simulate(Oar(RIGS[rig_name], rate, td), V, td / 600, n_cycles=4)
+        res = simulate(_crew_oar(rig_name, rate, td), V, td / 600, n_cycles=4)
         return n_oars * PRESSURE[pressure] * res["mean_thrust"] - dragv(V_kt)
 
     lo, hi = 8.0, 50.0
@@ -187,11 +196,17 @@ def rate_for_speed(rig_name: str, V_kt: float, pressure: str = "spoude",
     return 0.5 * (lo + hi)
 
 
+def _crew_oar(rig_name: str, rate: float, td: float):
+    """A bare commanded-kinematics oar for the mean-force equilibrium helpers."""
+    from ll.oar import Oar
+    return Oar(RIGS[rig_name], rate, td)
+
+
 def run_turn(ship: Ship, dt: float = 0.01, max_t: float = 900.0,
              target_psi: float = math.pi) -> dict:
     """Run until |psi| >= target_psi (default half-circle); report the turn.
 
-    D = 2·|y| at the target heading — exact for a circle, approximate for a
+    D = |y| at the target heading — exact for a circle, approximate for a
     decelerating spiral (the trials' crews held thrust, so the turns stayed
     near-circular; the model's D is speed-independent for the rudder term).
     """

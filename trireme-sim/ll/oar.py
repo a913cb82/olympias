@@ -5,13 +5,18 @@ rigid-oar model's convention):
 
   - drive:     C: +B/2 -> -B/2 at constant omega over t_drive (Table 9.6),
                blade immersed;
-  - recovery:  -B/2 -> +B/2 over t_cycle - t_drive, blade out of water,
-               no force.
+  - recovery:  -B/2 -> +B/2, blade out of water, no force.
+
+Angle-based: the oar advances its angle at the *effective* omega each step, so
+the physiology layer (ll/rower.py) can configure a force-limited stroke
+(slower drive, shorter sweep, lost tempo) per catch via configure_stroke().
+With the commanded kinematics configured (the default) the discretisation
+reproduces the rigid-oar model exactly (Gate 1).
 
 Force: flat-plate normal law (ll/blade.py). Massless lever for Gate 1; the
-inertia layer (Table 3.1) lands after the gate per the plan §5.
+inertia layer (Table 3.1) lands later per the plan §5.
 
-Deterministic: oar state is (phase, cycle_no) — a pure function of time.
+Deterministic: oar state is (C, in_drive, cycle_no) — a pure function of time.
 """
 
 from __future__ import annotations
@@ -25,7 +30,7 @@ from ll.blade import blade_force
 @dataclass(frozen=True)
 class OarStep:
     """Per-step telemetry (deterministic, replayable)."""
-    t: float             # seconds into the cycle
+    t: float             # seconds since the last catch
     C: float             # oar angle from athwartships (rad)
     omega: float         # angular rate (rad/s)
     immersed: bool
@@ -46,32 +51,58 @@ class Oar:
         self.cycle = 60.0 / r_spm
         self.t_drive = t_drive if t_drive is not None else self.cycle * 0.333
         self.t_recovery = self.cycle - self.t_drive
-        self.sweep = math.radians(rig["sweep"])
-        self.omega_drive = self.sweep / self.t_drive        # magnitude, rad/s
-        self.omega_recover = self.sweep / self.t_recovery
-        self.phase = 0.0
+        self.sweep = math.radians(rig["sweep"])          # commanded sweep B
+        self.omega_cmd = self.sweep / self.t_drive        # commanded drive speed
+        self.omega_rec_cmd = self.sweep / self.t_recovery
+        # effective kinematics (the crew model may override per stroke)
+        self.omega_drive = self.omega_cmd
+        self.omega_recover = self.omega_rec_cmd
+        self.sweep_eff = self.sweep
+        self.C = self.dir * self.sweep / 2.0              # at the catch
+        self.in_drive = True                              # first drive starts now
+        self.t_since_catch = 0.0
         self.cycle_no = 0
 
     def reset(self) -> None:
-        self.phase = 0.0
+        self.omega_drive = self.omega_cmd
+        self.omega_recover = self.omega_rec_cmd
+        self.sweep_eff = self.sweep
+        self.C = self.dir * self.sweep / 2.0
+        self.in_drive = True
+        self.t_since_catch = 0.0
         self.cycle_no = 0
 
-    def _angle(self) -> float:
-        if self.phase < self.t_drive:
-            return self.dir * (self.sweep / 2 - self.omega_drive * self.phase)
-        return self.dir * (-self.sweep / 2 + self.omega_recover * (self.phase - self.t_drive))
+    def configure_stroke(self, omega_drive: float, omega_recover: float,
+                         sweep_eff: float) -> None:
+        """Set the effective kinematics for the next drive (called at the
+        catch by the crew model — ll/rower.py)."""
+        self.omega_drive = omega_drive
+        self.omega_recover = omega_recover
+        self.sweep_eff = sweep_eff
 
     def step(self, dt: float, V: float) -> OarStep:
-        immersed = self.phase < self.t_drive
-        C = self._angle()
-        omega = -self.dir * self.omega_drive if immersed else self.dir * self.omega_recover
+        C = self.C
+        immersed = self.in_drive
+        omega = (-self.dir * self.omega_drive if immersed
+                 else self.dir * self.omega_recover)
         f = blade_force(C, omega, V, self.rig, immersed)
-        self.phase += dt
-        if self.phase >= self.cycle:
-            self.phase -= self.cycle
-            self.cycle_no += 1
-        return OarStep(t=self.phase - dt, C=C, omega=omega, immersed=immersed,
-                       vn=f["vn"], Fn=f["Fn"], Fx=f["Fx"], Fy=f["Fy"], Fh=f["Fh"])
+        # advance
+        if self.in_drive:
+            self.C -= self.dir * self.omega_drive * dt
+            if self.dir * self.C <= -self.sweep_eff / 2:   # finish
+                self.C = -self.dir * self.sweep_eff / 2
+                self.in_drive = False
+        else:
+            self.C += self.dir * self.omega_recover * dt
+            if self.dir * self.C >= self.sweep_eff / 2:    # catch
+                self.C = self.dir * self.sweep_eff / 2
+                self.in_drive = True
+                self.cycle_no += 1
+                self.t_since_catch = 0.0
+        self.t_since_catch += dt
+        return OarStep(t=self.t_since_catch - dt, C=C, omega=omega,
+                       immersed=immersed, vn=f["vn"], Fn=f["Fn"], Fx=f["Fx"],
+                       Fy=f["Fy"], Fh=f["Fh"])
 
 
 def simulate(oar: Oar, V: float, dt: float, n_cycles: int) -> dict:

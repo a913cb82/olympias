@@ -556,9 +556,15 @@ pressure anchors in `schema.json`, `ll/tests/test_gate4.py`, register rows
       Taylor's fitted lever 4.8 m (decomposition open — register C3);
       back-water = force-limited 80 % astern (manoeuvre 5.x). Sample script
       runs end-to-end: first command-language → LL pipeline.
-- [ ] **Phase 1 Gate 4 — rower physiology layer** (plan §12): ll/rower.py with
-      Fh_max, P_crit ≈ 80 W/man (R&W ch.23, primary), W′ tank; per-side stroke
-      adaptation (B_eff), weakest-side-governs, commanded-vs-achieved
-      telemetry; physiological pressure anchors. Research subtasks: ch.9
-      sprint durations → W′; S6 force-curve source → Fh_max; τ.
+- [x] **Phase 1 Gate 4 — rower physiology layer** (plan §12, 8 checks):
+      `ll/rower.py` — Fh_max 700 N, P_crit 80 W/man (R&W ch.23, primary),
+      W′ 10 kJ (provisional), per-side stroke adaptation (demand-limited
+      drive, sweep shortening, tempo loss with weakest-side-governs),
+      commanded-vs-achieved telemetry. Findings: steady = sustainable
+      envelope; spoude = W′-limited burst (~90 s); rest start = short
+      stretched strokes, launch slower than the bulk law; backing
+      degenerates to a hold-brake at speed; exhausted-side yaw; tightest
+      turn halves speed after the burst; rate 50 + exhausted = tempo lost.
+      Research subtasks now: ch.9 sprint durations → W′; S6 force-curve
+      source → Fh_max; τ (plan §12.6).
 - [ ] Sketch the HL tolerance/labels format (§4 / §6 annotations).
