@@ -109,7 +109,7 @@ for cid, date, snippet in fragments:
 content = '\n'.join(lines)
 
 # ---- write ----
-outpath = '/home/acbraith/projects/sandbox/trireme-olympias-archived-build-log-21958-richard-braithwaite.md'
+outpath = '/home/acbraith/projects/olympias/research/sources/recovery/trireme-olympias-archived-build-log-21958-richard-braithwaite.md'
 with open(outpath, 'w') as f:
     f.write(content)
 print(f"Wrote {outpath} ({len(content.splitlines())} lines)")

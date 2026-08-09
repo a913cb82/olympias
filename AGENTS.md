@@ -14,7 +14,6 @@ fast ship-level) is an approximation validated against the LL. Full design: `sim
 research/                        the validated evidence base (see research/AGENTS.md)
   lane-1-read … lane-6-validation   one topic per lane (oars, hull, waves, manoeuvre…)
   data/                            decoded source tables (CSV, # comments allowed)
-  tasks/                           repeatable extraction/decoding playbooks
   sources/                         source PDFs (Rankov 2012, Carter, …) + build
                                    logs + the MSW-21958 recovery cluster (recovery/)
   tools/                           decode/OCR helpers + fonts + renders (scratch/ for

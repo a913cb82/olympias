@@ -333,7 +333,7 @@ artifacts**, and return a **structured summary** as their final message.
 Directory layout (persistent, inside this repo):
 
 ```
-~/projects/sandbox/trireme/
+~/projects/olympias/
 ├── research/
 │   ├── lane-1-read/          # Lane 1 prose notes (one .md per reader)
 │   ├── lane-2-waves/         # Lane 2 notes + decoded-table artifacts
@@ -852,7 +852,7 @@ content; two produced new reconciliation/validation data.
 ### S13 — Uncertainties register + tank-test identification + Taylor-model external check [x]
 
 Three-step session (steps 1–3 of the "next steps" list). Repo is consolidated (commits through
-2e02774); all research now lives under `~/projects/sandbox/trireme/`.
+2e02774); all research now lives under `~/projects/olympias/`.
 
 1. **Uncertainties register created (W6)** [x]: `research/lane-6-validation/uncertainties-register.md`
    — 25 items A1–D5, each with value, flag, source, caveat, and [H]/[M]/[L] model sensitivity.

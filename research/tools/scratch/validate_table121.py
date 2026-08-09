@@ -1,5 +1,5 @@
 import sys
-sys.path.insert(0, "/home/acbraith/projects/sandbox/research/lane-4-oars")
+sys.path.insert(0, "/home/acbraith/projects/olympias/research/lane-4-oars")
 from lane4_propulsion import hull_power, speed_from_power, oar_power, mean_pull, KT
 
 # Table 1.2.1 (Rankov 2012 ch.1.2): SPM -> knots during one 1992 acceleration run.
