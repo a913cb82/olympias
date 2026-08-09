@@ -5,3 +5,4 @@ __pycache__/
 venv/
 .cache/
 .pytest_cache/
+tools/frontispiece_4x.png

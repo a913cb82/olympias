@@ -13,7 +13,7 @@ follow the repo convention: `[x]` = reproduced against a cited anchor,
 ## 0. Reproduce everything (pytest)
 
 ```bash
-cd trireme-sim
+cd simulation
 ../.venv/bin/python3 -m pytest          # all suites, one command: 71 checks
 ../.venv/bin/python3 -m pytest -v       # per-check names
 ../.venv/bin/python3 -m pytest ll/tests/test_gate5.py   # one suite

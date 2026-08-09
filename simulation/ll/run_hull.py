@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Surge-hull runs (Phase 1 Gate 2).
 
-Usage (from trireme-sim/):
+Usage (from simulation/):
     python3 ll/run_hull.py                       # anchored run @ 28.8 spm
     python3 ll/run_hull.py --table               # equilibrium table over rates
     python3 ll/run_hull.py --spm 44.5 --oars 130 # ch.9 sprint configuration

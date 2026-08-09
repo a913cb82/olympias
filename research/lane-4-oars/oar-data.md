@@ -1,6 +1,6 @@
 # Lane 4 — Oars & Oar-Rig: Olympias geometry, mass, gearing, stroke, blades
 
-Research notes, web-only + Rankov 2012 full-text PDF (extracted text at `sources/rankov2012.txt`).
+Research notes, web-only + Rankov 2012 full-text PDF (extracted text at `../sources/rankov2012.txt`).
 Confidence flags: `[x]` = confirmed directly from a cited source (primary text read); `[?]` = inferred / unverified / conflicting.
 Primary texts used: Rankov 2012 ch.1 (1992 trials report, Lipke/Howarth), ch.3 (1994 trials report, Shaw, incl. Appendices 1–3), ch.31 (Taylor); Braithwaite 1:24 build log (ModelShipWorld); Wikipedia Olympias infobox.
 
@@ -187,8 +187,8 @@ Verification: all **7 complete spruce rows and old thranite C verify internally 
 
 ## 10. Sources
 
-- [x] **Rankov, B. (ed.) (2012).** *Trireme Olympias: The Final Report.* Oxbow. (PDF at ancientportsantiques.com; text at sources/rankov2012.txt) — ch.1 (1992 trials, Lipke/Howarth) pp.24–25, 37–39; ch.3 (1994 trials, Shaw, incl. Apps 1–3) pp.47–62; ch.7 (Shaw, Golden Horn→Heraclea) pp.63–67; ch.9 (Shaw, long-stroke design) pp.76–81; ch.31 (Taylor) pp.233–243.
-- [x] **Braithwaite, R.** 1:24 Olympias build log, ModelShipWorld (local copy: trireme-olympias-build-log-richard-braithwaite.md), POSTs 60–72, 77 (oars) and 61 (oar mass).
+- [x] **Rankov, B. (ed.) (2012).** *Trireme Olympias: The Final Report.* Oxbow. (PDF at ancientportsantiques.com; text at ../sources/rankov2012.txt) — ch.1 (1992 trials, Lipke/Howarth) pp.24–25, 37–39; ch.3 (1994 trials, Shaw, incl. Apps 1–3) pp.47–62; ch.7 (Shaw, Golden Horn→Heraclea) pp.63–67; ch.9 (Shaw, long-stroke design) pp.76–81; ch.31 (Taylor) pp.233–243.
+- [x] **Braithwaite, R.** 1:24 Olympias build log, ModelShipWorld (local copy: ../sources/trireme-olympias-build-log-richard-braithwaite.md), POSTs 60–72, 77 (oars) and 61 (oar mass).
 - [x] **Wikipedia, "Olympias (trireme)"** — crew breakdown (62/54/54), 1987 trials, dimensions, power estimate.
 - [x] **Morrison, Coates & Rankov (2000).** *The Athenian Trireme* (oar-loop/thole details; cubit basis; 9 & 9½ cubit oars).
 - [?] Roman-wreck interscalmia (Mainz/Oberstimm/etc.): secondary summary only — obtain primary wreck reports if these enter the model.

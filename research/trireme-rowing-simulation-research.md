@@ -11,7 +11,7 @@ Goal: assemble the equations, coefficients, and data sources needed to model
 
 Status legend: [x] done, [ ] pending, [?] uncertain / needs verification.
 
-> **Simulator project plan**: see `trireme-simulation-plan.md` — a paired high-level
+> **Simulator project plan**: see `../simulation/trireme-simulation-plan.md` — a paired high-level
 > (fast, ship-level) and low-level (per-oar, reality-grade) simulator, sharing one
 > commander command language; the low-level one is the oracle that sanity-checks the
 > high-level one. Open questions oQ-1…oQ-21 live in the plan, §10.
@@ -342,9 +342,12 @@ Directory layout (persistent, inside this repo):
 │   ├── lane-5-manoeuvre/     # Lane 5 notes + extracted workbook/csv
 │   ├── lane-6-validation/    # Lane 6 validation table + uncertainties register
 │   └── data/                 # shared machine-readable artifacts (CSV, xlsx, decoded fonts)
-├── sources/                  # primary-source PDFs + text dumps
-├── tools/                    # decode/OCR scripts + fonts + renders
-└── wayback/                  # MSW thread-21958 recovery tooling
+│   ├── sources/              # primary-source PDFs + text dumps + build logs
+│   │   └── recovery/         # MSW-21958 recovery cluster (wayback/ + reports)
+│   ├── tools/                # decode/OCR scripts + fonts + renders (scratch/ for one-offs)
+│   └── tasks/                # repeatable extraction/decoding playbooks
+├── simulation/               # the simulator pair + its plan (AGENTS.md inside)
+└── AGENTS.md                 # repo guide (README.md -> this)
 ```
 
 Raw data artifacts (Table 8.3 CSV, extracted workbook, towing-resistance tables) go in
@@ -362,7 +365,8 @@ Per-lane rules:
   section (S7, S8, …) and ticks the corresponding W/lane boxes.
 
 In this session, artifacts were produced in `/tmp/opencode` (fonts, scripts,
-page renders) and are now promoted into `sources/`, `tools/`, and `wayback/`; the venvs
+page renders) and are now promoted into `research/sources/`, `research/tools/`, and
+`research/sources/recovery/wayback/`; the venvs
 stay in `/tmp/opencode`. Only *finished* deliverables (the decoded CSV, notes) belong in
 `research/`.
 

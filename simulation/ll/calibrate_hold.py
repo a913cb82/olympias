@@ -8,7 +8,7 @@ the held-blade brake. The brake's yaw arm is the athwartships station arm
 (~1.5 m), NOT the fitted 4.8 m thrust lever (which folds in drift/lateral
 dynamics — register C3 refinement).
 
-Usage (from trireme-sim/): python3 ll/calibrate_hold.py [--f-max 0.30]
+Usage (from simulation/): python3 ll/calibrate_hold.py [--f-max 0.30]
 """
 
 import argparse

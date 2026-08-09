@@ -8,7 +8,7 @@ cell-by-cell. A mismatch flags either an OCR error or a mis-read assumption.
 
 ### 1. Identify the generating equations from the primary source
 Read the surrounding prose (via `decode_shaw.py` / text dump) for the formulas. For Shaw's wave
-tables these are Carter 1982 + deep-water dispersion — see `research/lane-2-waves/carter-equations.md`
+tables these are Carter 1982 + deep-water dispersion — see `../lane-2-waves/carter-equations.md`
 for the full recipe. Note the *exact* inputs and their definitions from the caption (e.g. W is wind
 **relative to the water**, C measured relative to water moving at 0.5 m/s).
 
@@ -17,7 +17,7 @@ One-off python (any venv with numpy/math is fine). Loop the table's independent 
 expected H/L/C, apply any caps, print side-by-side with the decoded values:
 
 ```bash
-cd tools && source ../.venv/bin/activate   # repo-local venv (from tools/)
+cd ../tools && source ../../.venv/bin/activate   # repo-local venv (from research/tasks/)
 python -c "
 rows = [  # (fetch, duration, W=4.5:(H,L,C), W=5.0:(...), W=5.5:(...)) from decoded CSV
  (50,3.2, (0.23,4.1,2.5), (0.27,4.7,2.7), (0.30,5.2,2.9)),

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Turn scenarios for the 170-oar ship (Phase 1 Gate 3).
 
-Usage (from trireme-sim/):
+Usage (from simulation/):
     python3 ll/run_turn.py [scenario]     # g1 | f1 | tightest | oar-hold | oar-back | script
     python3 ll/run_turn.py --table        # all scenarios
 

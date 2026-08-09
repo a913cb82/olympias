@@ -283,7 +283,7 @@ re-fitted to the LL's new truth.
 ## 7. Architecture sketch (python, matching the repo)
 
 ```
-trireme-sim/
+simulation/
   commands/       # the language: schema + parser + examples
     schema.json   # verbs, args, enums — single source of truth
   common/         # shared rig/oar/sea assets (rig.py, oar_data.py, waves.py)
@@ -929,9 +929,9 @@ simulators:
 
 - [x] Freeze the **verb set** (§3.2: 4 crew verbs). oQ-1, 2, 5, 6, 7 resolved; only
       oQ-4 remains for the schema round.
-- [x] Freeze `commands/schema.json` v0.1 + parser + sample script (`trireme-sim/`;
+- [x] Freeze `commands/schema.json` v0.1 + parser + sample script (`simulation/`;
       parser: 19 checks passing, fail-fast + deterministic).
-- [x] **Phase 1 Gate 1 — LL one-oar skeleton** (`trireme-sim/ll/`): time-stepped oar
+- [x] **Phase 1 Gate 1 — LL one-oar skeleton** (`simulation/ll/`): time-stepped oar
       with the flat-blade law; reproduces the rigid model at all four Table 9.6
       points (<0.5 %), mean handle force 224/208 N in the cruise family,
       prop W/man 102 % at 7.2 kt, dt-converged, oQ-18 shortfall inherited

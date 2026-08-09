@@ -7,7 +7,7 @@ reproduces the trial's 8.2-8.3 kt at 44.5 spm with ~130 effective rowers
 (ch.9). The trial speed is the anchor; t_drive is the unknown stroke
 parameter.
 
-Usage (from trireme-sim/): python3 ll/calibrate_tdrive.py
+Usage (from simulation/): python3 ll/calibrate_tdrive.py
 """
 
 import sys

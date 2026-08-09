@@ -1,6 +1,6 @@
 """Gate 5 — the oar inertia layer (plan §13).
 
-Run: python3 tests/test_gate5.py  (from trireme-sim/)
+Run: python3 tests/test_gate5.py  (from simulation/)
 
 Gates (plan §13.4):
   G5-1 spike magnitudes reproduce oar_inertia.py (116 / 215 / 156 N at

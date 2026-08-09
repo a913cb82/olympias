@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Run one oar at a fixed hull speed and report the Gate-1 table.
 
-Usage (from trireme-sim/):
+Usage (from simulation/):
     python3 ll/run_one_oar.py [--rig Olympias|MarkIIb] [--v-kts 7.2] [--spm 28.8]
                               [--t-drive 0.430] [--dt 0.001] [--cycles 4]
 

@@ -12,8 +12,8 @@ session doesn't re-learn them the hard way.
 | [pdf-text-extraction.md](pdf-text-extraction.md) | Simple case: PDF text extracts fine — pull clean text/pages quickly. |
 
 Working notes (persistent across sessions):
-- Sources: `sources/rankov2012.pdf` (+ `rankov2012.txt` full text dump), Carter 1982 PDF in
-  `sources/carter/`. Promoted deliverables live in this repo; scratch stays in repo too.
+- Sources: `../sources/rankov2012.pdf` (+ `rankov2012.txt` full text dump), Carter 1982 PDF in
+  `../sources/carter/`. Promoted deliverables live in this repo; scratch stays in repo too.
 - **Venv: `.venv` at the repo root** (Python 3.10.12) has pymupdf + numpy + PIL + scipy +
   matplotlib — everything except OCR. Render/extract with `.venv/bin/python3`.
 - **OCR (easyocr + torch) is on-demand only** — heavy; not installed into `.venv`. Recipe:
@@ -21,5 +21,5 @@ Working notes (persistent across sessions):
   `.venv`, OCR with `.venv-ocr`). The old `/tmp/opencode` venv pair is deprecated.
 - Rankov 2012 page numbering: **PDF page index = printed book page + 12** (e.g. book p.72 = PDF page 84;
   book p.70 = PDF page 82). `decode_shaw.py` numbers by PDF page index (0-based pymupdf page).
-- The glyph-cache (`tools/.cache/glyph_map3.json`, gitignored) and the reconstructed fonts in `tools/`
-  are the accumulated decode state — keep them when re-running decodes.
+- The glyph-cache (`../tools/.cache/glyph_map3.json`, gitignored) and the reconstructed fonts in
+  `../tools/` are the accumulated decode state — keep them when re-running decodes.

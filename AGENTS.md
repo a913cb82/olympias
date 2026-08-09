@@ -2,12 +2,11 @@
 
 An evidence-driven project on the performance of the Athenian trireme (Olympias
 reconstruction): a **validated physics chain** (`research/`) feeding **two
-simulators** (`trireme-sim/`) that share one commander command language.
+simulators** (`simulation/`) that share one commander command language.
 
 Chain of trust: **real-world data → LL → HL**. The low-level simulator (LL, per-oar
 physics) is the oracle against the validated numbers; the high-level simulator (HL,
-fast ship-level) is an approximation validated against the LL. Full design:
-`trireme-simulation-plan.md`.
+fast ship-level) is an approximation validated against the LL. Full design: `simulation/trireme-simulation-plan.md`.
 
 ## Layout
 
@@ -16,15 +15,18 @@ research/                        the validated evidence base (see research/AGENT
   lane-1-read … lane-6-validation   one topic per lane (oars, hull, waves, manoeuvre…)
   data/                            decoded source tables (CSV, # comments allowed)
   tasks/                           repeatable extraction/decoding playbooks
-trireme-sim/                     the simulators (see trireme-sim/AGENTS.md)
+  sources/                         source PDFs (Rankov 2012, Carter, …) + build
+                                   logs + the MSW-21958 recovery cluster (recovery/)
+  tools/                           decode/OCR helpers + fonts + renders (scratch/ for
+                                   one-off iteration scripts)
+  tasks/                           repeatable extraction/decoding playbooks
+  trireme-rowing-simulation-research.md   research tracker (status legend inside)
+simulation/                      the simulators (see simulation/AGENTS.md)
   commands/  schema + script parser (the frozen command language)
   ll/        per-oar reality-grade sim — Phase 1 complete (the oracle;
-             acceptance record: trireme-sim/VALIDATION.md)
+             acceptance record: simulation/VALIDATION.md)
   hl/        fast ship-level sim — Phase 2 (plan §19; its curves come from LL runs)
-sources/                         source PDFs (Rankov 2012, Carter, …)
-tools/                           decode/OCR helpers + extracted text dumps
-trireme-rowing-simulation-research.md   research tracker (status legend inside)
-trireme-simulation-plan.md              the simulator plan (oQ-1…21, gates, contract)
+  trireme-simulation-plan.md     the simulator plan (oQ-1…21, gates, contract)
 ```
 
 ## Key facts (validated chain, the acceptance floor)
@@ -61,17 +63,17 @@ trireme-simulation-plan.md              the simulator plan (oQ-1…21, gates, co
 
 - Research chain: validated for cruise/sprint/turn (ch.7/ch.9, F/G ≤ 7 %).
 - Sim: Step 0 (command language) and Phase 1 (the LL oracle, gates 1–8) complete —
-  the acceptance record: `trireme-sim/VALIDATION.md`. Next: Phase 2 (the HL,
+  the acceptance record: `simulation/VALIDATION.md`. Next: Phase 2 (the HL,
   plan §19) then Phase 3 (the harness, plan §20).
 
 ## Quick commands
 
 ```bash
-cd trireme-sim
+cd simulation
 V=../.venv/bin/python3
 $V -m pytest                      # the whole test suite, one command — the current
                                   # count and per-gate breakdown live in
-                                  # trireme-sim/VALIDATION.md (not here, to stay
+                                  # simulation/VALIDATION.md (not here, to stay
                                   # in date)
 $V ll/run_one_oar.py              # one-oar table at the anchored cruise point
 $V ll/run_turn.py table           # turn scenarios vs the W5 anchors

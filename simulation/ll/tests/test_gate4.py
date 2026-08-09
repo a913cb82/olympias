@@ -1,6 +1,6 @@
 """Gate 4 — the rower physiology layer (plan §12).
 
-Run: python3 tests/test_gate4.py  (from trireme-sim/)
+Run: python3 tests/test_gate4.py  (from simulation/)
 
 Gates (plan §12.5):
   G4-1 sustained cruise: steady pressure keeps W' full and speed stable

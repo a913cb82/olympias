@@ -3,7 +3,7 @@
 Lane 2 / W4, Olympias trireme reconstruction — research notes.
 Source: Rankov 2012 ch.8, book p.71 (PDF page 83). Text-layer glyphs are PUA (TT291/TT292/TT293)
 and unmatchable by the DejaVu EDT matcher; tables were recovered by OCR (easyocr) of 6× page renders
-(`tools/decode_shaw.py` prints the region; renders `/tmp/opencode/p84_tables_6x.png`). Every cell is
+(`../tools/decode_shaw.py` prints the region; renders `/tmp/opencode/p84_tables_6x.png`). Every cell is
 cross-checked against the equations in the prose, so values are certain [x].
 
 ---
@@ -55,7 +55,7 @@ course". The ship is moving at 4.4 m/s (8.5 kt) past the land; the wind blows fr
 
 ## Method note (for reuse)
 
-- Text-layer decode (`tools/decode_shaw.py`) resolves prose and captions but leaves table numerals as
+- Text-layer decode (`../tools/decode_shaw.py`) resolves prose and captions but leaves table numerals as
   unmapped PUA glyphs (the subset Type0 TT fonts embed a different glyph set than the DejaVu reference).
 - Reliable route: `pymupdf` render page 83 at zoom ~6 → OCR each table region with easyocr (`.venv`
   at the repo root for pymupdf; the on-demand OCR venv — see `research/tasks/AGENTS.md`); pin down

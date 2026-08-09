@@ -12,15 +12,15 @@ Find the PDF page (remember: Rankov book page + 12 = PDF page index). Then rende
 tight crop around the table at 8x with a clip rect:
 
 ```bash
-cd tools
-source ../.venv/bin/activate   # repo-local venv (from tools/)
+cd ../tools
+source ../../.venv/bin/activate   # repo-local venv (from research/tasks/)
 python -c "
 import pymupdf
-doc = pymupdf.open('../sources/rankov2012.pdf')
+doc = pymupdf.open('../../sources/rankov2012.pdf')
 page = doc[84]                      # book p.72, Table 8.3
 pix = page.get_pixmap(matrix=pymupdf.Matrix(8,8),
                       clip=pymupdf.Rect(40, 96, 540, 185))   # x0,y0,x1,y1 in 1x page pts
-pix.save('tools/t83_table_8x.png')
+pix.save('t83_table_8x.png')
 print('saved', pix.width, pix.height)
 "
 ```
@@ -38,8 +38,8 @@ Tips for the clip rect:
 ### 2. OCR it (use `venv`, it has easyocr + torch)
 
 ```bash
-cd tools
-source ../.venv-ocr/bin/activate   # on-demand OCR venv (recipe in tasks/AGENTS.md)
+cd ../tools
+source ../../.venv-ocr/bin/activate   # on-demand OCR venv (recipe in tasks/AGENTS.md)
 python -c "
 import easyocr
 reader = easyocr.Reader(['en'], gpu=False, verbose=False)
@@ -76,7 +76,8 @@ three columns `H  L  C`. Each data row is `fetch, duration, {W=4.5: H L C}, {W=5
   drops the `*`; recover it from the verification pass (asterisked H equals the fully-developed cap).
 - Column header glyphs (`H L C`, `W = 4.5 m/s`) OCR fine; the sub-header row may come out as one
   merged box per cell — acceptable, don't over-polish.
-- Renders and OCR crops go in `tools/` (from repo root; `.cache/` inside `tools/` is gitignored) as
+- Renders and OCR crops go in `research/tools/` (from repo root; `.cache/` inside is
+  gitignored) as
   scratch; **promote the clean CSV to
   `research/data/`** when done (see step 4).
 

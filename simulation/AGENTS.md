@@ -1,9 +1,9 @@
-# trireme-sim — the simulators
+# simulation — the simulators
 
 Two simulators of the Olympias-class trireme sharing one command language. Design:
-`../trireme-simulation-plan.md` (gates, equivalence contract, open questions
+`./trireme-simulation-plan.md` (gates, equivalence contract, open questions
 oQ-1…21). The validated physics they must satisfy: `../research/AGENTS.md` and
-`../trireme-rowing-simulation-research.md`.
+`../research/trireme-rowing-simulation-research.md`.
 
 **Chain of trust: real-world data → LL → HL.** The LL's acceptance record —
 every gate, anchor, result and honest mismatch — lives in
@@ -49,7 +49,7 @@ dropped list with reasons is plan §3.2.
 ## Running (pytest)
 
 ```bash
-V=../.venv/bin/python3               # from trireme-sim/
+V=../.venv/bin/python3               # from simulation/
 $V -m pytest                         # all suites, one command (the current count
                                      # lives in VALIDATION.md, not here)
 $V -m pytest -v                      # per-check names

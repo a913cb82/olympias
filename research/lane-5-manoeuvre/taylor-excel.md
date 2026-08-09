@@ -78,7 +78,7 @@ Primary source for the Kempf (zig-zag) manoeuvre itself:
 ## 4. Table 31.1 (p. 232) — full reconstruction by OCR [x]
 
 The table body text is garbled even in the PDF text layer (glyphs in Private Use Area,
-e.g. U+F001..), but a full-page render of book p. 232 (`tools/b232_6x.png`, 6x
+e.g. U+F001..), but a full-page render of book p. 232 (`../../tools/scratch/b232_6x.png`, 6x
 render via pymupdf) read reliably with easyocr. Two independent renders (3x and 6x) agree.
 Header [x]: "Table 31.1. Model parameters used to fit the observed performance of Olympias
 recorded during sea trials and to extend the model to predict the dynamics possible for an

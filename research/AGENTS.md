@@ -1,7 +1,7 @@
 # research/ — the validated evidence base
 
 Everything the simulators rely on, with provenance and confidence flags. The
-top-level tracker is `../trireme-rowing-simulation-research.md` (status legend:
+top-level tracker is `./trireme-rowing-simulation-research.md` (status legend:
 `[x]` done, `[ ]` pending, `[?]` uncertain). Read the playbooks in `tasks/`
 *before* any extraction/decoding task.
 
@@ -14,11 +14,11 @@ top-level tracker is `../trireme-rowing-simulation-research.md` (status legend:
 | `lane-3-hull` | Hull form & resistance | `parametric-hull-form.md`, `hull-form-summary.csv`, `hull_form.py` (LWL 32.2 m, 41.4 t trial / 25.2 t light; KM caveat on record) |
 | `lane-4-oars` | Oar rig, power, blade physics | `rig-geometry.md`, `oar-data.md` (Rankov Table 3.1/3.2 decoded), `lane4_propulsion.py` (P = 7.43·r chain), `rigid_oar_model.py` (flat-plate per-stroke), `rigid-oar-refinement.md`, `oar_inertia.py` (Table 3.1 inertias, catch-flip) |
 | `lane-5-manoeuvre` | Turning | `manoeuvre-model.md`, `manoeuvre_model.py`, `fg-turns-rerun.md` (F/G ≤ 7 %), `taylor-excel.md`, `clr-rotation.md` |
-| `lane-6-validation` | Cross-cutting validation | `validation-table.md` (research side: bulk models vs trials), `uncertainties-register.md`, `primary-trial-data.md`, `validation_table.py`. The simulator's acceptance record is `../trireme-sim/VALIDATION.md` (the LL side) |
+| `lane-6-validation` | Cross-cutting validation | `validation-table.md` (research side: bulk models vs trials), `uncertainties-register.md`, `primary-trial-data.md`, `validation_table.py`. The simulator's acceptance record is `../simulation/VALIDATION.md` (the LL side) |
 | `data/` | Decoded source tables | `shaw-table-3.1-oar-inertia.csv`, `shaw-table-3.2-stroke-rhythm.csv`, Shaw 8.x tables, Taylor parameters (`table31-1-taylor-model-parameters.csv`) |
 | `tasks/` | Repeatable playbooks | PDF text extraction, subset-font decode, OCR table decoding, verify-decoded-tables |
 
-## The validated chain (what the sims consume — via `trireme-sim/common/chain.py`)
+## The validated chain (what the sims consume — via `../simulation/common/chain.py`)
 
 - Rig: tiers 62/54/54; interscalmium 0.888 m; inboard 1.092 m; sweeps
   48.1/48.4/55.6°; blade 0.55 m; area 0.078 m².
@@ -46,7 +46,7 @@ top-level tracker is `../trireme-rowing-simulation-research.md` (status legend:
   in `tasks/AGENTS.md`. The old /tmp/opencode venv split is deprecated.
 - **Rankov 2012 pages**: PDF page index = printed book page + 12.
 - When a finding changes the chain, update: the tracker, the relevant lane doc, the
-  `uncertainties-register.md`, and — if a sim consumes it — `trireme-sim/common/chain.py`
+  `uncertainties-register.md`, and — if a sim consumes it — `../simulation/common/chain.py`
   plus the affected gate tests.
 
 ## Open items (living; mirror plan oQ-* and §9.1)

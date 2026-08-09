@@ -1,6 +1,6 @@
 """Gate 2 — surge hull against the validated chain.
 
-Run: python3 tests/test_gate2.py  (from trireme-sim/)
+Run: python3 tests/test_gate2.py  (from simulation/)
 
 Contract (plan §6, Level 1; plan next-actions Gate 2):
   - The coupled surge integrator settles on the hull=1.0 anchors: 7.2 kt @

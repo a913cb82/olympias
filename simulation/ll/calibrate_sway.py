@@ -7,7 +7,7 @@ sprint-protocol tightest t_360 near the trial's 128 s. The sway's
 physical restoring moment (the hull lateral resistance at the CLR) is
 the term the lumped Omega·w^2 cannot represent; the pair fits both.
 
-Usage (from trireme-sim/): python3 ll/calibrate_sway.py
+Usage (from simulation/): python3 ll/calibrate_sway.py
 """
 
 import math
