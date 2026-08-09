@@ -120,5 +120,11 @@ no CLI: `from commands.parser import parse_file, parse_script` — errors raise
       unchanged (<1%); force-driven companion reproduces the Table 9.6
       drive time (0.43 s, essentially exact); ceiling holds both fleets.
       t_rise = 0.15 s provisional (register D10).
+- [x] Phase 1 Gate 6 — per-tier crews (plan 15.1, 4 checks): SideCrew = 3
+      TierCrews (31/27/27 per side, per-tier MIT + W′); the thalmian head-
+      room as the ch.9 L-model power factor (0.9 cruise -> 0.6 sprint) with
+      the feather clamp (the deadspot slips the blade); the thalmian share
+      falls with rate (the trial character) and the 170-oar sprint
+      overshoot closes (8.54 -> ~7.9 kt).
 - [ ] Phase 2 — HL from LL;  [ ] Phase 3 — harness;  [ ] Phase 4 — crew & environment;
       [ ] Phase 5 — oar-manoeuvres

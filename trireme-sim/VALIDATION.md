@@ -20,7 +20,7 @@ cd trireme-sim
 ../.venv/bin/python3 ll/tests/test_gate5.py             # direct run also works
 ```
 
-Suites: `tests/test_parser.py` (19) · `ll/tests/test_gate1..5.py` (7/12/9/8/7)
+Suites: `tests/test_parser.py` (19) · `ll/tests/test_gate1..6.py` (7/12/9/8/7/4)
 · `tests/test_research_chain.py` (12 — locks the research chain itself: the
 8.32-kt sprint, Table 9.7, ch.7 cruise, rigid-model means, oar families,
 catch spikes, W5 turn anchors, acceleration, apparent mass). Every check
@@ -51,7 +51,7 @@ ch.7/ch.9 power chain.
 | 32.3 spm | 7.58 kt | 8.0 kt (ch.7 ref) | −5.3 % |
 | 36.0 spm | **7.98 kt** | **8.2 kt (Table 9.6)** | **−2.7 %** |
 | 44.5 spm, 130 oars | 7.9–8.8 kt bracket | 8.2–8.4 kt trial | trial inside the bracket `[x]` |
-| 44.5 spm, 170 oars | 9.02 kt | (trial was ~130 rowers) | crew-count effect, documented `[!]` |
+| 44.5 spm, 170 oars | ~7.9 kt burst | (trial ~130 effective; the thalmians 'ineffective' at sprint) | overshoot closed by the per-tier head-room (Gate 6) `[x]` |
 
 Also: full per-step coupling agrees with the mean-force equilibrium < 1 %;
 settles from 0.9·V\* within 300 s with no overshoot; stroke-frequency surge
@@ -129,7 +129,9 @@ caveat mechanism, now integrated).
    diameters validated, not cell-by-cell.
 6. **t_rise = 0.15 s** provisional (register D10); **lever 4.8 m** partially
    decomposed (the brake arm is now physical — register C3; the thrust
-   lever's drift component still open); **per-tier factors** v2 (plan §12.6);
+   lever's drift component still open); **per-tier factors done** (Gate 6:
+   the thalmian head-room power factor + the feather clamp; sprint
+   overshoot closed);
    **Mark IIb** diagnosed as the ch.9 turning-point (q/p)² blade law —
    implementation is the next blade-physics layer.
 
