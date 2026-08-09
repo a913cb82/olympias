@@ -11,6 +11,11 @@ Goal: assemble the equations, coefficients, and data sources needed to model
 
 Status legend: [x] done, [ ] pending, [?] uncertain / needs verification.
 
+> **Simulator project plan**: see `trireme-simulation-plan.md` — a paired high-level
+> (fast, ship-level) and low-level (per-oar, reality-grade) simulator, sharing one
+> commander command language; the low-level one is the oracle that sanity-checks the
+> high-level one. Open questions oQ-1…oQ-21 live in the plan, §10.
+
 ---
 
 ## ⚠️ Living document — update it as you go
