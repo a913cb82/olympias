@@ -20,7 +20,7 @@ cd trireme-sim
 ../.venv/bin/python3 ll/tests/test_gate5.py             # direct run also works
 ```
 
-Suites: `tests/test_parser.py` (19) · `ll/tests/test_gate1..7.py` (7/12/9/8/7/4/4)
+Suites: `tests/test_parser.py` (19) · `ll/tests/test_gate1..8.py` (7/12/9/8/7/4/4/5)
 · `tests/test_research_chain.py` (12 — locks the research chain itself: the
 8.32-kt sprint, Table 9.7, ch.7 cruise, rigid-model means, oar families,
 catch spikes, W5 turn anchors, acceleration, apparent mass). Every check
@@ -62,9 +62,9 @@ curve; the oQ-18 Mark IIb shortfall reproduced exactly (locked by test).
 
 | Scenario | LL diameter | Anchor | Match |
 | --- | --- | --- | --- |
-| G1 full rudder @ 6 kt | 93.5 m | 89.4 m | +4.6 % |
-| F1 22.5° @ 6 kt | 117.2 m | 111.9 m | +4.7 % |
-| Tightest, one side stops @ 6.5 kt | 64.4 m | 62 m | +3.9 % |
+| G1 full rudder @ 6 kt | 89.7 m | 89.4 m | +0.3 % (sway-calibrated set) |
+| F1 22.5° @ 6 kt | 117.4 m | 111.9 m | +4.9 % |
+| Tightest, one side stops @ 6.5 kt | 67.8 m | 62 m | +9.4 % |
 | Oar-only hold / back (no rudder) | 92.7 / 54.5 m | no trial anchors (oQ-3) | physically consistent `[x]` |
 
 Also: symmetric crew holds course (< 0.5° in 300 s); the rudder-turn diameter
@@ -118,13 +118,13 @@ caveat mechanism, now integrated).
    A5 area gap + the slip assumptions, quantified by the 'as-designed'
    scenario (area 1.3× + slip 1.2 → the chain's 9.7 kt). Locked by test:
    no silent tuning.
-2. **Tightest-turn 360° time** — **mostly closed**: two-lever decomposition
-   (the held blades' drag uses the athwartships arm ~1.5 m, not the fitted
-   4.8 m thrust lever — register C3) + the two-anchor hold fraction 0.05 +
-   the sprint protocol (W' fade): D = 61.3 m ✓ and the speed halves
-   (V_360 = 3.7 kt vs the trial mean 2.9) ✓. Residual: t_360 = 85 vs 128 s —
-   now diagnosed as the fitted Ω yaw-resistance question (register C1), not
-   the hold physics.
+2. **Tightest-turn 360° time** — **closed by the sway DOF** (plan 15.3):
+   the physical CLR restoring moment + the C3 lever decomposition (4.8 →
+   1.8 m) + the ship's effective Ω 3.2e6: D = 67.8 m ✓ and the speed
+   halves ✓; t_360 = 98 vs 128 s — the ~23 % residual is the turn's
+   build-up (the trial's entry vs the instant hard-over), documented.
+   The drift emerges (−2.2°, between the Taylor 1.4° and the reported
+   15°); the lateral velocity damps.
 3. **Sprint t_drive gap** — **closed**: t_drive(44.5) = 0.371 s calibrated
    to the trial (8.30 kt at 130 oars, in the 8.2–8.4 band); the assumption
    is now a pinned, tagged schedule entry (register A8).

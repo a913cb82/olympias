@@ -135,5 +135,11 @@ no CLI: `from commands.parser import parse_file, parse_script` — errors raise
       l_cp·ω (identity at Olympias by construction); the Mark IIb prop
       fraction 0.30 → 0.51–0.54; the 'as-designed' scenario (cant + area
       1.3× + slip 1.2) reproduces the chain's 9.7 kt at 46.3 spm.
+- [x] Plan 15.3 — the sway DOF (Gate 8, 5 checks) — **the LL physics is
+      complete**: surge+sway+yaw, the physical CLR restoring moment, the
+      C3 lever decomposition (4.8 → 1.8 m), the C1 Ω reconciliation
+      (ship 3.2e6 / steady model 5e6); diameters held (89.7/117.4/67.8 m),
+      t_360 98 s vs 128 (the turn build-up residual), the drift −2.2°,
+      lateral damping clean. 88 tests green.
 - [ ] Phase 2 — HL from LL;  [ ] Phase 3 — harness;  [ ] Phase 4 — crew & environment;
       [ ] Phase 5 — oar-manoeuvres

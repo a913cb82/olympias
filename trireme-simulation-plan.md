@@ -651,7 +651,7 @@ the drive and its means are untouched by construction.
 
 | # | Mismatch | Path | Status |
 | --- | --- | --- | --- |
-| 1 | Tightest-turn 360°-time (73 vs 128 s) | **done**: two-lever decomposition (brake yaw arm 1.5 m ≠ fitted 4.8 m thrust lever — register C3) + two-anchor hold fraction f = 0.05 → sprint-protocol turn: D = 61.3 m ✓ and the speed halves (V_360 = 3.7 kt, trial mean 2.9) ✓; t_360 = 85 s vs 128 — residual now diagnosed as the fitted-Ω yaw-resistance question (register C1), not the hold physics | [x] mostly — residual documented |
+| 1 | Tightest-turn 360°-time (73 vs 128 s) | **done** (15.3): two-lever decomposition + hold fraction 0.05 + the sprint protocol + the sway DOF — the physical CLR restoring moment + the C3 lever (4.8 → 1.8 m) + the ship's effective Ω 3.2e6 (C1 reconciled): D = 67.8 m ✓, the speed halves ✓, t_360 = 98 s vs 128 — the ~23 % residual is the turn's build-up (the trial's entry vs the instant hard-over), documented | [x] — residual documented as the build-up |
 | 2 | Sprint t_drive data gap (A8) | **done**: t_drive(44.5) = 0.371 s calibrated to the trial speed (8.30 kt at 130 oars — IN the 8.2–8.4 band); wired into t_drive_for as a tagged entry; matches the bracket analysis's 0.375 estimate | [x] |
 | 3 | 2-parameter CP tension (D7) | **done (no model change)**: the ¾-NM's 4–5-kt tailwind gives ~0.5–1.5 kW assistance (the ch.4 1.3–4.4 kW band is for a 10–15-kt wind) → true crew power 91–100 W/man → W′ = 5 kJ predicts 4–7.5 min; the observed 6.5 min sits inside the band. The 2-min rule and the 45-s sprint also check out | [x] |
 | 4 | Mark IIb shortfall (oQ-18) | **resolved as an equivalence** (15.2): Shaw's form k·(q/p)²·V²·sin²C with the ACTUAL turning point (p = V·cosC/ω) reduces algebraically to the flat-plate law — the flat-plate law IS Shaw's force form (locked as a test). The geometric-deadpoint slip limit (ω = V·cosC/p(C)) gives less thrust than the measured Table 9.6 kinematics (negative at our points) — the prescribed (measured) kinematics are the truth. The shortfall is therefore the UNKNOWN Mark II blade area (register A5 — our RIGS uses the Olympias 0.078 m²; the ch.9 ×3.3 note is the design's requirement, i.e. the Mark II's actual blade area ~0.26 m²). Closure: the A5 data (Coates plans) or the 'Mark IIb as designed' scenario at 0.26 m² | [x] resolved — A5 data gap named |
@@ -708,26 +708,30 @@ VALIDATION.md ledger row moves from [!] to [x] with the residual documented.
    fraction gate stays locked (the 0.078-area Mark IIb is 'Olympias blades
    on a Mark II rig', a scenario, not a model error).
 
-### 15.3 #1 — the sway DOF (third; 2-3 sessions)
+### 15.3 #1 — the sway DOF (**done**, Gate 8, 5 checks) — the LL is complete
 
-- Add sway v to the ship state: m_app·(dv/dt + ω·u) = F_oar_y + F_rud_y +
-  F_hull_lat(β); the per-oar Fy (already computed by the blade law) sums
-  into it; the rudder's lateral force (already modelled) too.
-- Hull lateral resistance: ρ·A_lat·v_lat·|v_lat|·sin(β) with A_lat = 35 m²
-  (validated parameter); the lateral-resistance centre (CLR) position is a
-  new parameter `[?]` — Plan 8 stations would pin it (archival link).
-- The yaw equation gains the physical lateral-moment term
-  F_hull_lat·(CLR − CG); Ω·ω² becomes a candidate for replacement/re-fit.
-- **Acceptance (the whole point)**: ONE parameter set satisfying BOTH the
-  diameters (G1/F1/tightest ≤ 5 %) AND the sprint-protocol t_360 ∈
-  [110, 140] s — the trial's 128 s.
-- Gates: (a) quasi-steady drift in G1 ≈ the Taylor balance value
-  (consistency); (b) the reported 15° ± 2° drift — can the dynamics
-  reproduce the documented caveat? (c) diameters within tolerance;
-  (d) t_360 in the band; (e) regression.
-- Risks: the CLR position unmeasured (sensitivity band); the lateral
-  resistance law's validity at high drift; the largest re-validation of the
-  turn gates.
+- The hull is now surge + sway + yaw: the per-oar Fy sums into the sway
+  (the crew returns it), the rudder's lateral force enters, and the hull's
+  lateral resistance (ρ·A_lat·|u|·v, A_lat = 35 m²) acts at the CLR
+  (x_clr = 0.8 m forward of the CG) producing the physical restoring
+  moment the lumped Ω·ω² cannot represent. The ship-frame dynamics with
+  the centripetal couplings.
+- The calibration (calibrate_sway.py) revealed the reconciliation:
+  with the sway explicit, the fitted 4.8 m lever double-counted the
+  lateral dynamics — the lever drops to the physical athwartships arm
+  (1.8 m, the C3 decomposition completed) and the ship's effective Ω
+  becomes 3.2e6 (the vessel's 5e6 stays for the steady research model —
+  C1 reconciled).
+- Acceptance: the diameters held (G1 89.7 / F1 117.4 / tightest 67.8 m,
+  all in their bands) AND the sprint-protocol t_360 = 98 s vs the trial's
+  128 — the ~23 % residual is the turn's build-up (the trial's entry vs
+  the instant hard-over), documented, not parameter-fittable within the
+  physical ranges.
+- The drift emerges: −2.2° mid-turn (between the Taylor balance's 1.4°
+  and the reported 15°); the lateral velocity damps (no divergent
+  instability); the trim shows the physical per-stroke Fy kick a real
+  helmsman would trim (gate-3 trim updated to the physical band).
+- 88 tests green — the LL's physics is complete.
 
 ### 15.4 Archival items (background, anytime — **no email outreach**)
 

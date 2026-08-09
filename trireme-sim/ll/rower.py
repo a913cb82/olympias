@@ -254,13 +254,13 @@ class TierCrew:
         if self.pressure == "rest":
             self.p_gross_current = 0.0
             self.plan = None
-            return 0.0, 0.0, 0.0
+            return 0.0, 0.0, 0.0, 0.0
         if self.state in ("bank", "hold"):
             self.p_gross_current = 0.0
             if self.state == "hold":
                 brake = -self.hold_k * V * abs(V)
-                return 0.0, 0.0, brake
-            return 0.0, 0.0, 0.0
+                return 0.0, 0.0, brake, 0.0
+            return 0.0, 0.0, 0.0, 0.0
         # plan at the catch (first stroke, or the step after a catch crossing)
         if self.plan is None or (self.oar.in_drive
                                  and self.oar.t_since_catch <= dt + 1e-12):
@@ -274,18 +274,19 @@ class TierCrew:
             # would compute the full flow drag, not the held brake)
             self.p_gross_current = 0.0
             brake = -self.hold_k * V * abs(V)
-            return 0.0, 0.0, brake
+            return 0.0, 0.0, brake, 0.0
         if self.plan.limited_by == "feathered":
             self.oar.step(dt, V)                  # cadence continues, no force
             self.p_gross_current = 0.0
             self.last_fh = 0.0
-            return 0.0, 0.0, 0.0
+            return 0.0, 0.0, 0.0, 0.0
         s = self.oar.step(dt, V)
         self.p_gross_current = (self.plan.p_ext * self.power_factor
                                + self.oar.flip_power(self.plan.rate_eff)
                                + oar_absorbed(self.plan.rate_eff))
         self.last_fh = s.Fh * self.power_factor
-        return s.Fx * self.power_factor, s.Fh * self.power_factor, 0.0
+        return (s.Fx * self.power_factor, s.Fh * self.power_factor, 0.0,
+                s.Fy * self.power_factor)
 
     def end_of_step(self, dt: float) -> None:
         """W' tank update (drain on gross excess, refill at rest)."""
@@ -383,19 +384,20 @@ class SideCrew:
         self.last_fh = 0.0
         self.plan = None
 
-    def step(self, dt: float, V: float) -> tuple[float, float, float]:
-        fx = br = 0.0
+    def step(self, dt: float, V: float) -> tuple[float, float, float, float]:
+        fx = br = fy = 0.0
         fh = 0.0
         for t in self.tiers.values():
-            f, h, b = t.step(dt, V)
+            f, h, b, y = t.step(dt, V)
             fx += t.n * f
             br += t.n * b
+            fy += t.n * y
             fh = max(fh, h)
         self.last_fh = fh
         weakest = min(self.tiers.values(), key=lambda t: t.rate_eff)
         self.plan = weakest.plan
         self.rate_eff = weakest.rate_eff
-        return fx / self.n, fh, br / self.n
+        return fx / self.n, fh, br / self.n, fy / self.n
 
     def end_of_step(self, dt: float) -> None:
         for t in self.tiers.values():

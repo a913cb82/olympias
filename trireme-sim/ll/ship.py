@@ -22,7 +22,7 @@ from __future__ import annotations
 
 import math
 
-from common.chain import KT, RIGS, VESSELS
+from common.chain import KT, RHO, RIGS, VESSELS
 from ll.hull import t_drive_for
 from ll.oar import simulate
 from ll.rig import LEVER_OAR
@@ -49,10 +49,16 @@ class Ship:
         Table 3.1 tier labels). None: massless oars (pre-Gate-5)."""
         self.rig_name = rig_name
         self.vessel = VESSELS[rig_name]        # Taylor ch.31 parameters
-        self.lever = LEVER_OAR[rig_name]
+        # The sway-calibrated values (plan 15.3, calibrate_sway.py): the
+        # physical oar-race lever (~the athwartships arm — the fitted 4.8 m
+        # folded in the lateral dynamics the sway now models explicitly,
+        # register C3) and the effective yaw resistance with the physical
+        # CLR restoring moment in (register C1). The vessel's own Omega
+        # (5e6) and LEVER_OAR (4.8) stay for the steady research model.
+        self.lever = 1.8
+        self.Omega = 3.2e6
         self.m_app = self.vessel.m_app
         self.I = self.vessel.I
-        self.Omega = self.vessel.Omega
         self.n = n_oars
         self.n_side = n_oars // 2
         self.rate = rate
@@ -72,20 +78,25 @@ class Ship:
         }
         self.helm_dir, self.helm_frac = helm
         self.V = 0.0
+        self.v = 0.0            # sway (lateral velocity, + = starboard)
         self.omega = 0.0
         self.psi = 0.0
         self.x = 0.0
         self.y = 0.0
         self.t = 0.0
         self._tempo_violation = 0.0
+        # the centre of lateral resistance, forward of the CG (m) — the
+        # sway-calibrated value (plan 15.3); Coates plans would pin it [?]
+        self.clr_offset = 0.8
 
     # ------------------------------------------------------------------
     def step(self, dt: float) -> None:
-        fx_p, peak_p, br_p = self.crew["port"].step(dt, self.V)
-        fx_s, peak_s, br_s = self.crew["star"].step(dt, self.V)
+        fx_p, peak_p, br_p, fy_p = self.crew["port"].step(dt, self.V)
+        fx_s, peak_s, br_s, fy_s = self.crew["star"].step(dt, self.V)
         for crew in self.crew.values():
             crew.end_of_step(dt)
         Fx = self.n_side * (fx_p + fx_s + br_p + br_s)
+        Fy_oars = self.n_side * (fy_p + fy_s)             # net lateral oars
         # rowing asymmetry: the fitted thrust lever (4.8 m, C3);
         # held-blade brake: the athwartships station arm (LEVER_HOLD)
         Q_oar = self.n_side * (self.lever * (fx_p - fx_s)
@@ -94,27 +105,40 @@ class Ship:
         vkt = abs(self.V) / KT
         if self.helm_dir == "midship":
             rud_drag = self.vessel.rudder_straight * vkt * vkt
+            f_rud = 0.0
             Q_rud = 0.0
         else:
             phi = FULL_RUDDER_DEG * self.helm_frac
             rud_drag = self.vessel.rudder_drag(vkt, phi, RUDDER_FAC)
-            Q_rud = self.vessel.rudder_coeff(phi) * rud_drag * self.vessel.lever_rudder
+            f_rud = self.vessel.rudder_coeff(phi) * rud_drag
             if self.helm_dir == "port":
-                Q_rud = -Q_rud
-        self.hull_advance(dt, Fx, Q_oar, Q_rud, rud_drag)
+                f_rud = -f_rud
+            Q_rud = f_rud * self.vessel.lever_rudder
+        self.hull_advance(dt, Fx, Fy_oars, f_rud, Q_oar + Q_rud, rud_drag)
         self._keleustes(dt)
 
-    def hull_advance(self, dt: float, Fx: float, Q_oar: float,
-                     Q_rud: float, rud_drag: float) -> None:
-        """Integrate the hull state from the summed forces (exposed so
-        observation loops can step the crews themselves)."""
-        vkt = abs(self.V) / KT
-        drag = self.vessel.hull_drag(vkt) + rud_drag
-        self.V += (Fx - drag) / self.m_app * dt
-        self.omega += (Q_oar + Q_rud - self.Omega * self.omega * abs(self.omega)) / self.I * dt
+    def hull_advance(self, dt: float, Fx: float, Fy_oars: float, f_rud: float,
+                     Q: float, rud_drag: float) -> None:
+        """Integrate the 3-DOF hull state (surge + sway + yaw) from the
+        summed forces. The hull's lateral resistance acts at the centre of
+        lateral resistance (CLR, forward of the CG): its moment OPPOSES the
+        yaw — the physical restoring term the lumped Omega·w^2 cannot
+        represent (plan 15.3; register C1). Ship-frame dynamics with the
+        centripetal couplings:"""
+        u = self.V
+        v = self.v
+        f_hull = RHO * self.vessel.A_lat * abs(u) * v      # Taylor: rho A_lat u^2 sin(beta)
+        q_hull = f_hull * self.clr_offset                  # restoring (+ = starboard)
+        drag = self.vessel.hull_drag(abs(u) / KT) + rud_drag
+        u_dot = (Fx - drag) / self.m_app + v * self.omega
+        v_dot = (Fy_oars + f_rud - f_hull) / self.m_app - u * self.omega
+        omega_dot = (Q + q_hull - self.Omega * self.omega * abs(self.omega)) / self.I
+        self.V += u_dot * dt
+        self.v += v_dot * dt
+        self.omega += omega_dot * dt
         self.psi += self.omega * dt
-        self.x += self.V * math.cos(self.psi) * dt
-        self.y += self.V * math.sin(self.psi) * dt
+        self.x += (u * math.cos(self.psi) - v * math.sin(self.psi)) * dt
+        self.y += (u * math.sin(self.psi) + v * math.cos(self.psi)) * dt
         self.t += dt
 
     def _keleustes(self, dt: float) -> None:

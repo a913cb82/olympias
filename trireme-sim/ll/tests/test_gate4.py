@@ -36,12 +36,13 @@ def loop(ship, t_end, dt=0.01, v0_kt=0.0, on_step=None):
     while ship.t < t_end:
         fx = {}
         for side, crew in ship.crew.items():
-            fx[side], _, _ = crew.step(dt, ship.V)
+            fx[side], _, _, _ = crew.step(dt, ship.V)
         for crew in ship.crew.values():
             crew.end_of_step(dt)
-        q, drag = rudder_q(ship)
+        q, drag, f_rud = rudder_q(ship)
         ship.hull_advance(dt, ship.n_side * (fx["port"] + fx["star"]),
-                          ship.n_side * ship.lever * (fx["port"] - fx["star"]), q, drag)
+                          ship.n_side * ship.lever * (fx["port"] - fx["star"]),
+                          f_rud, q, drag)
         ship._keleustes(dt)
         if on_step:
             on_step(ship)
@@ -49,14 +50,18 @@ def loop(ship, t_end, dt=0.01, v0_kt=0.0, on_step=None):
 
 
 def rudder_q(ship):
-    """Current rudder torque and drag from the ship's helm state."""
+    """Current rudder torque, drag and lateral force from the helm state."""
     vkt = abs(ship.V) / KT
     if ship.helm_dir == "midship":
-        return 0.0, ship.vessel.rudder_straight * vkt * vkt
+        return 0.0, ship.vessel.rudder_straight * vkt * vkt, 0.0
     phi = 67.5 * ship.helm_frac
     drag = ship.vessel.rudder_drag(vkt, phi, 1.4)
-    q = ship.vessel.rudder_coeff(phi) * drag * ship.vessel.lever_rudder
-    return (-q if ship.helm_dir == "port" else q), drag
+    f_rud = ship.vessel.rudder_coeff(phi) * drag
+    q = f_rud * ship.vessel.lever_rudder
+    if ship.helm_dir == "port":
+        f_rud = -f_rud
+        q = -q
+    return q, drag, f_rud
 
 
 # --- G4-1 sustained cruise ---

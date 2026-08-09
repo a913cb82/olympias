@@ -133,7 +133,7 @@ def test_ceiling():
         for _ in range(3000):                     # 30 s burst
             fx = {}
             for side, crew in ship.crew.items():
-                fx[side], fh, _ = crew.step(0.01, ship.V)
+                fx[side], fh, _, _ = crew.step(0.01, ship.V)
                 pk = max(pk, fh)
             for crew in ship.crew.values():
                 crew.end_of_step(0.01)
@@ -141,7 +141,7 @@ def test_ceiling():
             vkt = abs(ship.V) / KT
             q, drag = (0.0, ship.vessel.rudder_straight * vkt * vkt)
             ship.hull_advance(0.01, ship.n_side * (fx["port"] + fx["star"]),
-                              0.0, q, drag)
+                              0.0, 0.0, 0.0, drag)
         assert pk <= Fh_MAX * 1.001, f"{fleet}: peak Fh {pk:.0f} N"
 
 
