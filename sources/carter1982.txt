@@ -1,0 +1,648 @@
+Ocean Engng, Vol. 9, No. l, pp. 17-33, 1982. 0029-8018/82/010017-17 $02.00/0 
+Printed in Great Britain. Pergamon Press Ltd. 
+PREDICTION OF WAVE HEIGHT AND PERIOD FOR A 
+CONSTANT WIND VELOCITY USING THE 
+JONSWAP RESULTS 
+D. J. T. CARTER 
+Institute of Oceanographic Sciences, Wormley, Surrey, U.K. 
+Al~raet--Tbe results of the Joint North Sea Wave Project (JONSWAP), carried out in the 
+North Sea in 1969, are used to derive formulae for significant wave height and wave period in 
+terms of the wind speed (assumed constant) and fetch or duration. Values from the wave 
+height formula are compared with those from the formulae of Bretschneider (1973) and 
+Darbyshire (1963). It is proposed that the JONSWAP results be used for the prediction of 
+fetch and duration limited waves formed under the action of the local wind field. 
+INTRODUCTION 
+DURING the Joint North Sea Wave Project (JONSWAP) of 1969, measurements of wave 
+energy spectra were obtained in the North Sea, west of Denmark out to 160 km from the 
+coast. Hasselmann et al. (1973) give the results from an analysis of the data, including a 
+parametric form of the wave energy spectrum for a growing sea state (based upon the 
+Pierson-Moskowitz spectrum) which they derive from data for offshore winds (i.e. known, 
+limited fetch). The maximum wind speed was 15 m sec-l--but according to J. A. Ewing 
+(personal communication) some measurements were subsequently made with wind speeds 
+up to 20 msec -1. The waves created by these off-shore winds were not sufficiently large to 
+be affected by the sea floor. 
+Hasselmann et al. (1973) discuss the relationships between the peak frequency of the 
+spectrum (f,,), the fetch, and wind speed, and conclude that, given a growing sea state, the 
+wave energy spectrum can be described by f,,, and a parameter ct corresponding to Phillips' 
+constant. 
+Hasselmann et al. (1976) derive equations, from slightly modified versions of the 
+relationships given in the 1973 paper, to determiner,, and ~t given the wind field distribution 
+in time and space. They then solve these equations for some cases when the wind distribution 
+is a function of space or time. The solution for the specific case of constant wind velocity 
+can be used to obtain formulae for predicting significant wave height and period for a given 
+wind speed and fetch or duration and to determine a connection between fetch and duration. 
+These formulae are initially cast in non-dimensional form, but are translated into numerical 
+form of more immediate practical value. 
+Formulae for wave height arising from a constant wind blowing over a specified fetch 
+or for a specified duration are often used to predict sea conditions. Formulae in common 
+use are those derived by Bretschneider (1973) and by Darbyshire (1963); these are compared 
+with the JONSWAP results. 
+WAVE ENERGY SPECTRA 
+(a) Pierson and Moskowitz (1964), using data from Shipborne Wave Recorders in the 
+17 
+
+18 D.J.T. CARILR 
+northeast Atlantic Ocean Weather Ships, propose a spectrum for a fully developed sea to 
+"'serve the purpose of wave forecasting until more data.., and better wind speed observa- 
+tions" were available. In terms of wind speed measured at 19.5 m, u19.~, the spectrum, E, 
+of wave energy distribution with frequencyfis 
+where 
+and 
+pME(J) = :eg2(2n)-'f -6 exp [-- 5{f~-'] 
+4\f,,,/ 1 
+:~ = 8.1 ×10 a 
+f,, = 0.8772 (g/2nu19.5) 
+(1) 
+wheref,, is the frequency at the maximum of the spectrum. (Strictly, E is the distribution 
+of the variance of surface elevation with frequency, and the energy spectrum is pgE, where 
+9 is water density, but conventionally E is referred to as the "energy spectrum".) 
+(b) The JONSWAP spectrum for a developing sea was derived by Hasselmann et al. 
+(1973) by multiplying the Pierson-Moskowitz spectrum by a "'peak enhancement" factor. 
+This factor and the values ofoe and fro were determined, in terms of fetch and wind speed at 
+10 m, from wave measurements off Denmark. The spectrum is 
+5 To jE(f) = o~gZ(2x)-4 f--S exp [-- -~ (-~)-'] . (2) 
+where 
+and 
+q = exp [- (f -- f,,)~/2~'f,,~] 
+10.07 f < f,, 
+= [ 0.09 f >_ f,. 
+For the mean JONSWAP spectrum 
+¥ = 3.3. 
+Values for ~ and f,,, are included in Table 1. 
+SIGNIFICANT WAVE HEIGHT 
+This is defined from the energy spectrum as 
+h s = 4 "~/mo (3) 
+where ub 
+m, = f f"E(f) df 
+o 
+
+Dimensionless 
+TABLE 1. NON-DIMENSIONAL PARAME'rERS 
+para meter Sy m bol Deft nit ion 
+Column I 2 3 
+Values o < 
+m 
+4 5 6 7 ~. 
+JONSWAP RESULTS ~" 
+Pierson-Moskowitz JONSWAP (a) Function of (b) Function of ,- 
+spectrum spectrum fetch ~ duration ~ ~" 
+Fetch ~ gx/u"- ......... 
+Duration 8 gd/u ..... 
+Peak frequency ", uf,,,/g 0.13 3.5~, -":~ 2.84~ -'' '~ 16.86-:'/7 
+Surface variance r mog2/u 4 3.66 ,~ 10 -:~ 1.957 × 10 ~av -4 1.63 :< 10-7~ 4D8 10 1°1~1°,'7 
+9.91 × 10-n~ 1"~ 
+rv 4 moil,, ~ 1.28 . 10 -4 1.96 ~ 10 ~ 1.6 , 10 4 1.6 10 -'t 
+Spectral shape /t U (l,k r~ 
+u -- 8.1 :~ I0 -:~ 0.076~ -°'=~ 0.0662~; -°'= 0"203~-2t7 
+7 G'3 
+> 
+"0 
+7 
+Where x is fetch, L,, is frequency of spectral peak, d is duration, u is wind speed at I0 m, m. is the area under the energy speclrum. 
+
+20 D.J.T. CARTER 
+The Pierson-Moskowitz spectrum gives a directly integrable value for mo (and for m,, 
+if n < 4) which leads to a significant wave height given by 
+_ g J~ 0.447g/~. 
+Substituting for ~ and f, from equation (1), taking g = 9.81 m sec -2 and using (from 
+Pierson, 1977, para. 4) for wind speed at 10 m : U~o ------ 0.93 ,l~g.5 gives: 
+pMns = 0.02466U 2 (4) 
+where pMHs is the significant wave height in m and U is the wind speed at 10 m in m sec -~. 
+(Note the capital letters are used for numerical values, lower-case letters for physical 
+quantities, except for the spectrum E which is conventionally given a capital letter.) 
+Numerical integration of the JONSWAP spectrum leads similarly to an expression for 
+significant wave height: 
+0.552 g jh~ -- -- ~/c~. 
+'/~2 fro2 
+Substituting values for ~t andJi,, from Table 1, leads to a significant wave height in m given by 
+where X is the fetch in km. 
+jHs = 0.02013 X °'5~ U °'9° (5) 
+WAVE PERIOD 
+The period t,,, corresponding to the peak of the spectrum is l/f,,. So for the Pierson- 
+Moskowitz spectrum from equation (l)--substituting u~o ---- 0.93 ulo.5--is given by: 
+pMt,,, ~ 1.226 (2rt/g)ulo. 
+For wind speed U in msec -1 and period T,, in sec, this reduces to: 
+pMT,, -- 0.785 U. (6) 
+Similarly for the JONSWAP spectrum, the peak period is given from equation (2) by 
+jT,, = 0.605 X °.~a U °.~ (7) 
+where X is the fetch in km. 
+The zero-up-crossing wave period is given by: 
+t, = (molto2) °.~. 
+For the Pierson-Moskowitz spectrum this leads to 
+
+Wave prediction using the JONSWAP results 21 
+So for 7", in sec: 
+pM/2 = 0.7104 pM/m. 
+pMT, = 0.558 U. (8) 
+Similarly for the JONSWAP spectrum, but by numerical integration: 
+jr: = 0.777 jr,,. (9) 
+Therefore 
+jT, = 0.470 X °.sa U °.~. (10) 
+SOLUTIONS TO THE PARAMETRIC EQUATIONS 
+Hasselmann et al. (1973, 1976) use non-dimensional parameters for fetch, peak fre- 
+quency, surface variance, and spectral shape--~,, v, e and Z. respectively. The definitions of 
+these parameters and that for non-dimensional duration, 8, are given in Table l, column 3. 
+Hasselmann et al. (1976) derive equations for the parameters ~ and ~, defining the 
+spectrum, using slightly modified versions of the relationships between fetch and the other 
+non-dimensional parameters which were deduced for the JONSWAP spectrum by 
+Hasselmann et al. (1973). The original, 1973, spectral relationships and the 1976 results 
+are given in Table I, columns 5 and 6, respectively. The latter are based upon a linear 
+relationship between surface variance e and fetch ~, whilst the former were chosen in 1973 
+to give the best fit to the observed spectral shape, and include putting surface variance 
+proportional to ~w. 
+The JONSWAP spectrum was determined from measurements when the sea state was 
+growing. Hasseimann et al. (1976) ascribe this condition to values of v >__ 0.14, describing 
+waves with v < 0.14 as swell. They give solutions for the equations, which define the spec- 
+trum, when the wind direction is constant and the wind speed is proportional to some 
+power, p, of either fetch or duration. If the wind velocity remains constant, independent 
+of fetch or duration (i.e. p = 0), the solutions reduce to the values given in Table l, columns 
+6 and 7. 
+EQUIVALENCE OF FETCH AND DURATION 
+A duration d~ equivalent to a fetch x, may be obtained, assuming constant wind velocity 
+u, by equating any one of the corresponding expressions in columns 6 and 7 of Table I. 
+The results differ according to which parameter is used, indicating that no exact equiva- 
+lence exists. The results are: 
+From ~: d, = 63.3 r (I1) 
+~: d~ = 50.5 r (12) 
+~: d, = 66.2r (13) 
+where r = x°7]g°.au °.4 = (gx/u~)O.~u/g. 
+
+22 D.J.T. CARIER 
+Usually estimates of significant wave height (i.e. ~) are required, so equation (13) is 
+most appropriate. Using this equation, the peak frequency of the fetch-limited spectrum 
+would be 2~,(, higher than the peak frequency of the corresponding duration-limited 
+spectrum; the value of :~ would be 8 ~,~, greater. These small percentage differences indicate 
+that for practical purposes spectra produced with limited fetch or duration according to 
+equation (13) may be regarded as equivalent. 
+Parameter ~ describes the high frequency portion of the spectrum, which contains 
+relatively little energ.v; so in general equation (12) seems the least appropriate of the three 
+equations. 
+Figure 1 shows a fetch-limited JONSWAP spectrum (for a fetch of 100 km and a wind 
+speed of 20 m sec -~) with zc and f,, = gv/u from Table I. column 6, together with three 
+equivalent duration-limited spectra, where equivalence is defined by equations (1 I)-(13). 
+An approximation to the relationship between fetch x and duration d.~ may be derived 
+as follows. Suppose a constant wind has been blowing over a fetch x for a time t which is just 
+sufficient to produce the fetch-limited wave at x. At a distance dx downwind, the sea will 
+not become fetch-limited before the wave energy at x has had time to travel the distance 
+dx, until then the waves at x -~ dx will grow as a duration-limited wave. So if the wave 
+energy travels at a mean speed c~, the time dt for the waves to become fetch-limited at 
+x -+ dx is given approximately by : 
+dx -- z,,.dt. 
+dx 
+i.e. dt - (14) 
+The speed at which the energy travels downwind depends upon frequency and directional 
+spread of the waves; the waves of low frequency moving ahead of the slower, high frequency 
+waves. Assuming that the group velocity, %, of the waves may be taken as that value 
+corresponding to the peak frequency f,,, (= g'~/u) then 
+~. -- g/4~l,,, -- u/4rt',. 
+So the mean speed of energy downwind is given by: 
+i' e -- f v.~ cos0 D(0) dO 
+--hi2 
+where D(0) is the normalized spreading function. Assuming a cos20 spreading function, and 
+integrating, gives: 
+z,~ = (8/3n) e~ ~- 0.85 u/4rt.J. 
+Substituting in equation (14), with ,, replaced by a function ofx from Table 1, column 6, 
+and integrating leads to 
+
+Wave prediction using the JONSWAP results 23 
+E 
+P 
+uJ 
+20 
+Jonswop spectrum 
+Fetch : I00 km wind speed : 20 m/s 
+, i I , I 
+C 0 05 0 I 0 15 
+Frequency, 
+Fetch- limited 
+....... Durotion = 8.5 hr (equolpeok) 
+...... Durotion -- 6.7 hr [equolotpho) 
+........... Durotion = 88 hr. (equoi oreo) 
+\ 
+ii~. \\ 
+./ ~.. \ 
+/, 02 0,;'5 0.3 
+HZ 
+Jonswap spectrum 
+Fetch :IOOkm wind speed: EO m/s 
+o 0008 
+"~ 0 00O6 
+E 
+~_" 0 0004 
+0 0002 
+.-._.- 
+.... ],' ,,- "J,I,T,I I Ill IJlliJI 0 05 0 i 0 f5 0 2 0 2'5 0 3 
+Frequency, Hz 
+Fetch - limited 
+Duration = 8.5 hr. (equal peak) 
+..... Duration "-6.7 hr. (equal alpha) 
+............ Duration=8.Shr. [equolarea) 
+FIG. I. Example of fetch-limited JONSWAP spectrum and equivalent duration-limited 
+spectra. Energy E: frequency f and El6: f (equivalence defined by equations (! !)-(l 3)). 
+
+24 D.J. T, C^R~ER 
+d, == 60.0r. 
+(This spreading factor of 0.85 is uscd by Hasselmann et al., 1976, in thcir parametric trans- 
+port equations.) 
+SIGNIFICANT WAVE HEIGHT AND PERIOD FROM THE 
+JONSWAP RESULTS 
+From the formulae for z in Table l, columns 6 and 7, with significant wave height H~ 
+in m, fetch Xin km, wind speed Uin msec ~ and duration D in hr: 
+(a) RH, -- 0.0163 X~'U 
+or (15) 
+(b) RH, = 0.0146 D~r(_/'~ : 
+where (a) and (b) are the fetch-limited and duration-linlited cases respectively. 
+Similarly, from the formulae for ,~ in Table 1, columns 6 and 7 
+(a) 
+(b) 
+RTm = 0.566 X:Ult~U2J~ 
+aT,,, ~ 0.540 D3f;U4/: 
+(16) 
+so, from equation (9) 
+(a) RT., = 0.439 Xa/lnU '''; 
+or (17) 
+(b) RT: = 0.419 D3/;U 4/:. 
+Solution (a) is appropriate if the wave is fetch-limited, i.e. from equation (23) if the 
+duration D hr is such that 
+D :> 1.167 X".=/U '0.4. (18) 
+Otherwise, solution (b) applies. 
+The condition that ,J ~ 0.14 (implying sea not swell) Js equivalent to 
+(a) .g- 2.32 (~ 
+or (19) 
+(b) D .z 2.01 /_.. 
+Diagrams to determine wave height and period from equations (15) and (I 7)-(19) are 
+given in Figs 2 and 3. In the area of Fig. 2 where the conditions in equation (19) do not hold, 
+/-/5 has been obtained from equation (15a) with X = 2.32U 2, i.e. H~ = 0.0248U", which is 
+very close to the Pierson-Moskowitz value for a fully-developed sea of 0.02466U 2, equation 
+(4). (The duration-limited wave height has an upper limit from equations (15b) and D = 
+2.01U of 0.0240U2; this slight difference is not shown in Fig. 2.) Similarly in Fig. 3 where 
+equation (19) does not apply, a value of T. = 0.566U has been used~erived from equa- 
+
+Wave prediction using the JONSWAP resulls 25 
+lDurotion hr | " ' I I 2 I I ~ I ! I 
+3r'i- X i i/--- ~-l- -\ 
+3o -- - 
+25 ....... 
+i'°I F,.I 
+2 5 I0 20 
+I 
+5O 
+I I I I 
+9 12 15 ] 21 
+, I 
+)5 
+f tOO 200 500 
+Fetch, km 
+35 
+3O 
+25 
+ZO 
+~5 
+io 
+5 
+o 
+FIG. 2. Significant wave height prediction graph from JONSWAP results. (Enter with wind 
+speed at left-hand side, move across till the limiting fetch or duration is reached, then move 
+down the curve to the height scale.) 
+tion (17a) and X = 2.32U 2 or from equation (17b) and D = 2.01U--compared with 
+Pierson-Moskowitz value for T~ of 0.558 U, equation (8). 
+COMPARISON WITH WAVE HEIGHT ESTIMATED FROM THE 
+JONSWAP SPECTRUM 
+The JONSWAP spectrum was derived to show the shape of the wind-generated, fetch- 
+Ourot~on hr ' ~ ~, 
+i ..... ~-- 4-- 
+zs\ ! / \ / I~ I 
+20 . 
+2 5 IO 20 
+' ' T 
+.......... i 
+ZT--/" 
+i i 
+bO 100 200 
+Fetch, km 
+i21 ~ 
+m 
+IO 
+g 
+is ~- 
+6 
+4 
+2 
+500 
+35 
+3O 
+?5 
+2O 
+15 
+iO 
+5 
+0 
+FIG. 3. Zero-up-crossing wave period prediction graph from JONSWAP results. (Enter with 
+wind speed at left-hand side, move across till the limiting fetch or duration is reached, then 
+move down the curve to the period scale.) 
+
+20 D.J.T. CARTER 
+limited wave energy spectrum; it was not determined to give the best fit between wave 
+height and fetch. So it would be a mistake to predict wave height from the spectrum, i.e. 
+from equation (5). Indeed the ratio of fetch-limited significant wave height determined from 
+the JONSWAP results to that from the spectrum is given--from Table 1, columns 6 and 5, 
+rcspcctively by: 
+R --= (0.0163 X°.~U)/(0.02013 X".~sU °") 
+i.c. R -- 0.81 (U2/X) ""'~ (20) 
+wherc U is the wind speed at 10 m in m sec -~ and X is the fetch in km. The value of R 
+varies from about 0.7 at large fetches and low wind speeds (about 500 km and 5 m sec -~) 
+to about 1.0 at short fetches and high wind speeds (10 km and 30 msec-~). 
+COMPARISON WITH DARBYSHIRE AND BRETSCHNEIDER 
+FETCH-LIMITED WAVE HEIGHT PREDICTIONS 
+Darbyshire (1963) gives two formulae for estimating root-mean square wave height 
+(7~) from wind speed in knots and fetch in nautical miles, one formula is applicable to 
+coastal waters and the other to oceanic waters. (The former might be expected to show 
+closer agreement with the JONSWAP results.) Assuming that significant wave height is 
+x 2/~, converting the units to msec ~ and km leads to 
+oceanic waters : 
+coastal waters : 
+Do H, -- 0.0132 YaI-°/_ := 
+DcH, = 0.0630 }'aJ2Ua/2 
+(21) 
+wherc Y - X a ~ 5.56X ~ "- 223.2X 
+X a -~ 22.24X'-' -~ 893.0)( -- 509 
+where Do/-], and DcH~ are the oceanic and coastal values of significant wave height in m 
+with U msec i the wind speed at 10 m and X km the fetch. 
+(The reference height for wind speed is not given, either in Darbyshire (1963) or in 
+Darbyshire and Draper, 1963.) A height of 10 m has been assumed. This is correct, accord- 
+ing to L. Draper (personal communication), for thc coastal waters formula. The oceanic 
+formula was determined from Ocean Weather Ship wind speeds estimated on the Beaufort 
+scale (J. Darbyshire, personal communication). The conversion from this scale to knots 
+given in the Marine Observer's Handbook (HMSO, 1950) is the same as used today and is 
+annotated "'measured at a height of 33 feet above sea level"). 
+Bretschneider (1973) gives the following formula for significant wave height h,. 
+ghJu 2 = 0.283 tanh{O.O125 (gx/u2)"-e{ 
+which reduces to 
+BH, = 0.0288 U 2 tanh{0.5935 (X/U2)°.4°-J (22) 
+
+Wave prediction using the JONSWAP results 2I 
+where BH, is in m, U in msec i and X in kin. 
+Figure 4 shows the ratio of significant wave height estimated from the JONSWAP 
+results and that estimated by Darbyshire and Bretschneider; Fig. 5 shows the difference 
+(in m) between these estimates. 
+Figures 4 and 5 shows good agreement between Bretschneider's fetch-limited estimates 
+and the JONSWAP results--except that Bretschneider gives values of significant wave 
+height about I m higher at short fetches and very high wind speeds; agreement is particu- 
+larly good at long fetches and very high wind speeds. Darbyshire's formulae (coastal 
+and oceanic) give even higher estimates at rather short fetches (around 50-100 km) and 
+very strong winds than does Bretschneider's, and generally do not agree well with the 
+JONSWAP results; percentage differences at low wind speeds are particularly large-- 
+although absolute differences are less than 0.5 m. 
+COMPARISON WITH DARBYSHIRE AND BRETSCHNEIDER 
+DURATION-LIMITED WAVE HEIGHT PREDICTIONS 
+Darbyshire and Draper (1963) give curves derived fl'om the formulae in Darbyshire 
+(1963) for predicting wave height including duration-limited values. Correspondence 
+between fetch and duration was calculated by assuming that wave energy travelled with the 
+group velocity, v~, of a wave with the final peak frequency (Draper. personal communica- 
+tion). This peak frequency is given by Darbyshire (1963) for oceanic and coastal conditions, 
+r)o.f,, and tkf,,,, as converted to wind speed U in m sec 1. 
+and 
+Do.f,, :: I/'[ y,,.Ts (2.704 /./o.5 + 3.6 10 ~U 4) see') 
+~ f., = 1/(2.16 Y'"::" U °.:') sec 
+(23) 
+where Y is as in equation (21). so 
+where x and at.,. are corresponding fetch and duration. 
+i.e. .v gd,.14ZL,, 
+and from equation (23) 
+r~oD = 0.356)(/{ Y".:~ (2.704 U ".6 - 3.6 10-7U4) ', 
+and (24) 
+t~D =- 0.165X/(Y("=:'U'":') 
+where D is duration in hr and X is fetch in km. 
+Bretschneider (1973) computes duration assuming that wave energy is transmitted with 
+the group velocity o'~, of a wave with significant wave period t,, 
+i.e. v'~ ~ gt,/4rt. 
+
+28 D.J.T. CARTER 
+30 
+25 
+E 
+2o 
+,o 
+5 
+Bre~schneider / jonswop results 
+5j 12 
+~ 10 08-10 
+~10 -~'/ 
+i ! <12 
+' 1 I 1(,3 200 300 400 500 
+Fetch, km 
+3o 
+25 
+E 20 
+4 
+"o I0 E 
+5 
+Derbyshire (coostol) / jonswop results 
+Joo 200 300 400 500 
+Fetch, km 
+F~G. 4. 
+Dorbyshire (oceom¢) / jonswop results 
+~ 25 
+E 2O 
+"o 
+~ J5 
+~ ~__~.~.~..~0 5 / -t~ i© c 
+• 5 r0202 
+o| ! J , , i i 
+tO0 200 300 400 500 
+Fetch ~ km 
+Ratios of fetch-limited significant wave heights predicted by Bretschneider and 
+Darhyshire and that predicted from the JONSWAP results. 
+
+Wave prediction using the JONSWAP results 29 
+Bretschneider - ionswop results (m) 
+? 2 tI 
+20 ~ -I.0~ 
+'~ J5 Iv 
+~o 0~'~-" 
+5 O--Ol t 
+o I I [ i l 
+lOG 200 3,00 400 500 
+Fetch t km 
+3O 
+u~ 
+"- 25 
+E 
+.20 
+~c io 
+5 
+Dorbyshire (coastal)- jonswop results (m) 
+' 0 
+< Oil 
+I l I [ 
+J00 200 300 400 500 
+Fetc h, km 
+FIG, 5. 
+Darbyshire (oceanic) - }onswop results (m) 
+7 
+i 
+o I [ I I P 100 200 300 400 500 
+Fetch, km 
+Differences in reich-limited significant wave heights predicted by Bretschneider and 
+Darbyshire and that predicted from the .IONSWAP results. 
+
+30 D.J.T. CarTer 
+Bretschneidcr defines t~ by': 
+and gives 
+r~ ~ .i~.-,/(5/4) ,,.~ 
+t, =,-A.., . 2rct_._.t . tanh{B.,(gx/u..,)~l,. 
+g 
+where A2 = 1.2, B2 = 0.077 and M = 0.25. So the duration d., corresponding to a fetch 
+x is given by 
+d,- i (4rt/gt~)dx. 
+o 
+Putting z = Be (gx/u2JM--following Lalande (1975)--and approximating coth z leads to 
+BD -~ 1.79UZ s(I +-Iz2-- I Z4 + 2 Z~ ) (25) 
+5 105 2835 
+where Z ~ 0.77 X°.~'~/U °.5. 
+Figures 6 and 7 show the ratios and differences in duration-limited wave heights cor- 
+responding to the fetch-limited case in Figs 4 and 5. These figures show that Bretschneiders 
+and Darbyshire estimates of duration-limited significant wave heights do not agree so well 
+with the JONSWAP results as the corresponding fetch-limited heights; with markedly 
+higher values for short duration and very high wind speeds. Generally Bretschneider's 
+estimates differ less from the JONSWAP results than the Darbyshire estimates especially 
+for long duration and very high wind speeds. 
+CONCLUSIONS 
+Formulae have been derived which give significant wave height, zero-up-crossing period, 
+and period corresponding to the peak frequency of the energy spectrum from the results of 
+the JONSWAP experiment for the case of constant wind velocity with either limited fetch or 
+limited duration. Numerical formulae are summarized in Appendix A. 
+Estimates of significant wave height from these formulae have been compared with those 
+from formulae due to Bretschneider (1973) and Darbyshire (1963)--the latter for both 
+oceanic and coastal waters. All three formulae give higher waves than the JONSWAP 
+results for very high wind speeds and short fetch or duration. Closest agreement with 
+JONSWAP is in general Bretschneider's formula for fetch-limited wave height. Greatest 
+differences are generally with Darbyshire's oceanic formulae; this might be expected because 
+it is not applicable to the area where the JONSWAP data were obtained--but Darbyshire's 
+coastal formulae also give some large differences from the JONSWAP results. 
+The considerable variations between these different formulae suggest that they give only 
+approximate estimates of wave height--particularly at very high wind speeds. 
+The JONSWAP results are based upon theoretical considerations of wave growth and 
+
+Wave prediction using the JONSWAP results 31 
+30: 
+25 
+ZO 
+I0 c 
+5 
+8retschnelcier / jonswap results 
+/ ,.~" J o8-,o ///,o 
+l I t l 
+i0 20 3o 4o 
+Duration, hr 
+30 
+"~ 25 E 
+20 
+~. J5 
+~o 
+5 
+Darbyshire (coastal) / jonswap results 
+~o 2o 30 40 
+Duration t hr 
+FKJ. 6. 
+Dorbyshire (oceanic) / jonswop results 
+"~ 25 E 
+. 20 
+,s 8 
+el 
+S Jo 
+5 
+I t I I 
+io 20 30 40 
+Duration, hr 
+Ratic~ of duration-limited significant wave heights predicted b)' Bretschneider and 
+Darbyshire and that predicted from the JONSWAP results. 
+
+32 D.J.T. CARTER 
+30 
+E 
+~ JO 
+5 
+Bretschneider- jonswop results (m) 
+I l I i 
+~0 20 30 
+Ouro~ion, hr 
+E 
+~,0 
+25 
+20 
+r5 
+IO 
+5 
+0 
+Dorbyshire (coostol)- jonswop results (m) 
+I I i I 
+I0 20 3O 40 
+Duroi'bon, hF 
+FIG. 7. 
+30 
+.~ 25 
+E 
+20 
+5 
+Dorbyshire (oceonic)-ionswop results (m) 
+I 
+fO 
+I I I 
+20 30 4 0 
+Duration, hr 
+Differences in duration-limited significant wave heights predicted by Bretschneider 
+and Darbyshire and that predicted from the JONSWAP results. 
+
+Wave prediction using the JONSWAP results 33 
+upon carefully controlled measurements off Denmark. So it would seem reasonable to use 
+these--or Figs 2 and 3 derived from them--rather than the other formulae, for estimating 
+locally generated wave heights in the North Sea, provided that the water is sufficiently 
+deep and that the waves are not significantly affected by the sea floor. (The criterion used by 
+Hasselmann et al. (1973) for this is that water depth is greater than a quarter of the peak 
+frequency wavelength, i.e. that depth is greater than g/Snf2,,.) 
+The JONSWAP measurements were limited to a maximum fetch of 160 km and a 
+maximum wind speed of about 15-20 m sec -~, but extrapolation of the results to greater 
+fetches or duration and higher wind speeds give wave heights not dissimilar from those 
+estimated by Bretschneider, and close to the value given by the Pierson-Moskowitz 
+spectrum for a fully-developed sea. 
+Acknowledgement--This work was supported financially by the Departments of Energy and Industry. 
+REFERENCES 
+BRETSCHNEIDER. C. L. 1973. Prediction of waves and currents. Look Lab./Hawaii 3, 1-17. 
+DARBYSHItRE, J. 1963. The one-dimensional wave spectrum in the Atlantic Ocean and in coastal waters. In : 
+Ocean Wave Spectra--Proceedings of a Conference. Prentice-Hall. 
+DARBYSmRE, M. and DRAPER, L. 1963. Forecasting wind-generatexl sea waves. £ngh~eering 195, 482--484. 
+HASSELMAr~N, K. et al. 1973. Measurements of wind-wave growth and swell decay during the Joint North 
+Sea Wave Project (JONSWAP). D. Hydrogr. Z. 12 (8). 
+HASSELMANN, K., ROSS, D. B., MULLER, P. and SELL, W. 1976. A parametric wave prediction model. 
+J. phys. Oceanogr. 6, 200-228. 
+LALANDE, M. E. 1975. A FORTRAN program to solve the Bretschneider wind-wave relationships for 
+deep water. Teeh. Memo. 816. Environment Canada--Atmopsheric Environment Service, Ontario. 
+PIERSON, W. J. 1977. Comments on a parametric wave prediction model. J. phys. Oceanogr. 7, 127-134. 
+PEmson, W. J. and MOSKOWiTZ, L. 1964. A proposed spectral form for fully developed wind seas .... 
+J. geophys. Res. 69, 5181-5190. 
+APPENDIX A 
+Numerical formulae derived from the JONS II'AP results 
+The following symbols are used : 
+D duration (hr) 
+H, significant wave height (m) 
+T,,, period corresponding to the peak frequency of the spectrum (see) 
+T, zero-up-crossing period (see) 
+U wind speed at 10 m above the sea surface (msec -1) 
+X fetch (km) 
+Parameter 
+I D> 1.167 X °~/U °~ I 
+(fetch limited} 
+I 
+I \ 
+Yes ' -- NO 
+{growing sea] (fully developed} 
+~ No 
+(duration limited) 
+I 
+(<Jrowinq seal (fully cleveloped) 
+/'7'= 0.0163 X ° SU 0.0248 U z 
+Tm O1566 X°'3U 04 01728 U 
+OlOI46O ~'r U ~'~ 0.0240 U z 
+0.540D}/TU ='v 0728 U 
+T~ O. 439X ° 3 U o 4 O. 566 U O.419 D"' ~U "/~ 0.566 U 
