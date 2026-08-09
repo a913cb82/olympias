@@ -139,7 +139,13 @@ no CLI: `from commands.parser import parse_file, parse_script` — errors raise
       complete**: surge+sway+yaw, the physical CLR restoring moment, the
       C3 lever decomposition (4.8 → 1.8 m), the C1 Ω reconciliation
       (ship 3.2e6 / steady model 5e6); diameters held (89.7/117.4/67.8 m),
-      t_360 98 s vs 128 (the turn build-up residual), the drift −2.2°,
-      lateral damping clean. 88 tests green.
+      t_360 100 s vs 128, the drift −2.2°, lateral damping clean.
+- [x] Plan 17 — the turn build-up (Gate 9, 4 checks): the helm applies as
+      a human action (tau_rud 3 s + the helmsman's strength clamp — the
+      rower-strength scale reused; the rudder yields at speed) and the
+      held blades' brake ramps (tau_hold 2 s). Honest finding: the
+      build-up's share of the t_360 is small (~2 s); the residual is
+      dominated by the yaw torque balance + the speed profile (a linear
+      yaw-damping term is the next candidate, C1). 92 tests green.
 - [ ] Phase 2 — HL from LL;  [ ] Phase 3 — harness;  [ ] Phase 4 — crew & environment;
       [ ] Phase 5 — oar-manoeuvres

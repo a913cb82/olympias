@@ -77,6 +77,15 @@ class Ship:
                              hold_frac=hold_frac if hold_frac is not None else HOLD_FRAC_DEFAULT),
         }
         self.helm_dir, self.helm_frac = helm
+        self.phi = 0.0          # current rudder angle (signed, + = starboard)
+        self.tau_rud = 3.0      # s — the helm build-up: the helmsman's
+                                # reaction + the tiller travel (plan 17) [?]
+        self.tiller_lever = 0.15  # the rudder's balance: the tiller load =
+                                # f_rud x lever (the Olympias rudders were
+                                # balanced; [?] — the trials video / Coates
+                                # plans would pin it)
+        self.helm_force_max = 700.0   # the helmsman's holding force, N —
+                                # the rower-strength scale reused (plan 17)
         self.V = 0.0
         self.v = 0.0            # sway (lateral velocity, + = starboard)
         self.omega = 0.0
@@ -97,25 +106,65 @@ class Ship:
             crew.end_of_step(dt)
         Fx = self.n_side * (fx_p + fx_s + br_p + br_s)
         Fy_oars = self.n_side * (fy_p + fy_s)             # net lateral oars
-        # rowing asymmetry: the fitted thrust lever (4.8 m, C3);
+        # rowing asymmetry: the physical athwartships arm (C3);
         # held-blade brake: the athwartships station arm (LEVER_HOLD)
         Q_oar = self.n_side * (self.lever * (fx_p - fx_s)
                                + LEVER_HOLD * (br_p - br_s))  # + = starboard
-        # rudder (Taylor ch.31 model; straight-rudder drag at midship)
+        self._ease_helm(dt)
+        # rudder (Taylor ch.31 model; the ACTUAL rudder angle — the helm
+        # builds up like a human action, plan 17)
         vkt = abs(self.V) / KT
-        if self.helm_dir == "midship":
+        if abs(self.phi) < 1e-9:
             rud_drag = self.vessel.rudder_straight * vkt * vkt
             f_rud = 0.0
             Q_rud = 0.0
         else:
-            phi = FULL_RUDDER_DEG * self.helm_frac
-            rud_drag = self.vessel.rudder_drag(vkt, phi, RUDDER_FAC)
-            f_rud = self.vessel.rudder_coeff(phi) * rud_drag
-            if self.helm_dir == "port":
+            phi_mag = abs(self.phi)
+            rud_drag = self.vessel.rudder_drag(vkt, phi_mag, RUDDER_FAC)
+            f_rud = self.vessel.rudder_coeff(phi_mag) * rud_drag
+            if self.phi < 0:
                 f_rud = -f_rud
             Q_rud = f_rud * self.vessel.lever_rudder
         self.hull_advance(dt, Fx, Fy_oars, f_rud, Q_oar + Q_rud, rud_drag)
         self._keleustes(dt)
+
+    def _helm_target(self) -> float:
+        """The commanded rudder angle (signed): full rudder = 67.5 deg."""
+        if self.helm_dir == "midship":
+            return 0.0
+        phi = FULL_RUDDER_DEG * self.helm_frac
+        return -phi if self.helm_dir == "port" else phi
+
+    def _helm_clamp(self, phi_mag: float) -> float:
+        """The helmsman's strength (the rower-strength scale reused): the
+        tiller load (f_rud x the rudder's balance lever) cannot exceed his
+        holding force — the rudder YIELDS at high speed.
+        coeff(phi) = 0.14 + 0.02·phi - 0.00015·phi^2 (Taylor 2.2)."""
+        if phi_mag <= 0.0:
+            return 0.0
+        vkt = abs(self.V) / KT
+        K = (self.vessel.rudder_straight * RUDDER_FAC * vkt * vkt
+             * self.tiller_lever)
+        if K <= 0.0:
+            return phi_mag
+        target = self.helm_force_max / K
+        if target >= 0.806:               # >= coeff(67.5): no clamp
+            return phi_mag
+        # solve 0.00015·phi^2 - 0.02·phi + (target - 0.14) = 0 (the rising
+        # branch of the coeff quadratic, phi in [0, 67.5])
+        disc = 0.0004 - 0.0006 * (target - 0.14)
+        if disc <= 0.0:
+            return 0.0
+        return (0.02 - math.sqrt(disc)) / 0.0003
+
+    def _ease_helm(self, dt: float) -> None:
+        """The rudder builds up like a human action: the first-order lag
+        (the helmsman's reaction + the tiller travel, tau_rud) AND the
+        strength clamp (the rudder yields to the water load at speed)."""
+        target = self._helm_target()
+        clamped = self._helm_clamp(abs(target))
+        target = math.copysign(clamped, target)
+        self.phi += (target - self.phi) * min(1.0, dt / self.tau_rud)
 
     def hull_advance(self, dt: float, Fx: float, Fy_oars: float, f_rud: float,
                      Q: float, rud_drag: float) -> None:
