@@ -94,10 +94,16 @@ Coates drawing, and nothing enters the model that we cannot defend in a written 
 
 **W1 — Source digitisation & table recovery** (current focus)
 - [x] Extract Rankov 2012 full text (`sources/rankov2012.txt`).
-- [ ] Decode subset-font tables (custom cmap + glyph matching — *see Active TODOs below*).
-- [ ] Recover Taylor Table 31.1 (drag/rudder coefficients) — needs OCR or font decode.
-- [ ] Reconcile Table 8.3 decoded values against Carter's relations (L = 1.56 T², C = 1.56 T)
+- [x] Decode subset-font tables (custom cmap + glyph matching — *see Active TODOs below*).
+      **DONE — resolved via the OCR route** (Tables 8.3/8.4, 9.1/9.2/9.6/9.7, 31.1 decoded;
+      see `research/tasks/pdf-ocr-table-decoding.md`, S7/S8/S11).
+- [x] Recover Taylor Table 31.1 (drag/rudder coefficients) — needs OCR or font decode.
+      **DONE — full reconstruction by OCR in `lane-5-manoeuvre/taylor-excel.md` §4 + CSV
+      `research/data/table31-1-taylor-model-parameters.csv` (S11).**
+- [x] Reconcile Table 8.3 decoded values against Carter's relations (L = 1.56 T², C = 1.56 T)
       as an independent integrity check.
+      **DONE — all 36 cells reproduce Carter's duration-limited equations with T_z
+      convention + fully-developed caps (S7; `lane-2-waves/carter-equations.md` §10).**
 - [x] **Read Shaw's three papers in full** (Rankov 2012 Part 2, "ch 7–9", pp. 62–81):
       (1) the Xenophon Anabasis cruising-speed argument (7–8 kts implied), (2) the
       Byzantium→Heraclea voyage and its sea-state/wave tables (pp. 68–75, incl. Table 8.3),
