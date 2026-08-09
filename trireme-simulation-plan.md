@@ -658,6 +658,95 @@ the drive and its means are untouched by construction.
 | 5 | Per-tier factors (v2) | pending — next session | [ ] |
 | 6 | Archival (F/G raw data, Plan 8 stations, trials video) | Wolfson archive / Oxbow / Actium team; t_rise from film | background |
 
+## 15. Closure work plan for the remaining mismatches
+
+Sequenced by dependency: per-tier crews first (self-contained, may close the
+170-oar overshoot), then the turning-point blade law (its forces feed the
+sway work), then the sway DOF (its acceptance is the Ω reconciliation). The
+archival trio is background. An item closes when its gates pass AND its
+VALIDATION.md ledger row moves from [!] to [x] with the residual documented.
+
+### 15.1 #5 — per-tier crews (first; 1-2 sessions)
+
+- Split each SideCrew into three tier sub-crews (31 thranites / 27 zygians /
+  27 thalmians per side), each with its own Oar (tier MIT: old-fir
+  13.1/18.0/13.1; spruce 9.7), stroke plan, and W′ tank (v1: shared
+  P_crit/Fh_max; per-tier ceilings v2).
+- Thalmian head-room: an effective-stroke factor L_tier(rate) declining with
+  rate — built from rig-geometry §4 (720 mm manikin vs 800 mm design; "the
+  thalmian tier's power contribution fell sharply at higher speeds", ch.9
+  p.77). Calibrated to the head-room numbers, NOT to speeds.
+- New observable: per-tier power shares (W/man) — the trial character to
+  reproduce.
+- Gates: (a) tier power shares at 28.8/36/44.5 spm show the thalmian
+  fall-off; (b) the 170-oar sprint — does the head-room bring 8.54 kt toward
+  the trial's 8.2–8.3? (the crew-count residual may close); (c) regression:
+  all 73 tests; the fleet MIT weighting moves from the aggregate (14.7) to
+  the tier split (turns unaffected in the mean).
+- Risk: L_tier(rate)'s exact rate-dependence is unmeasured (only the
+  character is recorded) — flag `[?]`, keep the shape linear-in-rate until
+  better data.
+
+### 15.2 #4 — the turning-point blade law (second; 2-3 sessions)
+
+1. **Research (in-house)**: decode the ch.9 Appendix (the analytical
+   turning-point derivation) via the playbooks; resolve the printed d-formula
+   contradiction (cos fits the prose, sin+30° does not); extract the full
+   k·(q/p)²·V²·sin²C form and the k coefficient's calibration.
+2. **Derivation**: the flat-plate ↔ ch.9-form equivalence at the Olympias
+   points (k ↔ ½ρAC_N mapping); the Mark IIb 18.4° cant's effect on v_n.
+3. **Implementation**: a BLADE_LAW flag ("flat-plate" | "ch9") with the
+   geometry-dependent p(C) and (q/p)².
+4. **Re-validation**: the Olympias anchors under the new law — the four
+   Table 9.6 means, the couple 224 N, the catch spikes, the force-driven
+   drive-time companion — all within the existing tolerances; then the Mark
+   IIb points: the prop-fraction gate flips from "locked shortfall
+   [0.25, 0.35]" to "reproduced" (the acceptance band set by the result,
+   documented).
+- Gates: the E-consistency (already locked) stays; new: a law-equivalence
+  test (both laws within 1 % at the Olympias points once k is calibrated);
+  the Mark IIb prop fraction.
+- Risk: if the equivalence does not hold at Olympias, a documented
+  reconciliation — most likely a hybrid (flat-plate with the (q/p)²
+  correction factor), not a replacement.
+
+### 15.3 #1 — the sway DOF (third; 2-3 sessions)
+
+- Add sway v to the ship state: m_app·(dv/dt + ω·u) = F_oar_y + F_rud_y +
+  F_hull_lat(β); the per-oar Fy (already computed by the blade law) sums
+  into it; the rudder's lateral force (already modelled) too.
+- Hull lateral resistance: ρ·A_lat·v_lat·|v_lat|·sin(β) with A_lat = 35 m²
+  (validated parameter); the lateral-resistance centre (CLR) position is a
+  new parameter `[?]` — Plan 8 stations would pin it (archival link).
+- The yaw equation gains the physical lateral-moment term
+  F_hull_lat·(CLR − CG); Ω·ω² becomes a candidate for replacement/re-fit.
+- **Acceptance (the whole point)**: ONE parameter set satisfying BOTH the
+  diameters (G1/F1/tightest ≤ 5 %) AND the sprint-protocol t_360 ∈
+  [110, 140] s — the trial's 128 s.
+- Gates: (a) quasi-steady drift in G1 ≈ the Taylor balance value
+  (consistency); (b) the reported 15° ± 2° drift — can the dynamics
+  reproduce the documented caveat? (c) diameters within tolerance;
+  (d) t_360 in the band; (e) regression.
+- Risks: the CLR position unmeasured (sensitivity band); the lateral
+  resistance law's validity at high drift; the largest re-validation of the
+  turn gates.
+
+### 15.4 Archival trio (background, anytime)
+
+- Draft the Wolfson archive email (F/G tables + Plan 8 stations — the leads
+  are in the lane-3/lane-5 notes); Oxbow out-of-print copies; U. Crete
+  catalogue; the Actium/CNRS team.
+- The 1990 trials video → t_rise from film (the catch-flip time).
+- Acceptance: the replies → the per-turn F/G data (per-angle rudder drag
+  factors), the station plan (sway moments, C3 closure), a measured t_rise.
+
+### 15.5 Sequence
+
+1. #5 per-tier crews — self-contained quick win.
+2. #4 blade law — its forces feed #1's sway.
+3. #1 sway DOF — the Ω reconciliation is its acceptance.
+4. Archival — background; the emails first.
+
 ## Next actions
 
 - [x] Freeze the **verb set** (§3.2: 4 crew verbs). oQ-1, 2, 5, 6, 7 resolved; only
