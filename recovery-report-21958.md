@@ -68,7 +68,7 @@ recoverable only as the 8 profile snippets.
 
 - CDX inventory queries against the Wayback API for the topic, its pages, member profile,
   and image monthly-upload directories; all manifests saved in
-  `/tmp/opencode/wayback/manifests/`.
+  `wayback/manifests/`.
 - Fetch of raw HTML via `id_` suffix to avoid Wayback banner injection.
 - Posts parsed from IPB `<article id="elComment_…">` blocks with a stdlib regex extractor
   (`extract_t21958.py`), merged and deduplicated by comment ID (`assemble_t21958.py`),

@@ -1,6 +1,6 @@
 # Lane 4 — Oar propulsion model (W3): speed→power chain, verified against Shaw
 
-Reference implementation: `/tmp/opencode/lane4_propulsion.py` (pure stdlib, runnable). All numbers
+Reference implementation: `research/lane-4-oars/lane4_propulsion.py` (pure stdlib, runnable). All numbers
 below are produced by that script and reproduce Shaw 2012 (Rankov, *Trireme Olympias: The Final
 Report*) to the precision shown. This is the engine-to-propeller chain that the simulation will use.
 

@@ -1,6 +1,6 @@
 # Lane 4 — Oars & Oar-Rig: Olympias geometry, mass, gearing, stroke, blades
 
-Research notes, web-only + Rankov 2012 full-text PDF (extracted text at `/tmp/opencode/rankov2012.txt`).
+Research notes, web-only + Rankov 2012 full-text PDF (extracted text at `sources/rankov2012.txt`).
 Confidence flags: `[x]` = confirmed directly from a cited source (primary text read); `[?]` = inferred / unverified / conflicting.
 Primary texts used: Rankov 2012 ch.1 (1992 trials report, Lipke/Howarth), ch.3 (1994 trials report, Shaw, incl. Appendices 1–3), ch.31 (Taylor); Braithwaite 1:24 build log (ModelShipWorld); Wikipedia Olympias infobox.
 
@@ -136,7 +136,7 @@ Primary texts used: Rankov 2012 ch.1 (1992 trials report, Lipke/Howarth), ch.3 (
 - **Oar-propulsion chain now fully specified and implemented** (ch.9): W_hull = 155V³+4.13V⁵ (×1.08 Mark II) → n·P·L·r·E/60; P = 7.43·r; E = 0.780 (Mark II) / 0.756 full-crew Olympias; L = 0.89/0.87/0.99 m. Implemented + verified in `propulsion-models.md` and `lane4_propulsion.py` — reproduces Shaw's 8.32-kt sprint, Table 9.7 rates, ch.7 cruise rates, and the S6 62-W/man check. The 44.5-spm sprint → 8.3 kts match is our best cross-check target. `[x]`
 
 ## 10. Sources
-- [x] **Rankov, B. (ed.) (2012).** *Trireme Olympias: The Final Report.* Oxbow. (PDF at ancientportsantiques.com; text at /tmp/opencode/rankov2012.txt) — ch.1 (1992 trials, Lipke/Howarth) pp.24–25, 37–39; ch.3 (1994 trials, Shaw, incl. Apps 1–3) pp.47–62; ch.7 (Shaw, Golden Horn→Heraclea) pp.63–67; ch.9 (Shaw, long-stroke design) pp.76–81; ch.31 (Taylor) pp.233–243.
+- [x] **Rankov, B. (ed.) (2012).** *Trireme Olympias: The Final Report.* Oxbow. (PDF at ancientportsantiques.com; text at sources/rankov2012.txt) — ch.1 (1992 trials, Lipke/Howarth) pp.24–25, 37–39; ch.3 (1994 trials, Shaw, incl. Apps 1–3) pp.47–62; ch.7 (Shaw, Golden Horn→Heraclea) pp.63–67; ch.9 (Shaw, long-stroke design) pp.76–81; ch.31 (Taylor) pp.233–243.
 - [x] **Braithwaite, R.** 1:24 Olympias build log, ModelShipWorld (local copy: trireme-olympias-build-log-richard-braithwaite.md), POSTs 60–72, 77 (oars) and 61 (oar mass).
 - [x] **Wikipedia, "Olympias (trireme)"** — crew breakdown (62/54/54), 1987 trials, dimensions, power estimate.
 - [x] **Morrison, Coates & Rankov (2000).** *The Athenian Trireme* (oar-loop/thole details; cubit basis; 9 & 9½ cubit oars).

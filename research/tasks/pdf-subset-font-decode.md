@@ -8,8 +8,8 @@ text extraction (`get_text()`) returns PUA codepoints (U+F000…) or `?`. We dec
 
 ## The tool
 
-`/tmp/opencode/decode_shaw.py` — the working decoder. It:
-1. Opens `rankov2012.pdf` (path baked in at `DOC`).
+`tools/decode_shaw.py` — the working decoder. It:
+1. Opens `sources/rankov2012.pdf` (resolved relative to the script via `_BASE`).
 2. For each requested page, extracts embedded subset TT fonts (names starting `TT…`).
 3. Renders each PUA glyph (0xF000–0xF0FF) as a small 18×22 mask via `ft2font`, and matches it by
    chamfer/EDT distance against DejaVu reference masks (`REF_CHARS`).
@@ -19,8 +19,8 @@ text extraction (`get_text()`) returns PUA codepoints (U+F000…) or `?`. We dec
 Run it with PDF page indices (0-based, == book page + 12 for Rankov):
 
 ```bash
-cd /tmp/opencode
-source research-venv/bin/activate        # needs pymupdf, numpy, PIL, scipy, matplotlib
+cd tools
+source /tmp/opencode/research-venv/bin/activate   # venvs stay in /tmp/opencode
 python decode_shaw.py 84 85              # print decoded text for book pp.72–73
 python decode_shaw.py 84 | grep -vE "'\?\?\?+'"   # hide the undecodable table cells
 ```

@@ -12,13 +12,13 @@ session doesn't re-learn them the hard way.
 | [pdf-text-extraction.md](pdf-text-extraction.md) | Simple case: PDF text extracts fine — pull clean text/pages quickly. |
 
 Working notes (persistent across sessions):
-- Sources: `/tmp/opencode/rankov2012.pdf` (+ `rankov2012.txt` full text dump), Carter 1982 PDF in
-  `/tmp/opencode/carter/`. **`/tmp/opencode` is scratch — it may be wiped; promoted deliverables live
-  under `~/projects/sandbox/research/`.**
+- Sources: `sources/rankov2012.pdf` (+ `rankov2012.txt` full text dump), Carter 1982 PDF in
+  `sources/carter/`. **`/tmp/opencode` only holds the venvs — it may be wiped; promoted deliverables
+  live in this repo (run scripts from `tools/`, venv paths point back to `/tmp/opencode`).**
 - Two venvs in `/tmp/opencode`: `venv` has **easyocr + torch**; `research-venv` has **pymupdf + numpy
   + PIL + scipy + matplotlib**. Neither venv has all packages — **render with `research-venv`, OCR with
   `venv`** (or install into one). This split has bitten us repeatedly.
 - Rankov 2012 page numbering: **PDF page index = printed book page + 12** (e.g. book p.72 = PDF page 84;
   book p.70 = PDF page 82). `decode_shaw.py` numbers by PDF page index (0-based pymupdf page).
-- The full-page glyph-cache `glyph_map3.json` and the reconstructed fonts in `/tmp/opencode/rankov/`
+- The glyph-cache (`tools/.cache/glyph_map3.json`, gitignored) and the reconstructed fonts in `tools/`
   are the accumulated decode state — keep them when re-running decodes.

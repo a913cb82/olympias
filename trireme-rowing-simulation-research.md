@@ -23,7 +23,8 @@ progresses**. Every session should leave it more accurate than it found it.
 1. **Whenever you learn something, record it here and in the relevant lane note** — do not wait
    for the end of the session. Tick boxes, add log sections (S8, S9, …), update the plan.
 2. **Decoded/recovered numbers go to `research/data/*.csv`** (machine-readable, commented, with
-   provenance) and are cited from the notes. Keep `/tmp/opencode` artifacts as scratch only.
+   provenance) and are cited from the notes. Keep `/tmp/opencode` artifacts as scratch only (venvs,
+   work-in-progress renders).
 3. **Repeatable workflows are written up once in `research/tasks/`** (see the playbook index at the
    bottom of this file) so a later session can re-run them without re-learning. Add a new playbook
    the first time a task is done a second time; update one when a better way is found.
@@ -72,7 +73,7 @@ Coates drawing, and nothing enters the model that we cannot defend in a written 
   invent one from scratch.
 - **Rankov 2012 (The Trireme Olympias: The Final Report)** contains the primary trial
   data (speeds, turns, power, and Shaw's wave tables) — the PDF is already local
-  (`/tmp/opencode/rankov2012.pdf` + extracted text).
+  (`sources/rankov2012.pdf` + extracted text).
 
 ### Data sources to assemble (from build-log bibliography + research notes)
 
@@ -92,7 +93,7 @@ Coates drawing, and nothing enters the model that we cannot defend in a written 
 ### Workstreams
 
 **W1 — Source digitisation & table recovery** (current focus)
-- [x] Extract Rankov 2012 full text (`/tmp/opencode/rankov2012.txt`).
+- [x] Extract Rankov 2012 full text (`sources/rankov2012.txt`).
 - [ ] Decode subset-font tables (custom cmap + glyph matching — *see Active TODOs below*).
 - [ ] Recover Taylor Table 31.1 (drag/rudder coefficients) — needs OCR or font decode.
 - [ ] Reconcile Table 8.3 decoded values against Carter's relations (L = 1.56 T², C = 1.56 T)
@@ -220,7 +221,7 @@ Dependency logic:
 Execution model:
 - Each lane is a self-contained unit suitable for a sub-agent; Lanes 2–5 are pairwise
   independent and run concurrently; Lane 6 aggregates.
-- Concurrency note: the `/tmp/opencode` extraction scripts are stateless per invocation, so
+- Concurrency note: the `tools/` extraction scripts are stateless per invocation, so
   Lanes 3–5's searches/reads don't contend with Lane 2's decode; only Lane 2 is inherently
   serial (each table needs its own cmap/glyph pass). Web searches are trivially parallel.
 
@@ -231,16 +232,20 @@ the orchestrator* when merging a lane's completed work — never by sub-agents d
 concurrent-write conflicts and lost updates). Sub-agents therefore produce **lane notes + raw
 artifacts**, and return a **structured summary** as their final message.
 
-Directory layout (persistent, inside the project so it survives /tmp/opencode scratch):
+Directory layout (persistent, inside this repo):
 ```
-~/projects/sandbox/research/
-├── lane-1-read/          # Lane 1 prose notes (one .md per reader)
-├── lane-2-waves/         # Lane 2 notes + decoded-table artifacts
-├── lane-3-hull/          # Lane 3 notes + resistance/offsets data
-├── lane-4-oars/          # Lane 4 notes
-├── lane-5-manoeuvre/     # Lane 5 notes + extracted workbook/csv
-├── lane-6-validation/    # Lane 6 validation table + uncertainties register
-└── data/                 # shared machine-readable artifacts (CSV, xlsx, decoded fonts)
+~/projects/sandbox/trireme/
+├── research/
+│   ├── lane-1-read/          # Lane 1 prose notes (one .md per reader)
+│   ├── lane-2-waves/         # Lane 2 notes + decoded-table artifacts
+│   ├── lane-3-hull/          # Lane 3 notes + resistance/offsets data
+│   ├── lane-4-oars/          # Lane 4 notes
+│   ├── lane-5-manoeuvre/     # Lane 5 notes + extracted workbook/csv
+│   ├── lane-6-validation/    # Lane 6 validation table + uncertainties register
+│   └── data/                 # shared machine-readable artifacts (CSV, xlsx, decoded fonts)
+├── sources/                  # primary-source PDFs + text dumps
+├── tools/                    # decode/OCR scripts + fonts + renders
+└── wayback/                  # MSW thread-21958 recovery tooling
 ```
 Raw data artifacts (Table 8.3 CSV, extracted workbook, towing-resistance tables) go in
 `research/data/` so multiple lanes can cite the same files.
@@ -255,9 +260,10 @@ Per-lane rules:
   source list + confidence flags. The orchestrator folds it into the main .md as a new log
   section (S7, S8, …) and ticks the corresponding W/lane boxes.
 
-In this session, artifacts stay in `/tmp/opencode` while being produced (fonts, scripts,
-page renders); only *finished* deliverables (the decoded CSV, notes) get promoted to
-`research/` on merge.
+In this session, artifacts were produced in `/tmp/opencode` (fonts, scripts,
+page renders) and are now promoted into `sources/`, `tools/`, and `wayback/`; the venvs
+stay in `/tmp/opencode`. Only *finished* deliverables (the decoded CSV, notes) belong in
+`research/`.
 
 ### Web searches still to run
 
@@ -392,7 +398,7 @@ Key papers (rowing = best-studied analogue for oar propulsion):
 - Dudhia, "The physics of rowing" — https://www.atm.ox.ac.uk/rowing/physics (also hosts Trireme Trust trials page).
 
 ### S3 — Trireme dynamics model: Taylor, "Battle Manoeuvres for Fast Triremes" (Rankov 2012 ch.31) [x]
-Search: "trireme Olympias maneuvering model simulation" → found chapter in **Trireme Olympias: The Final Report** (Oxbow 2012); full PDF obtained from https://www.ancientportsantiques.com/wp-content/uploads/Documents/AUTHORS/Rankov2012-TriremeOlympia.pdf (extracted text in /tmp/opencode/rankov2012.txt).
+Search: "trireme Olympias maneuvering model simulation" → found chapter in **Trireme Olympias: The Final Report** (Oxbow 2012); full PDF obtained from https://www.ancientportsantiques.com/wp-content/uploads/Documents/AUTHORS/Rankov2012-TriremeOlympia.pdf (extracted text in sources/rankov2012.txt).
 
 **This is the single most relevant existing model** — a published, Excel-based dynamics simulation of Olympias + a hypothetical "fast Mark IIb trireme", validated against six trial turns. Key contents:
 
@@ -429,7 +435,7 @@ Sources cited by the model (core validation datasets):
 - Rankov ch.31 (S3) notes wave-making resistance is a minor component for Olympias; frictional dominant.
 
 ### S5 — Human power (the "engine"): Coates ch.22 "Human Mechanical Power Sustainable in Rowing a Ship" (Rankov 2012 pp.161-164) [x]
-Read in full from /tmp/opencode/rankov2012.txt (p.161-164). This is the input-side physiology model.
+Read in full from sources/rankov2012.txt (p.161-164). This is the input-side physiology model.
 
 Sustainable mechanical power for "an ordinary man" (Burlet et al. 1986, from Scherrer's Précis de Physiologie du Travail):
 - 140 W for 10 h; 170 W for 4 h; 200 W for 1 h.
@@ -454,7 +460,7 @@ Key worked example (Thucydides' Athens→Mytilene passage):
 - Xenophon's Byzantium→Heraclea 129 nm "long day" under oar: feasible in ~20 h continuous under these assumptions.
 
 ### S6 — Paleo-bioenergetics (Rossiter & Whipp, Rankov ch.23 pp.165-168) [x]
-Read in full from /tmp/opencode/rankov2012.txt. Upper bound on sustainable power per oarsman.
+Read in full from sources/rankov2012.txt. Upper bound on sustainable power per oarsman.
 
 Key assumptions & values:
 - Literary target: ~7 knots for ~18 h (Thucydides 3.49; 8.101; Xenophon Anabasis 6.4.2).
@@ -672,5 +678,4 @@ when a playbook is added/renamed, update both this index and `research/tasks/REA
 **Process note:** the first time a task is done twice, write (or extend) a playbook for it. When a
 better recipe is found, update the playbook — later sessions read it as gospel. Deliverables promoted
 from `/tmp/opencode` scratch to `research/data/` must be logged in a new S-section here.
-
 ---

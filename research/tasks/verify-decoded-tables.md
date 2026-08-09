@@ -17,7 +17,7 @@ One-off python (any venv with numpy/math is fine). Loop the table's independent 
 expected H/L/C, apply any caps, print side-by-side with the decoded values:
 
 ```bash
-cd /tmp/opencode && source venv/bin/activate
+cd tools && source /tmp/opencode/venv/bin/activate    # venv stays in /tmp/opencode
 python -c "
 rows = [  # (fetch, duration, W=4.5:(H,L,C), W=5.0:(...), W=5.5:(...)) from decoded CSV
  (50,3.2, (0.23,4.1,2.5), (0.27,4.7,2.7), (0.30,5.2,2.9)),

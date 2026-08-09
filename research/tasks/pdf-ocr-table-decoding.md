@@ -12,15 +12,15 @@ Find the PDF page (remember: Rankov book page + 12 = PDF page index). Then rende
 tight crop around the table at 8x with a clip rect:
 
 ```bash
-cd /tmp/opencode
-source research-venv/bin/activate
+cd tools
+source /tmp/opencode/research-venv/bin/activate   # venvs stay in /tmp/opencode
 python -c "
 import pymupdf
-doc = pymupdf.open('/tmp/opencode/rankov2012.pdf')
+doc = pymupdf.open('../sources/rankov2012.pdf')
 page = doc[84]                      # book p.72, Table 8.3
 pix = page.get_pixmap(matrix=pymupdf.Matrix(8,8),
                       clip=pymupdf.Rect(40, 96, 540, 185))   # x0,y0,x1,y1 in 1x page pts
-pix.save('/tmp/opencode/t83_table_8x.png')
+pix.save('tools/t83_table_8x.png')
 print('saved', pix.width, pix.height)
 "
 ```
@@ -38,12 +38,12 @@ Tips for the clip rect:
 ### 2. OCR it (use `venv`, it has easyocr + torch)
 
 ```bash
-cd /tmp/opencode
-source venv/bin/activate
+cd tools
+source /tmp/opencode/venv/bin/activate          # venvs stay in /tmp/opencode
 python -c "
 import easyocr
 reader = easyocr.Reader(['en'], gpu=False, verbose=False)
-res = reader.readtext('/tmp/opencode/t83_table_8x.png', detail=1, paragraph=False)
+res = reader.readtext('t83_table_8x.png', detail=1, paragraph=False)
 res.sort(key=lambda r:(round(r[0][0][1]/20), r[0][0][0]))   # row-major order
 for box, txt, conf in res:
     print(f'[{int(box[0][0]):5},{int(box[0][1]):5}] {txt!r} {conf:.2f}')
@@ -76,8 +76,9 @@ three columns `H  L  C`. Each data row is `fetch, duration, {W=4.5: H L C}, {W=5
   drops the `*`; recover it from the verification pass (asterisked H equals the fully-developed cap).
 - Column header glyphs (`H L C`, `W = 4.5 m/s`) OCR fine; the sub-header row may come out as one
   merged box per cell — acceptable, don't over-polish.
-- Renders and OCR crops go in `/tmp/opencode` as scratch; **promote the clean CSV to
-  `~/projects/sandbox/research/data/`** when done (see step 4).
+- Renders and OCR crops go in `tools/` (from repo root; `.cache/` inside `tools/` is gitignored) as
+  scratch; **promote the clean CSV to
+  `research/data/`** when done (see step 4).
 
 ## 4. Deliverable
 
