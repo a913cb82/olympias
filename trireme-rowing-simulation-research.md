@@ -159,13 +159,19 @@ Coates drawing, and nothing enters the model that we cannot defend in a written 
       as the asymptotic checks on any fetch-limited growth formula we adopt.
 
 **W5 — Manoeuvring dynamics (re-implement Taylor ch.31)**
+- [x] **Taylor's model re-implemented as a reference script** —
+      `research/lane-5-manoeuvre/manoeuvre_model.py` + `manoeuvre-model.md`, from ch.31 text +
+      OCR Table 31.1: m_app = 1.10·m, 3-band hull drag, thrust 17.4−0.967v kN, rudder lateral
+      coeff 0.14+0.020Φ−0.00015Φ², rudder torque via lever (row 9), one-side-stops torque
+      (row 10), yaw resistance Ωω², heel pendulum with GM−0.2 m. **Validated against §6 targets
+      to ≤7% without fitting**: fast anastrophe 151.8 vs 145 m, tight 74.6 vs 80 m, Olympias
+      64 vs 62 m, v 5.56/9.01/9.81 kt at 10/24/40 s (5.5/9.0/~9.9), braking 19 s/56 m
+      (<20 s/<170 m), astern 9.38 vs 9.4 kt. Heel 4.0° vs stated 3.5° (over-predicts ~1°,
+      flagged). Uses BMT KM/GM per S14 decision.
 - [ ] If Taylor's Excel workbook is found (see Web searches), **extract the model from the
       sheet**: dump formulas, hard-coded coefficients, and initial conditions (openpyxl/xlrd),
       then transcribe into the reference implementation so the coefficients are taken verbatim
-      rather than re-derived from the garbled PDF.
-- [ ] Reproduce Taylor's model faithfully (drag, rudder lateral force coefficient
-      0.14 + 0.020Φ − 0.00015Φ², rudder torque, one-side-stops oar turning moment,
-      yaw resistance Ωω², heel ≤ 3° pendulum) as a reference implementation.
+      rather than re-derived from the garbled PDF. *(Workbook not online — see S13 / taylor-excel.md.)*
 - [ ] Re-run against trial turns F1–F6, G1–G5 (D1) to confirm we reproduce his validation.
 - [ ] Add Richard's alternative: rotation about centre of lateral resistance vs c.g.;
       quantify the difference (Taylor flags the UCL-model discrepancy here).
@@ -738,6 +744,21 @@ Table 8.3 reconcile — all done in S7/S11) committed separately.
   BMT KM = 2.90 m — the pure circular-arc waterplane (Cwp 0.556) is too lean; the real
   Olympias is fuller/flatter-bottomed. **Decision**: Lane 5 manoeuvring uses BMT measured
   KM 2.90 m / GM 1.13 m directly, not model KM. Logged in uncertainties register (new row).
+
+### S15 — Parametric hull form + W5 manoeuvring model built [x]
+
+Steps 1–2 of the next-steps list (Step 3 = W6 validation table, pending).
+
+- **Step 1 (W2 hull form)** [x]: see S14 — parametric circular-arc hull fitted to BMT
+  displacements, wetted surface validated vs Taylor drag, KM under-prediction flagged
+  (commit 012d426).
+- **Step 2 (W5 manoeuvring model)** [x]: `research/lane-5-manoeuvre/manoeuvre_model.py` —
+  faithful re-implementation of Taylor ch.31 from chapter text + OCR Table 31.1. All §6
+  targets reproduced to ≤7% with no fitting: turn diameters 151.8/74.6/64.0 m vs 145/80/62,
+  acceleration 5.56/9.01/9.81 kt at 10/24/40 s, braking 19 s over 56 m, astern 9.38 kt.
+  Heel over-predicts ~1° (4.0 vs 3.5° fast anastrophe; needs deck-crew mitigation).
+  Uses BMT KM/GM per S14 decision. Committed with note `manoeuvre-model.md` + W5 checklist
+  update.
 
 ---
 
