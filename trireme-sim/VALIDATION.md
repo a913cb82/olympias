@@ -20,7 +20,7 @@ cd trireme-sim
 ../.venv/bin/python3 ll/tests/test_gate5.py             # direct run also works
 ```
 
-Suites: `tests/test_parser.py` (19) · `ll/tests/test_gate1..9.py` (7/12/9/8/7/4/4/5/4)
+Suites: `tests/test_parser.py` (19) · `ll/tests/test_gate1..8.py` (7/12/9/8/7/4/4/5)
 · `tests/test_research_chain.py` (12 — locks the research chain itself: the
 8.32-kt sprint, Table 9.7, ch.7 cruise, rigid-model means, oar families,
 catch spikes, W5 turn anchors, acceleration, apparent mass). Every check
@@ -120,14 +120,13 @@ caveat mechanism, now integrated).
    no silent tuning.
 2. **Tightest-turn 360° time** — **closed by the sway DOF** (plan 15.3):
    the physical CLR restoring moment + the C3 lever decomposition (4.8 →
-   1.8 m) + the ship's effective Ω 3.2e6 + the turn build-up (plan 17:
-   the helm ramp tau_rud = 3 s, the hold transition tau_hold = 2 s, the
-   helmsman's strength clamp): D = 68.0 m ✓ and the speed halves ✓;
-   t_360 = 100 vs 128 s — the build-up's share is small (~2 s); the
-   residual is dominated by the yaw torque balance and the speed profile
-   (the trial's mean 2.96 kt vs our ~4.1 kt; a linear yaw-damping term is
-   the next candidate, register C1). The drift emerges (−2.2°) and the
-   lateral velocity damps.
+   1.8 m) + the ship's effective Ω 3.2e6: D = 67.8 m ✓ and the speed
+   halves ✓; t_360 = 98 vs 128 s — **an OPEN discrepancy with no known
+   cause**: the turn build-up was implemented and ruled out (its share
+   ~2 s, plan 17, reverted); the hold fraction, W' fade and sway physics
+   are all in. A linear yaw-damping form is an untested hypothesis
+   (register C1's units hint). The drift emerges (−2.2°) and the lateral
+   velocity damps.
 3. **Sprint t_drive gap** — **closed**: t_drive(44.5) = 0.371 s calibrated
    to the trial (8.30 kt at 130 oars, in the 8.2–8.4 band); the assumption
    is now a pinned, tagged schedule entry (register A8).

@@ -106,8 +106,6 @@ class TierCrew:
         self.mit = mit
         self.t_rise = t_rise
         self.hold_frac = hold_frac
-        self.tau_hold = 2.0         # s — the hold transition (reaction +
-                                    # the current stroke + the re-entry) [?]
         self.hold_k = hold_frac * self.k
         self.oar = Oar(rig, rate, t_drive, direction=direction, mit=mit,
                        t_rise=t_rise)
@@ -117,9 +115,6 @@ class TierCrew:
         self.W_frac = 1.0
         self.p_gross_current = 0.0
         self.last_fh = 0.0
-        self.brake_frac = 0.0        # the held-blade brake builds over
-                                     # tau_hold (the oar-state transition,
-                                     # plan 17)
 
     # ------------------------------------------------------------------
     def fh_demanded(self) -> float:
@@ -262,9 +257,8 @@ class TierCrew:
             return 0.0, 0.0, 0.0, 0.0
         if self.state in ("bank", "hold"):
             self.p_gross_current = 0.0
-            self._ramp_brake(dt, 0.0 if self.state == "bank" else self.hold_frac)
             if self.state == "hold":
-                brake = -self.brake_frac * self.k * V * abs(V)
+                brake = -self.hold_k * V * abs(V)
                 return 0.0, 0.0, brake, 0.0
             return 0.0, 0.0, 0.0, 0.0
         # plan at the catch (first stroke, or the step after a catch crossing)
@@ -279,10 +273,8 @@ class TierCrew:
             # blade (the brake); the oar must not be stepped (a parked blade
             # would compute the full flow drag, not the held brake)
             self.p_gross_current = 0.0
-            self._ramp_brake(dt, self.hold_frac)
-            brake = -self.brake_frac * self.k * V * abs(V)
+            brake = -self.hold_k * V * abs(V)
             return 0.0, 0.0, brake, 0.0
-        self._ramp_brake(dt, 0.0)                 # rowing: no held blades
         if self.plan.limited_by == "feathered":
             self.oar.step(dt, V)                  # cadence continues, no force
             self.p_gross_current = 0.0
@@ -306,9 +298,6 @@ class TierCrew:
             self.W = min(self.W_max,
                          self.W + min(p_crit_g - p, self.W_max / self.tau) * dt)
         self.W_frac = self.W / self.W_max
-
-    def _ramp_brake(self, dt: float, target: float) -> None:
-        self.brake_frac += (target - self.brake_frac) * min(1.0, dt / self.tau_hold)
 
     def set_state(self, state: str) -> None:
         """Command-language state change; restarts the oar at the catch.

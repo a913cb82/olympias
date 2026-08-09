@@ -833,33 +833,24 @@ acceptance: the equilibrium at 46.3 spm lands near the chain's 9.7 kt
 4. The A5 data (Coates plans, archival) would pin the real area and shrink
    the slip-factor to zero — the background path.
 
-## 17. The turn build-up (**implemented**, Gate 9, 4 checks)
+## 17. The turn build-up — **investigated, ruled out, reverted**
 
-The helm and the oar-state transitions are no longer instant:
+Implemented the build-up (the helm as a human action: tau_rud lag + the
+helmsman's strength clamp; the held blades' brake ramp tau_hold) and
+measured its contribution: **~2 s of the ~28 s discrepancy** (98 → 100 s)
+— negligible, the ramps overlap the W' fade which dominates the timing.
 
-- **The rudder build-up**: the helm applies as a first-order lag (the
-  helmsman's reaction + the tiller travel, tau_rud = 3 s `[?]`) AND a
-  strength clamp (the helmsman's holding force, the rower-strength scale
-  reused — the tiller load f_rud·lever_tiller ≤ F_helm: the rudder
-  YIELDS at high speed). The Olympias's balanced rudders keep the clamp
-  dormant at her speeds (the lever 0.15 `[?]`); it would bind at ~10.4 kt.
-- **The oar-state transition**: the held blades' brake ramps over
-  tau_hold = 2 s `[?]` (the reaction + the current stroke + the re-entry
-  in the hold pose) — the brake fraction is now a state, not a step.
+**Conclusion**: the build-up is NOT the cause of the t_360 discrepancy
+(100 vs the trial's 128 s). The code was reverted (no complexity for a
+ruled-out mechanism); the timings would be physical to include later, but
+only if a discrepancy worth their magnitude appears.
 
-**Honest finding from the calibration**: the build-up's quantitative share
-of the tightest t_360 is small (98 → 100 s) — the ramps overlap the W' fade
-which dominates the timing. The residual to the trial's 128 s is dominated
-by the yaw torque balance and the speed profile (the trial's mean 2.96 kt
-vs our ~4.1 kt): the next candidate is a LINEAR yaw-damping term (register
-C1's units hint — the printed 'kg m²' fits a linear coefficient
-kg·m²·s⁻¹) and the deceleration timing — documented, not fitted.
-
-Gates: G9-1 the helm ramp (95 % within 3·tau; the yaw grows gradually);
-G9-2 the helmsman clamp (dormant at 6 kt, yields at 11 kt — the method
-unit); G9-3 the brake ramp (builds over tau_hold, settles); G9-4 the
-adopted turns with the build-up in their bands (t_360 = ~100 vs 128,
-residual documented); G9-5 regression (92 tests).
+**The t_360 residual is an OPEN discrepancy with no known cause.** The
+candidates examined and their status: the hold fraction (calibrated, two-
+anchor), the W' fade (in), the sway/CLR physics (in), the turn build-up
+(implemented, tested, ruled out). A linear yaw-damping form (register C1's
+units hint — the printed 'kg m²' fits a linear coefficient) is an untested
+hypothesis, not a cause.
 
 ## Next actions
 
