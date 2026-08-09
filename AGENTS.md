@@ -70,5 +70,7 @@ V=../.venv/bin/python3
 $V tests/test_parser.py          # command-language checks (19)
 $V ll/tests/test_gate1.py        # one-oar acceptance (7)
 $V ll/run_one_oar.py             # one-oar table at the anchored cruise point
+$V ll/tests/test_gate5.py        # oar-inertia acceptance (7); validation ledger in
+                                 # trireme-sim/VALIDATION.md (62 checks total)
 $V ll/run_one_oar.py --rig MarkIIb --v-kts 7.5 --spm 28.8 --t-drive 0.612   # oQ-18 point
 ```

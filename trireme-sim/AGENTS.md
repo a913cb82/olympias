@@ -5,7 +5,9 @@ Two simulators of the Olympias-class trireme sharing one command language. Desig
 oQ-1…21). The validated physics they must satisfy: `../research/AGENTS.md` and
 `../trireme-rowing-simulation-research.md`.
 
-**Chain of trust: real-world data → LL → HL.**
+**Chain of trust: real-world data → LL → HL.** The LL's acceptance record —
+every gate, anchor, result and honest mismatch — lives in
+[`VALIDATION.md`](VALIDATION.md) (reproduce: run all `ll/tests/`, 62 checks).
 - `ll/` (low-level) is the oracle — per-oar physics, validated against the
   research numbers.
 - `hl/` (high-level, not built yet) is a fast approximation; its response curves
