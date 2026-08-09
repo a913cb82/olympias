@@ -24,19 +24,45 @@ Primary texts used: Rankov 2012 ch.1 (1992 trials report, Lipke/Howarth), ch.3 (
 ## 3. Oar mass / physical properties
 
 ### Full-size Olympias fir oars
-- Douglas-fir oars (the originals): "weighed over 12 kg, increased to 17 kg once a lead counterweight was added inboard". `[x]` (build log POST 61 area, quoting model-scaled ship oars)
-- **12.3 kg/oar** full-size: figure quoted in the build log for the real Olympias oars (the builder's 1:24 model oars scale to 11.71 g at 1:24³). `[?]` — source of the 12.3 kg value is not stated by the builder; likely from Shaw/Coates (The Trireme Project or the 1994 trials report). Rankov 2012 Table 3.1 holds the ten-oar measured table (fir + spruce) but the table body is corrupted in the PDF text layer. **Consistent with** ">12 kg"; treat 12.3 kg as plausible but not independently confirmed.
 
-### 1994 measurements (Rankov ch.3 App.2, p.60–61) — verified
+- Douglas-fir oars (the originals): "weighed over 12 kg, increased to 17 kg once a lead counterweight was added inboard". `[x]` (build log POST 61 area, quoting model-scaled ship oars)
+- **12.3 kg/oar** full-size: figure quoted in the build log for the real Olympias oars (the builder's 1:24 model oars scale to 11.71 g at 1:24³). `[?]` — source of the 12.3 kg value is not stated by the builder; likely from Shaw/Coates (The Trireme Project or the 1994 trials report). **Rankov 2012 Table 3.1 (now decoded) gives the ten-oar measured table: spruce oars 9–12 lbf, old fir oars 17–22 lbf — so ~12 lbf spruce ≈ 5.4 kgf is the *spruce* figure; 12.3 kg/oar more plausibly refers to the heavy old fir oars (17 lbf ≈ 7.7 kg up to 22 lbf ≈ 10 kg) or is simply wrong.** Treat 12.3 kg as implausible for the 1994 spruce oars.
+
+### 1994 measurements (Rankov ch.3 App.2, p.60–61; Table 3.1 p.48) — verified
+
 - 10 oars tested: **3 Douglas fir + 7 spruce**, by bifilar suspension + stopwatch (method: Lamb 1923, 158–9, 164).
 - Inboard length taken as **3 ft 7 in = 1.092 m in all cases** — "found by the users of spruce oars to be the most convenient in Olympias." `[x]`
-- Parameters recorded: overall weight, weight "in hand" (as though acting at the butt), C of G from thole, **MIT = moment of inertia about the thole** (a measure of handiness), **X = distance of centre of percussion from the blade tip** (best ≈ −0.15 m, i.e. within the blade ~6 in; Bourne 1925).
+- Parameters recorded: overall weight, weight "in hand" (as though acting at the butt), **C of G from the butt**, **MIT = moment of inertia about the thole** (a measure of handiness), **X = distance of centre of percussion from the blade tip** (best ≈ −0.15 m, i.e. within the blade ~6 in; Bourne 1925). `[x]`
 - Old fir oars and spruce oars 1 & 2 have squared looms; the others circular-section looms. `[x]`
 - Conclusion: a spruce oar 4.66 m long "could weigh as little as 10 lbf" with **MIT kept as low as 8 kg-m²**. `[x]`
 
+#### Table 3.1 — the ten-oar inertia table (fully decoded; 8 of 10 data rows verify) `[x]`
+
+Decoded from the PDF glyph layer (PUA subset font) via `research/data/shaw-table-3.1-oar-inertia.csv`; each row checked against **MIT = W_kgf·(k² + c²)** with c = (C of G from butt) − 1.092 m, W_kgf = W_lbf/2.2046 — the complete spruce rows (1–6, 9) and old thranite C reproduce the printed MIT to within rounding; old zygians A & B do **not** (see the Verification note below).
+
+| Oar | Type | Wt lbf | Wt-in-hand lbf | Radius of gyration² (m²) | C of G from butt (m) | MIT kg-m² | X (m) |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | spruce | 12 | 7.9 | 1.48 | 1.81 | 10.8 | −0.35 |
+| 2 | spruce | 12 | 8.0 | 1.41 | 1.82 | 10.6 | −0.46 |
+| 3 | spruce | 10.5 | 8.2 | 1.45 | 1.94 | 10.3 | −0.57 |
+| 4 | spruce | 10 | 7.8 | 1.42 | 1.94 | 9.7 | −0.61 |
+| 5 | spruce | 10 | 7.3 | 1.45 | 1.89 | 9.5 | −0.51 |
+| 6 | spruce | 9 | 6.7 | 1.38 | 1.90 | 8.3 | −0.61 |
+| 7 | spruce | — | — | — | — | — | Missing |
+| 8 | spruce | — | — | — | — | — | Missing |
+| 9 | spruce | 9 | 7.2 | 1.43 | 1.97 | 9.0 | −0.62 |
+| A | old zygian | 21 | 10.2 | 1.45 | 1.62 | 18.2 | +0.15 |
+| B | old zygian | 22 | 9.6 | 1.38 | 1.57 | 17.8 | +0.24 |
+| C | old thranite | 17 | 7.4 | 1.46 | 1.57 | 13.1 | +0.40 |
+
+Notes: oars 1–9 spruce, A–C the old Douglas-fir oars (2 zygian + 1 thranite). Rows 7 & 8 have no measured data in the original table ("Missing"). The X sign convention: **negative = centre of percussion within the blade** (all spruce oars, best ≈ −0.35 to −0.62 m from tip); the old fir oars have X **positive** (+0.15…+0.40 m), i.e. their centre of percussion falls beyond the blade tip — the handiness problem the redesign addressed. Spruce oars 1 & 2 (with fir oars A–C) have squared looms. `[x]`
+
+Verification: all **7 complete spruce rows and old thranite C verify internally at inboard 1.092 m** — MIT = W_kgf·(k²+c²) reproduces the tabulated MIT, and the X column is consistent with the **4.22 m** actual spruce oar length (implied length = COG_from_butt + k²/c − X = 4.20–4.24 m, i.e. the existing 4.22 m oars). **Flag:** old *zygian* rows A & B are internally inconsistent in the source — their MIT implies inboard ≈ 0.94 m while their weight-in-hand matches 1.092 m; both rows also imply short oars (3.5–3.6 m). Record the values as printed; do not force them through the 1.092 m relation. Independently, the weight-in-hand column is internally exact under inboard 1.092 m — W·(COG−1.092)/1.092 with the tabulated W and C of G reproduces every printed weight-in-hand (A → 10.15 vs 10.2 lbf, B → 9.63 vs 9.6, C → 7.44 vs 7.4) — so the A/B disagreement is confined to the MIT cell, and both rows deviate by the same ≈ −9.7 % (A −9.5 %, B −9.8 %), pointing to a shared basis or transcription error in the source's MIT column rather than in the weights or C of G. `[?]`
+
 ### Shaw's suggested specification for a 4.66 m spruce oar (Rankov ch.3 App.2, p.61) — verified
+
 | property | value |
-|---|---|
+| --- | --- |
 | Weight overall | **4.5 kgf (≈10 lbf)** |
 | Weight "in hand" (at butt) | **2.0 kgf (≈4½ lbf)** |
 | Gearing | **2.8** (2½ cubits inboard / 7 cubits outboard) |
@@ -69,22 +95,30 @@ Primary texts used: Rankov 2012 ch.1 (1992 trials report, Lipke/Howarth), ch.3 (
 ## 6. Stroke length (at the butt/handle)
 
 ### Olympias as-built / measured
+
 - Design stroke **800 mm** (Coates midship-section, Plan 8; constrained by the thalmian tier head-room/beam). `[x]` (build log quoting the Plan 8 drawing)
 - A 1:24 manikin at the thalmian position achieves **~720 mm** of the 800 mm design stroke (head-room limited). `[x]` (build log)
 - Shipboard measurements: 1992 average stroke **82–85 cm** across the ship (1988: 75–77 cm); two triads reached **100 cm+**. `[x]` (Rankov 2012 ch.1 area; Lipke report). These are total butt travel, consistent with the 0.888 m interscalmium minus end clearance.
 
 ### Shaw's analytical stroke model (Rankov ch.3 App.3, p.62) — verified
+
 - A 167 cm man on fixed thwarts, *unrestricted by the rig*, can pull a max stroke of **≈1.1 m** at the butt; ≈10% lost motion → **effective powered length ≈ 0.99 m**. `[x]`
 - Inside an uncanted rig with interscalmium 0.98 m: total movement ≤ interscalmium minus clearance (≥0.15 m) and same 0.11 m end losses → **effective stroke restricted to ≈0.87 m**. `[x]`
 - The two candidate effective strokes (0.99 m canted, 0.87 m straight) drive his 7½-kt table (see propulsion-models.md §2). `[x]`
+- **Table 3.2 — "Speed 7½ knots" (p.62)**: rhythm factor & mean handle couple (N·m) vs stroke rate, for the two stroke lengths. `[x]` (decoded via `research/data/shaw-table-3.2-stroke-rhythm.csv`)
+  - Rhythm factor: 30 spm → 3.42 (0.99 m) / 4.01 (0.87 m); 32 → 3.21 / 3.76; 34 → 3.02 / 3.53; 36 → 2.85 / 3.34; 38 → 2.70 / 3.16.
+  - Mean couple on the oar-handle (N·m): 30 spm → 215 (0.99 m) / 246 (0.87 m); 32 → 202 / 231; 34 → 190 / 218; 36 → 180 / 206; 38 → 172 / 196.
+  - Ratio of rhythm factors at fixed rate = 4.01/3.42 = **1.17** — matches the prose "the ratio of rhythm factors at a given stroke rate is 1.17". The couple rows are the mean bending stress on the oar at the thole; greatest value during a stroke is considerably higher. `[x]`
 
 ### Mark II / canted rig
+
 - Mark IIb allows the oar handle to pass alongside/outboard of the rower next aft (Fig. 3.3, canted & offset rig), giving the longer stroke; a 50% longer stroke (1.1 m total) vs Olympias is claimed. `[x]` (Rankov ch.3 p.47; ch.31 §5)
 - At 7½ kt with 0.99 m effective stroke, mean angular velocity of the oar during the pull = 1.42 rad/s (0.87 m stroke → 1.45 rad/s). `[x]`
 - **Ch.9 chord-of-pull table (verified)**: interscalmium / chord between deadpoints — Olympias 0.89 / 0.89 m; Mark IIa 0.98 / 0.98 m; **Mark IIb 0.98 / 1.10 m**. The 1.10 m chord comes from **canting the rig 18.4°** (tan = 1/3) — a longer effective chord without widening the interscalmium (which would weaken the hull). `[x]` (Rankov ch.9, Table 9.2; `research/data/t91_t92_ocr.txt`)
 - **Effective sweep angle** in plan: Olympias ≈ **48.1°** (attained only with exceptional effort); Mark IIb larger. `[x]` (Rankov ch.9 p.78–79)
 
 ### Ch.9 analytical oar model (Shaw's full power/efficiency derivation)
+
 - Effective pull length at the butt **L**: Olympias 0.89 m, Mark IIa **0.87 m**, Mark IIb **0.99 m**. `[x]` (Table 9.7)
 - Instantaneous turning-point distance from tip: **d = 0.953·sin[120·(C−A)/B + 30°]**; effective outboard lever **p = L(plan) − d**. `[x]`
 - Differential advance of tholepin per differential sweep: **ds = (L − d)·dC / sin C**, summed over C=A→A+B. `[x]` (Fig. 9.1)
@@ -113,6 +147,7 @@ Primary texts used: Rankov 2012 ch.1 (1992 trials report, Lipke/Howarth), ch.3 (
 - Cruise power per oarsman (ch.7): 7 kt → 115 W, 7.5 kt → 145 W, 8 kt → 180 W gross; rates 25.5 / 28.8 / 32.3 spm. `[x]` (Rankov ch.7 p.66)
 
 ## 7. Blade shape & dimensions
+
 - **Original Douglas-fir oars**: thranite & zygian oars had **spade-shaped blades** (spliced construction); **thalmian oars had narrower blades** (one-piece). `[x]` (build log POST 60)
 - **Spruce redesign (1990)**: a **common teardrop-shaped blade** for all three levels. `[x]` (build log; Rankov ch.3)
 - Blade-root shaft section is oval, **55 × 37 mm full-size** (builder's 1:24: 2.3 × 1.55 mm). `[x]` (build log POST 63)
@@ -136,6 +171,7 @@ Primary texts used: Rankov 2012 ch.1 (1992 trials report, Lipke/Howarth), ch.3 (
 - **Oar-propulsion chain now fully specified and implemented** (ch.9): W_hull = 155V³+4.13V⁵ (×1.08 Mark II) → n·P·L·r·E/60; P = 7.43·r; E = 0.780 (Mark II) / 0.756 full-crew Olympias; L = 0.89/0.87/0.99 m. Implemented + verified in `propulsion-models.md` and `lane4_propulsion.py` — reproduces Shaw's 8.32-kt sprint, Table 9.7 rates, ch.7 cruise rates, and the S6 62-W/man check. The 44.5-spm sprint → 8.3 kts match is our best cross-check target. `[x]`
 
 ## 10. Sources
+
 - [x] **Rankov, B. (ed.) (2012).** *Trireme Olympias: The Final Report.* Oxbow. (PDF at ancientportsantiques.com; text at sources/rankov2012.txt) — ch.1 (1992 trials, Lipke/Howarth) pp.24–25, 37–39; ch.3 (1994 trials, Shaw, incl. Apps 1–3) pp.47–62; ch.7 (Shaw, Golden Horn→Heraclea) pp.63–67; ch.9 (Shaw, long-stroke design) pp.76–81; ch.31 (Taylor) pp.233–243.
 - [x] **Braithwaite, R.** 1:24 Olympias build log, ModelShipWorld (local copy: trireme-olympias-build-log-richard-braithwaite.md), POSTs 60–72, 77 (oars) and 61 (oar mass).
 - [x] **Wikipedia, "Olympias (trireme)"** — crew breakdown (62/54/54), 1987 trials, dimensions, power estimate.
@@ -143,7 +179,8 @@ Primary texts used: Rankov 2012 ch.1 (1992 trials report, Lipke/Howarth), ch.3 (
 - [?] Roman-wreck interscalmia (Mainz/Oberstimm/etc.): secondary summary only — obtain primary wreck reports if these enter the model.
 
 ## 11. Open questions
-1. [?] Exact **Table 3.1** values for the ten 1994 oars (overall weight, weight-in-hand, MIT, X per oar) — table body corrupted in the PDF text layer; needed for a precise mass/inertia distribution.
+
+1. [x] Exact **Table 3.1** values for the ten 1994 oars (overall weight, weight-in-hand, MIT, X per oar) — **resolved**: fully decoded from the PDF glyph layer and MIT-verified; see §3 Table 3.1 and `research/data/shaw-table-3.1-oar-inertia.csv`. (Rows 7 & 8 genuinely have no recorded data.)
 2. [?] Origin of the "**12.3 kg/oar**" figure (build log quote) — likely Shaw/Coates 1990 or Trireme Trust newsletter; findable only in the physical book or newsletter.
 3. [?] The "**0.94 m** interscalmium" in the task spec — no Olympias source found (0.888 m design, 0.98 m Mark II); likely Roman-wreck conflation.
 4. [?] Blade areas (spade vs teardrop) and exact taper — only in Coates Plans 15/15d/15e/15g (Wolfson archive), not recovered as text.

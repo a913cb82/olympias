@@ -1,0 +1,17 @@
+# Rankov 2012, Table 3.1 (p.48) — the ten-oar inertia table, decoded from the PDF glyph layer (PUA font).
+# Columns: oar_no, oar_type, wt_lbf (overall), wt_in_hand_lbf, radius_of_gyration2_m2,
+#          cog_from_butt_m, mit_kgm2 (about the thole), X_m (centre of percussion from blade tip).
+# Rows 7 and 8 are present in the table but their measured data is blank ("Missing").
+oar_no,oar_type,wt_lbf,wt_in_hand_lbf,radius_of_gyration2_m2,cog_from_butt_m,mit_kgm2,X_m
+1,spruce,12,7.9,1.48,1.81,10.8,-0.35
+2,spruce,12,8.0,1.41,1.82,10.6,-0.46
+3,spruce,10.5,8.2,1.45,1.94,10.3,-0.57
+4,spruce,10,7.8,1.42,1.94,9.7,-0.61
+5,spruce,10,7.3,1.45,1.89,9.5,-0.51
+6,spruce,9,6.7,1.38,1.90,8.3,-0.61
+7,spruce,,,,,,Missing
+8,spruce,,,,,,Missing
+9,spruce,9,7.2,1.43,1.97,9.0,-0.62
+A,old-zygian,21,10.2,1.45,1.62,18.2,+0.15
+B,old-zygian,22,9.6,1.38,1.57,17.8,+0.24
+C,old-thranite,17,7.4,1.46,1.57,13.1,+0.40

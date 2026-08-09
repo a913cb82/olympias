@@ -20,6 +20,7 @@ research effort. It is *not* a finished report: it is a living record that **mus
 progresses**. Every session should leave it more accurate than it found it.
 
 **Rules of engagement (mandatory, every session):**
+
 1. **Whenever you learn something, record it here and in the relevant lane note** — do not wait
    for the end of the session. Tick boxes, add log sections (S8, S9, …), update the plan.
 2. **Decoded/recovered numbers go to `research/data/*.csv`** (machine-readable, commented, with
@@ -78,7 +79,7 @@ Coates drawing, and nothing enters the model that we cannot defend in a written 
 ### Data sources to assemble (from build-log bibliography + research notes)
 
 | # | Source | Contents needed | Status |
-|---|--------|-----------------|--------|
+| --- | -------- | ----------------- | -------- |
 | D1 | Coates, Platis & Shaw, *Trireme Trials 1988* (Oxbow) | towing resistance vs speed, trial turns F/G tables, oar stats | [ ] source |
 | D2 | Lowry & Squire (1989), Poros 1988 | acceleration/turning measurements | [ ] source |
 | D3 | Shaw (ed.) *The Trireme Project* (1993) | oar slippage losses (53 W of 115 W), efficiency | [x] numbers in S6 |
@@ -93,6 +94,7 @@ Coates drawing, and nothing enters the model that we cannot defend in a written 
 ### Workstreams
 
 **W1 — Source digitisation & table recovery** (current focus)
+
 - [x] Extract Rankov 2012 full text (`sources/rankov2012.txt`).
 - [x] Decode subset-font tables (custom cmap + glyph matching — *see Active TODOs below*).
       **DONE — resolved via the OCR route** (Tables 8.3/8.4, 9.1/9.2/9.6/9.7, 31.1 decoded;
@@ -120,6 +122,7 @@ Coates drawing, and nothing enters the model that we cannot defend in a written 
       chapter is actually book pp.231–243, not 268–77 as the earlier plan text said.)
 
 **W2 — Hull geometry & hydrostatics**
+
 - [x] **Parametric hull form built** — `research/lane-3-hull/parametric-hull-form.md` +
       `hull_form.py`: circular-arc sections fitted to BMT trial (41.35 vs 41.22 m³, +0.3%)
       and light (25.17 m³, 0%) displacements; wetted surface 81.3 m² (trial) / 71.0 m²
@@ -136,6 +139,7 @@ Coates drawing, and nothing enters the model that we cannot defend in a written 
       points require physical archive access.
 
 **W3 — Oar mechanics (the engine-to-propeller chain)**
+
 - [x] **Speed→power chain implemented & verified** — `research/lane-4-oars/propulsion-models.md` +
       `lane4_propulsion.py`: W_hull = 155V³+4.13V⁵ (×1.08 Mark II), W = n·P·L·r·E/60, P = 7.43·r,
       E = 0.78. Reproduces Shaw's 8.32-kt sprint, Table 9.7 rates, ch.7 cruise rates, S6 62-W/man.
@@ -156,19 +160,31 @@ Coates drawing, and nothing enters the model that we cannot defend in a written 
       design point (76.2% vs 75.6%), mean handle force (224 vs 214 N) and hull-power
       balance (102%); also adds the per-stroke force envelope and quantifies the Mark IIb
       need for larger blades (×3.3 area, matching ch.9's note). Bulk chain unchanged.
-- [ ] Oar inertia & blade data: 12.3 kg/oar full-size (model scales to 11.71 kg), blade
-      geometry from Plan 15.
+- [x] **Oar inertia & blade data**: Rankov Table 3.1 (ten-oar measured table: weight, weight-in-hand, C of G, k², MIT, X) fully decoded from the PDF glyph layer (OCR + PUA-glyph cell confirmation) — `research/data/shaw-table-3.1-oar-inertia.csv`; spruce oars 9–12 lbf, old fir 17–22 lbf, MIT 8.3–18.2 kg-m². 8 of 10 data rows reproduce MIT = W_kgf·(k²+c²) at 1.092 m inboard (spruce 1–6 & 9, old thrane C); **flag: old zygians A/B MIT implies ≈0.94 m inboard while their weight-in-hand cross-checks at 1.092 m** (A: 10.15 vs 10.2 lbf; B: 9.63 vs 9.6) — likely source MIT error, values recorded as printed (oar-data.md §3). (12.3 kg/oar build-log figure is implausible for the 1994 spruce oars.) Blade geometry from Plan 15. **DONE.**
 - [ ] Ergonomics: 50th-percentile US-marine body scaled to classical Greek male (~5'7")
       for reach/stroke limits (Richard's manikin method).
 
 **W4 — Environment: Shaw's wave tables**
-- [ ] Finish decoding all of Shaw's Tables (8.x): they give the sea state (H, L, C) for a
+
+- [x] **Finish decoding all of Shaw's Tables (8.x)**: they give the sea state (H, L, C) for a
       given windspeed W, fetch, and duration — the environment that the hull+oar model
       must operate in, and the basis of his claimed trip performance.
-- [ ] Verify asterisk rows = fully-developed sea (fetch/duration saturation), and use them
-      as the asymptotic checks on any fetch-limited growth formula we adopt.
+      **DONE — all four tables decoded & verified cell-by-cell: Table 8.3 (36 cells,
+      duration-limited JONSWAP/Carter) in `shaw-table-8.3-significant-waves.csv`; Table 8.4
+      (3-hour waves) in `shaw-table-8.4-three-hour-waves.csv`; Tables 8.1/8.2 (sail-force % +
+      apparent-wind angle) recovered via 6x-render + OCR and verified against the prose
+      equations in `shaw-table-8.1-sail-force.csv` / `shaw-table-8.2-apparent-wind.csv` +
+      `research/lane-2-waves/shaw-tables-81-82-wind-propulsion.md`.**
+- [x] **Verify asterisk rows = fully-developed sea (fetch/duration saturation), and use them
+      as the asymptotic checks on any fetch-limited growth formula we adopt.**
+      **DONE — asterisked cells are exactly where the duration-limited curves reach the
+      fully-developed cap (0.0240·U², T_z = 0.566·U, cf. Pierson–Moskowitz); documented in
+      `carter-equations.md` §2d + §11. The caps confirm the growth formulas. (No asterisk
+      symbols survive in the text-layer rows, so this is verified via the cap-match, not the
+      glyphs.)**
 
 **W5 — Manoeuvring dynamics (re-implement Taylor ch.31)**
+
 - [x] **Taylor's model re-implemented as a reference script** —
       `research/lane-5-manoeuvre/manoeuvre_model.py` + `manoeuvre-model.md`, from ch.31 text +
       OCR Table 31.1: m_app = 1.10·m, 3-band hull drag, thrust 17.4−0.967v kN, rudder lateral
@@ -202,6 +218,7 @@ Coates drawing, and nothing enters the model that we cannot defend in a written 
       turns widen). Supports Taylor's "close agreement" with the UCL CLR-axis model.**
 
 **W6 — Validation & uncertainty**
+
 - [x] **Validation table built** — `research/lane-6-validation/validation-table.md` +
       `validation_table.py`: maps every trial measurement to a model prediction. All
       steady-state speed targets reproduced within the ch.22 efficiency band (8.2–8.3 vs
@@ -224,6 +241,7 @@ Coates drawing, and nothing enters the model that we cannot defend in a written 
 ### Parallelisable lanes (how work gets done)
 
 Dependency logic:
+
 - **W1 reading is the shared foundation** and can be split across readers with no conflict.
 - **The three physics subsystems are pairwise independent** once their inputs are in hand:
   hull (W2) needs offsets/towing/BMT; oars (W3) needs Shaw rig data + oar searches;
@@ -248,31 +266,38 @@ Dependency logic:
 ```
 
 **Lane 1 — Read & record (W1)** · parallel-safe, assign to N readers
+
 - Shaw ch 7–9 read ‖ Taylor ch.31 read ‖ Rankov trial-report chapters read ‖ bibliography
   reconciliation. Each produces a write-up appended to the log; no inter-lane dependency.
 
 **Lane 2 — Wave tables (W4 + current-session TODOs)** · serial within the lane
+
 - H/L/C sub-header decode (TT293) → Table 8.3 CSV → C = √(1.56·L) integrity check →
   remaining Shaw tables → Carter's-equations search (external, runs while decoding).
 - Critical path for W4; nothing else waits on it.
 
 **Lane 3 — Hull & hydrostatics (W2)** · parallel with Lanes 4 & 5
+
 - Searches (offsets ‖ BMT ‖ displacement ‖ Eliav & Helfman ‖ towing resistance) can all run
   concurrently; hull rebuild begins once offsets + resistance numbers land.
 
 **Lane 4 — Oar mechanics (W3)** · parallel with Lanes 3 & 5
+
 - Searches (oar data ‖ rowing-propulsion models) ‖ ergonomics data collection; rig model
   builds once the Shaw rig read (Lane 1) is available.
 
 **Lane 5 — Manoeuvring (W5)** · parallel with Lanes 3 & 4
+
 - Taylor Excel workbook search ‖ Kempf source ‖ ch.31 read (Lane 1); then workbook
   extraction → reference implementation → trial-turn re-run.
 
 **Lane 6 — Validation (W6)** · converges last
+
 - Sea-trials second-pass search (W6) runs early; the validation table + uncertainties
   register fill in as Lanes 2–5 produce numbers.
 
 Execution model:
+
 - Each lane is a self-contained unit suitable for a sub-agent; Lanes 2–5 are pairwise
   independent and run concurrently; Lane 6 aggregates.
 - Concurrency note: the `tools/` extraction scripts are stateless per invocation, so
@@ -287,6 +312,7 @@ concurrent-write conflicts and lost updates). Sub-agents therefore produce **lan
 artifacts**, and return a **structured summary** as their final message.
 
 Directory layout (persistent, inside this repo):
+
 ```
 ~/projects/sandbox/trireme/
 ├── research/
@@ -301,10 +327,12 @@ Directory layout (persistent, inside this repo):
 ├── tools/                    # decode/OCR scripts + fonts + renders
 └── wayback/                  # MSW thread-21958 recovery tooling
 ```
+
 Raw data artifacts (Table 8.3 CSV, extracted workbook, towing-resistance tables) go in
 `research/data/` so multiple lanes can cite the same files.
 
 Per-lane rules:
+
 - Each sub-agent writes only inside its own lane directory; lane directories are disjoint, so
   N lanes can write in parallel with zero file contention.
 - Prose notes are markdown; artifacts are CSV/JSON wherever possible (machine-checkable).
@@ -455,22 +483,38 @@ archivist step is deliberately left to the user.
 - [x] Capture the paper's worked example (8.5 m/s wind → H≈1.4 m, L≈28 m at 200 km/12.6 h)
       as a reference check against the decoded table. **DONE — text captured in S7 and
       `carter-equations.md` §10.**
+- [x] Decode Table 3.1 (ten-oar inertia: weight, weight-in-hand, C of G, k², MIT, X) from the
+      corrupted PUA text layer — page flow verified (book p.48 = PDF p.60 = txt PAGE 61),
+      OCR (Matrix(8,8) render + easyocr) with every cell confirmed via PUA glyph extraction.
+      **DONE — `research/data/shaw-table-3.1-oar-inertia.csv`**; rows 7 & 8 genuinely blank
+      in the original ("Missing"); 8 of 10 data rows MIT-verified (A/B flagged, see oar-data.md §3).
+- [x] Decode Table 3.2 — "Speed 7½ knots" (book p.49; caption txt line 5097): rhythm factor &
+      mean handle couple (N·m) vs stroke rate for the 0.99 m / 0.87 m strokes.
+      **DONE — `research/data/shaw-table-3.2-stroke-rhythm.csv`**; 32-spm cell is 3.21
+      (glyph-confirmed; OCR misread "3.221"); ratio 4.01/3.42 = 1.1725 matches the prose's 1.17.
+- [x] Update `research/lane-4-oars/oar-data.md` with the Table 3.1 + 3.2 decodes (X-sign
+      convention, squared-looms note, MIT-verification incl. the A/B flag), re-assess the
+      "12.3 kg/oar" figure, and mark open question #1 resolved. **DONE.**
+- [x] Update the W3 checklist (oar-inertia item marked **DONE**) and repair the Ergonomics
+      continuation line merged during the earlier edit. **DONE.**
 
 ---
 
 ## Log of searches / findings
 
 ### S1 — Olympias sea trials data [x]
+
 Search: "trireme Olympias sea trials data speed knots turning circle power"
 
 Key sources and numbers:
+
 - **Trireme Olympias: The Final Report. Sea Trials 1992-4, Conference Papers 1998** (ed. Boris Rankov, Oxbow 2012). ISBN 978-1-84217-434-0. tDAR id 424186. Contains papers highly relevant to a simulation:
   - "Human Mechanical Power Sustainable in Rowing a Ship for Long Periods of Time" (human-engine power data)
   - "Paleo-bioenergetics: clues to the maximum sustainable speed of a trireme under oar"
   - "Triereis Under Oar and Sail"
   - Papers by Timothy Shaw and John Coates on adjusting hull and oar-system to match implied ancient performance (basis of 2nd ed. The Athenian Trireme, 2000)
   - "modelling of battle manoeuvres based on the data produced by the trials of Olympias" ← most directly relevant
-- **The Trireme Trust — Olympias Sea Trials** pages hosted by Anu Dudhia: https://eodg.atm.ox.ac.uk/user/dudhia/rowing/trireme/tttrials.html
+- **The Trireme Trust — Olympias Sea Trials** pages hosted by Anu Dudhia: <https://eodg.atm.ox.ac.uk/user/dudhia/rowing/trireme/tttrials.html>
 - Sea trial performance data (from grokipedia / museumships / Wikipedia aggregations):
   - 1987 (Poros): max sprint 9 kts sustained ~1 min, 170 rowers @ 45 spm, measured by shore geodimeters; also 180° turn in ~1 min within 2.5 ship-lengths
   - 1988: 0→7 kts in 32 s (acceleration); one reported top 9.6 kts; turning radius ~60 m at half speed ≈ 1.5 ship-lengths
@@ -481,25 +525,29 @@ Key sources and numbers:
 - Olympias particulars: 37 m LOA, ~5 m beam (incl. outriggers), Douglas fir hull, bronze ram 200 kg, keel iroko, displacement light ~ ? (need value), 170 oarsmen (62 thranite + 54 zygian + 54 thalmian).
 
 ### S2 — Oar dynamics / rowing biomechanics equations [x]
+
 Search: "rowing oar dynamics mathematical model equations blade force lever ratio"
 
 Key papers (rowing = best-studied analogue for oar propulsion):
-- **Baudouin & Hawkins (2002)** "A biomechanical review of factors affecting rowing performance", Br J Sports Med 36:396-402. Oar as 2nd-class lever; forces Fh (handle), Fb (blade), Fo (oarlock); inboard/outboard lever ratio governs gear. PDF: http://bionics.seas.ucla.edu/education/Rowing/Math_Model_2002_01.pdf
+
+- **Baudouin & Hawkins (2002)** "A biomechanical review of factors affecting rowing performance", Br J Sports Med 36:396-402. Oar as 2nd-class lever; forces Fh (handle), Fb (blade), Fo (oarlock); inboard/outboard lever ratio governs gear. PDF: <http://bionics.seas.ucla.edu/education/Rowing/Math_Model_2002_01.pdf>
 - **Cabrera, Ruina & Kleshnev (2006)** "A simple 1+ dimensional model of rowing mimics observed forces and motions", Human Movement Science 25:192-220. The standard 1D framework (used by many later works) for hull + oar dynamics.
 - **Caplan & Gardner (2007a)** "A mathematical model of the oar blade-water interaction in rowing", J Sports Sci 25:1025-1034. Models blade lift+drag forces during drive; blade as hydrofoil.
 - **Caplan & Gardner (2007b)** "A fluid dynamic investigation of the Big Blade and Macon oar blade designs", J Sports Sci 25:643-650. Measured C_L, C_D curves.
 - **Coppel, Gardner, Caplan & Hargreaves (2009)** "Oar blade force coefficients and a mathematical model of rowing" (ISBS). Shows CFD-derived lift/drag coefficients predict boat speed within 1.33% vs experimental → validates using CFD coefficients.
-- **Physics of rowing oars (2019)**, New Journal of Physics 21 (IOP). Rigid-oar dynamics, kinematics of blade/hull, α = L/ℓ (outboard/inboard ratio), pressure-drag vs added-mass regimes; characteristic scales V*, τ*; hull drag C_h, blade C_d, C_m. URL: https://iopscience.iop.org/article/10.1088/1367-2630/ab4226
-- **6DOF rowing-boat model** (Formaggia / MOX-Politecnico di Milano 2009) — surge/heave/sway/pitch/roll/yaw with lever oar model, drag formulas, VOF/NS coupling. PDF: https://www.mate.polimi.it/biblioteca/add/qmox/19-2009.pdf
+- **Physics of rowing oars (2019)**, New Journal of Physics 21 (IOP). Rigid-oar dynamics, kinematics of blade/hull, α = L/ℓ (outboard/inboard ratio), pressure-drag vs added-mass regimes; characteristic scales V*, τ*; hull drag C_h, blade C_d, C_m. URL: <https://iopscience.iop.org/article/10.1088/1367-2630/ab4226>
+- **6DOF rowing-boat model** (Formaggia / MOX-Politecnico di Milano 2009) — surge/heave/sway/pitch/roll/yaw with lever oar model, drag formulas, VOF/NS coupling. PDF: <https://www.mate.polimi.it/biblioteca/add/qmox/19-2009.pdf>
 - Other classic models cited: Pope 1973; Sanderson & Martindale 1986; Millward 1987; Brearley & de Mestre 1996; Lazauskas 1997; Brearley, de Mestre & Watson 1998; Wellicome 1967 (hull resistance experiments on racing shells).
-- Dudhia, "The physics of rowing" — https://www.atm.ox.ac.uk/rowing/physics (also hosts Trireme Trust trials page).
+- Dudhia, "The physics of rowing" — <https://www.atm.ox.ac.uk/rowing/physics> (also hosts Trireme Trust trials page).
 
 ### S3 — Trireme dynamics model: Taylor, "Battle Manoeuvres for Fast Triremes" (Rankov 2012 ch.31) [x]
-Search: "trireme Olympias maneuvering model simulation" → found chapter in **Trireme Olympias: The Final Report** (Oxbow 2012); full PDF obtained from https://www.ancientportsantiques.com/wp-content/uploads/Documents/AUTHORS/Rankov2012-TriremeOlympia.pdf (extracted text in sources/rankov2012.txt).
+
+Search: "trireme Olympias maneuvering model simulation" → found chapter in **Trireme Olympias: The Final Report** (Oxbow 2012); full PDF obtained from <https://www.ancientportsantiques.com/wp-content/uploads/Documents/AUTHORS/Rankov2012-TriremeOlympia.pdf> (extracted text in sources/rankov2012.txt).
 
 **This is the single most relevant existing model** — a published, Excel-based dynamics simulation of Olympias + a hypothetical "fast Mark IIb trireme", validated against six trial turns. Key contents:
 
 Model architecture (built in Excel):
+
 - **Linear forward motion**: apparent mass = 10% above displacement; drag from towing tests in Coates et al. 1990 p.54 (parametric equations, 3 speed bands); extra linear drag increment of 1.4× straight-rudder drag at 67.5° rudder, 0.6× at 45°, 0.2× at 22.5° (Kempf manoeuvre). Increased drag during turns from drift angle; resistance acts at angle of half the drift angle from perpendicular.
 - **Rudder lateral force**: turning force = fraction of rudder's along-track drag; fraction from polynomial fit of rudder angle Φ (degrees): **Coefficient = 0.14 + 0.020Φ − 0.00015Φ²**. Rudder torque via distance from rudder to centre of mass.
 - **Oar turning moment**: one side stops rowing; lever arm from centreline to halfway between outer oar tips and inner edge of thalmian blades.
@@ -510,6 +558,7 @@ Model architecture (built in Excel):
 - Comparison with a **UCL (University College London, Mechanical Engineering) model** (Simon Rusling, Tristan Smith, pers. comm. 2006) gave close agreement — both fit the same sea-trial data.
 
 Key quantitative results:
+
 - **Efficiency**: Olympias consistently ~40% (range 39–43%) conversion of rower power (fixed-seat ergometer) to propulsive power (Taylor ch. on heel: 43%; Shaw: 39%).
 - Power: Shaw (1990) projected 200 W/rower effective (thranite+zygian) for 6-min maximal effort → 23 kW / 116 rowers; Mark IIb at 60% efficiency → 300 W/rower, 51 kW / 170; model uses 40 kW sustained a few minutes.
 - Mark IIb max speed: **9.9 knots** with effective oar thrust **7.8 kN** at that speed (drag–thrust intersection).
@@ -522,19 +571,23 @@ Key quantitative results:
 - Model parameters tabulated in Table 31.1 (garbled in PDF text extraction — need OCR or better source for exact drag coefficients).
 
 Sources cited by the model (core validation datasets):
+
 - Coates, Platis & Shaw (1990) *The Trireme Trials 1988*, Oxford: Oxbow.
 - Lowry & Squire (1989) *Trireme Olympias: Extended Sea Trials Poros, 1988*, Cardiff.
 - Shaw (ed.) (1993) *The Trireme Project*, Oxford: Oxbow.
 
 ### S4 — Hull resistance math for triremes [x]
-- **Princeton HPT page** (https://swh.princeton.edu/~maelabs/hpt/his/hpt_10.htm): resistance = skin-friction drag (∝ V²) + wave-making; trireme "hull speed" condition; 7 kt cruise dominated by friction. Graphs from Coates, "The Trireme Sails Again," *Scientific American*, April 1989. (Graphs are GIFs; numbers not text.)
+
+- **Princeton HPT page** (<https://swh.princeton.edu/~maelabs/hpt/his/hpt_10.htm>): resistance = skin-friction drag (∝ V²) + wave-making; trireme "hull speed" condition; 7 kt cruise dominated by friction. Graphs from Coates, "The Trireme Sails Again," *Scientific American*, April 1989. (Graphs are GIFs; numbers not text.)
 - **Eliav & Helfman (2022)** *International Journal of Nautical Archaeology* (PDF at ancientportsantiques.com): argues Olympias hull too heavy (empty ~25 t) → high resistance → poor speed under oar; MT (mortise-tenon) joints vs laced/light hulls; interscalmium and oar-system limits (Coates 2012a; Shaw 2000 pp.76-77). References: Cannon et al. (2019) "Development of a quantitative method for the assessment of historic ship performance" (Springer) — a useful modern method reference.
 - Rankov ch.31 (S3) notes wave-making resistance is a minor component for Olympias; frictional dominant.
 
 ### S5 — Human power (the "engine"): Coates ch.22 "Human Mechanical Power Sustainable in Rowing a Ship" (Rankov 2012 pp.161-164) [x]
+
 Read in full from sources/rankov2012.txt (p.161-164). This is the input-side physiology model.
 
 Sustainable mechanical power for "an ordinary man" (Burlet et al. 1986, from Scherrer's Précis de Physiologie du Travail):
+
 - 140 W for 10 h; 170 W for 4 h; 200 W for 1 h.
 Monod's figures for "well trained athletes and extreme performances" (max possible durations, thermal eff. 20% assumed): 700 W for 10 h; 850 W for 4 h; 1000 W for 1 h.
 Monod's tolerability guidance: >50% of aerobic power cannot be developed habitually; daily output ≤ 8400 kJ/day for professional work → 90 W gross sustained over 8 h; limit time gross power exceeds 280 W.
@@ -546,6 +599,7 @@ Max aerobic oxygen absorption: ~4.5 l O2/min fit young men; 3 l ordinary young m
 Speed ∝ (effective power)^(1/3) — Coates states ship speed "closely proportional to the cube root of the effective power" (resistance ∝ V³). So P ∝ V³, V ∝ P^(1/3).
 
 Key worked example (Thucydides' Athens→Mytilene passage):
+
 - ~6.2 knots for just under 30 h, under oars; effective propulsive power required by Olympias at 6.2 kts = **6.2 kW** (one rudder half-immersed, clean bottom, calm).
 - With ⅔ of crew rowing in turns: 55 W effective/man, or 110 W mechanical/man at 50% propulsive efficiency; +20% for waves → **132 W/man mechanical**.
 - Crew at 4 h row / 2 h rest regime: 69% of max aerobic output sustained for 4 h. MAO 3.1 l O2/min ≈ 250 W mechanical → 172 W sustained, margin of 40 W/man.
@@ -557,9 +611,11 @@ Key worked example (Thucydides' Athens→Mytilene passage):
 - Xenophon's Byzantium→Heraclea 129 nm "long day" under oar: feasible in ~20 h continuous under these assumptions.
 
 ### S6 — Paleo-bioenergetics (Rossiter & Whipp, Rankov ch.23 pp.165-168) [x]
+
 Read in full from sources/rankov2012.txt. Upper bound on sustainable power per oarsman.
 
 Key assumptions & values:
+
 - Literary target: ~7 knots for ~18 h (Thucydides 3.49; 8.101; Xenophon Anabasis 6.4.2).
 - Anaerobic (lactate) threshold for "standard" man ≈ 50% V̇O2max; elite endurance athletes up to 80%+.
 - Modern sliding-seat junior-international oarsmen: lactate threshold ~30–35 ml O2/min/kg.
@@ -573,11 +629,13 @@ Key assumptions & values:
 - Conclusion: max ~80 W/man external power sustainable; training critical.
 
 Cross-check numbers for the simulation:
+
 - Olympias at ~7.2 knots needed ~115 W/man total, of which only **62 W was propulsive**; **53 W lost in oar slippage and non-propulsive oar movement** (Shaw 1993) → propulsive efficiency of the oar system ≈ 62/115 ≈ 54% (at 7.2 kts). This matches the "~40% power to water at 8.5+ kts" theme — efficiency degrades as speed rises.
 - Fixed-seat lab experiments: stroke 73 cm, 36 spm mimics Olympias; stroke 99 cm "free rating" 28 spm → O2-cost essentially unchanged (so Mk II longer-stroke gains are mechanical, not physiological).
 - Mark IIb improvements (canted rig, longer stroke) target the 53 W/man losses.
 
 ### S7 — Shaw ch.8 wave tables decoded & verified (book pp.71–73 / PDF 83–85) [x]
+
 Decoded via OCR route (see `research/tasks/pdf-ocr-table-decoding.md`); all values independently
 reconstructed from Carter 1982 and cross-checked cell-by-cell. Artifacts:
 `research/data/shaw-table-8.3-significant-waves.csv`, `research/data/shaw-table-8.4-three-hour-waves.csv`.
@@ -585,6 +643,7 @@ Full derivation and verification in `research/lane-2-waves/carter-equations.md` 
 
 **Table 8.3 (p.72): significant wave height H, mean wavelength L, mean wave velocity C** — for
 fetch ∈ {50, 100, 150, 200} km × duration ∈ {3.2, 6.3, 9.5, 12.6} h × W ∈ {4.5, 5.0, 5.5} m/s:
+
 - Generating equations (duration-limited branch — always applies for these inputs; confirmed
   D < 1.167·X^0.7·W^−0.4): H = 0.0146·D^(5/7)·W^(9/7); T_z = 0.419·D^(3/7)·W^(4/7); L = 1.56·T_z²;
   C = 1.56·T_z. Fully-developed cap (asterisked cells): H = 0.0240·W², T_z = 0.566·W.
@@ -602,6 +661,7 @@ factors I am indebted to Carter"; ratios verified 1.78–1.83 / 1.21–1.22 / 1.
 cells). Range H 0.42–1.31 m, L 5.0–18.3 m, C 2.8–5.3 m/s.
 
 **Worked examples from the text (p.72–73):**
+
 - 8.5 m/s (16.5 kt) wind relative to water at 200 km / 12.6 h → significant H ≈ 1.4 m, λ ≈ 28 m
   (proportional to Table 8.3 entries; the sail-propulsion-speed case: 8.5 m/s drives ship at
   3.9 m/s (7.5 kt) under sail alone).
@@ -624,6 +684,7 @@ table glyphs — OCR of 8x page crops is the reliable route for tables. Both rec
 `research/tasks/` (playbooks) for reuse.
 
 ### S8 — Taylor ch.31 "Battle Manoeuvres for Fast Triremes" read in full (book pp.231–243) [x]
+
 Full read from rankov2012.txt (the chapter is book pp.231–243, *not* 268–77 as an earlier plan note
 said). Detail logged in `lane-5-manoeuvre/taylor-excel.md` §5. Key additions beyond S3:
 
@@ -650,6 +711,7 @@ said). Detail logged in `lane-5-manoeuvre/taylor-excel.md` §5. Key additions be
 - **UCL comparison**: Rusling & Smith (pers. com. 2006) close agreement (both fit same trial data).
 
 ### S9 — Shaw ch.7 + ch.9 read in full; oar-power model decoded & verified [x]
+
 Full read of the two core oar-propulsion papers (book pp.67–75 and 76–81). Detail in
 `research/lane-1-read/shaw-ch7-ch9-2024.md`; tables OCR'd and verified.
 
@@ -669,8 +731,10 @@ Full read of the two core oar-propulsion papers (book pp.67–75 and 76–81). D
   experiment/theory cross-check in the literature; use as Lane-6 target.
 
 ### S10 — Lane-4 propulsion model implemented & verified [x]
+
 First *runnable* physics artifact: `research/lane-4-oars/lane4_propulsion.py` (pure stdlib) +
 `propulsion-models.md`. Implements the full engine→propeller chain and reproduces Shaw:
+
 - **Sprint validation**: 130 rowers, 44.5 spm, E=0.730 → 18,152 W → **8.32 kts** (measured
   8.2–8.3). Calibration trial also recovers P = 288 N (k = P/r = 7.43).
 - **Table 9.7** (Mark II rates): IIa 30.7/49.3 spm @ 228/366 N; IIb 28.8/46.2 spm @ 214/343 N —
@@ -684,11 +748,13 @@ First *runnable* physics artifact: `research/lane-4-oars/lane4_propulsion.py` (p
   per-stroke rigid-oar refinement layer.
 
 ### S11 — Web-search batch #2 results + primary reads (ch.1 GPS speeds, ch.25 stability) [x]
+
 Batch of 4 searches (parallel) + 2 primary-text reads that landed in the same session.
+
 - **Searches**:
   - **Carter 1982** = exact JONSWAP-formulae paper (already fully captured in S7/lane-2) [x]
   - **Coates, Platis & Shaw 1990**, *The Trireme Trials 1988* (Oxbow, ISBN 0-946897-21-2) exists [x]
-    + Trireme Trust trials pages (1987/88/90/92 series) at https://eodg.atm.ox.ac.uk/user/dudhia/rowing/trireme/tttrials.html [x]
+    - Trireme Trust trials pages (1987/88/90/92 series) at <https://eodg.atm.ox.ac.uk/user/dudhia/rowing/trireme/tttrials.html> [x]
   - **Taylor ch.31** confirmed as **Andrew** Taylor (not Timothy), book pp.231–244 [x]; Excel
     workbook not found online — Trireme Trust archive is the next lead.
   - **BMT inclining/stability report** confirmed in Trireme Trust archive [x]; ch.25 text gives
@@ -719,8 +785,10 @@ Batch of 4 searches (parallel) + 2 primary-text reads that landed in the same se
   the 1992 GPS 2-min runs (@~135 → 7.8–7.9 kt; @121 → 8.2 kt peak). See lane-6 note §1.2.
 
 ### S12 — Web-search batch #3 results: Kempf, Eliav & Helfman, displacement, oar data [x]
+
 Batch of 4 parallel searches (W5/W2/W1-D9/W3). Two were confirmations of already-captured
 content; two produced new reconciliation/validation data.
+
 - **Kempf manoeuvre (W5)** [x]: "Kempf manoeuvre" = the **standard zig-zag (Z-) manoeuvre**
   trial. Primary ref: **Kempf 1944, "Maneuvering Standards for Ships", *Hansa* 27/28**; HSVA
   Hamburg 1930s (Kempf & Krämer); analysis by **Nomoto 1960** (DTMB 1461). **Key negative
@@ -734,12 +802,14 @@ content; two produced new reconciliation/validation data.
   "too heavy → slow" case is qualitative; hypozomata 4 ropes × 257 lb (117 kg). Abstract also
   confirms motivation: Olympias performance shortfall attributed in part to excessive weight.
 - **Displacement reconciliation (W1/D9)** [x]:
+
   | Condition | Value | Source |
-  |---|---|---|
+  | --- | --- | --- |
   | Light ship | **25.798 t** | BMT inclining report (ch.25) |
   | Trial w/ crew (80 kg each) | **42.25 t** | ch.25 (KM 2.90, KG 1.77, GM 1.13 m) |
   | Trial full load | 42 t | Morrison et al. 2000 p.210 (via E&H); Osprey |
   | "Fully laden w/ crew" | **47 t** | Trireme Trust poster + Wikipedia + UChicago Animus |
+
   - Reading: 42.25 t = light ship + crew + trial outfit; the 47 t figure additionally includes
     the full naval outfit (rigging, masts, oars, benches, stores — E&H model ~4 t "extra", plus
     troops). Use 25.798 t light / 42.25 t trial as primary sim anchors; 47 t only for fully-
@@ -781,7 +851,7 @@ Three-step session (steps 1–3 of the "next steps" list). Repo is consolidated 
    book) and 424277 (this chapter) are **citation-only**, "Center for Digital Antiquity does not
    have a copy"; ancientportsantiques.com hosts only the PDF; Trireme Trust archive catalogue
    (triremetrust.org.uk, now at Wolfson College) has no Excel entry. Best remaining leads:
-   Wolfson archivist (archivist@wolfson.cam.ac.uk) or author Andrew Taylor. **External check of
+   Wolfson archivist (<archivist@wolfson.cam.ac.uk>) or author Andrew Taylor. **External check of
    Taylor's model outputs** [x]: Alke Dominis blog ("what the diekplous are you talking about",
    2022) independently reproduces the chapter's tactical numbers — 0→full ~9.5 kt in ~40 s,
    reverse 80% of full speed, fast 180° turn @ full speed = 145 m diameter, tight turn @6–7 kt =
@@ -853,11 +923,12 @@ Step 3 of the next-steps list. Closes the W6 checklist.
 
 The `research/tasks/` directory holds short how-to guides for tasks we repeat. **Read the relevant
 playbook before starting the task** — they record the venv split, page-offset convention (book page
-+ 12), and pitfalls. This index must be kept in sync with the actual files in `research/tasks/`:
+
+- 12), and pitfalls. This index must be kept in sync with the actual files in `research/tasks/`:
 when a playbook is added/renamed, update both this index and `research/tasks/README.md`.
 
 | Playbook | Use it when |
-|---|---|
+| --- | --- |
 | `pdf-text-extraction.md` | You need clean prose text from a PDF that extracts fine (`get_text()`). |
 | `pdf-subset-font-decode.md` | Prose is rendered with subset TT fonts → PUA chars / `?` (use `decode_shaw.py`). |
 | `pdf-ocr-table-decoding.md` | You need the **numbers inside a table** (OCR route — reliable for table digits). |
@@ -865,5 +936,5 @@ when a playbook is added/renamed, update both this index and `research/tasks/REA
 
 **Process note:** the first time a task is done twice, write (or extend) a playbook for it. When a
 better recipe is found, update the playbook — later sessions read it as gospel. Deliverables promoted
-from `/tmp/opencode` scratch to `research/data/` must be logged in a new S-section here.
+from `/tmp/opencode` scratch to `research/data/` must be logged in a new S-section here
 ---

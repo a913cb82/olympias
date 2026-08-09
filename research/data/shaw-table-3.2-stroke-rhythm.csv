@@ -1,0 +1,9 @@
+# Rankov 2012, Table 3.2 (p.62) — "Speed 7½ knots": stroke-length/stroke-rate/rhythm-factor & handle-couple table.
+# Columns: stroke_rate_spm, rhythm_factor_0.99m, rhythm_factor_0.87m, mean_couple_Nm_0.99m, mean_couple_Nm_0.87m
+# Rhythm-factor ratio at fixed rate = 4.01/3.42 = 1.1725 ~= prose's stated 1.17 (ratio of distances travelled during the effective pull).
+stroke_rate_spm,rhythm_factor_0.99m,rhythm_factor_0.87m,mean_couple_Nm_0.99m,mean_couple_Nm_0.87m
+30,3.42,4.01,215,246
+32,3.21,3.76,202,231
+34,3.02,3.53,190,218
+36,2.85,3.34,180,206
+38,2.70,3.16,172,196
