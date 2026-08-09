@@ -99,8 +99,8 @@ research until it has a source citation or a validated run.
 Filter: what can a trierarch **shout**, and what can 170 rowers **act on**, in the din
 of battle? The rhythm comes from the pipe (*auloi*), the keleustēs relays short shouts
 bank by bank, and the helmsman works the rudders. Anything that cannot be heard once
-and executed without a manual is out. Result: **6 crew verbs + 1 console verb**, down
-from 14.
+and executed without a manual is out. Result: **4 crew verbs**, down from 14. Status
+output is the CLI's business, not the commander's — no `report` verb (dropped list).
 
 | verb | arguments | the shout | what the crew does | notes |
 | --- | --- | --- | --- | --- |
@@ -108,25 +108,32 @@ from 14.
 | `oars` | state: row / hold / back / bank; optional side or tier | "καθίετε!" (oars down), "ἔχε!" (hold!), "πρύμναν ἀνακρούου!" (back water!), "ἄρατε κώπας!" (oars up!) | per-bank blade hydro regime: driving / stopped / backing / out of water | four states only — a rower cannot distinguish more mid-battle |
 | `pressure` | rest / steady / fast / spoude, or 0–1 | "σπουδῇ!" (with haste!) | effort per stroke: scale the mean handle-force profile, P = 7.43·r·pressure | rate = frequency, pressure = effort; distinct axes, both attested |
 | `helm` | port / starboard / midship; fraction optional | "πηδάλιον ἐπὶ δεξιά!" (helm to starboard!) | the helmsman puts the rudders over (F/G-validated rudder model) | oar-assisted turns are expressed via per-side `oars`, not here |
-| `course` | bearing (deg) or waypoint | "head for the enemy line…" | the guidance loop steers the ship toward it | navigation intent; the one order a commander gives between battles |
-| `go` | — | "ready … pull!" | keleustēs count-in; global phase sync; all blades to the catch | master start only — see dropped list for stopping |
-| `report` | — | (CLI telemetry, not a shout) | print status: speed, rate, position, ETA | console verb: not crew vocabulary, not in the equivalence contract |
+
 
 **Dropped from the v0 list, and why** (replacement in parentheses):
 
 - `speed` — nobody shouts a knots target at a battle; rate + pressure *produce* speed.
   Derived output only (oQ-2 resolved).
+- `go` — redundant: the phase clock starts at the first rowing command (`rate` > 0 or
+  `oars row`); the keleustēs' "ready … pull!" is modelled, not spoken. Determinism
+  rule: all blades begin at the catch (§3.3).
+- `course` — the commander doesn't shout bearings in battle; holding a heading is the
+  helmsman's context, supplied as scenario input (oQ-6). A benchmark script that needs
+  a course to hold reads it from the scenario, not from a verb.
+- `report` — status is the CLI's business, not the commander's: the driver prints an
+  end-of-run summary (and can sample at fixed times via a flag); telemetry never
+  enters the shared language.
 - `oar-assist` — redundant: turn-by-oars is exactly per-side `oars hold/back/bank`.
   (oQ-7 resolved: no named attack verb either — a ram run is `rate 44` + `pressure
-  spoude` + `course`.)
+  spoude`, steered with `helm`.)
 - `rest` — a consequence, not a command: `oars bank` (+ `rate 0`). A resting half-bank
   is `oars bank` + side (oQ-8 partly resolved).
 - `crew` — watch planning is scenario state, not battle vocabulary; crew condition
   stays an internal model (oQ-15).
 - `sea` — the environment is input, not an order: a shared file both sims read (oQ-5
   resolved).
-- `anchor` — not worrying about anchoring for now: coming to a halt is `course` +
-  `oars bank`; dropping the anchor stone is ship state, not a rower action.
+- `anchor` — not worrying about anchoring for now: coming to a halt is `oars bank`;
+  dropping the anchor stone is ship state, not a rower action.
 - `stop` — covered: `oars bank` ends rowing; the end of the script ends the run.
 - `trailing` / `feathered` oar states — not distinctly executable mid-battle: the
   feather is part of the recovery, trailing ≈ hold or bank.
@@ -138,6 +145,9 @@ from 14.
   and cueing (pipe/drum analogue).
 - The LL consumes the cadence as a schedule; the HL treats it as a scalar indexing
   response curves.
+- **Starting is implicit — there is no `go`**: the phase clock begins at the first
+  rowing command (`rate` > 0 or `oars row`), all blades at the catch. The keleustēs'
+  count-in is modelled, not a verb.
 - oQ-12: also expose stroke *shape* (long/medium/short)? Real range: up to 1.1 m
   unrestricted, ~0.99 m effective (canted), 0.87 m (straight rig). A `stroke-length`
   command in v2 would parameterise blade immersion time and pull length.
@@ -159,7 +169,6 @@ command per line, `#` comments allowed, timestamps in seconds from script start:
 ```
 # time_s, verb, args...        (comma- or space-separated as you prefer)
 0, rate, 30
-0.5, go
 600, pressure, spoude
 900, rate, 44
 1020, helm, port
@@ -167,7 +176,6 @@ command per line, `#` comments allowed, timestamps in seconds from script start:
 1260, oars, back starboard
 1440, rate, 24
 1800, oars, bank
-2400, report
 ```
 
 - The schema parser (`commands/schema.json`) validates every line before the run:
@@ -179,12 +187,13 @@ command per line, `#` comments allowed, timestamps in seconds from script start:
 - A later v2 nicety: an interactive stdin loop ("type a command, advance time") —
   not needed for v1.
 - No `stop` or `anchor` in v1: coming to a halt is `oars bank`; the run ends when the
-  script ends.
+  script ends. Starting is implicit (§3.3). The CLI prints the status summary at the
+  end of the run — there is no `report` verb.
 
 ## 4. High-level simulator — the fast and efficient one
 
-- **State**: position, heading, speed, effective rate, course, crew condition, environment,
-  position in the command sequence.
+- **State**: position, heading, speed, effective rate, held course (scenario input),
+  crew condition, environment, position in the command sequence.
 - **Dynamics** (reduced set, per validated chain):
   - forward: m_app·dv/dt = Thrust(V, r, pressure) − hull_drag(V) − wave_penalty, using
     the P = 7.43·r chain mapped to hull force (W = n·P·L·r·E/60 via
@@ -248,7 +257,7 @@ the LL (approximation); the HL's error is then quantified, not hand-waved.
 
 - |mean speed difference| < 1 % over a 10-minute script including a sprint and a turn;
 - settled stroke rate within 1 spm;
-- time to 3 NM within 1 %;
+- time to 3 NM within 1 % (held course supplied as scenario input, oQ-6);
 - standard G1/F1 turn diameter within 5 %;
 - accumulated crew fatigue within 5 %;
 - final position within ~0.1 NM after course changes.
@@ -281,9 +290,9 @@ trireme-sim/
 
 ## 8. Roadmap (draft)
 
-0. **Phase 0 — command language & contract.** Freeze the verb set (§3.2: 6 crew + 1
-   console), write the schema, settle the remaining semantics (oQ-4, oQ-6) and freeze
-   the §3.5 script-file format. Deliverable: `commands/schema.json` v0.1 + a sample
+0. **Phase 0 — command language & contract.** Freeze the verb set (§3.2: 4 crew
+   verbs), write the schema, settle the remaining semantics (oQ-4) and freeze the
+   §3.5 script-file format. Deliverable: `commands/schema.json` v0.1 + a sample
    script.
 1. **Phase 1 — LL first.** Get the per-oar sandbox working and validated against ch.9
    tables (blade forces, drive times, hand-rule). This is the truth engine; best to own
@@ -319,8 +328,8 @@ trireme-sim/
 
 **Command language**
 
-- oQ-1 — **Resolved (for now): 6 crew verbs + 1 console verb (§3.2).** Can it go below
-  6 without losing an attested capability?
+- oQ-1 — **Resolved (for now): 4 crew verbs (§3.2).** Can it go below 4 without
+  losing an attested capability?
 - oQ-2 — **Resolved: `rate` + `pressure` are the power controls** (pipe + shout);
   `speed` is a derived output, not a verb.
 - oQ-3 — Attested-ancient mapping: which commands map to attested signals (*keleustēs*
@@ -330,10 +339,11 @@ trireme-sim/
   crossed, partly)? The per-oar specs the LL must implement.
 - oQ-5 — **Resolved: the environment is input, not a verb** — a shared file both sims
   read (oQ-16 covers where it lives; format still open).
-- oQ-6 — Who is "the commander"? Trierarch alone, or + helmsman + keleutes (roles with
-  different permissions)? Affects which verb belongs in the commander console.
+- oQ-6 — **Resolved for v1: one console, the battle commander's voice.** Helmsman
+  context (a course to hold) and watch/keleustēs duties are scenario state, not
+  verbs.
 - oQ-7 — **Resolved for v1: no named attack verb**; a ram run is compositional
-  (`rate 44` + `pressure spoude` + `course`). Revisit only if diekplous/periplous
+  (`rate 44` + `pressure spoude`, steered with `helm`). Revisit only if diekplous/periplous
   formations need distinct behaviour.
 - oQ-8 — **Partly resolved:** a resting half-bank is expressed as per-side `oars bank`;
   the watch/fatigue *scheduling* model stays an internal question (oQ-15).
@@ -386,11 +396,14 @@ trireme-sim/
   (one bank holding / banked), not a primitive.
 - **oracle** (in this plan) — the simulator that other things are judged against: the
   LL is the oracle vs reality; the HL is judged against the LL.
+- **scenario input** — world state the sims read but nobody shouts: sea state, start
+  position and heading, the helmsman's held course. Lives in `common/`; never in the
+  verb set.
 
 ## Next actions for the next session
 
-1. Freeze the **verb set** (§3.2: 6 crew + 1 console). oQ-1, 2, 5, 7 resolved; oQ-4
-   and oQ-6 remain for the schema round.
+1. Freeze the **verb set** (§3.2: 4 crew verbs). oQ-1, 2, 5, 6, 7 resolved; only
+   oQ-4 remains for the schema round.
 2. Freeze `commands/schema.json` v0.1.
 3. Stand the **“LL first”** skeleton: `ll/` per-oar loop with the flat-blade law running
    a fixed 30-spm line, compared to the rigid-model numbers — before any HL work.
