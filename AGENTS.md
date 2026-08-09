@@ -17,9 +17,10 @@ research/                        the validated evidence base (see research/AGENT
   data/                            decoded source tables (CSV, # comments allowed)
   tasks/                           repeatable extraction/decoding playbooks
 trireme-sim/                     the simulators (see trireme-sim/AGENTS.md)
-  commands/  schema + script parser (Step 0, done)
-  ll/        per-oar reality-grade sim — Phase 1 Gate 1 (one oar) done, Gate 2 (hull) next
-  hl/        fast ship-level sim — not built yet (its curves come from LL runs)
+  commands/  schema + script parser (the frozen command language)
+  ll/        per-oar reality-grade sim — Phase 1 complete (the oracle;
+             acceptance record: trireme-sim/VALIDATION.md)
+  hl/        fast ship-level sim — Phase 2 (plan §19; its curves come from LL runs)
 sources/                         source PDFs (Rankov 2012, Carter, …)
 tools/                           decode/OCR helpers + extracted text dumps
 trireme-rowing-simulation-research.md   research tracker (status legend inside)
@@ -59,18 +60,19 @@ trireme-simulation-plan.md              the simulator plan (oQ-1…21, gates, co
 ## Status
 
 - Research chain: validated for cruise/sprint/turn (ch.7/ch.9, F/G ≤ 7 %).
-- Sim: Step 0 (schema + parser, 19 checks) and Phase 1 Gate 1 (one-oar LL vs rigid
-  model, 7 checks) done. Next: Phase 1 Gate 2 — hull surge vs ch.7/ch.9.
+- Sim: Step 0 (command language) and Phase 1 (the LL oracle, gates 1–8) complete —
+  the acceptance record: `trireme-sim/VALIDATION.md`. Next: Phase 2 (the HL,
+  plan §19) then Phase 3 (the harness, plan §20).
 
 ## Quick commands
 
 ```bash
 cd trireme-sim
 V=../.venv/bin/python3
-$V -m pytest                      # the whole test suite, one command — 71 checks
-                                  # (parser 19; gates 1-5: 7/12/9/8/7; research
-                                  # chain 12). Validation ledger:
-                                  # trireme-sim/VALIDATION.md
+$V -m pytest                      # the whole test suite, one command — the current
+                                  # count and per-gate breakdown live in
+                                  # trireme-sim/VALIDATION.md (not here, to stay
+                                  # in date)
 $V ll/run_one_oar.py              # one-oar table at the anchored cruise point
 $V ll/run_turn.py table           # turn scenarios vs the W5 anchors
 $V ll/run_hull.py --table         # equilibrium curve over the rates
