@@ -130,6 +130,55 @@ def test_ch9_efficiency_consistency():
     assert abs(e116 - 0.719) < 0.001, f"E(116) = {e116:.3f}"
 
 
+def test_turning_point_equivalence():
+    """Shaw's ch.9 force form k·(q/p)²·V²·sin²C with the ACTUAL turning
+    point (p = V·cosC/omega, q = l_cp - p) reduces algebraically to the
+    flat-plate law k·v_n² — the flat-plate law IS Shaw's form (the resolved
+    mismatch #4). Numeric check over a grid."""
+    rig = RIGS["Olympias"]
+    l_cp = rig["lout"] - (rig["blade"] - 0.260)
+    k = 0.5 * 1025.0 * rig["area"] * 1.8
+    for C in (-0.4, -0.2, 0.0, 0.2, 0.4):
+        for w in (1.0, 1.5, 2.0):
+            for V in (2.0, 3.7, 5.0):
+                vn = V * math.cos(C) - l_cp * w
+                p = V * math.cos(C) / w          # the actual turning point
+                q = l_cp - p
+                shaw = k * (q / p) ** 2 * V * V * math.cos(C) ** 2
+                assert abs(shaw - k * vn * vn) < 1e-9 * max(1.0, abs(shaw))
+
+
+def test_slip_limit_is_a_lower_bound():
+    """The geometric-deadpoint slip limit (omega = V·cosC/p(C), p = L_plan
+    - d(C)) gives LESS thrust than the measured Table 9.6 kinematics — and
+    can go negative: the trials' crews sweep faster than the slip limit, so
+    the prescribed (measured) kinematics are the truth, not the slip limit."""
+    def slip_thrust(rig_name, vkt, t_drive):
+        rig = RIGS[rig_name]
+        V = vkt * KT
+        B = math.radians(rig["sweep"])
+        w = B / t_drive
+        dt = t_drive / 600
+        l_cp = rig["lout"] - (rig["blade"] - 0.260)
+        L_plan = rig["lout"] / math.cos(math.radians(30.0))
+        k = 0.5 * 1025.0 * rig["area"] * 1.8
+        Fx = 0.0
+        C = B / 2
+        for _ in range(600):
+            d = 0.953 * math.cos(120.0 * C / B)
+            p = L_plan - d
+            omega_slip = V * math.cos(C) / p
+            vn = V * math.cos(C) - l_cp * omega_slip
+            Fx += -k * vn * abs(vn) * math.cos(C) * dt
+            C -= w * dt
+        return Fx / (60.0 / SPM[rig_name][vkt])
+    for (rig, vkt), td in T_DRIVE.items():
+        flat = rigid_stroke(V=vkt * KT, rig=RIGS[rig],
+                            r_spm=SPM[rig][vkt], t_drive=td)["mean_thrust"]
+        slip = slip_thrust(rig, vkt, td)
+        assert slip < flat * 0.5, f"{rig}@{vkt}: slip {slip:.1f} vs flat {flat:.1f}"
+
+
 def test_apparent_mass():
     for name in ("Olympias", "MarkIIb"):
         v = VESSELS[name]

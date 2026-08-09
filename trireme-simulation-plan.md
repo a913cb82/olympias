@@ -654,7 +654,7 @@ the drive and its means are untouched by construction.
 | 1 | Tightest-turn 360°-time (73 vs 128 s) | **done**: two-lever decomposition (brake yaw arm 1.5 m ≠ fitted 4.8 m thrust lever — register C3) + two-anchor hold fraction f = 0.05 → sprint-protocol turn: D = 61.3 m ✓ and the speed halves (V_360 = 3.7 kt, trial mean 2.9) ✓; t_360 = 85 s vs 128 — residual now diagnosed as the fitted-Ω yaw-resistance question (register C1), not the hold physics | [x] mostly — residual documented |
 | 2 | Sprint t_drive data gap (A8) | **done**: t_drive(44.5) = 0.371 s calibrated to the trial speed (8.30 kt at 130 oars — IN the 8.2–8.4 band); wired into t_drive_for as a tagged entry; matches the bracket analysis's 0.375 estimate | [x] |
 | 3 | 2-parameter CP tension (D7) | **done (no model change)**: the ¾-NM's 4–5-kt tailwind gives ~0.5–1.5 kW assistance (the ch.4 1.3–4.4 kW band is for a 10–15-kt wind) → true crew power 91–100 W/man → W′ = 5 kJ predicts 4–7.5 min; the observed 6.5 min sits inside the band. The 2-min rule and the 45-s sprint also check out | [x] |
-| 4 | Mark IIb shortfall (oQ-18) | **diagnosed**: ch.9 §3 gives the exact blade-force structure k·(q/p)²·V²·sin²C — the turning-point ratio enters the force, and 1/E = 1 + q/p with q/p ∝ 1/√n (E(170) = 0.756 → E(116) = 0.719 reproduced, locked as a research-chain test). The Mark IIb's different geometry changes q/p — the flat-plate law is an Olympias-calibrated equivalent. Implementation = the ch.9 turning-point blade law as a flagged variant (next physics layer) | [x] diagnosis / implementation open |
+| 4 | Mark IIb shortfall (oQ-18) | **resolved as an equivalence** (15.2): Shaw's form k·(q/p)²·V²·sin²C with the ACTUAL turning point (p = V·cosC/ω) reduces algebraically to the flat-plate law — the flat-plate law IS Shaw's force form (locked as a test). The geometric-deadpoint slip limit (ω = V·cosC/p(C)) gives less thrust than the measured Table 9.6 kinematics (negative at our points) — the prescribed (measured) kinematics are the truth. The shortfall is therefore the UNKNOWN Mark II blade area (register A5 — our RIGS uses the Olympias 0.078 m²; the ch.9 ×3.3 note is the design's requirement, i.e. the Mark II's actual blade area ~0.26 m²). Closure: the A5 data (Coates plans) or the 'Mark IIb as designed' scenario at 0.26 m² | [x] resolved — A5 data gap named |
 | 5 | Per-tier factors (v2) | **done** (Gate 6, 4 checks): SideCrew = 3 TierCrews (31/27/27, per-tier MIT + W′); the thalmian head-room as the ch.9 L-model power factor (0.9 cruise → 0.6 sprint, shape [?]) + the feather clamp; the thalmian share falls with rate (0.34 → 0.30) and the 170-oar sprint overshoot closes (8.54 → ~7.9 kt) | [x] |
 | 6 | Archival (F/G raw data, Plan 8 stations, trials video) | Wolfson archive / Oxbow / Actium team; t_rise from film | background |
 
@@ -685,28 +685,28 @@ VALIDATION.md ledger row moves from [!] to [x] with the residual documented.
   sustains factor × P_crit) — without it the tier oscillates at the W′
   boundary.
 
-### 15.2 #4 — the turning-point blade law (second; 2-3 sessions)
+### 15.2 #4 — the turning-point blade law (**resolved as an equivalence**)
 
-1. **Research (in-house)**: decode the ch.9 Appendix (the analytical
-   turning-point derivation) via the playbooks; resolve the printed d-formula
-   contradiction (cos fits the prose, sin+30° does not); extract the full
-   k·(q/p)²·V²·sin²C form and the k coefficient's calibration.
-2. **Derivation**: the flat-plate ↔ ch.9-form equivalence at the Olympias
-   points (k ↔ ½ρAC_N mapping); the Mark IIb 18.4° cant's effect on v_n.
-3. **Implementation**: a BLADE_LAW flag ("flat-plate" | "ch9") with the
-   geometry-dependent p(C) and (q/p)².
-4. **Re-validation**: the Olympias anchors under the new law — the four
-   Table 9.6 means, the couple 224 N, the catch spikes, the force-driven
-   drive-time companion — all within the existing tolerances; then the Mark
-   IIb points: the prop-fraction gate flips from "locked shortfall
-   [0.25, 0.35]" to "reproduced" (the acceptance band set by the result,
-   documented).
-- Gates: the E-consistency (already locked) stays; new: a law-equivalence
-  test (both laws within 1 % at the Olympias points once k is calibrated);
-  the Mark IIb prop fraction.
-- Risk: if the equivalence does not hold at Olympias, a documented
-  reconciliation — most likely a hybrid (flat-plate with the (q/p)²
-  correction factor), not a replacement.
+1. **Appendix decoded**: the d-formula is correct as printed (A = the catch
+   angle: 0.477 at catch/finish, 0.953 at mid ✓ — the earlier 'cos vs
+   sin+30°' flag was a convention error, resolved); p = L_plan − d.
+2. **The unification**: k·(q/p)²·V²·sin²C with the ACTUAL turning point
+   (p = V·cosC/ω, q = l_cp − p) reduces algebraically to the flat-plate law
+   k·v_n² — **the flat-plate law IS Shaw's force form** (numeric identity
+   locked as a research-chain test). The geometric-deadpoint slip limit
+   (ω = V·cosC/p(C), p = L_plan − d) gives less thrust than the measured
+   Table 9.6 kinematics — negative at all four points (the crews sweep
+   ~30 % faster than the deadpoint-stationary speed): the prescribed
+   (measured) kinematics are the truth, the slip limit is a lower bound
+   (locked as a test).
+3. **The Mark IIb conclusion**: the shortfall is NOT a law error — it is
+   the UNKNOWN Mark II blade area (register A5: our RIGS uses the Olympias
+   0.078 m² for the Mark IIb; the ch.9 ×3.3 note is the design requirement
+   ≈ 0.26 m² of actual Mark II blade). Closure: the A5 data (Coates
+   plans / archival) or the documented 'Mark IIb as designed' scenario.
+4. No BLADE_LAW flag needed — the flat-plate law is confirmed; the prop-
+   fraction gate stays locked (the 0.078-area Mark IIb is 'Olympias blades
+   on a Mark II rig', a scenario, not a model error).
 
 ### 15.3 #1 — the sway DOF (third; 2-3 sessions)
 

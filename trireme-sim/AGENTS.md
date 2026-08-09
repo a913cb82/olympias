@@ -126,5 +126,11 @@ no CLI: `from commands.parser import parse_file, parse_script` — errors raise
       the feather clamp (the deadspot slips the blade); the thalmian share
       falls with rate (the trial character) and the 170-oar sprint
       overshoot closes (8.54 -> ~7.9 kt).
+- [x] Plan 15.2 — Mark IIb resolved as an equivalence: Shaw's ch.9 form
+      k·(q/p)²·V²·sin²C with the actual turning point reduces exactly to
+      the flat-plate law (locked test); the slip-limit variant under-
+      predicts (negative thrust — the measured kinematics are the truth);
+      the shortfall is the unknown Mark II blade area (register A5, ~0.26
+      m² as designed) — a data gap, not a law error.
 - [ ] Phase 2 — HL from LL;  [ ] Phase 3 — harness;  [ ] Phase 4 — crew & environment;
       [ ] Phase 5 — oar-manoeuvres

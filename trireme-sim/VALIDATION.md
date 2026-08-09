@@ -109,8 +109,13 @@ caveat mechanism, now integrated).
 
 ## 7. The honest mismatch ledger `[!]` — where the LL does *not* match, and why
 
-1. **Mark IIb under-predicts** (~30 % of hull need — oQ-18; ch.9 notes Mark II
-   needs ~×3.3 blade area). Locked by test: no silent tuning.
+1. **Mark IIb under-predicts** (~30 % of hull need — oQ-18) — **resolved as
+   an equivalence** (plan 15.2): Shaw's form k·(q/p)²·V²·sin²C with the actual
+   turning point IS the flat-plate law (algebraic identity, locked); the
+   slip-limit variant under-predicts (negative thrust) — the measured
+   kinematics are the truth. The shortfall is the UNKNOWN Mark II blade area
+   (register A5; our 0.078 m² is the Olympias blade on a Mark II rig; the
+   ×3.3 note ≈ the design's 0.26 m²). Locked by test: no silent tuning.
 2. **Tightest-turn 360° time** — **mostly closed**: two-lever decomposition
    (the held blades' drag uses the athwartships arm ~1.5 m, not the fitted
    4.8 m thrust lever — register C3) + the two-anchor hold fraction 0.05 +
