@@ -130,7 +130,10 @@ no CLI: `from commands.parser import parse_file, parse_script` — errors raise
       k·(q/p)²·V²·sin²C with the actual turning point reduces exactly to
       the flat-plate law (locked test); the slip-limit variant under-
       predicts (negative thrust — the measured kinematics are the truth);
-      the shortfall is the unknown Mark II blade area (register A5, ~0.26
-      m² as designed) — a data gap, not a law error.
+      the residual is the A5 area gap + the slip assumptions.
+- [x] Plan 16 — the cant term in (Gate 7, 4 checks): vn = V·cosC·cos(φ) −
+      l_cp·ω (identity at Olympias by construction); the Mark IIb prop
+      fraction 0.30 → 0.51–0.54; the 'as-designed' scenario (cant + area
+      1.3× + slip 1.2) reproduces the chain's 9.7 kt at 46.3 spm.
 - [ ] Phase 2 — HL from LL;  [ ] Phase 3 — harness;  [ ] Phase 4 — crew & environment;
       [ ] Phase 5 — oar-manoeuvres

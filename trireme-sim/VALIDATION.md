@@ -20,7 +20,7 @@ cd trireme-sim
 ../.venv/bin/python3 ll/tests/test_gate5.py             # direct run also works
 ```
 
-Suites: `tests/test_parser.py` (19) · `ll/tests/test_gate1..6.py` (7/12/9/8/7/4)
+Suites: `tests/test_parser.py` (19) · `ll/tests/test_gate1..7.py` (7/12/9/8/7/4/4)
 · `tests/test_research_chain.py` (12 — locks the research chain itself: the
 8.32-kt sprint, Table 9.7, ch.7 cruise, rigid-model means, oar families,
 catch spikes, W5 turn anchors, acceleration, apparent mass). Every check
@@ -113,9 +113,11 @@ caveat mechanism, now integrated).
    an equivalence** (plan 15.2): Shaw's form k·(q/p)²·V²·sin²C with the actual
    turning point IS the flat-plate law (algebraic identity, locked); the
    slip-limit variant under-predicts (negative thrust) — the measured
-   kinematics are the truth. The shortfall is the UNKNOWN Mark II blade area
-   (register A5; our 0.078 m² is the Olympias blade on a Mark II rig; the
-   ×3.3 note ≈ the design's 0.26 m²). Locked by test: no silent tuning.
+   kinematics are the truth. **The cant is now in** (plan 16.1, Gate 7):
+   the Mark IIb prop fraction 0.30 → 0.51–0.54 (~1.7×); the residual is the
+   A5 area gap + the slip assumptions, quantified by the 'as-designed'
+   scenario (area 1.3× + slip 1.2 → the chain's 9.7 kt). Locked by test:
+   no silent tuning.
 2. **Tightest-turn 360° time** — **mostly closed**: two-lever decomposition
    (the held blades' drag uses the athwartships arm ~1.5 m, not the fitted
    4.8 m thrust lever — register C3) + the two-anchor hold fraction 0.05 +
