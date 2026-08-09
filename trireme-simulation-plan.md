@@ -655,7 +655,7 @@ the drive and its means are untouched by construction.
 | 2 | Sprint t_drive data gap (A8) | **done**: t_drive(44.5) = 0.371 s calibrated to the trial speed (8.30 kt at 130 oars — IN the 8.2–8.4 band); wired into t_drive_for as a tagged entry; matches the bracket analysis's 0.375 estimate | [x] |
 | 3 | 2-parameter CP tension (D7) | **done (no model change)**: the ¾-NM's 4–5-kt tailwind gives ~0.5–1.5 kW assistance (the ch.4 1.3–4.4 kW band is for a 10–15-kt wind) → true crew power 91–100 W/man → W′ = 5 kJ predicts 4–7.5 min; the observed 6.5 min sits inside the band. The 2-min rule and the 45-s sprint also check out | [x] |
 | 4 | Mark IIb shortfall (oQ-18) | **diagnosed**: ch.9 §3 gives the exact blade-force structure k·(q/p)²·V²·sin²C — the turning-point ratio enters the force, and 1/E = 1 + q/p with q/p ∝ 1/√n (E(170) = 0.756 → E(116) = 0.719 reproduced, locked as a research-chain test). The Mark IIb's different geometry changes q/p — the flat-plate law is an Olympias-calibrated equivalent. Implementation = the ch.9 turning-point blade law as a flagged variant (next physics layer) | [x] diagnosis / implementation open |
-| 5 | Per-tier factors (v2) | pending — next session | [ ] |
+| 5 | Per-tier factors (v2) | **done** (Gate 6, 4 checks): SideCrew = 3 TierCrews (31/27/27, per-tier MIT + W′); the thalmian head-room as the ch.9 L-model power factor (0.9 cruise → 0.6 sprint, shape [?]) + the feather clamp; the thalmian share falls with rate (0.34 → 0.30) and the 170-oar sprint overshoot closes (8.54 → ~7.9 kt) | [x] |
 | 6 | Archival (F/G raw data, Plan 8 stations, trials video) | Wolfson archive / Oxbow / Actium team; t_rise from film | background |
 
 ## 15. Closure work plan for the remaining mismatches
@@ -666,26 +666,24 @@ sway work), then the sway DOF (its acceptance is the Ω reconciliation). The
 archival trio is background. An item closes when its gates pass AND its
 VALIDATION.md ledger row moves from [!] to [x] with the residual documented.
 
-### 15.1 #5 — per-tier crews (first; 1-2 sessions)
+### 15.1 #5 — per-tier crews (**done**, Gate 6, 4 checks)
 
-- Split each SideCrew into three tier sub-crews (31 thranites / 27 zygians /
-  27 thalmians per side), each with its own Oar (tier MIT: old-fir
-  13.1/18.0/13.1; spruce 9.7), stroke plan, and W′ tank (v1: shared
-  P_crit/Fh_max; per-tier ceilings v2).
-- Thalmian head-room: an effective-stroke factor L_tier(rate) declining with
-  rate — built from rig-geometry §4 (720 mm manikin vs 800 mm design; "the
-  thalmian tier's power contribution fell sharply at higher speeds", ch.9
-  p.77). Calibrated to the head-room numbers, NOT to speeds.
-- New observable: per-tier power shares (W/man) — the trial character to
-  reproduce.
-- Gates: (a) tier power shares at 28.8/36/44.5 spm show the thalmian
-  fall-off; (b) the 170-oar sprint — does the head-room bring 8.54 kt toward
-  the trial's 8.2–8.3? (the crew-count residual may close); (c) regression:
-  all 73 tests; the fleet MIT weighting moves from the aggregate (14.7) to
-  the tier split (turns unaffected in the mean).
-- Risk: L_tier(rate)'s exact rate-dependence is unmeasured (only the
-  character is recorded) — flag `[?]`, keep the shape linear-in-rate until
-  better data.
+- SideCrew = three TierCrews (31/27/27 per side; per-tier MIT and W′
+  tanks; the ship's per-oar-average API unchanged).
+- Thalmian head-room as the **ch.9 L-model power factor** (a reduced pull
+  scales the POWER, not the kinematics — a kinematic sweep cut dragged the
+  tier into the deadspot and broke the cruise anchors; the L-model + the
+  **feather clamp** (the deadspot slips the blade — "ineffective", not
+  drag) reproduce the trial character). Factor 0.9 at cruise (720/800 mm
+  manikin ratio), linear to 0.6 at 44.5 spm — shape flagged `[?]`.
+- Findings: the thalmian share falls 0.34 → 0.30 from cruise to sprint
+  (time-averaged — the W′-boundary surging averages out); the 170-oar
+  sprint overshoot closes: bare-oar 8.54 → ~7.9 kt burst (below the trial
+  band's top — the 130-effective + ineffective-thalmian reality now both
+  represented).
+- The W′ P_crit availability scales with the power factor (a reduced tier
+  sustains factor × P_crit) — without it the tier oscillates at the W′
+  boundary.
 
 ### 15.2 #4 — the turning-point blade law (second; 2-3 sessions)
 
