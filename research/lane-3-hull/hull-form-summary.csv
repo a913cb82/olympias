@@ -1,0 +1,14 @@
+parameter,value,unit,source
+LWL,32.2,m,Taylor T31.1 / Poitiers 32.08
+B_wl,3.430,m,Poitiers model from Coates lines
+draft_trial,1.1,m,Taylor T31.1
+draft_light,0.694,m,computed from light vol 25.798 t
+planform_p,1.5,-,fitted
+rocker_q,0.8,-,fitted
+vol_trial,41.35,m3,fitted to 42.25 t
+vol_light,25.17,m3,fitted to 25.798 t
+wetted_trial,81.3,m2,computed
+wetted_light,71.0,m2,computed
+Cb_trial,0.340,-,computed
+Cwp,0.556,-,computed
+LCB_from_stern,16.10,m,computed

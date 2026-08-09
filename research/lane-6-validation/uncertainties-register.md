@@ -52,6 +52,7 @@ Compiled 2026-08-09 (S13) from lane notes; keep this in sync whenever a `[?]` is
 | D3 | Bilge-sloshing power loss (fore-and-aft with stroke) | **unmeasured** | `[?]` | ch.25 (bilge-water section) | Only GM/sinkage effects quantified (stable up to floor tops: +7.42 t, GM≈0.99 m unchanged). Sloshing with the stroke rhythm is a real but unquantified drag on the oarcycle. | [M] degraded-state performance; [L] intact baseline |
 | D4 | Crew power envelope (S5/S6) | 80 W fixed-seat; 115–145 W long-endurance (ordinary labourer); 300 W/rower Mark IIb short sprint | `[x]`/`[?]` | Rossiter & Whipp ch.23; Coates ch.22; Monod/MacFarlane/Nadel (via Coates) | 53–55% rowing efficiency (Shaw, calm) used throughout. Cross-source variance in what "sustainable" means. | [H] endurance/cruise predictions |
 | D5 | 1988 acceleration data (0→7 kt in 32 s) | 0→7 kt in 32 s (1988, less-trained crew) | `[x]` | S1 aggregator | Validate against Taylor's rotational-inertia model, not the steady-state chain. Taylor model: 0→5.5 kt in 10 s, 9 kt at 24 s, full ~40 s (for a trained crew). | [M] |
+| D6 | Hull-form transverse stability (model KM) | model KM 1.428 m (BM 0.935 m, I_t 38.5 m⁴) vs BMT KM 2.90 m, GM 1.13 m | `[x]` BMT; `[x]` model caveated | S14 parametric hull vs ch.25 | Circular-arc waterplane (Cwp 0.556) is too lean — real Olympias fuller/flatter-bottomed. **Decision: Lane 5 manoeuvring uses BMT KM/GM directly, never model KM.** Model is adequate for volume/wetted surface/resistance only. | [M] Mark IIb turns/heel |
 
 ---
 

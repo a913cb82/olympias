@@ -120,13 +120,20 @@ Coates drawing, and nothing enters the model that we cannot defend in a written 
       chapter is actually book pp.231–243, not 268–77 as the earlier plan text said.)
 
 **W2 — Hull geometry & hydrostatics**
+- [x] **Parametric hull form built** — `research/lane-3-hull/parametric-hull-form.md` +
+      `hull_form.py`: circular-arc sections fitted to BMT trial (41.35 vs 41.22 m³, +0.3%)
+      and light (25.17 m³, 0%) displacements; wetted surface 81.3 m² (trial) / 71.0 m²
+      (light); Cb 0.340, Cwp 0.556, VCB 0.493 m, LCB 16.10 m from stern. Friction cross-check
+      vs Taylor T31.1 bare-hull drag 40.2v² gives 55–62% skin / 38–45% wave residual across
+      4–9 kt, matching Coates ch.22 (skin dominant <~6 kt). **Stability caveat**: model KM
+      1.43 m under-predicts BMT 2.90 m (circular-arc waterplane too lean; real hull fuller/
+      flatter-bottomed) — Lane 5 must use BMT KM/GM directly.
 - [ ] Rebuild hull form from Plan 7 lines + Plan 2/3 offsets (the source Richard used to
-      loft his model in AutoCAD).
-- [ ] Derive displacement, wetted surface, waterline beam from offsets; cross-check vs
-      Olympias particulars (37 m LOA, ~5 m beam incl. outriggers) and BMT report (D7).
-- [ ] Resistance from towing tests (D1): parametric drag by speed band; separate
-      frictional vs wave-making components; note Eliav & Helfman (2022) critique of a
-      too-heavy hull.
+      loft his model in AutoCAD). *(Numeric offsets not in text; parametric model is the
+      working substitute.)*
+- [x] **Resistance from towing tests (D1)** [x]: primary = Grekoussis & Loukakis 1985 NTUA
+      NAL 06-F-1985; law 155V³+4.13V⁵ deduced from it and trial-validated; raw resistance
+      points require physical archive access.
 
 **W3 — Oar mechanics (the engine-to-propeller chain)**
 - [x] **Speed→power chain implemented & verified** — `research/lane-4-oars/propulsion-models.md` +
@@ -709,6 +716,28 @@ Three-step session (steps 1–3 of the "next steps" list). Repo is consolidated 
    ISBN 0-946897-21-2)** exists (OBNB); **Shaw 1993 (*The Trireme Project*, Oxbow,
    ISBN 9780946897582)** is the volume holding the published resistance/speed curve — both are
    physical-only acquisition targets.
+
+### S14 — Parametric hull form built (W2) [x]
+
+Step 1 of the "next steps" list. Cleanup of stale W1 checkboxes (decode tables, Table 31.1,
+Table 8.3 reconcile — all done in S7/S11) committed separately.
+
+- **Hull form (W2) built**: `research/lane-3-hull/hull_form.py` + `parametric-hull-form.md` +
+  `hull-form-summary.csv`. Coates' sections are circular arcs (Plan 3) but no numeric offsets
+  are in the text, so a parametric model is used: waterline half-breadth B(x)=Bmax·sin(πx)^p,
+  rocker d(x)=dmax·sin(πx)^q, circular-arc sections. Fitted (p=1.5, q=0.8, Bmax=1.715 m =
+  3.43 m beam) to reproduce both BMT displacements: trial 41.35 vs 41.22 m³ (+0.3%), light
+  25.17 m³ (0%). Derived: wetted surface 81.3 m² (trial) / 71.0 m² (light), Cb 0.340, Cwp 0.556,
+  VCB 0.493 m, LCB 16.10 m from stern, light draft 0.694 m.
+- **Friction cross-checks** [x]: (a) vs Shaw's law — friction is 55%/42%/36% of W at
+  2.0/3.5/4.3 m/s (read as low-ish, caveat logged); (b) vs Taylor T31.1 bare-hull 40.2v² —
+  friction 55–62% and wave residual 38–45% across 4–9 kt, matching Coates ch.22 that skin
+  dominates below ~6 kt with wave-making equalising near ~9 kt. This validates the ~81 m²
+  wetted-surface estimate.
+- **Stability mismatch** [x]: model KM = 1.428 m (BM 0.935 m, I_t 38.5 m⁴) under-predicts
+  BMT KM = 2.90 m — the pure circular-arc waterplane (Cwp 0.556) is too lean; the real
+  Olympias is fuller/flatter-bottomed. **Decision**: Lane 5 manoeuvring uses BMT measured
+  KM 2.90 m / GM 1.13 m directly, not model KM. Logged in uncertainties register (new row).
 
 ---
 
