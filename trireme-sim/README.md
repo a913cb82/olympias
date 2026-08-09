@@ -22,7 +22,7 @@ must satisfy lives in `../trireme-rowing-simulation-research.md` (and
 ```
 commands/   schema + parser          (done)
 common/     shared rig/oar/sea assets (TODO)
-ll/         per-oar reality-grade sim (Phase 1 — next)
+ll/         per-oar reality-grade sim (Phase 1 Gate 1 done: one-oar, 30-spm flat-blade loop vs rigid model)
 hl/         fast ship-level sim      (Phase 2 — from LL runs)
 harness/    script runner + compare + calibrate (Phase 3)
 cli/        CLI driver               (Phase 3)

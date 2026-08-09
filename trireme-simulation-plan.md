@@ -439,7 +439,13 @@ Two expectations that shape the build:
       oQ-4 remains for the schema round.
 - [x] Freeze `commands/schema.json` v0.1 + parser + sample script (`trireme-sim/`;
       parser: 19 checks passing, fail-fast + deterministic).
-- [ ] **Phase 1 — LL skeleton**: `ll/` one-oar loop with the flat-blade law at a fixed
-      30-spm line, compared to the rigid-model numbers (mean handle force
-      210–225 N, P = 7.43·r) — before any HL work.
+- [x] **Phase 1 Gate 1 — LL one-oar skeleton** (`trireme-sim/ll/`): time-stepped oar
+      with the flat-blade law; reproduces the rigid model at all four Table 9.6
+      points (<0.5 %), mean handle force 224/208 N in the cruise family,
+      prop W/man 102 % at 7.2 kt, dt-converged, oQ-18 shortfall inherited
+      honestly (7 checks).
+- [ ] **Phase 1 Gate 2 — hull surge**: `ll/hull.py`, m_app·dv/dt = thrust − drag,
+      ship settles on the ch.7 cruise curve (25.5/28.8/32.3 spm → 7/7.5/8 kt)
+      and the ch.9 sprint (44.5 spm → 8.2–8.4 kt) — the oQ-18 question is
+      answered empirically here.
 - [ ] Sketch the HL tolerance/labels format (§4 / §6 annotations).
