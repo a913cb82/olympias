@@ -54,7 +54,7 @@ research/
 └── tasks/                # REPEATABLE-TASK PLAYBOOKS (how-to guides) — READ before doing the task
 ```
 
-Read `research/tasks/README.md` first when starting any extraction/decoding task; read the relevant
+Read `research/tasks/AGENTS.md` first when starting any extraction/decoding task; read the relevant
 lane note before starting a workstream. When a session ends, tick/append this file so the next
 session picks up exactly where we left off.
 
@@ -944,7 +944,7 @@ The `research/tasks/` directory holds short how-to guides for tasks we repeat. *
 playbook before starting the task** — they record the venv split, page-offset convention (book page
 
 - 12), and pitfalls. This index must be kept in sync with the actual files in `research/tasks/`:
-when a playbook is added/renamed, update both this index and `research/tasks/README.md`.
+when a playbook is added/renamed, update both this index and `research/tasks/AGENTS.md`.
 
 | Playbook | Use it when |
 | --- | --- |
