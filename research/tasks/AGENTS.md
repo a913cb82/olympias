@@ -13,11 +13,12 @@ session doesn't re-learn them the hard way.
 
 Working notes (persistent across sessions):
 - Sources: `sources/rankov2012.pdf` (+ `rankov2012.txt` full text dump), Carter 1982 PDF in
-  `sources/carter/`. **`/tmp/opencode` only holds the venvs — it may be wiped; promoted deliverables
-  live in this repo (run scripts from `tools/`, venv paths point back to `/tmp/opencode`).**
-- Two venvs in `/tmp/opencode`: `venv` has **easyocr + torch**; `research-venv` has **pymupdf + numpy
-  + PIL + scipy + matplotlib**. Neither venv has all packages — **render with `research-venv`, OCR with
-  `venv`** (or install into one). This split has bitten us repeatedly.
+  `sources/carter/`. Promoted deliverables live in this repo; scratch stays in repo too.
+- **Venv: `.venv` at the repo root** (Python 3.10.12) has pymupdf + numpy + PIL + scipy +
+  matplotlib — everything except OCR. Render/extract with `.venv/bin/python3`.
+- **OCR (easyocr + torch) is on-demand only** — heavy; not installed into `.venv`. Recipe:
+  `python3 -m venv .venv-ocr && .venv-ocr/bin/pip install easyocr torch` (render with
+  `.venv`, OCR with `.venv-ocr`). The old `/tmp/opencode` venv pair is deprecated.
 - Rankov 2012 page numbering: **PDF page index = printed book page + 12** (e.g. book p.72 = PDF page 84;
   book p.70 = PDF page 82). `decode_shaw.py` numbers by PDF page index (0-based pymupdf page).
 - The glyph-cache (`tools/.cache/glyph_map3.json`, gitignored) and the reconstructed fonts in `tools/`

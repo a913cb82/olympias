@@ -13,7 +13,7 @@ tight crop around the table at 8x with a clip rect:
 
 ```bash
 cd tools
-source /tmp/opencode/research-venv/bin/activate   # venvs stay in /tmp/opencode
+source ../.venv/bin/activate   # repo-local venv (from tools/)
 python -c "
 import pymupdf
 doc = pymupdf.open('../sources/rankov2012.pdf')
@@ -39,7 +39,7 @@ Tips for the clip rect:
 
 ```bash
 cd tools
-source /tmp/opencode/venv/bin/activate          # venvs stay in /tmp/opencode
+source ../.venv-ocr/bin/activate   # on-demand OCR venv (recipe in tasks/AGENTS.md)
 python -c "
 import easyocr
 reader = easyocr.Reader(['en'], gpu=False, verbose=False)

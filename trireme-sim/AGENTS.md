@@ -46,7 +46,7 @@ dropped list with reasons is plan §3.2.
 ## Running
 
 ```bash
-V=/tmp/opencode/venv/bin/python3
+V=../.venv/bin/python3
 $V tests/test_parser.py            # 19 command-language checks
 $V ll/tests/test_gate1.py          # 7 one-oar acceptance checks
 $V ll/run_one_oar.py               # one-oar table @ Olympias 7.2 kt / 28.8 spm
@@ -68,7 +68,7 @@ errors raise `ScriptError` naming the offending line.)
   tunes it silently. Don't fix it without updating the docs and the test.
 - **Fail-fast scripts**: unknown verbs/out-of-range args raise `ScriptError`
   naming the line, before any run.
-- Python: `/tmp/opencode/venv/bin/python3` only.
+- Python: `.venv` at the repo root — from in here that is `../.venv/bin/python3`.
 
 ## Phase status
 

@@ -41,9 +41,9 @@ top-level tracker is `../trireme-rowing-simulation-research.md` (status legend:
   docs, never force consistency by editing values.
 - **CSVs**: `#` comment lines allowed at top, then a plain header; readers filter
   comments.
-- **Python**: run with `/tmp/opencode/venv/bin/python3`; pymupdf/PIL/scipy/matplotlib
-  work needs `/tmp/opencode/research-venv`. The split is easy to get wrong — check
-  the tasks playbooks.
+- **Python**: use the repo-local venv `.venv/bin/python3` (numpy/scipy/matplotlib/
+  pymupdf/PIL included). The OCR stack (easyocr+torch) is on-demand only — recipe
+  in `tasks/AGENTS.md`. The old /tmp/opencode venv split is deprecated.
 - **Rankov 2012 pages**: PDF page index = printed book page + 12.
 - When a finding changes the chain, update: the tracker, the relevant lane doc, the
   `uncertainties-register.md`, and — if a sim consumes it — `trireme-sim/common/chain.py`

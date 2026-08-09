@@ -20,7 +20,7 @@ Run it with PDF page indices (0-based, == book page + 12 for Rankov):
 
 ```bash
 cd tools
-source /tmp/opencode/research-venv/bin/activate   # venvs stay in /tmp/opencode
+source ../.venv/bin/activate   # repo-local venv (from tools/)
 python decode_shaw.py 84 85              # print decoded text for book pp.72–73
 python decode_shaw.py 84 | grep -vE "'\?\?\?+'"   # hide the undecodable table cells
 ```

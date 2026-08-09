@@ -29,8 +29,8 @@ progresses**. Every session should leave it more accurate than it found it.
 1. **Whenever you learn something, record it here and in the relevant lane note** — do not wait
    for the end of the session. Tick boxes, add log sections (S8, S9, …), update the plan.
 2. **Decoded/recovered numbers go to `research/data/*.csv`** (machine-readable, commented, with
-   provenance) and are cited from the notes. Keep `/tmp/opencode` artifacts as scratch only (venvs,
-   work-in-progress renders).
+   provenance) and are cited from the notes. Keep work-in-progress renders in scratch
+   (e.g. `tools/.cache/`); the project venv is `.venv` at the repo root.
 3. **Repeatable workflows are written up once in `research/tasks/`** (see the playbook index at the
    bottom of this file) so a later session can re-run them without re-learning. Add a new playbook
    the first time a task is done a second time; update one when a better way is found.
@@ -955,5 +955,5 @@ when a playbook is added/renamed, update both this index and `research/tasks/AGE
 
 **Process note:** the first time a task is done twice, write (or extend) a playbook for it. When a
 better recipe is found, update the playbook — later sessions read it as gospel. Deliverables promoted
-from `/tmp/opencode` scratch to `research/data/` must be logged in a new S-section here
+from scratch to `research/data/` must be logged in a new S-section here
 ---

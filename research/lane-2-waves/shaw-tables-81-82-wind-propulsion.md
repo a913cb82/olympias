@@ -57,8 +57,9 @@ course". The ship is moving at 4.4 m/s (8.5 kt) past the land; the wind blows fr
 
 - Text-layer decode (`tools/decode_shaw.py`) resolves prose and captions but leaves table numerals as
   unmapped PUA glyphs (the subset Type0 TT fonts embed a different glyph set than the DejaVu reference).
-- Reliable route: `pymupdf` render page 83 at zoom ~6 → OCR each table region with easyocr (the
-  `research-venv` + `venv` pair in `/tmp/opencode`); pin down columns by OCR'd header text and
+- Reliable route: `pymupdf` render page 83 at zoom ~6 → OCR each table region with easyocr (`.venv`
+  at the repo root for pymupdf; the on-demand OCR venv — see `research/tasks/AGENTS.md`); pin down
+  columns by OCR'd header text and
   **verify every cell against the prose equation** — that turns OCR-suspect values into certain ones.
 - Both tables required equation-driven verification because row/column boundaries are ambiguous in
   raw OCR output (e.g. Table 8.2's leftmost header cells 6 and 7 were missed by OCR; the equation

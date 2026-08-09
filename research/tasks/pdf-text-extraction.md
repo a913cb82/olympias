@@ -8,7 +8,7 @@ specific tables and some headers.
 
 ```bash
 cd tools
-source /tmp/opencode/research-venv/bin/activate   # venvs stay in /tmp/opencode
+source ../.venv/bin/activate   # repo-local venv (from tools/)
 python -c "
 import pymupdf
 doc = pymupdf.open('../sources/rankov2012.pdf')
@@ -31,7 +31,7 @@ PDF page index (0-based) = printed book page + 12. Check the running header
 
 ## Rendering a page image (for OCR or eyeball)
 ```bash
-source /tmp/opencode/research-venv/bin/activate
+source ../.venv/bin/activate   # repo-local venv (from tools/)
 python -c "
 import pymupdf
 doc = pymupdf.open('../sources/rankov2012.pdf')

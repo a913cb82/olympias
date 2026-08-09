@@ -39,8 +39,9 @@ trireme-simulation-plan.md              the simulator plan (oQ-1…21, gates, co
 
 ## Conventions (read before touching files)
 
-- **Python**: use `/tmp/opencode/venv/bin/python3` (or `/tmp/opencode/research-venv`
-  for pymupdf/PIL/scipy work) — never the global interpreter.
+- **Python**: use the repo-local venv — `.venv/bin/python3` (numpy/scipy/matplotlib/
+  pymupdf/PIL included) — never the global interpreter. The heavy OCR stack
+  (easyocr+torch) is on-demand only; recipe in `research/tasks/AGENTS.md`.
 - **Markdown**: markdownlint autofixes on save — after writing a file, re-read it
   before further edits (content changes on disk).
 - **CSVs**: `#` comment lines allowed at top, then a plain header; readers must
@@ -64,8 +65,8 @@ trireme-simulation-plan.md              the simulator plan (oQ-1…21, gates, co
 ## Quick commands
 
 ```bash
-V=/tmp/opencode/venv/bin/python3
 cd trireme-sim
+V=../.venv/bin/python3
 $V tests/test_parser.py          # command-language checks (19)
 $V ll/tests/test_gate1.py        # one-oar acceptance (7)
 $V ll/run_one_oar.py             # one-oar table at the anchored cruise point
