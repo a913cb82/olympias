@@ -19,6 +19,7 @@ Gates (plan §12.5):
 """
 
 import sys
+import pytest
 import math
 from pathlib import Path
 
@@ -27,16 +28,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from common.chain import KT
 from ll.ship import Ship, rate_for_speed
 from ll.rower import Fh_MAX
-
-passed = 0
-
-
-def check(label, fn):
-    global passed
-    fn()
-    passed += 1
-    print(f"ok - {label}")
-
 
 def loop(ship, t_end, dt=0.01, v0_kt=0.0, on_step=None):
     """Step the ship with a per-step callback(crews, ship) — the crews are
@@ -70,18 +61,17 @@ def rudder_q(ship):
 
 # --- G4-1 sustained cruise ---
 
-def t_sustained():
+def test_sustained():
     for rate, wmin, vlo, vhi in [(25.5, 0.9, 4.0, 6.5), (28.8, 0.8, 4.5, 7.0)]:
         s = loop(Ship(rate=rate, pressure=("steady", "steady")), 1800, v0_kt=6.0)
         assert s.crew["port"].W_frac > wmin, \
             f"{rate} spm: W_frac {s.crew['port'].W_frac:.2f}"
         assert vlo < s.V / KT < vhi, f"{rate} spm: V {s.V/KT:.2f} kt"
-check("G4-1: steady pressure = sustainable envelope (W' full, speed stable)", t_sustained)
 
 
 # --- G4-2 sprint burst + fade ---
 
-def t_sprint():
+def test_sprint():
     s30 = loop(Ship(rate=44.5), 30, v0_kt=8.5)
     s = loop(Ship(rate=44.5), 900, v0_kt=8.5)
     assert s.crew["port"].W_frac < 0.1, f"W_frac {s.crew['port'].W_frac:.3f}"
@@ -90,10 +80,9 @@ def t_sprint():
     assert s.V / KT < 0.9 * (s30.V / KT), \
         f"V(900) {s.V/KT:.2f} vs V(30) {s30.V/KT:.2f} kt"
     assert s30.V / KT > 8.0, f"burst speed {s30.V/KT:.2f} kt"
-check("G4-2: spoude bursts (~45 s, matching the trials), then fades", t_sprint)
 
 
-def t_sprint_peak():
+def test_sprint_peak():
     pk = [0.0]
 
     def obs(ship):
@@ -102,12 +91,11 @@ def t_sprint_peak():
 
     loop(Ship(rate=44.5), 30, v0_kt=8.5, on_step=obs)
     assert pk[0] <= Fh_MAX * 1.001, f"peak Fh {pk[0]:.0f} N > {Fh_MAX}"
-check("G4-2b: burst peak handle force <= Fh_max", t_sprint_peak)
 
 
 # --- G4-3 rest start ---
 
-def t_rest_start():
+def test_rest_start():
     ship = Ship(rate=44.5)
     stats = dict(pk=0.0, min_sweep=9.9, first=None, v10=None, v600=None)
 
@@ -136,23 +124,21 @@ def t_rest_start():
         f"launch too fast: V(10) {stats['v10']:.1f} kt (Taylor: 5.5 @ 10 s)"
     assert stats["v600"] is not None and stats["v600"] > 3.0, \
         f"reaches cruise-ish: V(600) {stats['v600']:.1f} kt"
-check("G4-3: rest start — short stretched strokes, Fh capped, sane launch", t_rest_start)
 
 
 # --- G4-4 backing telemetry ---
 
-def t_back_hold():
+def test_back_hold():
     rt = rate_for_speed("Olympias", 6.5, n_oars=85)
     s = loop(Ship(rate=rt, oar_state=("row", "back"), helm=("midship", 0.0)),
              20, v0_kt=6.5)
     assert s.crew["star"].plan is not None
     assert s.crew["star"].plan.limited_by == "back-hold"
-check("G4-4: backing at speed degenerates to the hold-brake (telemetry)", t_back_hold)
 
 
 # --- G4-5 asymmetric (one side exhausted) ---
 
-def t_asymmetric():
+def test_asymmetric():
     s = Ship(rate=40.0)
     s.crew["star"].W = 0.0
     max_gap = [0.0]
@@ -169,12 +155,11 @@ def t_asymmetric():
     # differential thrust that produced the yaw; a tiny deadspot refill may
     # snap it back (classic W' step behaviour), so check the max gap
     assert max_gap[0] > 0.1, f"no stroke-omega gap seen ({max_gap[0]:.3f})"
-check("G4-5: exhausted side strokes slower -> differential thrust -> yaw", t_asymmetric)
 
 
 # --- G4-6 tightest long run ---
 
-def t_tightest_long():
+def test_tightest_long():
     rt = rate_for_speed("Olympias", 6.5, n_oars=85)
     s = Ship(rate=rt, oar_state=("row", "hold"), helm=("starboard", 1.0))
     s.V = 6.5 * KT
@@ -184,12 +169,11 @@ def t_tightest_long():
         vmax = max(vmax, s.V)
     assert s.crew["port"].W_frac < 0.1, f"W_frac {s.crew['port'].W_frac:.2f}"
     assert s.V / KT < 0.85 * vmax / KT, f"V(900) {s.V/KT:.2f} vs peak {vmax/KT:.2f} kt"
-check("G4-6: tightest turn at sprint effort — W' drains, speed fades", t_tightest_long)
 
 
 # --- G4-7 impossible command ---
 
-def t_impossible_rate():
+def test_impossible_rate():
     s = Ship(rate=50.0)
     s.crew["port"].W = 0.0
     s.crew["star"].W = 0.0
@@ -205,7 +189,7 @@ def t_impossible_rate():
     plan = next(iter(first.values()))
     assert plan.limited_by == "tempo", f"limited_by {plan.limited_by}"
     assert plan.rate_eff < 50.0, f"achieved rate {plan.rate_eff:.1f} (cmd 50)"
-check("G4-7: rate 50 with W'=0 from rest — tempo lost, achieved < commanded", t_impossible_rate)
 
 
-print(f"\n{passed} checks passed")
+if __name__ == "__main__":
+    raise SystemExit(pytest.main([__file__]))

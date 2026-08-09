@@ -10,19 +10,22 @@ anchor by anchor, including the honest mismatches (§7). Confidence flags
 follow the repo convention: `[x]` = reproduced against a cited anchor,
 `[?]` = provisional/labelled, `[!]` = known mismatch, documented.
 
-## 0. Reproduce everything
+## 0. Reproduce everything (pytest)
 
 ```bash
-V=../.venv/bin/python3        # from trireme-sim/
-$V tests/test_parser.py       # command language ......... 19 checks
-$V ll/tests/test_gate1.py     # one-oar physics ..........  7 checks
-$V ll/tests/test_gate2.py     # surge hull ............... 12 checks
-$V ll/tests/test_gate3.py     # turns ....................  9 checks
-$V ll/tests/test_gate4.py     # rower physiology .........  8 checks
-$V ll/tests/test_gate5.py     # oar inertia ..............  7 checks
-# total 62 checks; every check asserts a documented anchor or a locked
-# honest behaviour (e.g. oQ-18 shortfall, tempo loss).
+cd trireme-sim
+../.venv/bin/python3 -m pytest          # all suites, one command: 71 checks
+../.venv/bin/python3 -m pytest -v       # per-check names
+../.venv/bin/python3 -m pytest ll/tests/test_gate5.py   # one suite
+../.venv/bin/python3 ll/tests/test_gate5.py             # direct run also works
 ```
+
+Suites: `tests/test_parser.py` (19) · `ll/tests/test_gate1..5.py` (7/12/9/8/7)
+· `tests/test_research_chain.py` (12 — locks the research chain itself: the
+8.32-kt sprint, Table 9.7, ch.7 cruise, rigid-model means, oar families,
+catch spikes, W5 turn anchors, acceleration, apparent mass). Every check
+asserts a documented anchor or a locked honest behaviour (e.g. oQ-18
+shortfall, tempo loss, Mark IIb prop fraction).
 
 ## 1. Gate 1 — one-oar physics vs the rigid-oar reference `[x]` (7 checks)
 

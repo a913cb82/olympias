@@ -1,0 +1,131 @@
+"""Research-chain regression locks (the source of truth the LL imports).
+
+Every headline number of the research modules is asserted here so that a
+change to the chain breaks these tests with precise diagnostics, before it
+can propagate silently into the simulators. Anchors: lane-4 power chain
+(ch.7/ch.9), rigid-oar model, Table 3.1 families, lane-5 manoeuvre model.
+"""
+
+import sys
+import math
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from common.chain import (KT, RIGS, T_DRIVE, SPM, VESSELS, OAR_FAMILIES,
+                          OAR_TABLE31_LIN, rigid_stroke, hull_power,
+                          speed_from_power, oar_power, mean_pull, oar_absorbed)
+
+
+# --- lane-4 power chain (ch.9 sprint, Table 9.7, ch.7 cruise) ---
+
+def test_sprint_validation():
+    """ch.9 four-run sprint: 130 rowers, 44.5 spm, E=0.730 -> 8.32 kt."""
+    W = oar_power(130, mean_pull(44.5), 0.78, 44.5, 0.730)
+    V = speed_from_power(W)
+    assert abs(V / KT - 8.32) < 0.05, f"{V/KT:.2f} kt"
+
+
+def test_mean_pull_law_origin():
+    """P = 7.43·r: the 3/4-NM calibration (288 N @ 38.75 spm) is its origin."""
+    assert abs(mean_pull(38.75) - 288.0) < 1.0
+    assert abs(mean_pull(28.8) - 214.0) < 1.0
+
+
+def test_ch7_cruise_rates():
+    """25.5 / 28.8 / 32.3 spm at 7 / 7.5 / 8 kt (Mark II hull, L=0.99)."""
+    for Vkt, r_shaw in [(7.0, 25.5), (7.5, 28.8), (8.0, 32.3)]:
+        W = hull_power(Vkt * KT, hull=1.08)
+        r = math.sqrt(W * 60.0 / (170 * 7.43 * 0.99 * 0.78))
+        assert abs(r - r_shaw) < 0.3, f"{Vkt} kt: {r:.1f} vs {r_shaw}"
+
+
+def test_table97_rates():
+    """Mark IIa/IIb rates of striking at 7.5 & 9.7 kt."""
+    for L, Vkt, r_shaw in [(0.87, 7.5, 30.7), (0.87, 9.7, 49.4),
+                           (0.99, 7.5, 28.8), (0.99, 9.7, 46.3)]:
+        W = hull_power(Vkt * KT, hull=1.08)
+        r = math.sqrt(W * 60.0 / (170 * 7.43 * L * 0.780))
+        assert abs(r - r_shaw) < 0.5, f"L={L} {Vkt} kt: {r:.1f} vs {r_shaw}"
+
+
+def test_oar_absorbed():
+    assert abs(oar_absorbed(25.5) - 34.8) < 0.3
+    assert abs(oar_absorbed(32.3) - 47.7) < 0.3
+
+
+# --- rigid-oar model (the four Table 9.6 points) ---
+
+REF_MEANS = {
+    ("Olympias", 7.2): (17.46, 223.7, 76.2),
+    ("Olympias", 8.2): (18.37, 207.9, 79.1),
+    ("MarkIIb", 7.5): (6.14, 62.8, 85.7),
+    ("MarkIIb", 9.7): (13.23, 108.5, 85.6),
+}
+
+
+def test_rigid_model_means():
+    for (rig, vkt), (t_ref, fh_ref, eff_ref) in REF_MEANS.items():
+        s = rigid_stroke(V=vkt * KT, rig=RIGS[rig], r_spm=SPM[rig][vkt],
+                         t_drive=T_DRIVE[(rig, vkt)])
+        assert abs(s["mean_thrust"] / t_ref - 1) < 0.01, f"{rig}@{vkt} thrust"
+        assert abs(s["mean_fh"] / fh_ref - 1) < 0.01, f"{rig}@{vkt} Fh"
+        assert abs(s["eff"] * 100 - eff_ref) < 0.5, f"{rig}@{vkt} eff"
+
+
+def test_mark2_area_sensitivity():
+    """The oQ-18 note: the flat-plate law needs ~x3.3 area at the Mark IIb
+    cruise point. Locked so the documented shortfall cannot silently move."""
+    s = rigid_stroke(V=7.5 * KT, rig=RIGS["MarkIIb"], r_spm=SPM["MarkIIb"][7.5],
+                     t_drive=T_DRIVE[("MarkIIb", 7.5)])
+    need = hull_power(7.5 * KT, hull=1.08) / 170.0
+    ratio = s["mean_thrust"] * 7.5 * KT / need
+    assert 0.25 < ratio < 0.35, f"Mark IIb prop fraction {ratio:.2f}"
+
+
+# --- Table 3.1 oar inertia families ---
+
+def test_oar_families():
+    assert abs(OAR_FAMILIES["spruce"] - 9.7) < 0.2
+    assert abs(OAR_FAMILIES["old-zygian"] - 18.0) < 0.3
+    assert abs(OAR_FAMILIES["old-thranite"] - 13.1) < 0.3
+
+
+def test_catch_spike_reference():
+    """oar_inertia.py's 116 / 215 / 156 N at t_rise 0.15 s, 28.8 spm."""
+    omega = math.radians(48.1) / T_DRIVE[("Olympias", 7.2)]
+    for fam, ref in [("spruce", 116.0), ("old-zygian", 215.0),
+                     ("old-thranite", 156.0)]:
+        spike = OAR_FAMILIES[fam] * omega / (0.15 * OAR_TABLE31_LIN)
+        assert abs(spike / ref - 1) < 0.02, f"{fam}: {spike:.0f} vs {ref}"
+
+
+# --- lane-5 manoeuvre model (W5 anchors) ---
+
+def test_manoeuvre_diameters():
+    op, mb = VESSELS["Olympias"], VESSELS["MarkIIb"]
+    d, _, _ = op.steady_turn(6.5, 67.5, 1.4, one_side=True)
+    assert abs(d - 62) < 6, f"tightest {d:.1f} m"            # 64.0 vs 62
+    d, _, _ = mb.steady_turn(9.5, 22.5, 3.25)
+    assert abs(d - 145) < 12, f"fast anastrophe {d:.1f} m"   # 151.8 vs 145
+    d, _, _ = mb.steady_turn(6.5, 67.5, 3.25, one_side=True)
+    assert abs(d - 80) < 8, f"tight anastrophe {d:.1f} m"    # 74.6 vs 80
+
+
+def test_manoeuvre_acceleration():
+    mb = VESSELS["MarkIIb"]
+    prof, hit55 = mb.simulate_forward(0.0, 40.0, stop_at=(10.0, 5.5))
+    _, hit9 = mb.simulate_forward(0.0, 40.0, stop_at=(24.0, 9.0))
+    assert hit55 is not None and hit55[0] < 10.5
+    assert hit9 is not None and hit9[0] < 25.0
+    assert abs(prof[-1][1] - 9.9) < 0.3
+
+
+def test_apparent_mass():
+    for name in ("Olympias", "MarkIIb"):
+        v = VESSELS[name]
+        assert abs(v.m_app / v.m - 1.10) < 1e-6, name
+
+
+if __name__ == "__main__":
+    raise SystemExit(pytest.main([__file__]))

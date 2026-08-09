@@ -21,6 +21,7 @@ Gates (plan §13.4):
 """
 
 import sys
+import pytest
 import math
 from pathlib import Path
 
@@ -31,16 +32,6 @@ from ll.oar import Oar, simulate
 from ll.rower import Fh_MAX, SideCrew
 from ll.hull import t_drive_for
 from ll.ship import Ship
-
-passed = 0
-
-
-def check(label, fn):
-    global passed
-    fn()
-    passed += 1
-    print(f"ok - {label}")
-
 
 FAM = OAR_FAMILIES                       # mean MIT per family (kg m2)
 SPIKE_REF = {"spruce": 116.0, "old-zygian": 215.0, "old-thranite": 156.0}
@@ -53,7 +44,7 @@ def spike(I, omega, t_rise, lin):
 
 # --- G5-1 / G5-2 spike magnitudes and handiness ---
 
-def t_spike_reference():
+def test_spike_reference():
     """Reproduce oar_inertia.py's numbers (Table-1.092-m reference) within 2 %.
     The physical full-reversal spike (w_rec + w_drive) is ~26 % higher."""
     td = T_DRIVE[("Olympias", 7.2)]
@@ -66,20 +57,18 @@ def t_spike_reference():
         assert abs(full / ref - 1) > 0.2      # the reversal correction is real
     print(f"       full-reversal spikes (w_rec+w_drive): "
           f"{ {k: round(spike(FAM[k], omega_d+omega_r, 0.15, OAR_TABLE31_LIN)) for k in FAM} }")
-check("G5-1: catch spikes reproduce oar_inertia.py within 2%", t_spike_reference)
 
 
-def t_handiness():
+def test_handiness():
     s_z = spike(FAM["old-zygian"], 1.95, 0.15, OAR_TABLE31_LIN)
     s_s = spike(FAM["spruce"], 1.95, 0.15, OAR_TABLE31_LIN)
     ratio = s_z / s_s
     assert abs(ratio - 1.85) < 0.06, f"zygian/spruce {ratio:.2f}"
-check("G5-2: old-fir zygian ≈ 1.85x spruce handiness", t_handiness)
 
 
 # --- G5-3 means preserved with the layer ON ---
 
-def t_means_preserved():
+def test_means_preserved():
     for (rig_name, vkt), t_drive in T_DRIVE.items():
         rig = RIGS[rig_name]
         r = SPM[rig_name][vkt]
@@ -91,12 +80,11 @@ def t_means_preserved():
             f"{rig_name}@{vkt}: thrust {got['mean_thrust']:.2f} vs {ref['mean_thrust']:.2f}"
         assert abs(got["mean_fh"] / ref["mean_fh"] - 1) < 0.01
         assert abs(got["eff"] / ref["eff"] - 1) < 0.01
-check("G5-3: hull observables unchanged by the inertia layer (<1%)", t_means_preserved)
 
 
 # --- G5-4 energy closure ---
 
-def t_energy_closure():
+def test_energy_closure():
     """Momentum closure: the catch and release pulses deliver equal and
     opposite impulses (the oar returns to the same angular momentum each
     cycle). The flip ENERGY is accounted exactly in the W' basis
@@ -120,12 +108,11 @@ def t_energy_closure():
     # the flip energy lives in the W' basis (per stroke):
     e_stroke = oar.flip_power(28.8) * 60.0 / 28.8
     assert abs(e_stroke - 0.5 * FAM["old-zygian"] * oar.omega_drive ** 2) < 1e-9
-check("G5-4: momentum closure (net pulse impulse ~ 0) + flip-energy accounting", t_energy_closure)
 
 
 # --- G5-5 couple anchor ---
 
-def t_couple_anchor():
+def test_couple_anchor():
     """Drive-mean handle force at the anchored point (28.8 spm / 7.2 kt —
     Table 9.6) stays on the Table 3.2 couple anchor: 224 N x 1.092 m =
     244.6 vs Table 3.2's 246 N m (0.6 % — plan §13.1); the cycle-mean adds
@@ -134,12 +121,11 @@ def t_couple_anchor():
     oar = Oar(RIGS["Olympias"], 28.8, td, mit=FAM["spruce"], t_rise=0.15)
     res = simulate(oar, 7.2 * KT, td / 600, n_cycles=4)
     assert abs(res["mean_fh"] / 224.0 - 1) < 0.03, f"mean Fh {res['mean_fh']:.0f}"
-check("G5-5: drive-mean Fh @ the anchored point within 3% of 224 N", t_couple_anchor)
 
 
 # --- G5-6 ceiling interplay ---
 
-def t_ceiling():
+def test_ceiling():
     for fleet in ("spruce", "old-fir"):
         ship = Ship(rate=44.5, fleet=fleet)
         ship.V = 8.5 * KT
@@ -157,12 +143,11 @@ def t_ceiling():
             ship.hull_advance(0.01, ship.n_side * (fx["port"] + fx["star"]),
                               0.0, q, drag)
         assert pk <= Fh_MAX * 1.001, f"{fleet}: peak Fh {pk:.0f} N"
-check("G5-6: total peak Fh (blade + spike) <= Fh_max, both fleets", t_ceiling)
 
 
 # --- G5-7 companion: force-driven drive time ---
 
-def t_force_driven():
+def test_force_driven():
     """Companion (plan §13.2 Option A): solve I·theta_ddot = -Fh·lin + Fn·l_cp
     with a constant demanded handle force. The catch flip happens in the air
     (blade out — the spike spins the oar up), so the blade enters at ~full
@@ -191,7 +176,7 @@ def t_force_driven():
     assert 0.85 * td_ref < t < 1.15 * td_ref, \
         f"force-driven drive {t:.2f} s vs Table 9.6 {td_ref:.2f} s"
     print(f"       force-driven drive time ≈ {t:.2f} s vs Table 9.6 {td_ref:.2f} s")
-check("G5-7: force-driven drive time within ±15% of Table 9.6", t_force_driven)
 
 
-print(f"\n{passed} checks passed")
+if __name__ == "__main__":
+    raise SystemExit(pytest.main([__file__]))

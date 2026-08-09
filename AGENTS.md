@@ -67,10 +67,11 @@ trireme-simulation-plan.md              the simulator plan (oQ-1…21, gates, co
 ```bash
 cd trireme-sim
 V=../.venv/bin/python3
-$V tests/test_parser.py          # command-language checks (19)
-$V ll/tests/test_gate1.py        # one-oar acceptance (7)
-$V ll/run_one_oar.py             # one-oar table at the anchored cruise point
-$V ll/tests/test_gate5.py        # oar-inertia acceptance (7); validation ledger in
-                                 # trireme-sim/VALIDATION.md (62 checks total)
-$V ll/run_one_oar.py --rig MarkIIb --v-kts 7.5 --spm 28.8 --t-drive 0.612   # oQ-18 point
+$V -m pytest                      # the whole test suite, one command — 71 checks
+                                  # (parser 19; gates 1-5: 7/12/9/8/7; research
+                                  # chain 12). Validation ledger:
+                                  # trireme-sim/VALIDATION.md
+$V ll/run_one_oar.py              # one-oar table at the anchored cruise point
+$V ll/run_turn.py table           # turn scenarios vs the W5 anchors
+$V ll/run_hull.py --table         # equilibrium curve over the rates
 ```

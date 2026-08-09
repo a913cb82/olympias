@@ -45,18 +45,21 @@ comma- or space-separated: `<time_s> <verb> [args...]`):
 `report`, `course`, `go`, `speed`, `anchor`, etc. were deliberately cut — the
 dropped list with reasons is plan §3.2.
 
-## Running
+## Running (pytest)
 
 ```bash
-V=../.venv/bin/python3
-$V tests/test_parser.py            # 19 command-language checks
-$V ll/tests/test_gate1.py          # 7 one-oar acceptance checks
-$V ll/run_one_oar.py               # one-oar table @ Olympias 7.2 kt / 28.8 spm
+V=../.venv/bin/python3               # from trireme-sim/
+$V -m pytest                         # all suites: 71 checks, one command
+$V -m pytest -v                      # per-check names
+$V -m pytest ll/tests/test_gate5.py  # one suite
+$V ll/run_one_oar.py                 # one-oar table @ Olympias 7.2 kt / 28.8 spm
 $V ll/run_one_oar.py --rig MarkIIb --v-kts 7.5 --spm 28.8 --t-drive 0.612
 ```
 
-(Parser has no CLI: `from commands.parser import parse_file, parse_script` —
-errors raise `ScriptError` naming the offending line.)
+Suites: parser (19) · gates 1-5 (7/12/9/8/7) · research chain (12, in
+`tests/test_research_chain.py` — locks the research side itself). Parser has
+no CLI: `from commands.parser import parse_file, parse_script` — errors raise
+`ScriptError` naming the offending line.
 
 ## Conventions
 

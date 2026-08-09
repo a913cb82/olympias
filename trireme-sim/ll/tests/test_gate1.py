@@ -14,6 +14,7 @@ Contract (plan §6, Level 1 + §5 note):
 """
 
 import sys
+import pytest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
@@ -21,23 +22,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from common.chain import RIGS, T_DRIVE, SPM, KT, hull_power, rigid_stroke, OQ18
 from ll.oar import Oar, simulate
 
-passed = 0
-
-
-def check(label, fn):
-    global passed
-    fn()
-    passed += 1
-    print(f"ok - {label}")
-
-
 def rel(a, b):
     return abs(a / b - 1.0)
 
 
 # --- 1. agreement with the rigid-oar reference at all four Table 9.6 points ---
 
-def t_agreement():
+def test_agreement():
     for (rig_name, vkt), t_drive in T_DRIVE.items():
         rig = RIGS[rig_name]
         r = SPM[rig_name][vkt]
@@ -52,22 +43,20 @@ def t_agreement():
         assert rel(got["eff"], ref["eff"]) < 0.005
         assert rel(got["fb_peak"], ref["fb_peak"]) < 0.01, \
             f"{rig_name}@{vkt}kt peak {got['fb_peak']:.1f} vs {ref['fb_peak']:.1f}"
-check("time-stepped oar == rigid model at all 4 Table 9.6 points (<0.5%)", t_agreement)
 
 
 # --- 2. physics-anchored bands (cruise family) ---
 
-def t_handle_force_band():
+def test_handle_force_band():
     rig = RIGS["Olympias"]
     for vkt, r, lo, hi in [(7.2, 28.8, 210.0, 225.0), (8.2, 36.0, 200.0, 215.0)]:
         t_drive = T_DRIVE[("Olympias", vkt)]
         got = simulate(Oar(rig, r, t_drive), vkt * KT, t_drive / 600, n_cycles=4)
         assert lo <= got["mean_fh"] <= hi, \
             f"{vkt} kt {r} spm: mean Fh {got['mean_fh']:.1f} N outside [{lo}, {hi}]"
-check("mean handle force in the cruise family (224/208 N)", t_handle_force_band)
 
 
-def t_power_anchor():
+def test_power_anchor():
     """At the anchored point the oar must supply ~the hull need (rigid: 102 %)."""
     rig = RIGS["Olympias"]
     vkt, r = 7.2, 28.8
@@ -78,22 +67,20 @@ def t_power_anchor():
     need_per_man = hull_power(V, hull=1.0) / 170.0
     ratio = prop_per_man / need_per_man
     assert 0.95 <= ratio <= 1.10, f"prop W/man {prop_per_man:.1f} vs hull need {need_per_man:.1f}"
-check("propulsive W/man matches hull need at 7.2 kt (102%)", t_power_anchor)
 
 
 # --- 3. integration behaviour ---
 
-def t_convergence():
+def test_convergence():
     rig = RIGS["Olympias"]
     t_drive = T_DRIVE[("Olympias", 7.2)]
     coarse = simulate(Oar(rig, 28.8, t_drive), 7.2 * KT, t_drive / 600, 4)
     fine = simulate(Oar(rig, 28.8, t_drive), 7.2 * KT, t_drive / 3000, 4)
     assert rel(fine["mean_fh"], coarse["mean_fh"]) < 0.003
     assert rel(fine["mean_thrust"], coarse["mean_thrust"]) < 0.003
-check("dt convergence: 600 vs 3000 steps/drive < 0.3%", t_convergence)
 
 
-def t_recovery_zero_force():
+def test_recovery_zero_force():
     oar = Oar(RIGS["Olympias"], 28.8, T_DRIVE[("Olympias", 7.2)])
     any_force = False
     while oar.cycle_no < 2:
@@ -103,10 +90,9 @@ def t_recovery_zero_force():
         else:
             any_force = True
     assert any_force
-check("recovery: blade out of water, zero force", t_recovery_zero_force)
 
 
-def t_cycle_wrap():
+def test_cycle_wrap():
     oar = Oar(RIGS["Olympias"], 28.8, T_DRIVE[("Olympias", 7.2)])
     dt = oar.cycle / 300.0
     prev = oar.in_drive
@@ -120,12 +106,11 @@ def t_cycle_wrap():
         prev = oar.in_drive
     assert n_cycles >= 1
     assert abs(n_cycles - 2000 * dt / oar.cycle) < 2   # quantization bound
-check("cycle wrap: angle restarts at the catch", t_cycle_wrap)
 
 
 # --- 4. oQ-18 inherited honestly (documented, not silent) ---
 
-def t_mark2_shortfall_persists():
+def test_mark2_shortfall_persists():
     """The Mark IIb under-prediction must match the rigid model exactly.
     If a future 'fix' changes it, this test fails until the docs change too."""
     for (rig_name, vkt), t_drive in T_DRIVE.items():
@@ -140,7 +125,9 @@ def t_mark2_shortfall_persists():
         need = hull_power(V, hull=1.08) / 170.0
         assert got["mean_thrust"] * V / need < 0.35, \
             "Mark IIb shortfall changed — update OQ18 documentation first"
-check("oQ-18 shortfall reproduced exactly (no silent tuning)", t_mark2_shortfall_persists)
 
-print(f"\n{passed} checks passed")
 print(f"note: {OQ18}")
+
+
+if __name__ == "__main__":
+    raise SystemExit(pytest.main([__file__]))
