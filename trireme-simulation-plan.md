@@ -746,6 +746,77 @@ VALIDATION.md ledger row moves from [!] to [x] with the residual documented.
 3. #1 sway DOF — the Ω reconciliation is its acceptance.
 4. Archival — background; the emails first.
 
+## 16. Cant + slip-assumption fixes for the Mark IIb (plan)
+
+The Mark IIb shortfall (oQ-18) is the aggregate of missing physics at its
+points, expressed as the ×3.3 area-equivalent (register A5). Two named
+mechanisms to incorporate into the LL code.
+
+### 16.1 The cant term (physical, first — the blade law)
+
+The Mark IIb rig is canted 18.4° (tan = 1/3): the oar's sweep plane is tilted
+about the athwartships axis, so the blade-face normal is not horizontal. The
+flat-plate law gains a geometry term:
+
+    vn = V·cosC·cos(φ) − l_cp·ω        (φ = cant angle; 0 for Olympias)
+    Fx = −Fn·cosC·cos(φ)               (the thrust component of the normal)
+
+- The rig dicts gain `cant_deg`: 0.0 (Olympias), 18.4 (Mark IIb) — the
+  bladeless change: φ = 0 ⇒ cosφ = 1 ⇒ the Olympias law is IDENTICAL (the
+  validated anchors are untouched by construction — a strong property).
+- At the Mark IIb's deep deadspot (vn ≈ −0.53 at mid, 9.7 kt): the flow
+  reduction deepens vn to ≈ −0.76 → force ×~2 (the deadspot shallows — the
+  blade outruns the water more easily). Expected: the prop fraction
+  ~30 % → ~55–65 %.
+- The handle force lever (l_cp/lin) and the Fy unchanged in v1; the vertical
+  force component Fz = Fn·sinφ (a small heel moment) is v2.
+
+### 16.2 The slip-assumption analysis (honest, second)
+
+The model's slip = vn from the prescribed (measured) ω — proven right at the
+Olympias points (15.2). The Mark IIb's residual after the cant is exactly
+the ch.9 caveat zone ("if he has assumed too little slip on the blades…").
+Tools:
+
+- A **slip-sensitivity diagnostic**: thrust vs a slip-factor f
+  (Fn = k·|vn·f|·(vn·f), f = 1.0 at Olympias — the validated anchor; the
+  Mark IIb's residual → the required f). This quantifies how much data would
+  pin the slip, without adopting a value.
+- A **documented scenario knob**: the "Mark IIb as designed" scenario =
+  cant (16.1) + a modest area increase (A5 estimate 1.2–1.5×, NOT 3.3×) +
+  the residual slip-factor f ≈ 1.1–1.2 — every factor labelled, none
+  silent. The knob is Mark-IIb-scenario-scoped, never a global retune.
+
+### 16.3 The payoff: a usable Mark IIb for the tactical layer
+
+The manoeuvre model's anastrophes run at 9.7 kt (the Mark IIb) — the LL's
+Mark IIb needs a consistent thrust to be usable there. The scenario's
+acceptance: the equilibrium at 46.3 spm lands near the chain's 9.7 kt
+(Table 9.7) — then the turn gates at the Mark IIb points open up.
+
+### 16.4 Validation gates (Gate 7, `ll/tests/test_gate7.py`)
+
+- G7-1 the cant term is identity at Olympias (φ = 0): the four Table 9.6
+  means unchanged (< 0.1 % — by construction, asserted).
+- G7-2 the Mark IIb prop fraction WITH the cant: the measured improvement
+  recorded (expect ~30 % → 55–65 %); the OQ18 lock and the research-chain
+  band update TOGETHER with the docs (no silent shift).
+- G7-3 the slip sensitivity: the f → thrust table printed (diagnostic, no
+  adoption).
+- G7-4 the "as-designed" scenario: cant + area 1.3× + the residual f
+  reproduces the chain's 9.7 kt at 46.3 spm (within 2 %); every factor's
+  provenance in the test's docstring.
+- G7-5 regression: all 79 tests.
+
+### 16.5 Sequence and dependencies
+
+1. 16.1 the cant term (a day — the law change + the re-locks).
+2. 16.2 the sensitivity + the scenario knob (the diagnostics + docs).
+3. **Before 15.3 (the sway DOF)**: the cant changes the blade forces the
+   sway consumes — land 16.1 first.
+4. The A5 data (Coates plans, archival) would pin the real area and shrink
+   the slip-factor to zero — the background path.
+
 ## Next actions
 
 - [x] Freeze the **verb set** (§3.2: 4 crew verbs). oQ-1, 2, 5, 6, 7 resolved; only
