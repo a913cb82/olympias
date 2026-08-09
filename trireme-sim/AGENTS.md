@@ -145,5 +145,9 @@ no CLI: `from commands.parser import parse_file, parse_script` — errors raise
       ~28 s discrepancy — negligible) and reverted: it is NOT the cause of
       the t_360 residual, which is recorded as an open discrepancy with no
       known cause (a linear yaw-damping form is an untested hypothesis).
+- Plan 18 — the yaw-induced oar/water differential (inside oars ~3.15 %
+      stronger in a turn — a yaw damper, per the correct sign): a real
+      term, quantified at ~1 % (t_360 +1.0 s, tightest D +0.7 m) — in the
+      right direction for the t_360, a minor contributor, not the cause.
 - [ ] Phase 2 — HL from LL;  [ ] Phase 3 — harness;  [ ] Phase 4 — crew & environment;
       [ ] Phase 5 — oar-manoeuvres
