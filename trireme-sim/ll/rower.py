@@ -71,7 +71,7 @@ class SideCrew:
 
     def __init__(self, rig_name: str, n_side: int, rate: float, t_drive: float,
                  pressure: str = "spoude", state: str = "row",
-                 direction: int = 1):
+                 direction: int = 1, mit: float = 0.0, t_rise: float = 0.15):
         rig = RIGS[rig_name]
         self.rig_name = rig_name
         self.rig = rig
@@ -91,7 +91,10 @@ class SideCrew:
         self.rate_cmd = rate
         self.pressure = pressure
         self.state = state
-        self.oar = Oar(rig, rate, t_drive, direction=direction)
+        self.mit = mit
+        self.t_rise = t_rise
+        self.oar = Oar(rig, rate, t_drive, direction=direction, mit=mit,
+                       t_rise=t_rise)
         self.omega_cmd = self.oar.omega_cmd
         self.plan: StrokePlan | None = None
         self.rate_eff = rate
@@ -241,6 +244,7 @@ class SideCrew:
             return -self.hold_k * V * abs(V), 0.0
         s = self.oar.step(dt, V)
         self.p_gross_current = (self.plan.p_ext
+                               + self.oar.flip_power(self.plan.rate_eff)
                                + oar_absorbed(self.plan.rate_eff))
         self.last_fh = s.Fh
         return s.Fx, s.Fh
@@ -263,7 +267,7 @@ class SideCrew:
         need_dir = -1 if state == "back" else 1
         if need_dir != self.oar.dir:
             self.oar = Oar(self.rig, self.rate_cmd, self.oar.t_drive,
-                           direction=need_dir)
+                           direction=need_dir, mit=self.mit, t_rise=self.t_rise)
             self.omega_cmd = self.oar.omega_cmd
         else:
             self.oar.reset()
@@ -276,7 +280,8 @@ class SideCrew:
 
     def set_rate(self, rate: float, t_drive: float) -> None:
         self.rate_cmd = rate
-        self.oar = Oar(self.rig, rate, t_drive, direction=self.oar.dir)
+        self.oar = Oar(self.rig, rate, t_drive, direction=self.oar.dir,
+                       mit=self.mit, t_rise=self.t_rise)
         self.omega_cmd = self.oar.omega_cmd
         self.rate_eff = rate
         self.plan = None

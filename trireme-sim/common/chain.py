@@ -40,6 +40,42 @@ oar_absorbed = _lp.oar_absorbed           # non-propulsive oar losses, W
 # --- Taylor ch.31 manoeuvring vessels (turn-validated parameters) ---
 VESSELS = {"Olympias": _mm.olympias(), "MarkIIb": _mm.mark_iib()}
 
+# --- Table 3.1 oar inertia families (shared asset; research/data CSV) ---
+def _load_table31():
+    rows = []
+    path = Path(__file__).resolve().parents[2] / "research" / "data" \
+        / "shaw-table-3.1-oar-inertia.csv"
+    with open(path, encoding="utf-8") as fh:
+        for line in fh:
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            parts = [p.strip() for p in line.split(",")]
+            if len(parts) < 8:
+                continue
+            try:
+                mit = float(parts[6])
+            except ValueError:
+                continue
+            rows.append(dict(oar=parts[0], typ=parts[1], mit=mit))
+    return rows
+
+
+_T31 = _load_table31()
+OAR_FAMILIES = {}          # typ -> mean MIT about the thole (kg m2)
+for _r in _T31:
+    OAR_FAMILIES.setdefault(_r["typ"], []).append(_r["mit"])
+OAR_FAMILIES = {k: sum(v) / len(v) for k, v in OAR_FAMILIES.items()}
+# tier labels: the old-fir oars' measured tier (Table 3.1); the thalmian
+# tier was not measured (rows 7-8 blank) — the thranite value is used as a
+# documented approximation for the shorter thalmian oars
+OAR_TIER_MIT = {"spruce": OAR_FAMILIES["spruce"],
+                "zygian": OAR_FAMILIES["old-zygian"],
+                "thranite": OAR_FAMILIES["old-thranite"],
+                "thalmian": OAR_FAMILIES["old-thranite"]}
+OAR_TABLE31_LIN = 1.092    # Table 3.1 measurement inboard (m) — the reference
+                           # spike convention; the LL oar uses its own lin
+
 # --- documented open items the sims must inherit honestly ---
 OQ18 = (
     "oQ-18: the flat-plate law with blade area 0.078 m2 under-predicts the "

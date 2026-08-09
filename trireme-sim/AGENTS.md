@@ -105,5 +105,15 @@ errors raise `ScriptError` naming the offending line.)
       strokes slower -> differential yaw; tightest-turn W' drain narrows
       the halves-speed gap; rate 50 + exhausted = tempo lost (oQ-14:
       physical consequence, telemetry commanded vs achieved).
+- [x] Phase 1 Gate 5 — oar inertia (`ll/oar.py` mit/t_rise, 7 checks):
+      Fh = (Fn·l_cp + I·θ-ddot)/lin; catch spike + finish release as
+      impulse-equivalent pulses (momentum closure exact; the flip energy
+      ½Iω²·r/60 lives in the W' basis); Table 3.1 families via chain.py
+      (spruce 9.7, old-zygian 18.0, old-thranite 13.1 kg·m²; tier-weighted
+      9.7/14.7 per side); fleet = spruce | old-fir | none. Spikes reproduce
+      oar_inertia.py (116/215/156 N, 1.85× handiness); hull observables
+      unchanged (<1%); force-driven companion reproduces the Table 9.6
+      drive time (0.43 s, essentially exact); ceiling holds both fleets.
+      t_rise = 0.15 s provisional (register D10).
 - [ ] Phase 2 — HL from LL;  [ ] Phase 3 — harness;  [ ] Phase 4 — crew & environment;
       [ ] Phase 5 — oar-manoeuvres

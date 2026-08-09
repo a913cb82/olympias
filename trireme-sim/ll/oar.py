@@ -43,11 +43,20 @@ class OarStep:
 
 class Oar:
     def __init__(self, rig: dict, r_spm: float, t_drive: float | None = None,
-                 direction: int = 1):
+                 direction: int = 1, mit: float = 0.0, t_rise: float = 0.15):
         """direction = +1 forward stroke; -1 backing water (drive sweeps the
-        other way — the blade force law then gives negative thrust naturally)."""
+        other way — the blade force law then gives negative thrust naturally).
+
+        mit: rotational inertia about the thole (kg m2, Table 3.1) — the
+        inertia layer (Gate 5): at the catch the rower flips the oar from the
+        recovery swing to the drive speed over t_rise (a handle-force spike);
+        at the finish the oar's momentum assists (a release). The impulses
+        are internal to the rower-oar system: the hull forces are unchanged.
+        mit = 0 disables the layer (exact pre-Gate-5 behaviour)."""
         self.rig = rig
         self.dir = direction
+        self.mit = mit
+        self.t_rise = t_rise
         self.cycle = 60.0 / r_spm
         self.t_drive = t_drive if t_drive is not None else self.cycle * 0.333
         self.t_recovery = self.cycle - self.t_drive
@@ -62,6 +71,30 @@ class Oar:
         self.in_drive = True                              # first drive starts now
         self.t_since_catch = 0.0
         self.cycle_no = 0
+
+    # ------------------------------------------------------------------
+    def inertia_fh(self) -> float:
+        """Handle-force contribution of the oar's rotational inertia (N):
+        the catch flip (+I·(w_d+w_r)/(t_rise·lin), last t_rise of the cycle,
+        blade out of the water) and the finish release (-same, first t_rise
+        after the finish). Rectangular pulses delivering the exact impulse;
+        net impulse over the cycle = 0 (energy closure)."""
+        if self.mit <= 0.0:
+            return 0.0
+        if self.t_since_catch >= self.cycle - self.t_rise:
+            return (self.mit * (self.omega_drive + self.omega_recover)
+                    / (self.t_rise * self.rig["lin"]))
+        if self.t_drive <= self.t_since_catch < self.t_drive + self.t_rise:
+            return (-self.mit * (self.omega_drive + self.omega_recover)
+                    / (self.t_rise * self.rig["lin"]))
+        return 0.0
+
+    def flip_power(self, rate_eff: float) -> float:
+        """W/man the flip costs: 1/2·I·w_drive^2 per stroke (concentric;
+        the finish braking is eccentric — cheaper — noted, not counted)."""
+        if self.mit <= 0.0:
+            return 0.0
+        return 0.5 * self.mit * self.omega_drive ** 2 * rate_eff / 60.0
 
     def reset(self) -> None:
         self.omega_drive = self.omega_cmd
@@ -86,6 +119,8 @@ class Oar:
         omega = (-self.dir * self.omega_drive if immersed
                  else self.dir * self.omega_recover)
         f = blade_force(C, omega, V, self.rig, immersed)
+        # the inertia pulses (blade out of the water at the stroke ends)
+        f["Fh"] = f["Fh"] + self.inertia_fh()
         # advance
         if self.in_drive:
             self.C -= self.dir * self.omega_drive * dt

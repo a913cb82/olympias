@@ -25,6 +25,7 @@ import math
 from common.chain import KT, RIGS, VESSELS
 from ll.hull import t_drive_for
 from ll.oar import simulate
+from common.chain import OAR_TIER_MIT
 from ll.rig import LEVER_OAR
 from ll.rower import PRESSURE, SideCrew
 
@@ -36,7 +37,11 @@ TEMPO_CALLDOWN_SPM = 2.0   # sustained per-side rate gap that triggers a call-do
 class Ship:
     def __init__(self, rig_name: str = "Olympias", n_oars: int = 170,
                  rate: float = 28.8, pressure: tuple = ("spoude", "spoude"),
-                 oar_state: tuple = ("row", "row"), helm: tuple = ("midship", 0.0)):
+                 oar_state: tuple = ("row", "row"), helm: tuple = ("midship", 0.0),
+                 fleet: str = "spruce"):
+        """fleet: 'spruce' (all tiers, MIT 9.7 — the 1994 setup) or
+        'old-fir' (thranites 13.1, zygians 18.0, thalmians 13.1 approx —
+        Table 3.1 tier labels). None: massless oars (pre-Gate-5)."""
         self.rig_name = rig_name
         self.vessel = VESSELS[rig_name]        # Taylor ch.31 parameters
         self.lever = LEVER_OAR[rig_name]
@@ -46,12 +51,23 @@ class Ship:
         self.n = n_oars
         self.n_side = n_oars // 2
         self.rate = rate
+        self.fleet = fleet
         td, _ = t_drive_for(rig_name, rate)
+        # tier-weighted mean MIT over one side's 85 oars
+        # (31 thranites + 27 zygians + 27 thalmians)
+        if fleet == "old-fir":
+            mit = (31 * OAR_TIER_MIT["thranite"] + 27 * OAR_TIER_MIT["zygian"]
+                   + 27 * OAR_TIER_MIT["thalmian"]) / 85.0
+        elif fleet == "spruce":
+            mit = OAR_TIER_MIT["spruce"]
+        else:
+            mit = 0.0
+        self.mit = mit
         self.crew = {
             "port": SideCrew(rig_name, self.n_side, rate, td,
-                             pressure=pressure[0], state=oar_state[0]),
+                             pressure=pressure[0], state=oar_state[0], mit=mit),
             "star": SideCrew(rig_name, self.n_side, rate, td,
-                             pressure=pressure[1], state=oar_state[1]),
+                             pressure=pressure[1], state=oar_state[1], mit=mit),
         }
         self.helm_dir, self.helm_frac = helm
         self.V = 0.0

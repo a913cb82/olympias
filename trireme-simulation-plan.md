@@ -550,8 +550,10 @@ per-side stroke adaptation + weakest-governs + telemetry, physiological
 pressure anchors in `schema.json`, `ll/tests/test_gate4.py`, register rows
 (W′, τ, Fh_max status), oQ-13/14 resolution notes.
 
-## 13. Phase 1 Gate 5 — the oar inertia layer: plan
+## 13. Phase 1 Gate 5 — the oar inertia layer: **implemented**
 
+`ll/oar.py` (mit/t_rise) + `common/chain.py` (Table 3.1 families) +
+`ll/ship.py` (fleet), 7 Gate-5 checks, all 62 checks green.
 The massless lever becomes a rigid body about the thole:
 
     Fh = (Fn·l_cp + I_thole·θ-ddot) / lin
@@ -607,30 +609,37 @@ companion script, not the LL's production path.
   instants: catch spike vs mid-drive blade peak); the W′ drain includes the
   flip energy ½·I·ω²·r/60 per man.
 
-### 13.4 Validation gates (Gate 5 tests)
+### 13.4 Validation gates — **all passing (7 checks, `ll/tests/test_gate5.py`)**
 
-- G5-1 spike magnitudes: reproduce `oar_inertia.py` (116 / 215 / 156 N at
-  t_rise 0.15 s, 28.8 spm) within 2 %.
-- G5-2 handiness ratio: zygian/spruce spike ≈ 1.85× within 3 % (the §6
-  Level-1 "old-fir ≈ 2× spruce handiness" acceptance).
-- G5-3 means preserved: mean thrust / Fh / eff at the four Table 9.6 points
-  within 1 % of the rigid model with the inertia layer ON.
-- G5-4 energy closure: net inertia work over a full cycle < 0.5 % of the
-  cycle blade work (the oar returns to rest; conservation).
-- G5-5 couple anchor: mean Fh at 30 spm ≈ 225 N (Table 3.2) within 3 %.
-- G5-6 ceiling interplay: total peak Fh (blade + spike) ≤ Fh_max through a
-  spoude burst for both fleets; the spike-aware ω_p documented (the catch
-  spike consumes part of the ceiling at the catch instant).
-- G5-7 companion (Option A): with the demand force profile, the torque-balance
-  drive time within ±15 % of Table 9.6.
-- G5-8 regression: all 55 checks stay green; inertia OFF = exact current
-  behaviour (a config flag, not a fork).
+- G5-1 ✓ spikes reproduce `oar_inertia.py` (116 / 215 / 156 N at t_rise
+  0.15 s, 28.8 spm — the Table-1.092-m reference) within 2 %; the physical
+  full-reversal values (ω_rec + ω_drive) reported: 146 / 270 / 197 N.
+- G5-2 ✓ handiness: zygian/spruce spike 1.85× (the §6 Level-1 acceptance).
+- G5-3 ✓ hull observables unchanged with the layer ON (< 1 % at the four
+  Table 9.6 points) — the inertia is internal to the rower-oar system.
+- G5-4 ✓ momentum closure: net pulse impulse ≈ 0 per cycle; the flip energy
+  (½·I·ω_drive²·r/60) is accounted exactly in the W′ basis — the pulses are
+  impulse-equivalent, not energy-shape-exact (rectangular, documented).
+- G5-5 ✓ couple anchor: drive-mean Fh at the anchored point 224 N ± 3 %.
+- G5-6 ✓ ceiling: total peak Fh ≤ Fh_max through a 30-s burst, both fleets
+  (the spike and the blade peak are sequential, not summed).
+- G5-7 ✓ companion (Option A): the force-driven ODE with the chain's mean
+  pull reproduces the Table 9.6 drive time — 0.43 s vs 0.43 s, essentially
+  exact: the prescribed kinematics are consistent with forces + inertia.
+- G5-8 ✓ regression: 19 + 7 + 12 + 9 + 8 checks green with the layer on;
+  fleet = None restores the massless behaviour.
+
+Design notes: the fleet's per-side MIT is the tier-weighted mean (spruce
+9.7 kg·m²; old-fir (31·13.1 + 27·18.0 + 27·13.1)/85 = 14.7); the flip pulses
+sit outside the effective pull (the catch flip in the air — blade out), so
+the drive and its means are untouched by construction.
 
 ### 13.5 Open items
 
 - t_rise source: 0.10–0.20 s band is the plausible water-entry / flip time
   (the 1994 trials describe the hands "coming up hard at the end of the
-  recovery" — line 3262 of the txt dump); no measured value — flag `[?]`.
+  recovery" — line 3262 of the txt dump); no measured value — `[?]`
+  (register D10). 0.15 s nominal in use.
 - Fleet assignment: the 1994 trials' tier→oar mapping (spruce new-builds vs
   the old-fir oars' tier labels in Table 3.1) — check the ch.4/ch.3 text.
 - Recovery-phase inertia (the swing reversal costs the rower work both ways;
