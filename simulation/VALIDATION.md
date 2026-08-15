@@ -193,12 +193,12 @@ annotated.md`).
 
 | script | mean speed | fatigue consumed | t_3nm | position sep | verdicts |
 | --- | --- | --- | --- | --- | --- |
-| long_cruise (20 min, steady) | +0.0 % | −0.021 pts | — | 0.100 NM | PASS (the position gate as-written, the drift bias carried) |
-| sprint_turn (25 min, 2 turns + bursts) | +1.0 % | −0.005 pts | — | 0.035 NM | PASS |
-| wprime_burst (30 min, 2 bursts + recovery) | +0.5 % | −0.005 pts | — | 0.217 NM | all gates PASS except the position row `[!]` — the sway-coupled yaw transient at the burst re-accelerations (the v-mode; the named trigger, plan §19.2) |
-| cruise_turn.txt (the sample script) | −0.0 % | −0.005 pts | — | 0.049 NM | PASS |
-| three_nm_cruise (35 min, the 3-NM gate) | +0.0 % | −0.005 pts | −0.0 % | 0.053 NM | PASS — the t_3nm gate's first number |
-| tempo_loss (exhausted sprint) | −0.2 % | −0.013 pts | — | 0.032 NM | PASS — the rate_eff row (the LL shows no tempo loss at the anchors; measured) |
+| long_cruise (20 min, steady) | +0.0 % | −0.021 pts | — | 0.015 NM | PASS |
+| sprint_turn (25 min, 2 turns + bursts) | +1.0 % | −0.005 pts | — | 0.096 NM | PASS |
+| wprime_burst (30 min, 2 bursts + recovery) | +0.5 % | −0.005 pts | — | 0.022 NM | PASS — the sway-transient closure (the settled cells + the V-ramp kick + the slow decay) |
+| cruise_turn.txt (the sample script) | −0.0 % | −0.005 pts | — | 0.050 NM | PASS |
+| three_nm_cruise (35 min, the 3-NM gate) | +0.0 % | −0.005 pts | −0.0 % | 0.043 NM | PASS — the t_3nm gate's first number |
+| tempo_loss (exhausted sprint) | −0.2 % | −0.013 pts | — | 0.010 NM | PASS — the rate_eff row (the LL shows no tempo loss at the anchors; measured) |
 
 ### 9.2 The turn scenarios — D = |y| at 180° within 5 %
 
@@ -294,7 +294,7 @@ current phase (Phase 4/5) or HL-loose by design with a named trigger.
 | Cruise means (long_cruise, wprime_burst) | validated (+0.0 % / +0.5 %) | §9.1 | — |
 | Fatigue consumption, all 6 scripts | validated (−0.005 pts) | §9.1 | — |
 | Mean speed, turn-heavy scripts (cruise_turn, sprint_turn) | validated — closed by the per-state τ (E) + the turn-deceleration term (F): −0.0 % / +1.0 % vs the 1 % gate | §9.1 | — |
-| Position after course changes | validated on 6/7 scripts (0.032–0.100 NM vs 0.1) — the §21.3 decision (the bias-yaw) landed; **wprime: open-with-locked-test** — 0.217 NM: the LL's sway-coupled yaw transient at the burst re-accelerations (the ω runs 1.7× the settled for ~100 s — the v-mode); the HL's drift model is state-based, not transient-based | §9.3.4 | the named trigger: the sway-state port (plan §19.2) — the chain's A_lat/clr/I/Ω constants + the measured equilibrium (ω*, v*) |
+| Position after course changes | validated on all 7 scripts (0.010–0.096 NM vs 0.1) — the §21.3 decision (the bias-yaw) landed and the wprime closure landed: the drift cells are the settled values (300-600 s; the 20-60 s window is the sway transient, 2-3x the settle), the V-ramp kick-transient is a measured curve, and the drift-scale decay is the measured |omega|-dependent tau | §9.3.4 | — |
 | Time to 3 NM | validated — the first number: −0.0 % (three_nm_cruise, 35 min) | §6 | — |
 | Settled stroke rate within 1 spm | validated — the rate_eff row on all 6 scripts (±0.0 spm); the tempo-loss curve measured: the LL shows NO tempo loss at the anchors (identity, recorded) | §6 | — |
 | Numeric pressures / helm fractions between the anchors | interpolated, not gated | §19.1 | the gates are defined at the schema anchors; the interpolation residuals are recorded, not gated (scope decision, plan §21.3) |

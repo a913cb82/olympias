@@ -102,3 +102,25 @@ Calibration in force: `calib-2026-08-15-b55e28f.json`.
   (Level 2), t_360 (Level 1, locked test), the no-anchor rows, the
   ch.7 triple tension (documented). The full DAG is executed: B–I, R1,
   R2, J, K, A, L complete.
+- **The wprime sway-transient closure (this session) — the last Level-2
+  row closed, K9–K11**: the drift investigation found three real
+  effects, all measured, none tuned: (1) the drift cells were the
+  20-60 s *transient* (2-3× the settle) — the cells are now the
+  settled 300-600 s values; (2) during a strong V-rise the LL's yaw
+  rides below its settle — the measured `drift_kick(V)` curve (the
+  ramp's excited state, W-swept); (3) the drift-scale decay is the
+  sway's slow mode — the |omega|-dependent tau
+  `tau = tau_exit·(0.1/|omega|)^0.345` (the power-law bridge from the
+  fishtail's 19 s at the turn scale to ~80-100 s at the drift scale,
+  fitted on the full-tank burst path). The wprime position row:
+  0.217 → **0.022 NM**; the final run prints "violations: none — all
+  Level-2 first tolerances inside"; every row: long_cruise 0.015,
+  sprint_turn 0.096, cruise_turn 0.050, three_nm 0.043, tempo_loss
+  0.010; turns ±1.2 %. Calibration `calib-2026-08-15-448e849`.
+- **Verification locked as regression tests (this session)**: the
+  acceptance is now in the suite — `harness/tests/
+  test_equivalence_gates.py` (the 6 scripts' gate rows + the 5 turn
+  scenarios + the 3-NM first number + the wprime closure bound) and
+  `hl/tests/test_drift_closure.py` (the settled cells, the kick curve,
+  the slow-decay scalars, the burst-path ω closure, the rest decay).
+  The suite: 107 + 13 + 6 = 126 tests.

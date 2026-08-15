@@ -68,6 +68,7 @@ class Ship:
         self.rate_eff = rate
         self._wss_prev = 0.0       # the previous turn target (release detect)
         self._exit_omega = 0.0     # the fishtail's decaying yaw rate
+        self._v_prev = 0.0         # the previous V (the ramp detect)
 
     # ------------------------------------------------------------------
     def step(self, dt: float) -> None:
@@ -149,7 +150,15 @@ class Ship:
         # position gate stays as-written (§21.3 decision). Not applied in
         # the one-side-stopped state (the oar-family D absorbs it).
         if rowing and not asym:
-            wss += c.drift_bias(self.rate, p_eff, self.W_frac)
+            drift = c.drift_bias(self.rate, p_eff, self.W_frac)
+            # the V-ramp kick-transient (the wprime closure): while the
+            # V is rising fast the LL's yaw rides below its settled
+            # drift (the sway's excited state — measured curve); the
+            # target floor applies during the ramp, then the slow
+            # decay-side (below) relaxes it to the settle
+            if self.V > 0.5 and (self.V - self._v_prev) / dt > 0.02:
+                drift = min(drift, c.drift_kick(self.V))
+            wss += drift
         # the fishtail (the sprint_turn follow-up): at the moment the turn
         # target disappears (the helm release), the LL keeps turning — the
         # sway-coupled exit decays slowly (measured tau_exit); the capture
@@ -163,7 +172,23 @@ class Ship:
             wss += self._exit_omega
             if abs(self._exit_omega) < 1e-4:
                 self._exit_omega = 0.0
-        self.omega += (wss - self.omega) / c.tau_turn * dt
+        # the sway's slow mode (the wprime closure): the LL's yaw rises
+        # fast with the kick (tau_turn) but decays slowly to its drift
+        # equilibrium — the measured |omega|-dependent tau: the turn-
+        # scale fishtail (tau_exit, 19 s at ~0.1 rad/s) to the drift-
+        # scale decay (the burst-path fit: ~50 s at ~0.001 rad/s):
+        # tau = tau_exit * (0.1/|omega|)^drift_tau_exp (measured in
+        # calibrate.measure_drift_tau). The slow side applies only at
+        # the drift scale (|omega| < 0.005) — the turn-scale decay is
+        # the capture's job (the double-decay overshoots the fishtail).
+        if (abs(wss) < abs(self.omega) * 0.99
+                and abs(self.omega) < 0.005):
+            tau_yaw = c.tau_exit * (0.1 / max(abs(self.omega), 1e-4)) \
+                ** c.drift_tau_exp
+        else:
+            tau_yaw = c.tau_turn
+        self.omega += (wss - self.omega) / tau_yaw * dt
+        self._v_prev = self.V
 
         # -- crew tank ---------------------------------------------------
         # net = the measured drain/refill (W/man) at the anchor levels;

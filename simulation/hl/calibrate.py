@@ -202,29 +202,97 @@ def measure_nets(rates):
     return dict(rates=rates, spoude=spoude, steady=steady, fast=fast)
 
 
+def measure_drift_kick():
+    """The V-ramp kick-transient (the wprime closure): during a strong
+    V-rise the LL's yaw rides well below its settled drift — the sway's
+    excited state (the burst-path: the tank drains through the ramp, so
+    the W-sweep is built in). The curve: the mean omega at the V bins
+    over the burst's ramp window. The HL applies it as the drift-target
+    floor while the V is rising fast."""
+    ship = LLShip(rate=44.5, pressure=("spoude", "spoude"))
+    t, rows = 0.0, []
+    while t < 180.0:
+        ship.step(DT)
+        t += DT
+        rows.append((ship.V, ship.omega))
+    v_bins = [0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0]
+    ws = []
+    for b in v_bins:
+        s = [w for v, w in rows if b - 0.25 <= v < b + 0.25]
+        ws.append(round(sum(s) / len(s), 7) if s else 0.0)
+    log(f"  drift kick: {ws}")
+    return dict(v=v_bins, w=ws)
+
+
+def measure_drift_tau(tau_exit=None):
+    """The sway's slow-mode decay exponent (the wprime closure): the
+    LL's yaw decays to its drift equilibrium with an |omega|-dependent
+    tau — the turn-scale fishtail (19 s at ~0.1 rad/s) and the drift-
+    scale decay (fitted here: the burst-path run — from rest, drained,
+    a 44.5-spoude ramp — the omega peaks ~-0.001 and decays; the fit
+    over the decay window gives (|omega_peak|, tau)). The power law
+    tau(|w|) = tau_exit * (0.1/|w|)^p bridges the two anchors.
+    Returns the exponent p (the drift-anchor / the turn-anchor)."""
+    import math
+    tau_exit = tau_exit if tau_exit is not None \
+        else measure_tau_exit()
+    # the wprime path: the FULL tank (the burst's kick decays through the
+    # tank's drain — the drained-preset run under-measures the tau)
+    ship = LLShip(rate=44.5, pressure=("spoude", "spoude"))
+    t, ws = 0.0, []
+    while t < 600.0:
+        ship.step(DT)
+        t += DT
+        ws.append((t, ship.omega))
+    # the peak and the settled value
+    peak = min(w for _, w in ws)
+    w_settled = sum(w for t, w in ws[-100:]) / 100.0
+    t_peak = next(t for t, w in ws if w == peak)
+    # the log-linear fit over the decay (peak -> settled): the window
+    # capped at 10% of the peak excess — the tail's noise (w -> w_settled)
+    # must not dominate the slope (the 15% cut under-measures the tau:
+    # the decay slows as the omega approaches the settle)
+    cut = w_settled + 0.1 * (peak - w_settled)
+    pts = [(t, w) for t, w in ws if t_peak < t and w < cut]
+    ys = [math.log(w_settled - w) for t, w in pts]
+    ts = [t for t, w in pts]
+    n = len(ys)
+    slope = (n * sum(t * y for t, y in zip(ts, ys)) - sum(ts) * sum(ys)) \
+        / (n * sum(t * t for t in ts) - sum(ts) ** 2)
+    tau = -1.0 / slope
+    p = math.log(tau / tau_exit) / math.log(0.1 / abs(peak))
+    log(f"  drift-decay: peak {peak:.6f} settled {w_settled:.6f} "
+        f"tau {tau:.1f} s -> exponent {p:.3f}")
+    return round(p, 3)
+
+
 def measure_drift_table():
     """The untrimmed lateral-drift table (rad/s, task C): the LL's
     straight-cruise yaw slope at the (rate, pressure, tank-state) cells —
     the symmetric crew carries a lateral kick, so a midship-helm cruise
-    curves slowly. The drift is W'-dependent (the kick follows the stroke
-    force: stronger at the full tank, weaker when the P_crit floor binds)
-    and rate-dependent — the four columns: the full-tank window (20-60 s
-    from 0.9·V*, the tank drains through it — the anchor is the early
-    average) and the drained state (W' preset 0, LSQ over 600-900 s from
-    rest). The ship interpolates by W_frac."""
+    curves slowly. The drift is W'-independent at the settle (the tank's
+    drain barely moves it — the kick's W'-dependence is small) and
+    rate-dependent — the cells are the SETTLED values: the full-tank run
+    (300-600 s from 0.9·V*) and the drained state (W' preset 0, LSQ over
+    600-900 s from rest). The 20-60 s window is the sway transient
+    (2-3x the settle — the wprime closure measured it); the settle is
+    the honest anchor. The ship interpolates by W_frac. All cells
+    measured at the validation's LL dt (0.05) — the drift is dt-
+    validation's LL dt (0.05) — the drift is dt-sensitive (the sway's
+    rectified equilibrium); the cells are only valid at that dt."""
     rates, sf, se, tf, te = DRIFT_RATES, [], [], [], []
     for r in rates:
         for pressure in ("spoude", "steady"):
             ship = LLShip(rate=r, pressure=(pressure, pressure))
             ship.V = 0.9 * equilibrium_speed("Olympias", r)["V"]
             t, next_s, psis = 0.0, 0.0, []
-            while t < 90.0:
+            while t < 600.0:
                 ship.step(DT)
                 t += DT
                 if t >= next_s:
                     psis.append(ship.psi)
                     next_s += 1.0
-            full = _psi_slope(psis[20:60])
+            full = _psi_slope(psis[300:600])
             ship = LLShip(rate=r, pressure=(pressure, pressure))
             for crew in ship.crew.values():
                 for tier in crew.tiers.values():
@@ -570,6 +638,7 @@ def main() -> None:
         "net": measure_nets(NET_RATES),
         "tempo_loss": measure_tempo_loss(TEMPO_RATES),
         "drift": measure_drift_table(),
+        "drift_kick": measure_drift_kick(),
     }
     d_tables = measure_d_tables()
     tables["d_rudder"] = [[f, None] if f == 0.0 else [f, d]
@@ -598,7 +667,8 @@ def main() -> None:
 
     scalars = dict(_scalars(), tau_surge=tau_surge, tau_turn=tau_turn,
                    tau_hold=tau_hold["entry"], turn_drag_extra=turn_k,
-                   tau_exit=tau_exit)
+                   tau_exit=tau_exit,
+                   drift_tau_exp=measure_drift_tau(tau_exit))
     residuals = dict(
         vstar="exact at the grid points (mean-force bisection)",
         pressure_rows_std_kt=dict(

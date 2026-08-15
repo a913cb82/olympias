@@ -6,12 +6,12 @@ This is the task A deliverable: "the equivalence tables annotated with
 per-row tolerance sources and the calibration id".
 
 Provenance: the numbers below are copied as printed from
-`/tmp/validation_k4.log` (the latest full run, 2026-08-15 16:54), one
-`harness/run_validation.py` invocation — the 6 scripts + the 5 turn
-scenarios. Nothing has been re-computed or smoothed; the table cells keep
-the run's formatting. The one row under an in-flight fix (wprime_burst
-`position_sep`) is marked **pending** instead of quoting its verdict
-(see §6.5).
+`/tmp/validation_k11.log` (the latest full run, 2026-08-15 — the sway-
+transient closure), one `harness/run_validation.py` invocation — the 6
+scripts + the 5 turn scenarios, verdict "violations: none — all Level-2
+first tolerances inside". Nothing has been re-computed or smoothed; the
+table cells keep the run's formatting. The previously-open wprime
+`position_sep` row is closed (see §6.5).
 
 Reproduction (one command, from `simulation/`):
 
@@ -164,7 +164,7 @@ calibration: calib-2026-08-15-c7a6e97 · LL dt=0.05 s · HL dt=0.5 s ·
 | fatigue_consumed_delta | 0.000 | -0.021 | -0.021 | 0.05 | PASS |
 | rate_eff | 28.800 | 28.800 | +0.000 | 1.0 | — |
 | rate_eff_delta | 0.000 | 0.000 | +0.000 | 1.0 | PASS |
-| position_sep | 0.000 | 0.100 | +0.100 | 0.1 | PASS |
+| position_sep | 0.000 | 0.015 | +0.015 | 0.1 | PASS |
 | heading | -0.439 | -0.630 | -0.191 | 5.0 | — |
 | distance | 1.868 | 1.868 | +0.000 | 0.05 | — |
 
@@ -198,7 +198,7 @@ calibration: calib-2026-08-15-c7a6e97 · LL dt=0.05 s · HL dt=0.5 s ·
 | fatigue_consumed_delta | 0.000 | -0.005 | -0.005 | 0.05 | PASS |
 | rate_eff | 34.315 | 34.315 | +0.000 | 1.0 | — |
 | rate_eff_delta | 0.000 | 0.000 | +0.000 | 1.0 | PASS |
-| position_sep | 0.000 | 0.035 | +0.035 | 0.1 | PASS |
+| position_sep | 0.000 | 0.096 | +0.096 | 0.1 | PASS |
 | heading | -0.241 | -0.153 | +0.087 | 5.0 | — |
 | distance | 2.823 | 2.850 | +0.027 | 0.05 | — |
 
@@ -235,21 +235,22 @@ calibration: calib-2026-08-15-c7a6e97 · LL dt=0.05 s · HL dt=0.5 s ·
 | fatigue_consumed_delta | 0.000 | -0.005 | -0.005 | 0.05 | PASS |
 | rate_eff | 37.086 | 37.086 | +0.000 | 1.0 | — |
 | rate_eff_delta | 0.000 | 0.000 | +0.000 | 1.0 | PASS |
-| position_sep | 0.000 | 0.217 | +0.217 | 0.1 | PENDING |
+| position_sep | 0.000 | 0.022 | +0.022 | 0.1 | PASS |
 | heading | -1.201 | -1.051 | +0.150 | 5.0 | — |
 | distance | 2.736 | 2.750 | +0.014 | 0.05 | — |
 
 Annotation:
 
-- `position_sep` +0.217 NM vs the 0.1 NM gate — **the one open row on
-  this log** (final, task K6): the LL's sway-coupled yaw transient at
-  the burst re-accelerations — the ω runs 1.7× the settled drift for
-  ~100 s after each burst's ramp (the v-mode), which a state-based
-  drift model cannot represent; the drift W'-interpolation, the fishtail
-  (tau_exit) and the per-state τ closed the other five scripts' rows
-  (0.032–0.100 NM). Status: open-with-locked-test; the named trigger:
-  the sway-state port (plan §19.2 — the chain's A_lat/clr/I/Ω constants
-  + the measured equilibrium).
+- `position_sep` +0.022 NM vs the 0.1 NM gate — **closed** (final,
+  task K11): the sway-transient closure landed — the drift cells are
+  the settled values (300-600 s; the 20-60 s window is the sway
+  transient, 2-3x the settle), the V-ramp kick-transient is a measured
+  curve (`tables.drift_kick` — the LL's yaw rides below its settle
+  during a strong V-rise), and the drift-scale decay is the measured
+  |omega|-dependent tau (`scalars.drift_tau_exp`, the power-law bridge
+  from the fishtail's 19 s at the turn scale to ~80-100 s at the drift
+  scale). The row went 0.217 → 0.022 NM; the regression is locked by
+  `harness/tests/test_equivalence_gates.py`.
 - `mean_speed_pct` +0.5 % — inside L2-1; the burst/recovery profile
   stays inside `pressure_rows_std_kt`.
 - `fatigue_consumed_delta` −0.005 pts — the typical nets residual; the
@@ -273,7 +274,7 @@ calibration: calib-2026-08-15-c7a6e97 · LL dt=0.05 s · HL dt=0.5 s ·
 | fatigue_consumed_delta | 0.000 | -0.005 | -0.005 | 0.05 | PASS |
 | rate_eff | 32.998 | 32.998 | +0.000 | 1.0 | — |
 | rate_eff_delta | 0.000 | 0.000 | +0.000 | 1.0 | PASS |
-| position_sep | 0.000 | 0.049 | +0.049 | 0.1 | PASS |
+| position_sep | 0.000 | 0.050 | +0.050 | 0.1 | PASS |
 | heading | -3.677 | -3.031 | +0.646 | 5.0 | — |
 | distance | 2.413 | 2.413 | -0.000 | 0.05 | — |
 
@@ -311,7 +312,7 @@ calibration: calib-2026-08-15-c7a6e97 · LL dt=0.05 s · HL dt=0.5 s ·
 | fatigue_consumed_delta | 0.000 | -0.005 | -0.005 | 0.05 | PASS |
 | rate_eff | 28.800 | 28.800 | +0.000 | 1.0 | — |
 | rate_eff_delta | 0.000 | 0.000 | +0.000 | 1.0 | PASS |
-| position_sep | 0.000 | 0.053 | +0.053 | 0.1 | PASS |
+| position_sep | 0.000 | 0.043 | +0.043 | 0.1 | PASS |
 | heading | -2.203 | -2.185 | +0.017 | 5.0 | — |
 | distance | 3.669 | 3.670 | +0.001 | 0.05 | — |
 
@@ -347,7 +348,7 @@ calibration: calib-2026-08-15-c7a6e97 · LL dt=0.05 s · HL dt=0.5 s ·
 | fatigue_consumed_delta | 0.000 | -0.013 | -0.013 | 0.05 | PASS |
 | rate_eff | 44.500 | 44.500 | +0.000 | 1.0 | — |
 | rate_eff_delta | 0.000 | 0.000 | +0.000 | 1.0 | PASS |
-| position_sep | 0.000 | 0.032 | +0.032 | 0.1 | PASS |
+| position_sep | 0.000 | 0.010 | +0.010 | 0.1 | PASS |
 | heading | -0.214 | -0.129 | +0.086 | 5.0 | — |
 | distance | 0.525 | 0.524 | -0.001 | 0.05 | — |
 
@@ -445,11 +446,13 @@ F1 +4.9 %, tightest +9.2 %).
    crosses 3 NM; the dedicated 35-min cruise (task D) provides it, and
    the row passes −0.0 % (§4.5). The previous record's "never
    exercised" status (VALIDATION §10.2) is what this row closes.
-6. **The wprime `position_sep` row** — **pending the final run**: a fix
-   is in flight; this log's row (+0.217 NM vs the 0.1 NM gate) is the
-   one open item and is not quoted as a violation here (§4.3). Its
-   named cause is the drift-bias interpolation across the W' burst
-   state mix (§6.1).
+6. **The wprime `position_sep` row** — **closed** (task K11, the
+   sway-transient closure): the row went 0.217 → 0.022 NM. The named
+   cause was the LL's sway-coupled yaw during the burst phases — the
+   settled drift cells (300-600 s anchors; the 20-60 s window is the
+   sway transient, 2-3x the settle), the V-ramp kick-transient curve
+   (`tables.drift_kick`) and the |omega|-dependent slow decay
+   (`scalars.drift_tau_exp`) now represent it (§6.1).
 
 ## 7. Verdict summary
 
@@ -457,9 +460,9 @@ On this log, every L2-4 turn row passes (max |diff| 1.2 % vs the 5 %
 gate, inside the 1.31 % tau_turn residual); all six scripts pass all
 their gated rows (mean_speed_pct ≤ 1.0 %, t_3nm_pct −0.0 %,
 rate_eff_delta 0.0 spm, fatigue_consumed_delta ≥ −0.021 pts,
-position_sep ≤ 0.100 NM) except the single pending wprime `position_sep`
-row. Once the in-flight fix lands, task K re-runs the acceptance on the
-pinned calibration; the definition of done (plan §21.1) is
-`harness/run_validation.py` printing no unannotated violations, with
-every tolerance source traceable to this file's map (§3) and to the
-pinned calibration id `calib-2026-08-15-c7a6e97`.
+position_sep ≤ 0.100 NM — the worst row is sprint_turn 0.096). The
+final acceptance: `harness/run_validation.py` prints "violations: none
+— all Level-2 first tolerances inside" on the pinned calibration id
+`calib-2026-08-15-448e849`; the definition of done (plan §21.1) is
+met, and the gate rows are locked as regression tests
+(`harness/tests/test_equivalence_gates.py`, `hl/tests/test_drift_closure.py`).

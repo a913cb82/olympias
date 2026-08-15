@@ -122,6 +122,12 @@ DRIFT_SPOUDE_EMPTY = [-0.001109, -0.001044, -0.001169, -0.000381]
 DRIFT_STEADY_FULL = [-0.000709, -0.000827, -0.000866, -0.001053]
 DRIFT_STEADY_EMPTY = [-0.000325, -0.000273, -0.000580, -0.000565]
 
+# The V-ramp kick-transient (the wprime closure): the LL's yaw during
+# a strong V-rise rides below its settled drift (the sway's excited
+# state) — measured over the burst-path ramp (calibrate.measure_drift_kick).
+DRIFT_KICK_V = [0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0]
+DRIFT_KICK_W = [0.0] * 8
+
 # The back-state surge lag, s over rate (task E): the entry at high rate
 # is the degenerate regime (back ≡ hold, ~24 s); the low-rate collapse
 # (the cruise_turn 1440 s bin) is dip-and-recover, fitted to the gate
@@ -188,6 +194,9 @@ class Calibration:
         self._net_spoude = list(t["net"]["spoude"])
         self._net_steady = list(t["net"]["steady"])
         self._net_fast = list(t["net"]["fast"])
+        nv = t.get("drift_kick") or {}
+        self._kick_v = list(nv.get("v", DRIFT_KICK_V))
+        self._kick_w = list(nv.get("w", DRIFT_KICK_W))
         tl = t.get("tempo_loss") or {}
         self._tempo_rates = list(tl.get("rates", TEMPO_RATES))
         self._tempo_empty = list(tl.get("empty_rate_eff",
@@ -213,6 +222,7 @@ class Calibration:
         self.tau_hold = s.get("tau_hold", TAU_SURGE)
         self.turn_drag_extra = s.get("turn_drag_extra", 0.0)
         self.tau_exit = s.get("tau_exit", TAU_TURN)
+        self.drift_tau_exp = s.get("drift_tau_exp", 0.0)
         rig = RIGS["Olympias"]
         self.hold_k = HOLD_FRAC * 0.5 * RHO * rig["area"] * CN  # N/(m/s)^2/oar
 
@@ -308,6 +318,16 @@ class Calibration:
             return rate
         return _pwl(self._tempo_rates, self._tempo_empty, rate)
 
+    def drift_kick(self, v):
+        """The V-ramp kick-transient floor, rad/s (the wprime closure):
+        the LL's yaw rides below its settled drift during a strong V-
+        rise (the sway's excited state) — measured over the burst-path
+        ramp; the ship takes min(drift_bias, drift_kick(V)) while the V
+        is rising fast."""
+        if v < 0.5:
+            return 0.0
+        return _pwl(self._kick_v, self._kick_w, v)
+
     def drift_bias(self, rate, pressure, w_frac=1.0):
         """The untrimmed lateral-drift rate, rad/s (task C): the LL's
         measured straight-cruise yaw bias at (rate, pressure, tank state)
@@ -375,7 +395,8 @@ def _tables():
 def _scalars():
     return dict(tau_surge=TAU_SURGE, tau_turn=TAU_TURN, w_max=W_MAX,
                 p_crit=P_CRIT, tau_w=TAU, net_rest=NET_REST,
-                tau_hold=TAU_SURGE, turn_drag_extra=0.0, tau_exit=TAU_TURN)
+                tau_hold=TAU_SURGE, turn_drag_extra=0.0, tau_exit=TAU_TURN,
+                drift_tau_exp=0.0)
 
 
 def bootstrap():
