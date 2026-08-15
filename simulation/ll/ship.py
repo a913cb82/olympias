@@ -37,6 +37,27 @@ LEVER_HOLD = 1.5           # m — yaw arm of the held blades' keel-aligned drag
                            # register C3 refinement)
 TEMPO_CALLDOWN_SPM = 2.0   # sustained per-side rate gap that triggers a call-down
 
+# Linear yaw damping (register C1 units hint): the yaw-resistance coefficient
+# in Taylor ch.31 Table 31.1 row 12 is printed "kg m^2" but flagged
+# "units-possibly-per-s"; the uncertainties register (lane-6 C1) states the
+# label should be "kg m^2 s^-1" — the units of a LINEAR damper M_yaw = -k*omega
+# (N·m·s), not the quadratic Omega·omega·|omega| (kg·m^2) the model uses. The
+# register's reconciled value Omega = 3.2e6 is the quadratic coefficient; the
+# linear term below is the untested hypothesis for the open t_360 discrepancy
+# (VALIDATION §7.2: 98 vs 128 s). HYPOTHESIS TEST (plan §21.2 task H): the
+# magnitude is NOT the printed 5e6 — at omega ~ 0.06 rad/s that would demand
+# ~3e5 N·m against the ~1e4 N·m the rudder/oars deliver (the turn would
+# stall) — so k is the one tuning knob, scanned toward t_360 ~ 128 s.
+# TEST RESULT (plan §21.2 task H, 2026): the hypothesis FAILS —
+# k = 1.385e5 N·m·s closes t_360 (98.2 -> 128.0 s) but inflates every
+# diameter (G1 89.7 -> 111.5 m +24 %, F1 117.4 -> 153.7 m +31 %, tightest
+# 67.7 -> 84.6 m +25 %): linear damping lowers omega everywhere,
+# D = V/omega grows, so no k reaches 128 s inside the gate bands. Left OFF;
+# the t_360 residual stands open with the negative result recorded here.
+# Default OFF (0.0): the validated set must not silently change; flip ON only
+# with the tuned value and the gate record (tests, G1/F1 diameters).
+YAW_LIN_DAMP = 0.0          # N·m·s — linear yaw-damping coefficient (k)
+
 
 class Ship:
     def __init__(self, rig_name: str = "Olympias", n_oars: int = 170,
@@ -133,7 +154,8 @@ class Ship:
         drag = self.vessel.hull_drag(abs(u) / KT) + rud_drag
         u_dot = (Fx - drag) / self.m_app + v * self.omega
         v_dot = (Fy_oars + f_rud - f_hull) / self.m_app - u * self.omega
-        omega_dot = (Q + q_hull - self.Omega * self.omega * abs(self.omega)) / self.I
+        omega_dot = (Q + q_hull - self.Omega * self.omega * abs(self.omega)
+                     - YAW_LIN_DAMP * self.omega) / self.I   # linear damper (C1 hypothesis)
         self.V += u_dot * dt
         self.v += v_dot * dt
         self.omega += omega_dot * dt

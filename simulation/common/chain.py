@@ -78,8 +78,13 @@ OAR_TABLE31_LIN = 1.092    # Table 3.1 measurement inboard (m) — the reference
 
 # --- documented open items the sims must inherit honestly ---
 OQ18 = (
-    "oQ-18: the flat-plate law with blade area 0.078 m2 under-predicts the "
-    "Mark IIb points (~30-32 % of hull need; ch.9 notes Mark II needs ~x3.3 "
-    "area). The LL reproduces the rigid model exactly but inherits this "
-    "known shortfall; do not silently tune."
+    "oQ-18, resolved as physics (plan 15.2, task I): the ch.9 (q/p)^2 "
+    "turning-point law at the ACTUAL turning point (p = V.cosC/omega) IS the "
+    "flat-plate law (algebraic identity, locked); the geometric-deadpoint "
+    "variant (appendix d-formula) contradicts the measured Table 9.6 "
+    "kinematics (less thrust, negative at our points) and stays OFF "
+    "(ll/blade.TURNING_POINT). The Mark IIb residual (prop fraction "
+    "~0.51-0.54 at the chain's points) is the A5 blade-area gap + the slip "
+    "assumptions (register A5: the 'as-designed' scenario at area 1.3x + "
+    "slip 1.2 reaches the chain's 9.7 kt); do not silently tune."
 )

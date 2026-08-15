@@ -89,6 +89,9 @@ class TierCrew:
                                            # not the kinematics
         self.lin = rig["lin"]
         self.l_cp = rig["lout"] - (rig["blade"] - 0.260)
+        # k of the (q/p)^2 turning-point blade law (ll/blade.py): the closed
+        # forms below are that law at the ACTUAL turning point — the
+        # flat-plate identity (blade.TURNING_POINT == "actual", the default)
         self.k = 0.5 * RHO * rig["area"] * CN            # N/(m/s)^2 per blade
         self.sweep_cmd = math.radians(rig["sweep"])
         self.B_floor = B_FLOOR_FRAC * self.sweep_cmd
