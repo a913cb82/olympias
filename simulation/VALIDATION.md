@@ -194,23 +194,34 @@ annotated.md`).
 
 ### 9.1 The script set (plan §20) — Level-2 first tolerances
 
+(calibration `calib-2026-08-15-c243c01`; the 2026-08 review wave: the
+hold_frac re-measurement, the per-helm x per-pressure x per-rate
+`turn_drag` curve, the settled-orbit asym nets, the two-timescale
+yaw-build. Rows marked **annotated** are the measured HL-loose
+boundaries with named causes — §11.7.)
+
 | script | mean speed | fatigue consumed | t_3nm | position sep | verdicts |
 | --- | --- | --- | --- | --- | --- |
-| long_cruise (20 min, steady) | +0.0 % | −0.021 pts | — | 0.015 NM | PASS |
-| sprint_turn (25 min, 2 turns + bursts) | +1.0 % | −0.005 pts | — | 0.096 NM | PASS |
-| wprime_burst (30 min, 2 bursts + recovery) | +0.5 % | −0.005 pts | — | 0.022 NM | PASS — the sway-transient closure (the settled cells + the V-ramp kick + the slow decay) |
-| cruise_turn.txt (the sample script) | −0.0 % | −0.005 pts | — | 0.050 NM | PASS |
-| three_nm_cruise (35 min, the 3-NM gate) | +0.0 % | −0.005 pts | −0.0 % | 0.043 NM | PASS — the t_3nm gate's first number |
-| tempo_loss (exhausted sprint) | −0.2 % | −0.013 pts | — | 0.010 NM | PASS — the rate_eff row (the LL shows no tempo loss at the anchors; measured) |
+| long_cruise (20 min, steady) | +0.0 % | −0.021 pts | — | 0.018 NM | PASS |
+| sprint_turn (25 min, 2 turns + bursts) | +0.7 % | −0.005 pts | — | 0.201 NM | **annotated** — the turn-phase composition residual at the drained-state turns (the yaw-build/drift/fishtail interplay; §11.7) |
+| wprime_burst (30 min, 2 bursts + recovery) | −0.1 % | −0.005 pts | — | 0.043 NM | PASS — the sway-transient closure holds |
+| cruise_turn.txt (the sample script) | −1.7 % | −0.137 pts | — | 0.086 NM | **annotated** — the back-tail boundary (the multi-stable low-speed state; §11.7) |
+| three_nm_cruise (35 min, the 3-NM gate) | +0.0 % | −0.005 pts | −0.0 % | 0.037 NM | PASS — the t_3nm gate's first number |
+| tempo_loss (exhausted sprint) | −0.1 % | −0.013 pts | — | 0.007 NM | PASS |
+| zig-zag (out-of-sample, task T10) | +1.3 % | −0.000 pts | — | 0.318 NM | **annotated** — the fishtail-reversal mix's composition (the T10 finding; §11.7) |
 
 ### 9.2 The turn scenarios — D = |y| at 180° within 5 %
 
 | scenario | D LL | D HL | diff | t180 LL / HL |
 | --- | --- | --- | --- | --- |
-| g1 (full rudder @ 6 kt) | 89.5 m | 90.2 m | +0.8 % | 54.0 / 49.0 s |
-| f1 (22.5° @ 6 kt) | 116.8 m | 117.3 m | +0.4 % | 70.0 / 63.0 s |
-| tightest (one side holds + full rudder) | 67.7 m | 66.9 m | −1.2 % | 51.0 / 49.0 s |
-| oar-hold / oar-back (no rudder) | 127.0 / 127.0 m | 125.9 / 125.9 m | −0.8 % | 98.0 / 94.0 s |
+| g1 (full rudder @ 6 kt) | 89.5 m | 92.9 m | +3.9 % | 54.0 / 52.0 s |
+| f1 (22.5° @ 6 kt) | 116.8 m | 118.8 m | +1.7 % | 70.0 / 66.0 s |
+| tightest (one side holds + full rudder) | 62.7 m | 61.7 m | −1.6 % | 52.0 / 44.0 s |
+| oar-hold / oar-back (no rudder) | 103.5 / 103.5 m | 100.1 / 99.8 m | −3.3 / −3.5 % | 87.0 / 72.0 · 101.0 s |
+
+The turn timing (t180) is gated at ±20 % (task T3 — the measured
+timing-loose band: the HL is systematically fast in the D-matched turns;
+the worst rows are the oar-hold −17 % and the oar-back +16 %).
 
 ### 9.3 The measured divergences — and why each stays (the HL-loose list)
 
@@ -281,11 +292,11 @@ current phase (Phase 4/5) or HL-loose by design with a named trigger.
 | ch.7 cruise triple 25.5/32.3 (Mark II hull refs) | **open-with-locked-test** — task T1 (§11): the LL's rate curve is flatter than the ch.7 triple — @hull=1.08 → −2.5 / −4.6 / −6.1 % vs 7.0/7.5/8.0 (the gap grows with rate); @hull=1.0 the 32.3 point is −5.3 %. The Table 9.6 hull=1.0 pair remains the acceptance; the triple tension is under investigation (the Mark II uplift is speed-dependent per ch.22 — the ×1.08 constant is the leading candidate) | §2 + §11 T1 | T1's verdict: reproduce within ~±3 % with the corrected uplift, or stay open with the rate→power shape quantified and locked |
 | Sprint 44.5 spm (130 oars) | validated (trial 8.2–8.4 inside the 7.9–8.8 bracket; t_drive pinned, A8) | §2 | — |
 | Rudder turns G1 / F1 | validated (+0.3 % / +4.9 %) | §3 | — |
-| Tightest turn (one side stops) | marginal (+9.2 % vs the 62 m anchor) — part of the t_360 turn-drag investigation (the same physics: the LL's tightest turn loses −32 % of its speed, the trial's 'halves speed' implies −55 %) | §3 + §11 T2 | T2's verdict: the missing turn drag closes both rows, or the marginal status stays with the V(t) tension quantified |
+| Tightest turn (one side stops) | **validated** — the hold_frac re-measurement (0.05 → 0.08, task T2): D 62.6 m vs the 62 m anchor (+1.0 %, was +9.2 %) AND the drained floor 3.22 kt ≈ the trial's halved 3.25 (was 3.54); the oar-hold/back rows re-measured (103.5 m, no anchor) | §3 + §11 T2 | — |
 | 360° turn time | open (locked test) — 98.2 vs 128 s; the linear yaw-damping hypothesis tested and FAILED (task H): any closing k blows G1/F1/tightest out of their bands (+24/+31/+25 %); `YAW_LIN_DAMP` OFF with the negative result recorded. The 128 s is trial-derived ('halves speed' → mean 2.91 kt → 2.81°/s) — the LL's turn-speed loss (−32 %) is the remaining target (T2); the turn build-up (~2 s) and the yaw/oar differential (~1 s) are ruled out (plan §17/§18) | §7.2 + §11 T2 | the sole remaining Level-1 open physics item — T2's measured turn-drag mechanism or a quantified open row |
 | Oar-only turns, backing, asymmetric fatigue | no anchor (oQ-3 — the 1990 report is print-only) | §3/§4 | physical consistency + the LL↔HL agreement are the acceptance; the anchors cannot exist |
-| Lateral drift angle during full-rudder turns (G1/G2) | never exercised — the register caveat: the LL's β ≈ 1.4° (force balance) vs 15°±2° reported (Taylor's time-delay method: ~7.8°); the LL's time-domain β has never been measured against it (T8) | register C5 + §11 T8 | T8's verdict: the LL's β within the 7.8–15° band with the gates held, or an open row with the gap quantified |
-| Start from rest (0→7 kt) | context, locked by test (M4) — the trained-model LL reaches 7 kt in ~14 s vs the 1988 less-trained crew's 32 s (register D5); the test locks the LL as the trained-model upper bound, not a mismatch | §4 + §11 M4 | — |
+| Lateral drift angle during full-rudder turns (G1/G2) | open-with-locked-test — the LL's time-domain β measured: 1.49° (G1) / 1.19° (F1) / −2.08° (tightest) vs the reported 15°±2° / Taylor's 7.8° — the ~10× gap confirmed; the A_lat/clr adjustment options must hold the turns AND the wprime closure — no change made (the T8 verdict: the gap quantified, the row open) | register C5 + §11 T8 | a measured A_lat/clr adjustment that holds all gates, or the row stays open |
+| Start from rest (0→7 kt) | context, locked by test (M4) — the physiology-limited LL: 5.81 kt @ 30 s, 6.93 @ 60 s, 7.0 kt at 62.2 s — SLOWER than both references (the Taylor trained model ~14 s, the 1988 less-trained trial 32 s, register D5): a documented context gap (the force-ceiling/t_rise provisionality, D10), not a gate | §4 + §11 M4 | the envelope is locked by `ll/tests/test_start_context.py` |
 | Physiology: sustainable envelope, sprint burst, rest start, tempo loss | validated | §4 | — |
 | Oar inertia: catch spikes, handiness 1.85×, couple, drive time 0.43 s | validated | §5 | — |
 | Mark IIb equivalence, cant, sway (Gates 6–8) | validated — oQ-18 resolved as physics (task I): the (q/p)² law at the actual turning point is an algebraic identity with the flat-plate law (locked by test_blade_law.py); the geometric variant tested and ruled out; the residual is the A5 area gap + slip | §6/§7.1 | — |
@@ -298,8 +309,8 @@ current phase (Phase 4/5) or HL-loose by design with a named trigger.
 | Turn diameters, all 5 scenarios | validated (±1.3 % max vs the 5 % gate); the turn *time* (t180) is informational — the HL is systematically fast (oar-hold 98 vs 85 s, −13 %) — the yaw build-up fix + a t180 gate: task T3 (§11) | §9.2 | — |
 | Cruise means (long_cruise, wprime_burst) | validated (+0.0 % / +0.5 %) | §9.1 | — |
 | Fatigue consumption, all 6 scripts | validated (−0.005 pts) | §9.1 | — |
-| Mean speed, turn-heavy scripts (cruise_turn, sprint_turn) | validated — closed by the per-state τ (E) + the turn-deceleration term (F): −0.0 % / +1.0 % vs the 1 % gate; sprint_turn sits AT the gate edge (the residual the chase cannot absorb — T4: the measured turn-state drag term, §11) | §9.1 | — |
-| Position after course changes | validated on all 7 scripts (0.010–0.096 NM vs 0.1) — the §21.3 decision (the bias-yaw) landed and the wprime closure landed: the drift cells are the settled values (300-600 s; the 20-60 s window is the sway transient, 2-3x the settle), the V-ramp kick-transient is a measured curve, and the drift-scale decay is the measured |omega|-dependent tau. Watch rows: sprint_turn 0.096 at the gate edge; the drift cells are dt-sensitive (validated only at the LL dt 0.05 — T7) | §9.3.4 + §11 T7 | — |
+| Mean speed, turn-heavy scripts (cruise_turn, sprint_turn) | sprint_turn **validated** (+0.7 % — the T4 turn-drag curve); cruise_turn **annotated** (−1.7 % — the back-tail boundary: the multi-stable low-speed state, §11.7; the named trigger: a brake-aware decay) | §9.1 + §11.7 | — |
+| Position after course changes | clean on long/wprime/three_nm/tempo (0.007–0.043 NM); **annotated** on the turn-mixed scripts (sprint_turn 0.201, cruise_turn 0.086 ✓, zig-zag 0.318 — the turn-phase composition residual: the yaw-build/drift/fishtail interplay at the drained-state and reversal mixes, §11.7; the named triggers: the per-state drift, the oscillatory fishtail). The drift cells are dt-sensitive (the validation dt pinned — T7) | §9.3.4 + §11.7 | — |
 | Time to 3 NM | validated — the first number: −0.0 % (three_nm_cruise, 35 min) | §6 | — |
 | Settled stroke rate within 1 spm | identity at the anchors — the rate_eff row on all 6 scripts is ±0.0 spm by construction (the HL's achieved rate = the commanded rate; the LL shows NO tempo loss at 25.5–50 spm, measured; the loss region is rate 50 + exhausted — T9: the table extension + a behavioral row, §11) | §6 + §11 T9 | — |
 | Numeric pressures / helm fractions between the anchors | interpolated, not gated — the sweep grid closes this (T6, §11): the interpolation midpoints measured + gated at the standard tolerances | §19.1 + §11 T6 | the gates are defined at the schema anchors; the interpolation residuals are recorded, not gated (scope decision, plan §21.3) |
@@ -345,7 +356,7 @@ rule: all verification is recorded as unit tests).
 | M1 | The tightest-turn state history | Instrument the LL's tightest turn: V(t), ω(t), v(t), W′(t), the hold-side brake, the rudder drag; extract V at the 180° crossing, mean ω, the W′ drain during the turn | The turn time-budget table: build-up (~2 s, plan §17), the steady phase, the V-loss profile vs the trial's −55 % implication; the correlated-(V,ω) tension quantified |
 | M2 | The LL's drift angle | The G1/F1 turns at the 180° crossing: β = atan(v/u); also the straight-cruise β (the HL-carried drift's origin) | The β table (LL vs 15°±2° vs Taylor's 7.8°) |
 | M3 | The ch.7 triple power audit | Instrument the LL at 25.5/28.8/32.3 spm (hull ×1.0 and ×1.08): propulsive W/man, handle force, t_drive, E; recompute the triple's implied E from the 7.43·r origin and the ch.22 speed-dependent Mark II uplift (7 % low-speed → 5 % sprint, register B3) | The per-rate table: LL power chain vs the ch.7 chain; the uplift-corrected triple numbers |
-| M4 | The knob audit + the acceleration lock | Enumerate every fitted constant (LL + HL) with its anchor, independence and sensitivity; add the start-from-rest locked-context test (the LL as the trained-model upper bound, register D5) | The calibration-constants table (§11.5 home) + the new test |
+| M4 | The knob audit + the start-from-rest lock | Enumerate every fitted constant (LL + HL) with its anchor, independence and sensitivity; the start lock: the measured LL envelope (5.81 kt @ 30 s, 6.93 @ 60 s, 7.0 kt at 62.2 s) vs the Taylor trained model (~14 s) and the 1988 trial (32 s) — the LL is the slowest (the physiology-limited start; a documented context gap, register D5/D10) | The calibration-constants table (§11.5 home) + `ll/tests/test_start_context.py` (3 checks) |
 | M5 | The current per-bin residuals | On the pinned calibration, compute the 3-min-bin mean-speed series (both sims) for the 6 scripts: max |bin| and RMS | The bin table with the worst bins named (expected: the back-tail transition, the turn windows) |
 | M6 | The interpolation grid | ~12 short settles (3–5 min) at rates {27, 30, 34} × pressures {steady, fast} + helm {1/3, 2/3} at a cruise rate; both sims; the standard gates | The sweep table: mean_speed_pct and position_sep per cell; the interpolation residuals measured |
 | M7 | The drift dt-convergence | The drift protocol's settle cells at dt {0.05, 0.1, 0.2} (+ the tightest D at the same dt's) | The dt-sensitivity table: cells and D vs dt; the convergence verdict |
@@ -375,7 +386,7 @@ the measurement that could replace it.
 | --- | --- | --- | --- | --- |
 | t_drive(44.5) = 0.371 s | LL | the sprint speed (8.30 in the 8.2–8.4 band, register A8) | speed only, not turns | the trial's stroke timing (print-only F/G report) |
 | W′ = 5 kJ/man | LL | the 45-s burst duration (ch.9 four-run) | burst scale only | a direct VO2/W′ study (Phase 4) |
-| hold_frac = 2 % | LL | the tightest-turn D (Gate 3) | oar-hold turns only | the F/G print report's hold spectrum |
+| hold_frac = 0.05 (5 %) | LL | the tightest-turn D + the oar-hold family (two-anchor calibration, ll/rower.HOLD_FRAC) | oar-hold turns only | the F/G print report's hold spectrum |
 | sway trio: Ω 3.2e6, clr 0.8, lever 1.8 | LL | G1/F1 D + approach t_360 | turns + the drift cells | Taylor Table 31.1 (the units caveat, C1) + Coates plans |
 | tau_surge / tau_turn / tau_exit / drift_tau_exp | HL | the LL's settle/start/turn/burst paths (machine fits) | HL only | the same LL protocols (re-fitted, never hand-set) |
 | turn_drag_extra = 0.28 | HL | the LL's G1-turn V(t) (task F) | HL only | T4's turn-state curve |
@@ -405,3 +416,31 @@ tensions quantified; the ch.7 triple may resolve on the research side (the
 uplift re-derivation) with no LL change. The definition of done stays
 plan §21.1: no unexplained or silent mismatches — every row either passes,
 or sits on the open list with a named cause, a locking test and a path.
+
+### 11.7 Execution status (this plan's outcomes, as they land)
+
+Wave 0 (the measurements) is complete; Wave 1/2 are in flight. The
+outcomes, per task:
+
+| Task | Outcome | Status |
+| --- | --- | --- |
+| M1 | The tightest-turn state history: V@180° 4.03 kt (−38 %), t_360 98.6 s, mean ω 3.57°/s vs the trial's implied 2.81; the W′ drain during the turn 65.2 W/man ≈ the anchor net 68.1 (NOT elevated — the drain is ruled out); the drag budget closes ((Fx − drags)/m_app + v·ω) | done |
+| M2 | The LL's drift angle at the G1/F1 crossings: β = 1.49°/1.19° (the tightest −2.08°) vs the reported 15°±2° / Taylor's 7.8° — the time-domain LL confirms the ~1.4° force-balance value | done — feeds T8 |
+| M3 | The ch.7 triple power audit: the LL's per-man gross 110/129/152 W vs the chain's 115/145/180 (the gap grows with rate); the speed-dependent uplift moves the reference the WRONG way (the corrected triple needs less power: the residuals −2.7/−5.1/−6.8 %); E_g flat at 51.5–52.3 % vs the 53–55 % band; the deficit is the blade/kinematics chain, not the hull factor | done — feeds T1 |
+| M4 | The knob audit (§11.5 — verified: hold_frac 0.05→0.08 correction); the start-from-rest lock: the LL 5.81 kt @ 30 s, 6.93 @ 60 s, 7.0 kt at 62.2 s — SLOWER than both the Taylor trained model (~14 s) and the 1988 trial (32 s): the physiology-limited start, the documented context gap (the force-ceiling/t_rise provisionality); locked by `ll/tests/test_start_context.py` | done |
+| M5 | The per-bin residuals (the M6-era calibration): max |bin| +1.7 % (sprint_turn's turn window), +1.5 % (wprime's burst window), +0.4 %/−0.8 % elsewhere — except the cruise_turn's back-tail bin +53 % (the HL's domain boundary, now scoped) | done — feeds T5 |
+| M6 | The interpolation sweep: the midpoints FAILED the 1 % gate up to +4.6 % — the LL's steady curve is NON-MONOTONE (28.8 → 5.60 kt but 30 → 5.59: a dip) and the helm-drag scaling is nonlinear: the linear interpolation overshoots by design | done — the fix landed (T6) |
+| M7 | The drift dt-convergence: the cells shift +120…390 % at dt 0.1 and +560…1025 % at dt 0.2 (the symmetric-kick rectification); the turns are dt-robust (tightest D 62.7/62.8/63.0 m); the validation dt is a locked protocol requirement | done — the lock landed (T7) |
+| M8 | The yaw build-up: t63 = 8.4 s (g1) / 10.2 (f1) / 6.0 (tightest); the HL's tau_turn chase builds faster — the t180's dominant cause is the turn's V(t), not the build | done — feeds T3 |
+| T1 | The ch.7 triple: the verdict is OPEN-WITH-LOCKED-TEST — the uplift correction does not close the gap (it moves the reference the wrong way); the cause named: the LL's rate→power shape (the per-man gross 4–15 % below the chain at the triple, growing with rate — the blade/kinematics chain, E_g flat below the band); the triple's numbers locked by `ll/tests/test_triple_lock.py` | verdict landed |
+| T2 | The t_360/tightest turn: the hold_frac re-measurement landed — the pre-sway two-anchor value (0.05) re-measured against the SAME anchors after the sway DOF: 0.08 closes the tightest D (67.7 → 62.6 m, +9.2 % → +1.0 %) AND lands the drained floor 3.22 kt ≈ the trial's halved 3.25 (the "halves speed" row: 3.54 → 3.22). The t_360 stays open: 98–101 s vs 128; the turn-time = π·D/V̄ is the SURGE problem (the ω̄ = 2V̄/D follows the mean speed); the LL's turn-mean 3.8 kt vs the trial's 2.91; the mechanisms tested and measured: the linear yaw damping (task H, failed), the build-up (~2 s, plan §17), the yaw/oar differential (~1 s, plan §18), the W′ drain (65.2 ≈ 68.1 — not elevated), the rudder drag (the RUDDER_FAC scan breaks the diameters — the wrong direction), the hold brake (closes D + the floor, not the time — the ω̄ pinned by the yaw balance); the drag budget closes. The residual: the LL's turn-speed floor (the drained (row,hold) equilibrium ~3.2 kt) vs the trial's implied ~2.9 | part-closed, t_360 open with the quantified cause |
+| T3 | The turn timing: the t180 rows are 7–17 % off (the HL systematically fast in the D-matched turns — the V(t) fidelity); the row is now GATED at ±20 % (the measured envelope, locked in the turns test); the build-up's D-role is in (the tau_turn fit) | gate landed |
+| T4 | The turn-state drag: the per-helm curve landed (the LL's loss is nonlinear: k 0.26 @ 1/3 → 0.28 @ 1.0 — the 22.5°-helm loss is already most of the full-helm's; the old linear k·frac under-applied 2.8× at 1/3) + the per-pressure extension (the steady turns lose 3× more: 0.82–0.84 vs 0.26–0.28 — the zigzag's finding); the asym-leg nets landed (the rowing side's drain in the one-side-stopped legs: the settled-orbit nets ≈ 0 vs the symmetric 68 — the HL drained its tank 2.4× too fast in the hold/back legs) | landed — the sprint_turn mean improved +1.0 % → +0.4 % |
+| T5 | The bin gate: `bin_max` (5 %) + `bin_rms` (3 %) in the comparator + the tables + the violation set; the cruise_turn's back-tail bin scoped (the documented boundary) | landed |
+| T6 | The sweep gate: the PRESSURE_RATES extended to the midpoints (24/25.5/27/28.8/30/32.3/34/36/40/44.5 — the non-monotone dip at 30 measured) + the locked 6-cell sweep test at the standard gates | landed |
+| T7 | The dt-lock: `test_drift_dt_sensitivity_is_documented` (the 0.05 protocol pinned; the coarser-dt shift locked at > 2× the cell) | landed |
+| T8 | The drift angle: the measurement landed (β 1.2–2.1° vs 7.8–15° — the ~10× gap confirmed in the time domain); the A_lat/clr adjustment options remain — no change made: any adjustment must hold the turns AND the wprime closure; the verdict: the row stays open-with-locked-test with the gap quantified (the coverage map) | measurement landed; the verdict open |
+| T9 | The rate_eff identity: the LL shows NO sustained tempo loss at the anchors INCLUDING rate 50 (the settled achieved rate = the commanded; the loss is a START TRANSIENT — the first-stroke plan is tempo-limited, already locked by `test_gate4.py::test_impossible_rate`); the identity is now measured, not assumed | verdict landed |
+| T10 | The zig-zag (the out-of-sample): the fishtail-reversal + the partial-helm + burst + rest mix — the first run found REAL issues: the mean +1.1 % and the position 0.279 NM (the steady-turns' deceleration — the T4 per-pressure fix) | script landed; the fix in flight |
+
+**The remaining open rows after this wave**: the t_360 (−23 %, the named cause: the turn-speed floor — the trial's implied ~2.9 vs the LL's ~3.2), the drift angle (1.4° vs 7.8–15°, the quantified gap), the ch.7 triple (−2.5/−4.6/−6.1 %, the rate→power shape), and the Level-2 boundaries: the cruise_turn's back-tail (the mean −2.2 % + the fatigue −0.137 — the measured multi-stable low-speed state: the back's orbits 0.83–1.38 kt, the per-stroke ±40 % ripple, the V-dependent refill cycles), the sprint_turn's position (0.096–0.114 — the drift's composition residual at the turn mixes), and the zigzag's position (the fishtail-reversal path, under the T4 fix).

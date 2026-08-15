@@ -40,12 +40,15 @@ W_MAX = 5_000.0         # J/man anaerobic capacity — anchored to the ch.9 four
 TAU = 120.0             # s W' refill time constant
 T_REC_MIN = 0.5         # s recovery floor (body mechanics)
 B_FLOOR_FRAC = 0.4      # usable-stroke floor as a fraction of the sweep
-HOLD_FRAC = 0.05        # hold-water brake fraction — two-anchor calibration
-                        # (tightest turn: D = 61.3 m vs 62 anchor AND the speed
-                        # halves to ~3.7 kt, matching the trial's mean 2.9 kt;
-                        # t_360 residual 85 vs 128 s -> the fitted Omega yaw
-                        # resistance question, register C1). f = 0.05 ~= held
-                        # blades at ~12-13 deg to the flow.
+HOLD_FRAC = 0.08       # hold-water brake fraction — re-measured 2026-08 (the
+                        # sway DOF, plan 15.3, changed the turn physics; the
+                        # original 0.05 two-anchor value predates it). The
+                        # one-parameter scan vs the SAME anchors (the
+                        # tightest-turn D = 62 m and the trial's 'halves
+                        # speed' ~3.25 kt): 0.08 lands D = 62.7 m (-0.5 % vs
+                        # +9.2 % at 0.05) and the drained floor 3.22 kt (the
+                        # trial's halving, vs 3.54 at 0.05). f = 0.08 ~=
+                        # held blades at ~19-20 deg to the flow.
 
 # pressure levels: anchors relative to the validated chain (spoude = 1.0);
 # steady = sustainable envelope (<= P_crit), spoude = W'-limited burst

@@ -105,12 +105,13 @@ class Ship:
             # the applied rudder drag the chase target cannot know (the
             # calibrated V* rows are no-rudder equilibria): the LL loses
             # ~2 kt in a full-helm turn, the HL must too (harness
-            # finding); turn_drag_extra (task F) is the measured
-            # sway-coupled residual the exact drag law misses
+            # finding); turn_drag(frac) (task F -> T4) is the measured
+            # sway-coupled residual the exact drag law misses, per helm
+            # fraction (the LL's loss is nonlinear in helm)
             if (self.helm_dir != "midship" and self.helm_frac > 0.0
                     and self.V > 0.0):
                 a_rud = ((RUDDER_FAC - 1.0)
-                         + c.turn_drag_extra * self.helm_frac) \
+                         + c.turn_drag(self.helm_frac, p_eff, r_eff)) \
                     * self.vessel.rudder_straight * (self.V / KT) ** 2 \
                     / self.m_app
                 self.V = max(0.0, self.V - a_rud * dt)
@@ -181,20 +182,38 @@ class Ship:
         # calibrate.measure_drift_tau). The slow side applies only at
         # the drift scale (|omega| < 0.005) — the turn-scale decay is
         # the capture's job (the double-decay overshoots the fishtail).
+        # The turn APPROACH is also two-timescale (task T3): the fast
+        # share A at the chase's tau, then the sway-coupled slow tail
+        # (the measured yaw_build families — the HL's single-tau build
+        # phased the turn's psi early and accumulated in the position
+        # rows, the K16 finding)
         if (abs(wss) < abs(self.omega) * 0.99
                 and abs(self.omega) < 0.005):
             tau_yaw = c.tau_exit * (0.1 / max(abs(self.omega), 1e-4)) \
                 ** c.drift_tau_exp
         else:
-            tau_yaw = c.tau_turn
+            b = c.yaw_build(self.helm_frac)
+            if abs(wss - self.omega) > (1.0 - b["A"]) * abs(wss):
+                tau_yaw = c.tau_turn        # the fast rise
+            else:
+                tau_yaw = b["ts"]          # the sway-coupled tail
         self.omega += (wss - self.omega) / tau_yaw * dt
         self._v_prev = self.V
 
         # -- crew tank ---------------------------------------------------
         # net = the measured drain/refill (W/man) at the anchor levels;
-        # the refill is capped at W_max/tau as in the LL
+        # the refill is capped at W_max/tau as in the LL. In the
+        # one-side-stopped legs the rowing side's drain is measured
+        # separately (task T4 follow-up): the LL's rowing side pulls
+        # less at the low hold/back speeds (~28 W/man spoude vs the
+        # symmetric ~68) — the symmetric net would drain the tank ~2.4x
+        # too fast and drop the chase target early (the cruise_turn
+        # fatigue/mean regressions, K13)
         if rowing:
-            net = c.net(r_eff, p_eff)
+            stopped = [s for s in ("port", "star")
+                       if self.oar_state[s] in ("hold", "back")]
+            net = c.net_asym(r_eff, p_eff, self.oar_state[stopped[0]]) \
+                if len(rowing) == 1 and stopped else c.net(r_eff, p_eff)
             if net > 0.0:
                 self.W = max(0.0, self.W - net * dt)
             else:

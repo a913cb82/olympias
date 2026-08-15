@@ -212,6 +212,13 @@ class Calibration:
         self._tau_back_tau = list(tb.get("tau", TAU_BACK_TAU))
         self.d_rudder_pts = [tuple(p) for p in t["d_rudder"]]
         self.d_oar_pts = [tuple(p) for p in t["d_oar"]]
+        na = t.get("net_hold") or {}
+        nb = t.get("net_back") or {}
+        self._asym_rates = list(na.get("rates", [24.0, 30.0, 36.0]))
+        self._net_hold_spoude = list(na.get("spoude", [24.7, 27.7, 27.8]))
+        self._net_hold_steady = list(na.get("steady", [0.0, 0.0, 9.3]))
+        self._net_back_spoude = list(nb.get("spoude", [24.4, 27.7, 27.7]))
+        self._net_back_steady = list(nb.get("steady", [0.0, 0.0, 8.0]))
         s = scalars or {}
         self.tau_surge = s.get("tau_surge", TAU_SURGE)
         self.tau_turn = s.get("tau_turn", TAU_TURN)
@@ -221,6 +228,21 @@ class Calibration:
         self.net_rest = s.get("net_rest", NET_REST)
         self.tau_hold = s.get("tau_hold", TAU_SURGE)
         self.turn_drag_extra = s.get("turn_drag_extra", 0.0)
+        td = t.get("turn_drag") or {}
+        self._td_fracs = list(td.get("fracs", [1.0]))
+        self._td_rates = list(td.get("rates", [19.9]))
+        self._td_spoude = td.get("spoude", [[self.turn_drag_extra]])
+        self._td_steady = td.get("steady", self._td_spoude)
+        # tolerate the pre-rate-dimension flat format (the old k lists)
+        if self._td_spoude and isinstance(self._td_spoude[0], (int, float)):
+            self._td_spoude = [self._td_spoude]
+        if self._td_steady and isinstance(self._td_steady[0], (int, float)):
+            self._td_steady = [self._td_steady]
+        if len(self._td_rates) != len(self._td_spoude):
+            self._td_rates = [self._td_rates[0]] * len(self._td_spoude)
+        yb = t.get("yaw_build") or {}
+        self._yb_helm = yb.get("helm", dict(A=0.6, tf=6.0, ts=10.0))
+        self._yb_oar = yb.get("oar", dict(A=0.95, tf=3.0, ts=10.0))
         self.tau_exit = s.get("tau_exit", TAU_TURN)
         self.drift_tau_exp = s.get("drift_tau_exp", 0.0)
         rig = RIGS["Olympias"]
@@ -284,6 +306,33 @@ class Calibration:
     def d_rudder(self, helm_frac):
         return _d_inv_lin(self.d_rudder_pts, helm_frac)
 
+    def yaw_build(self, helm_frac):
+        """The yaw approach's two-timescale shape (task T3): (A, ts) —
+        the fast share A of the rise at the chase's tau, then the
+        sway-coupled slow tail at ts. The helm turns vs the one-side-
+        stopped turns (the measured families)."""
+        return self._yb_helm if helm_frac > 0.0 else self._yb_oar
+
+    def turn_drag(self, helm_frac, pressure=1.0, rate=19.9):
+        """The measured turn-deceleration extra-drag factor vs helm
+        fraction, pressure and rate (task T4 — the per-fraction fits to
+        the LL's turn V(t); the steady turns lose relatively more and
+        the rate matters — the sprint's 28.8-30 spm turns carry a
+        bigger factor than the G1's 19.9 anchor)."""
+        rows = self._td_steady if pressure <= 0.7 else self._td_spoude
+        i0 = 0
+        for i, r in enumerate(self._td_rates):
+            if rate >= r:
+                i0 = i
+        if i0 + 1 >= len(self._td_rates):
+            k = _pwl(self._td_fracs, rows[-1], helm_frac)
+        else:
+            k0 = _pwl(self._td_fracs, rows[i0], helm_frac)
+            k1 = _pwl(self._td_fracs, rows[i0 + 1], helm_frac)
+            f = (rate - self._td_rates[i0]) /                 (self._td_rates[i0 + 1] - self._td_rates[i0])
+            k = k0 + f * (k1 - k0)
+        return k
+
     def d_oar(self, helm_frac):
         return _d_inv_lin(self.d_oar_pts, helm_frac)
 
@@ -304,6 +353,24 @@ class Calibration:
         if pressure <= 0.85:
             return steady + (fast - steady) * (pressure - 0.7) / 0.15
         return fast + (spoude - fast) * (pressure - 0.85) / 0.15
+
+    def net_asym(self, rate, pressure, state):
+        """The rowing side's tank net in the one-side-stopped legs, W/man
+        (task T4 follow-up): the LL's rowing side pulls less at the low
+        hold/back speeds (~28 W/man spoude vs the symmetric ~68 — the
+        measured hold/back drains, flat over rate; the back ~= the hold,
+        the degeneration)."""
+        if state == "back":
+            spoude = _pwl(self._asym_rates, self._net_back_spoude, rate)
+            steady = _pwl(self._asym_rates, self._net_back_steady, rate)
+        else:
+            spoude = _pwl(self._asym_rates, self._net_hold_spoude, rate)
+            steady = _pwl(self._asym_rates, self._net_hold_steady, rate)
+        if pressure >= 1.0:
+            return spoude
+        if pressure <= 0.7:
+            return steady * pressure / 0.7
+        return steady + (spoude - steady) * (pressure - 0.7) / 0.3
 
     def p_spoude(self, rate):
         """The measured spoude external power per man, W (P_crit + drain)."""
@@ -389,6 +456,7 @@ def _tables():
                    "steady_full": DRIFT_STEADY_FULL,
                    "steady_empty": DRIFT_STEADY_EMPTY},
         "tau_back": {"rates": TAU_BACK_RATES, "tau": TAU_BACK_TAU},
+        "turn_drag": {"fracs": [1.0], "k": [0.28]},
     }
 
 

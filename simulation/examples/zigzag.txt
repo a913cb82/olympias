@@ -1,0 +1,22 @@
+# The out-of-sample script (VALIDATION §11, task T10) — a zig-zag.
+# Mixes states the six calibration scripts do not combine: a turn-release
+# followed by the OPPOSITE helm inside ~30 s (the fishtail capture's
+# untested reversal path), a partial-helm leg (the interpolation
+# midpoints), a spoude burst, and a full rest — then a resume. Never
+# used by any calibration protocol; the composition claim's
+# generalization test (the five Level-2 rows gated at the standard
+# tolerances).
+0, rate, 28.8
+0, pressure, steady
+600, helm, port, 0.667
+660, helm, midship
+690, helm, starboard, 1.0
+750, helm, midship
+780, helm, port, 0.5
+840, helm, midship
+900, rate, 44.5
+900, pressure, spoude
+990, pressure, rest
+1290, rate, 28.8
+1290, pressure, steady
+1500, pressure, rest

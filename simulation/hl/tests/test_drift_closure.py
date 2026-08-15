@@ -112,3 +112,36 @@ def test_rest_decay_is_slow():
         hl.step(0.5)
     assert abs(hl.omega) > 0.0003, \
         f"the rest decay is too fast: {hl.omega:.7f} after 50 s"
+
+
+def test_drift_dt_sensitivity_is_documented():
+    """T7 (VALIDATION §11): the drift cells are only valid at the
+    validation dt 0.05 — the symmetric-kick rectification is
+    dt-sensitive (measured 2026-08: the 44.5-spoude-full cell
+    -0.000381 @ 0.05 -> -0.000854 @ 0.1 (+124 %) -> -0.002712 @ 0.2
+    (+613 %); the 28.8-steady cell +392 %/+1025 %; the drained cell
+    +123 %). The turns are dt-robust (tightest D 62.7/62.8/63.0 m).
+    This test locks the documented sensitivity: if the LL's physics
+    changes the dt-behaviour, the lock fails and the protocol/docs
+    must be revisited. The protocol itself is pinned to 0.05 by
+    hl/calibrate.DT."""
+    from hl import calibrate as cal
+    assert cal.DT == 0.05, f"the drift protocol's dt moved: {cal.DT}"
+    from ll.ship import Ship
+    from ll.rower import W_MAX
+    ship = Ship(rate=44.5, pressure=("spoude", "spoude"))
+    n = int(600 / 0.1)
+    rec = []
+    for i in range(n):
+        ship.step(0.1)
+        if i * 0.1 >= 300:
+            rec.append((i * 0.1, ship.psi))
+    xs = [r[0] for r in rec]
+    ys = [r[1] for r in rec]
+    mx, my = sum(xs) / len(xs), sum(ys) / len(ys)
+    slope = sum((x - mx) * (y - my) for x, y in zip(xs, ys)) / \
+        sum((x - mx) ** 2 for x in xs)
+    cell = C.drift_bias(44.5, 1.0, 1.0)
+    assert abs(slope) > 2.0 * abs(cell), \
+        f"dt 0.1 slope {slope:.6f} must exceed the 0.05 cell " \
+        f"{cell:.6f} by > 2x (the documented sensitivity)"

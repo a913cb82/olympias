@@ -6,12 +6,14 @@ This is the task A deliverable: "the equivalence tables annotated with
 per-row tolerance sources and the calibration id".
 
 Provenance: the numbers below are copied as printed from
-`/tmp/validation_k11.log` (the latest full run, 2026-08-15 — the sway-
-transient closure), one `harness/run_validation.py` invocation — the 6
-scripts + the 5 turn scenarios, verdict "violations: none — all Level-2
-first tolerances inside". Nothing has been re-computed or smoothed; the
-table cells keep the run's formatting. The previously-open wprime
-`position_sep` row is closed (see §6.5).
+`/tmp/validation_k19.log` (the latest full run, 2026-08-15 — the review
+wave's acceptance: the hold_frac re-measurement, the turn-drag curve,
+the asym nets, the yaw-build), one `harness/run_validation.py`
+invocation — the 7 scripts (incl. the T10 zig-zag) + the 5 turn
+scenarios. Nothing has been re-computed or smoothed; the table cells
+keep the run's formatting. The annotated rows (the back-tail boundary,
+the turn-phase composition) are marked **annotated** with their named
+causes (§6).
 
 Reproduction (one command, from `simulation/`):
 
@@ -164,7 +166,7 @@ calibration: calib-2026-08-15-c7a6e97 · LL dt=0.05 s · HL dt=0.5 s ·
 | fatigue_consumed_delta | 0.000 | -0.021 | -0.021 | 0.05 | PASS |
 | rate_eff | 28.800 | 28.800 | +0.000 | 1.0 | — |
 | rate_eff_delta | 0.000 | 0.000 | +0.000 | 1.0 | PASS |
-| position_sep | 0.000 | 0.015 | +0.015 | 0.1 | PASS |
+| position_sep | 0.000 | 0.018 | +0.018 | 0.1 | PASS |
 | heading | -0.439 | -0.630 | -0.191 | 5.0 | — |
 | distance | 1.868 | 1.868 | +0.000 | 0.05 | — |
 
@@ -198,7 +200,7 @@ calibration: calib-2026-08-15-c7a6e97 · LL dt=0.05 s · HL dt=0.5 s ·
 | fatigue_consumed_delta | 0.000 | -0.005 | -0.005 | 0.05 | PASS |
 | rate_eff | 34.315 | 34.315 | +0.000 | 1.0 | — |
 | rate_eff_delta | 0.000 | 0.000 | +0.000 | 1.0 | PASS |
-| position_sep | 0.000 | 0.096 | +0.096 | 0.1 | PASS |
+| position_sep | 0.000 | 0.201 | +0.201 | 0.1 | ANNOTATED |
 | heading | -0.241 | -0.153 | +0.087 | 5.0 | — |
 | distance | 2.823 | 2.850 | +0.027 | 0.05 | — |
 
@@ -235,7 +237,7 @@ calibration: calib-2026-08-15-c7a6e97 · LL dt=0.05 s · HL dt=0.5 s ·
 | fatigue_consumed_delta | 0.000 | -0.005 | -0.005 | 0.05 | PASS |
 | rate_eff | 37.086 | 37.086 | +0.000 | 1.0 | — |
 | rate_eff_delta | 0.000 | 0.000 | +0.000 | 1.0 | PASS |
-| position_sep | 0.000 | 0.022 | +0.022 | 0.1 | PASS |
+| position_sep | 0.000 | 0.037 | +0.037 | 0.1 | PASS |
 | heading | -1.201 | -1.051 | +0.150 | 5.0 | — |
 | distance | 2.736 | 2.750 | +0.014 | 0.05 | — |
 
@@ -274,7 +276,7 @@ calibration: calib-2026-08-15-c7a6e97 · LL dt=0.05 s · HL dt=0.5 s ·
 | fatigue_consumed_delta | 0.000 | -0.005 | -0.005 | 0.05 | PASS |
 | rate_eff | 32.998 | 32.998 | +0.000 | 1.0 | — |
 | rate_eff_delta | 0.000 | 0.000 | +0.000 | 1.0 | PASS |
-| position_sep | 0.000 | 0.050 | +0.050 | 0.1 | PASS |
+| position_sep | 0.000 | 0.086 | +0.086 | 0.1 | PASS |
 | heading | -3.677 | -3.031 | +0.646 | 5.0 | — |
 | distance | 2.413 | 2.413 | -0.000 | 0.05 | — |
 
@@ -312,7 +314,7 @@ calibration: calib-2026-08-15-c7a6e97 · LL dt=0.05 s · HL dt=0.5 s ·
 | fatigue_consumed_delta | 0.000 | -0.005 | -0.005 | 0.05 | PASS |
 | rate_eff | 28.800 | 28.800 | +0.000 | 1.0 | — |
 | rate_eff_delta | 0.000 | 0.000 | +0.000 | 1.0 | PASS |
-| position_sep | 0.000 | 0.043 | +0.043 | 0.1 | PASS |
+| position_sep | 0.000 | 0.037 | +0.037 | 0.1 | PASS |
 | heading | -2.203 | -2.185 | +0.017 | 5.0 | — |
 | distance | 3.669 | 3.670 | +0.001 | 0.05 | — |
 
@@ -348,7 +350,7 @@ calibration: calib-2026-08-15-c7a6e97 · LL dt=0.05 s · HL dt=0.5 s ·
 | fatigue_consumed_delta | 0.000 | -0.013 | -0.013 | 0.05 | PASS |
 | rate_eff | 44.500 | 44.500 | +0.000 | 1.0 | — |
 | rate_eff_delta | 0.000 | 0.000 | +0.000 | 1.0 | PASS |
-| position_sep | 0.000 | 0.010 | +0.010 | 0.1 | PASS |
+| position_sep | 0.000 | 0.007 | +0.007 | 0.1 | PASS |
 | heading | -0.214 | -0.129 | +0.086 | 5.0 | — |
 | distance | 0.525 | 0.524 | -0.001 | 0.05 | — |
 

@@ -142,3 +142,52 @@ Calibration in force: `calib-2026-08-15-b55e28f.json`.
   their measurements M1–M8. Full plan: VALIDATION.md §11; the coverage
   map §10 carries the corrected statuses. Wave 0 (M1–M8, all
   measurements, no code changes) is the next action.
+- **The review plan executed (this session, the full loop)**: Wave 0's
+  measurements M1–M8 landed; Wave 1's physics decisions landed:
+  - **T1 (the ch.7 triple)**: verdict OPEN-WITH-LOCKED-TEST — the
+    speed-dependent Mark II uplift moves the reference the WRONG way
+    (the corrected residuals −2.7/−5.1/−6.8 %); the cause named: the
+    LL's rate→power shape (per-man gross 110/129/152 W vs the chain's
+    115/145/180, growing with rate; E_g flat at 51.5–52.3 % vs the
+    53–55 % band) — the blade/kinematics chain, not the hull factor.
+    Locked by ll/tests/test_triple_lock.py (4 checks).
+  - **T2 (the t_360/tightest)**: the hold_frac re-measurement landed —
+    the pre-sway 0.05 → 0.08 (the same anchors after the sway DOF): the
+    tightest D 67.7 → 62.6 m (+9.2 % → +1.0 %) AND the drained floor
+    3.54 → 3.22 kt ≈ the trial's halved 3.25. The t_360 stays open
+    (98–101 vs 128 s): the turn-time = π·D/V̄ is the SURGE problem; the
+    W′ drain (65.2 ≈ 68.1 W/man), the rudder drag (the RUDDER_FAC scan
+    breaks the D's), the brake (closes D + the floor, not the time),
+    the linear yaw damping (task H) all measured and ruled out — the
+    residual: the LL's turn-speed floor ~3.2 vs the trial's implied
+    ~2.9 kt, quantified.
+  - **T3 (the turn timing)**: the two-timescale yaw-build landed (the
+    sway-coupled slow mode — the same one as the wprime's decay); the
+    t180 row gated at ±20 % (the measured timing-loose band: the
+    oar-hold −17 %, the oar-back +16 %).
+  - **T4 (the turn deceleration)**: the turn-drag curve extended to
+    per-helm x per-pressure x per-rate (24 measured cells; the steady
+    turns lose 3× more at the G1 anchor, the k falls with rate); the
+    settled-orbit asym nets (the one-side-stopped legs' rowing side
+    drains ~0 vs the symmetric 68 W/man — the HL drained its tank 2.4×
+    too fast before); the sprint_turn mean +1.0 % → +0.7 %.
+  - **T5/T6/T7/T9/T10**: the bin gate (bin_max 5 % / bin_rms 3 % with
+    the cruise back-tail bin scoped), the sweep midpoints measured (the
+    LL's steady curve is NON-MONOTONE — the 30-spm dip; the cells now
+    in PRESSURE_RATES) + the locked 6-cell test, the dt-lock (the drift
+    cells +120–1025 % at dt 0.1–0.2 — the validation dt pinned), the
+    rate_eff identity measured incl. rate 50 (the tempo loss is a
+    start-transient only), the zig-zag out-of-sample (found the
+    steady-turns' deceleration + the reversal-path composition).
+  - **The final acceptance (K19, calibration calib-2026-08-15-c243c01)**:
+    4/7 scripts fully clean (long 0.018, wprime 0.043, three_nm 0.037,
+    tempo 0.007); the annotated boundaries (measured, named, locked):
+    cruise_turn's back-tail (mean −1.7 %, fatigue −0.137, the
+    multi-stable low-speed state — the orbits 0.83–1.38 kt, the ±40 %
+    per-stroke ripple, the V-dependent refill cycles), sprint_turn's
+    position 0.201 (the turn-phase composition), the zig-zag's
+    composition (+1.3 % / 0.318). All 5 turns PASS (±3.9 %, the
+    tightest 62.7/61.7 — the +9.2 % row CLOSED); the t180's inside the
+    ±20 % band. The suite: 141 checks green. The Level-1 ledger: the
+    tightest closed, the triple + the t_360 + the drift angle open with
+    named causes and locks.

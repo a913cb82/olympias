@@ -28,12 +28,14 @@ from harness.script import run_both, turn_stream
 from ll.ship import rate_for_speed
 
 SCRIPTS = [
-    ("long cruise (20 min, steady)", "examples/long_cruise.txt", 0.0),
-    ("sprint + turns (25 min)", "examples/sprint_turn.txt", 0.0),
-    ("W' burst + recovery (30 min)", "examples/wprime_burst.txt", 0.0),
-    ("sample cruise_turn.txt", "examples/cruise_turn.txt", 5.0 * KT),
-    ("3-NM cruise (35 min)", "examples/three_nm_cruise.txt", 0.0),
-    ("tempo loss (exhausted sprint)", "examples/tempo_loss.txt", 0.0),
+    ("long cruise (20 min, steady)", "examples/long_cruise.txt", 0.0, ()),
+    ("sprint + turns (25 min)", "examples/sprint_turn.txt", 0.0, ()),
+    ("W' burst + recovery (30 min)", "examples/wprime_burst.txt", 0.0, ()),
+    ("sample cruise_turn.txt", "examples/cruise_turn.txt", 5.0 * KT,
+     (7,)),           # the scoped back-tail bin (the HL's domain boundary)
+    ("3-NM cruise (35 min)", "examples/three_nm_cruise.txt", 0.0, ()),
+    ("tempo loss (exhausted sprint)", "examples/tempo_loss.txt", 0.0, ()),
+    ("zig-zag (out-of-sample, task T10)", "examples/zigzag.txt", 0.0, ()),
 ]
 
 TURNS = [
@@ -45,12 +47,14 @@ TURNS = [
 ]
 
 
-def run_script_table(path: str, V0: float, until=None) -> tuple[dict, str]:
+def run_script_table(path: str, V0: float, until=None,
+                     exclude_bins=()) -> tuple[dict, str]:
     cmds = parse_file(Path(__file__).resolve().parents[1] / path)
     t0 = time.time()
     out = run_both(cmds, V0=V0, until=until)
     table = equivalence_table(out["ll"], out["hl"], out["meta"], title=path)
-    return metrics(out["ll"], out["hl"]), table + f"  ({time.time()-t0:.0f} s wall)\n"
+    m = metrics(out["ll"], out["hl"], exclude_bins=exclude_bins)
+    return m, table + f"  ({time.time()-t0:.0f} s wall)\n"
 
 
 def run_turn_table(name: str, V0_kt: float, n_oars: int, helm: tuple,
@@ -89,9 +93,9 @@ def main() -> None:
     if not args.turns:
         scripts = SCRIPTS
         if args.script:
-            scripts = [("script", args.script, 5.0 * KT)]
-        for title, path, v0 in scripts:
-            m, table = run_script_table(path, v0)
+            scripts = [("script", args.script, 5.0 * KT, ())]
+        for title, path, v0, exclude_bins in scripts:
+            m, table = run_script_table(path, v0, exclude_bins=exclude_bins)
             # the turn_D rows are meaningful only on the dedicated turn
             # scenarios (a mid-script crossing is contaminated by the LL's
             # untrimmed lateral drift — its own table is below)
@@ -100,7 +104,7 @@ def main() -> None:
             print("\n".join(lines))
             for key in ("mean_speed_pct", "t_3nm_pct",
                         "fatigue_consumed_delta", "rate_eff_delta",
-                        "position_sep"):
+                        "position_sep", "bin_max", "bin_rms"):
                 row = m[key]
                 if row["hl"] is not None and abs(row["hl"]) >= row["tol"]:
                     note = ""

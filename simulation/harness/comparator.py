@@ -53,13 +53,22 @@ def _cumulative_distance(rows):
     return out
 
 
-def metrics(ll_rows, hl_rows):
+def metrics(ll_rows, hl_rows, exclude_bins=()):
     """The Level-2 metric set; every entry is (ll, hl, tol, unit). The
     position gate is the raw separation (as-written in plan §6): the HL
     carries the LL's measured untrimmed drift bias itself (task C, the
-    §21.3 decision) — no correction needed here."""
+    §21.3 decision) — no correction needed here.
+    exclude_bins: the per-script scoped 3-min bins (task T5 — the
+    cruise_turn back-tail window, the HL's documented domain boundary)."""
     def mean_v(rows):
-        return sum(r["V"] for r in rows) / len(rows)
+        # the distance/time integral — the honest mean speed. The
+        # sample-mean aliases the low-speed per-stroke surge ripple
+        # (the ±40 % oscillation at the back rates: the sampled mean is
+        # phase-dependent, the integral is not — the cruise_turn
+        # finding, K14).
+        d = _cumulative_distance(rows)
+        t = rows[-1]["t"] - rows[0]["t"]
+        return d[-1] / t if t > 0.0 else 0.0
 
     ll_v, hl_v = mean_v(ll_rows), mean_v(hl_rows)
 
@@ -105,6 +114,32 @@ def metrics(ll_rows, hl_rows):
 
     dep_ll, dep_hl = depletion(ll_rows), depletion(hl_rows)
 
+    # per-bin trajectory residuals (task T5, VALIDATION §11): 3-min
+    # mean-speed bins, the max |bin| diff and the RMS, in % of the LL
+    # bin mean. The caller passes the scoped bins (the cruise_turn
+    # back-tail window — the HL's documented domain boundary, §9.3.5)
+    # to exclude.
+    def bin_diffs(rows_ll, rows_hl, bw=180.0, exclude=()):
+        def binned(rows):
+            out = []
+            for r in rows:
+                b = int(r["t"] // bw)
+                while len(out) <= b:
+                    out.append([])
+                out[b].append(r["V"])
+            return [sum(b) / len(b) for b in out]
+        bl, bh = binned(rows_ll), binned(rows_hl)
+        diffs = []
+        for i, (a, b) in enumerate(zip(bl, bh)):
+            if i in exclude or a <= 0.5 * KT:
+                continue
+            diffs.append((b / a - 1.0) * 100.0)
+        if not diffs:
+            return None, None
+        mx = max(diffs, key=abs)
+        rms = math.sqrt(sum(d * d for d in diffs) / len(diffs))
+        return mx, rms
+
     return dict(
         mean_speed=dict(ll=ll_v / KT, hl=hl_v / KT, tol=0.01, unit="kt"),
         mean_speed_pct=dict(ll=0.0, hl=ll_v and (hl_v / ll_v - 1.0), tol=0.01,
@@ -128,7 +163,12 @@ def metrics(ll_rows, hl_rows):
         position_sep=dict(ll=0.0, hl=sep / NM, tol=0.1, unit="NM"),
         heading=dict(ll=end(ll_rows)["psi"], hl=end(hl_rows)["psi"],
                      tol=5.0, unit="deg"),
-        distance=dict(ll=d_ll[-1] / NM, hl=d_hl[-1] / NM, tol=0.05, unit="NM"),
+        distance=dict(ll=d_ll[-1] / NM, hl=d_hl[-1] / NM, tol=0.05,
+                      unit="NM"),
+        bin_max=dict(ll=0.0, hl=bin_diffs(ll_rows, hl_rows, exclude=exclude_bins)[0],
+                     tol=5.0, unit="%"),
+        bin_rms=dict(ll=0.0, hl=bin_diffs(ll_rows, hl_rows, exclude=exclude_bins)[1],
+                     tol=3.0, unit="%"),
     )
 
 
