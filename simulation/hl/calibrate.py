@@ -25,7 +25,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from common.chain import KT
-from hl.curves import Calibration, _scalars
+from hl.curves import Calibration, _scalars, _tables
 from ll.hull import equilibrium_speed
 from ll.ship import Ship as LLShip, rate_for_speed
 
@@ -40,6 +40,8 @@ PRESSURE_RATES = [24.0, 25.5, 28.8, 32.3, 36.0, 40.0, 44.5]
 EMPTY_RATES = [25.5, 28.8, 32.3, 36.0, 44.5]
 ASYM_RATES = {"hold": [24.0, 30.0, 36.0], "back": [24.0, 30.0, 36.0, 44.5]}
 NET_RATES = [25.5, 28.8, 32.3, 36.0, 44.5]
+TEMPO_RATES = [25.5, 36.0, 40.0, 44.5, 50.0]
+DRIFT_RATES = [25.5, 28.8, 32.3, 44.5]
 
 
 def log(msg):
@@ -200,6 +202,262 @@ def measure_nets(rates):
     return dict(rates=rates, spoude=spoude, steady=steady, fast=fast)
 
 
+def measure_drift_table():
+    """The untrimmed lateral-drift table (rad/s, task C): the LL's
+    straight-cruise yaw slope at the (rate, pressure, tank-state) cells —
+    the symmetric crew carries a lateral kick, so a midship-helm cruise
+    curves slowly. The drift is W'-dependent (the kick follows the stroke
+    force: stronger at the full tank, weaker when the P_crit floor binds)
+    and rate-dependent — the four columns: the full-tank window (20-60 s
+    from 0.9·V*, the tank drains through it — the anchor is the early
+    average) and the drained state (W' preset 0, LSQ over 600-900 s from
+    rest). The ship interpolates by W_frac."""
+    rates, sf, se, tf, te = DRIFT_RATES, [], [], [], []
+    for r in rates:
+        for pressure in ("spoude", "steady"):
+            ship = LLShip(rate=r, pressure=(pressure, pressure))
+            ship.V = 0.9 * equilibrium_speed("Olympias", r)["V"]
+            t, next_s, psis = 0.0, 0.0, []
+            while t < 90.0:
+                ship.step(DT)
+                t += DT
+                if t >= next_s:
+                    psis.append(ship.psi)
+                    next_s += 1.0
+            full = _psi_slope(psis[20:60])
+            ship = LLShip(rate=r, pressure=(pressure, pressure))
+            for crew in ship.crew.values():
+                for tier in crew.tiers.values():
+                    tier.W = 0.0
+            t, next_s, psis = 0.0, 0.0, []
+            while t < 900.0:
+                ship.step(DT)
+                t += DT
+                if t >= next_s:
+                    psis.append(ship.psi)
+                    next_s += 1.0
+            empty = _psi_slope(psis[600:900])
+            if pressure == "spoude":
+                sf.append(round(full, 8))
+                se.append(round(empty, 8))
+            else:
+                tf.append(round(full, 8))
+                te.append(round(empty, 8))
+    log(f"  drift: spoude full {sf} / empty {se}; steady full {tf} / "
+        f"empty {te}")
+    return dict(rates=rates, spoude_full=sf, spoude_empty=se,
+                steady_full=tf, steady_empty=te)
+
+
+def _psi_slope(ps):
+    """The LSQ slope of a 1 Hz psi trace, rad/s."""
+    ts = list(range(len(ps)))
+    n = len(ps)
+    mt = sum(ts) / n
+    mu = sum(ps) / n
+    return sum((t_ - mt) * (p - mu) for t_, p in zip(ts, ps)) \
+        / sum((t_ - mt) ** 2 for t_ in ts)
+
+
+def measure_tau_exit():
+    """The turn-exit yaw decay (s, the sprint_turn position follow-up):
+    the LL keeps turning after the helm returns to midship — the
+    sway-coupled fishtail (a hard turn at ~6 kt exits with ~70 deg of
+    extra heading over ~2 min; the HL's tau_turn decay is far too fast).
+    Fitted as the exponential with the same heading integral over the
+    120-s window (the quadratic-damped omega decays hyperbolically)."""
+    rate = rate_for_speed("Olympias", 6.0)
+    ship = LLShip(rate=rate, helm=("port", 1.0))
+    ship.V = 6.0 * KT
+    t = 0.0
+    while t < 150.0:                  # well into the turn (omega ~ 0.1)
+        ship.step(DT)
+        t += DT
+    ship.helm_dir, ship.helm_frac = "midship", 0.0
+    t, next_s, om = 0.0, 0.0, []
+    while t < 240.0:
+        ship.step(DT)
+        t += DT
+        if t >= next_s:
+            om.append(ship.omega)
+            next_s += 1.0
+    w0 = om[0]
+    best, best_rms = None, float("inf")
+    for tau in [x for x in range(4, 121)]:       # 4 .. 120 s
+        rms = math.sqrt(sum((w - w0 * math.exp(-i / tau)) ** 2
+                            for i, w in enumerate(om)) / len(om))
+        if rms < best_rms:
+            best, best_rms = tau, rms
+    log(f"  tau_exit: {best:.0f} s (RMS {best_rms:.5f} rad/s over 240 s)")
+    return float(best)
+
+
+def _exponential_fit(v0, tail):
+    """Best τ (s) fitting v0 + (v0 - v_asym)*exp(-i/tau) to the 1 Hz
+    samples (v_asym = the tail mean). Returns (tau, rms m/s)."""
+    v_asym = sum(tail[-60:]) / 60.0
+    best, best_rms = None, float("inf")
+    for tau in [x / 2 for x in range(4, 161)]:      # 2.0 .. 80.0 s
+        rms = math.sqrt(sum((v - (v_asym + (v0 - v_asym)
+                                  * math.exp(-i / tau))) ** 2
+                            for i, v in enumerate(tail)) / len(tail))
+        if rms < best_rms:
+            best, best_rms = tau, rms
+    return best, best_rms, v_asym
+
+
+def _entry_decay(state, rate, pressure="fast", v0_kt=6.0, t_end=330.0):
+    """The one-side-stopped entry decay (task E): the LL at (row, state)
+    from v0 (the scenario's cruise speed), the state's equilibrium —
+    fitted as the chase model's exponential (the fit_tau_surge
+    methodology)."""
+    ship = LLShip(rate=rate, oar_state=("row", state),
+                  pressure=(pressure, pressure))
+    ship.V = v0_kt * KT
+    t, next_s, Vs = 0.0, 0.0, []
+    while t < t_end:
+        ship.step(DT)
+        t += DT
+        if t >= next_s:
+            Vs.append(ship.V)
+            next_s += 1.0
+    tau, rms, v_asym = _exponential_fit(v0_kt * KT, Vs)
+    log(f"  {state}@{rate} entry: tau {tau:.1f} s (RMS {rms*KT:.3f} kt, "
+        f"settles {v_asym/KT:.2f} kt)")
+    return tau, rms, v_asym / KT
+
+
+def _collapse_window(state, rate_before, rate_after, entry_tau,
+                     pressure="fast", settle=90.0, window=180.0):
+    """The low-rate collapse transition (task E): the cruise_turn 1440 s
+    bin — the LL at (row, back) at the pre-transition rate, the rate
+    drops to the collapse regime. The LL's transient is dip-and-recover
+    (not exponential), so the effective τ is fitted to the gate quantity:
+    the HL's mean V over the window must match the LL's (the fit_tau_turn
+    philosophy). entry_tau: the measured back-entry τ at the high rate
+    (the tau_back table's second point)."""
+    from hl.ship import Ship as HLShip
+    ship = LLShip(rate=rate_before, oar_state=("row", state),
+                  pressure=(pressure, pressure))
+    ship.V = 0.9 * equilibrium_speed("Olympias", rate_before)["V"]
+    t, next_s, Vs = 0.0, 0.0, []
+    while t < settle + window:
+        if abs(t - settle) < DT / 2:
+            ship._set_rate(rate_after)
+        ship.step(DT)
+        t += DT
+        if t >= next_s:
+            Vs.append(ship.V)
+            next_s += 1.0
+    i0 = int(settle) - 1
+    v0 = sum(Vs[i0 - 5:i0]) / 5.0
+    ll_mean = sum(Vs[i0:i0 + int(window)]) / window
+    tables = _tables()
+    best, best_diff = None, float("inf")
+    for tau in [x for x in range(10, 161)]:        # 10 .. 160 s
+        tables["tau_back"] = {"rates": [rate_after, rate_before],
+                               "tau": [tau, entry_tau]}
+        cal = Calibration(dict(id="fit"), tables, _scalars())
+        hl = HLShip(rate=rate_after, oar_state=("row", state),
+                    pressure=(pressure, pressure), curves=cal)
+        hl.V = v0
+        vs = []
+        while hl.t < window + 1e-6:
+            hl.step(hl.dt)
+            vs.append(hl.V)
+        hl_mean = sum(vs) / len(vs)
+        diff = abs(hl_mean - ll_mean)
+        if diff < best_diff:
+            best, best_diff = tau, diff
+    log(f"  {state} {rate_before}->{rate_after} collapse: tau {best:.0f} s "
+        f"(mean diff {best_diff*KT:.3f} kt; LL window mean {ll_mean/KT:.2f} kt)")
+    return float(best), best_diff * KT, ll_mean / KT
+
+
+def measure_state_tau(state):
+    """The per-state surge lag (task E), measured at the cruise_turn's
+    transitions: the entry decay at 44 spm fast from 6 kt (the degenerate
+    back ≡ hold regime) and, for the back, the 44 → 24 collapse (the
+    window-mean fit). Returns (tau_entry, tau_collapse)."""
+    if state == "hold":
+        tau, rms, v = _entry_decay("hold", 44.0)
+        return dict(entry=tau, rms_mps=rms, settles_kt=v)
+    tau_e, rms_e, v_e = _entry_decay("back", 44.0)
+    tau_c, diff_c, mean_c = _collapse_window("back", 44.0, 24.0, tau_e)
+    return dict(entry=tau_e, collapse=tau_c, entry_rms_mps=rms_e,
+                collapse_mean_diff_mps=diff_c, settles_kt=v_e,
+                window_mean_kt=mean_c)
+
+
+def measure_tempo_loss(rates):
+    """The achieved-rate curve (task B): the exhausted crew cannot hold
+    the tempo at high rates (rower.py's tempo branch — the drive cannot
+    fit its slot). W' preset at zero, spoude from 0.9·V* (the exhausted
+    state's speed), settled rate_eff; the full-W' column is the record
+    (expected: the commanded rate)."""
+    full, empty, t0 = [], [], time.time()
+    for r in rates:
+        for preset, out in ((None, full), (0.0, empty)):
+            ship = LLShip(rate=r)
+            if preset is not None:
+                for crew in ship.crew.values():
+                    for tier in crew.tiers.values():
+                        tier.W = 0.0
+            ship.V = 0.9 * equilibrium_speed("Olympias", r)["V"]
+            t, next_s, effs = 0.0, 0.0, []
+            while t < 120.0:
+                ship.step(DT)
+                t += DT
+                if t >= next_s:
+                    effs.append(ship.crew["port"].rate_eff)
+                    next_s += 1.0
+            out.append(round(sum(effs[-30:]) / 30.0, 2))
+    log(f"  tempo loss: rates {rates} -> full {full}, empty {empty}, "
+        f"{time.time()-t0:.0f} s")
+    return dict(rates=rates, full_rate_eff=full, empty_rate_eff=empty)
+
+
+def measure_turn_drag(tables):
+    """The turn-deceleration residual (task F): the sway-coupled loss the
+    exact rudder drag law misses — the LL's V(t) through a G1 turn vs the
+    HL's, scanned over the extra-drag scalar k (a_rud_extra =
+    k·helm_frac·rudder_straight·V²/m_app; k = 0 is today's ship)."""
+    from hl.ship import Ship as HLShip
+    rate = rate_for_speed("Olympias", 6.0)
+    ll = LLShip(rate=rate, helm=("port", 1.0))
+    ll.V = 6.0 * KT
+    t, next_s, ll_vs = 0.0, 0.0, []
+    while abs(ll.psi) < math.pi and ll.t < 900.0:
+        ll.step(DT)
+        t += DT
+        if t >= next_s:
+            ll_vs.append(ll.V)
+            next_s += 1.0
+    best, best_rms = None, float("inf")
+    for k in [x / 100 for x in range(0, 101, 2)]:   # 0.00 .. 1.00
+        cal = Calibration(dict(id="fit"), tables, dict(_scalars(),
+                                                       turn_drag_extra=k))
+        hl = HLShip(rate=rate, helm=("port", 1.0), curves=cal)
+        hl.V = 6.0 * KT
+        hl_vs = [v for i, v in enumerate(hl_step(hl)) if i % 2 == 0]
+        n = min(len(ll_vs), len(hl_vs))
+        rms = math.sqrt(sum((ll_vs[i] - hl_vs[i]) ** 2 for i in range(n)) / n)
+        if rms < best_rms:
+            best, best_rms = k, rms
+    log(f"  turn drag: k={best:.2f} (RMS {best_rms*KT:.3f} kt over the turn)")
+    return best, round(best_rms * KT, 4)
+
+
+def hl_step(hl):
+    """Step an HL ship through a full turn, returning its per-step V
+    samples (dt = 0.5 s; the fit downsamples to the LL's 1 Hz)."""
+    vs = []
+    while abs(hl.psi) < math.pi and hl.t < 900.0:
+        hl.step(hl.dt)
+        vs.append(hl.V)
+    return vs
+
+
 def _ll_turn_D(rate, helm, oar_state=("row", "row"), v0_kt=6.0):
     """The LL's path-measured turn diameter (|y| at 180 deg)."""
     ship = LLShip(rate=rate, helm=helm, oar_state=oar_state)
@@ -254,11 +512,13 @@ def fit_tau_surge(vstar_kt_28):
     return best, best_rms
 
 
-def fit_tau_turn(tables, ll_d):
+def fit_tau_turn(tables, ll_d, scalars=None):
     """Scan tau_turn so the HL's path-measured D matches the LL's across
     the four families (g1/f1/tightest/oar-hold) — the first-order lag
     inflates |y| at 180 deg, so the fit is against the path, not the raw
-    build-up (plan §19.2)."""
+    build-up (plan §19.2). scalars: the measured extras (turn_drag_extra
+    must be in — the ship's turn deceleration changes the path D)."""
+    scalars = _scalars() if scalars is None else scalars
     from hl.ship import Ship as HLShip
     # a copy for the fits: the stored tables keep null for the midship D
     # (json has no inf); the fit needs the real infinity
@@ -277,8 +537,8 @@ def fit_tau_turn(tables, ll_d):
     ]
     best, best_max = None, float("inf")
     for tau in (3.0, 3.5, 4.0, 4.5, 5.0, 6.0, 8.0):
-        cal = Calibration(dict(id="fit"), cal_tables, dict(_scalars(),
-                                                           tau_turn=tau))
+        cal = Calibration(dict(id="fit"), cal_tables,
+                          dict(scalars, tau_turn=tau))
         worst = 0.0
         for d_ref, rate, helm, oar_state, v0 in scenarios:
             ship = HLShip(rate=rate, helm=helm, oar_state=oar_state,
@@ -308,25 +568,37 @@ def main() -> None:
         "hold": measure_asym("hold", ASYM_RATES["hold"]),
         "back": measure_asym("back", ASYM_RATES["back"]),
         "net": measure_nets(NET_RATES),
+        "tempo_loss": measure_tempo_loss(TEMPO_RATES),
+        "drift": measure_drift_table(),
     }
     d_tables = measure_d_tables()
     tables["d_rudder"] = [[f, None] if f == 0.0 else [f, d]
                           for f, d in d_tables["rudder"]]
     tables["d_oar"] = d_tables["oar"]
 
+    tau_hold = measure_state_tau("hold")
+    tau_back = measure_state_tau("back")
+    tables["tau_back"] = {"rates": [24.0, 44.0],
+                           "tau": [tau_back["collapse"],
+                                    tau_back["entry"]]}
+    tau_exit = measure_tau_exit()
+
     tau_surge, rms_surge = fit_tau_surge(tables["vstar"]["kt"][
         VSTAR_GRID.index(28.8)])
     log(f"  tau_surge fit: {tau_surge:.1f} s (RMS {rms_surge*KT:.2f} kt)")
+    turn_k, rms_k = measure_turn_drag(tables)
     tau_turn, max_d = fit_tau_turn(tables, dict(
         g1=[d for f, d in d_tables["rudder"] if f == 1.0][0],
         f1=[d for f, d in d_tables["rudder"] if abs(f - 1 / 3) < 1e-3][0],
         tightest=[d for f, d in d_tables["oar"] if f == 1.0][0],
         oar_hold=[d for f, d in d_tables["oar"] if f == 0.0][0],
-    ))
+    ), dict(_scalars(), turn_drag_extra=turn_k))
     log(f"  tau_turn fit: {tau_turn:.1f} s "
         f"(max |D diff| {max_d*100:.1f} % across the families)")
 
-    scalars = dict(_scalars(), tau_surge=tau_surge, tau_turn=tau_turn)
+    scalars = dict(_scalars(), tau_surge=tau_surge, tau_turn=tau_turn,
+                   tau_hold=tau_hold["entry"], turn_drag_extra=turn_k,
+                   tau_exit=tau_exit)
     residuals = dict(
         vstar="exact at the grid points (mean-force bisection)",
         pressure_rows_std_kt=dict(
@@ -335,6 +607,19 @@ def main() -> None:
         ),
         tau_surge_rms_mps=rms_surge,
         tau_turn_max_d_pct=max_d * 100.0,
+        tau_hold_rms_mps=tau_hold["rms_mps"],
+        tau_hold_settles_kt=tau_hold["settles_kt"],
+        tau_back_entry_rms_mps=tau_back["entry_rms_mps"],
+        tau_back_collapse_mean_diff_mps=tau_back["collapse_mean_diff_mps"],
+        tau_back_window_mean_kt=tau_back["window_mean_kt"],
+        tempo_loss_full_is_commanded=(
+            tables["tempo_loss"]["full_rate_eff"] ==
+            tables["tempo_loss"]["rates"]),
+        turn_drag_rms_mps=rms_k,
+        tau_exit="the LL's omega decay after helm->midship, exponential "
+                 "fit over 240 s",
+        drift="LSQ yaw slope at the (rate, pressure, tank) cells: the "
+              "full-tank window 20-60 s + the drained 600-900 s",
     )
     meta = dict(
         id=cal_id, ll_commit=commit, date=date,
@@ -349,6 +634,14 @@ def main() -> None:
             d_tables="ll.ship.run_turn protocol (|y| at 180 deg)",
             tau_surge="LSQ of the chase to the 28.8 spm rest start",
             tau_turn="scan so the HL's |y| at 180 deg matches the LL's",
+            drift="LL straight-cruise yaw slope at the anchors (task C)",
+            tau_exit="LL omega decay after the helm returns midship "
+                     "(sprint_turn position follow-up)",
+            tempo_loss="LL exhausted rate_eff at the anchor rates (task B)",
+            tau_hold="LL (row, hold) entry decay fit at 44 spm (task E)",
+            tau_back="LL (row, back) entry fit at 44 + the 44->24 collapse "
+                     "window-mean fit (task E)",
+            turn_drag="LL G1-turn V(t) vs the HL's, extra-drag scan (task F)",
         ),
     )
 

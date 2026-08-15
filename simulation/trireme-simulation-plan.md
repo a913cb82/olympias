@@ -1091,49 +1091,26 @@ plan for closing every closable row and the definition of done.
   prints no unannotated violations; the suite is green (the count lives in
   VALIDATION §8).
 
-### 21.2 The work items (ordered)
+### 21.2 The task DAG
 
-1. **Complete the comparator's §6 gate set** — the settled-rate metric
-   (rate_eff telemetry; the binding case is the exhausted-sprint tempo loss,
-   oQ-14) and the drift-floor-corrected position metric (|sep| minus the
-   measured floor at the run length — the raw separation stays an
-   informational row). Plus a measured tempo-loss curve for the HL (the
-   LL's achieved rate when exhausted at high rates — one LL protocol) so
-   the settled-rate gate can pass the tempo-loss scenario.
-2. **The 3-NM script** — a ~40-min cruise in `examples/` (also exercises
-   the long-run fatigue gate at full length); the t_3nm row gets its first
-   number and must land within 1 % of the LL.
-3. **The back-tail fix** — measure the LL's one-side-stopped decay τ
-   (back and hold; the cruise_turn 1440–1620 s bins are the evidence) →
-   per-state τ in the curves → re-calibrate → the cruise_turn mean gate
-   closes.
-4. **The turn-deceleration term** — measure the LL's speed-loss curve
-   through a turn (the G1-family V(t): 6.0 → 5.4 kt over 54 s) → a
-   calibrated turn-drag response in the HL → re-calibrate → the sprint_turn
-   mean gate closes.
-5. **Level-1 coverage: the ch.7 Mark II triple** — run the LL at
-   hull = 1.08 (the Mark II drag multiplier) vs the 7.0/7.5/8.0 kt
-   references; validates or documents the known tension with the Table 9.6
-   anchors (a research-chain test).
-6. **The t_360 decision** — test the linear yaw-damping hypothesis
-   (register C1's units hint). Closed → the open list shrinks to the
-   no-anchor items; not closed → locked as the sole open physics item with
-   the test recorded in §7.2.
-7. **The Mark IIb blade layer** — implement the ch.9 (q/p)² turning-point
-   law (the §7.6 diagnosis); the oQ-18 equivalence gets its physical
-   implementation; re-run Gates 1/7 and the calibration loop.
-8. **The regeneration discipline** — after every LL change, re-run
-   `hl/calibrate.py` → `harness/run_validation.py`; the verdicts come only
-   from the harness on the pinned calibration.
+The task graph for closing every closable row — tasks A–L, the layers,
+the per-task exit criteria, the convergence rule, the critical path
+(`I → R2 → J → K → A → L`) and the loop guard — is recorded in
+[`full-validation-dag.md`](full-validation-dag.md) (the single source).
+In one line: Layer 0 (B–I, all parallel) → Layer 1 (R1/R2, J — after the
+last LL-truth change) → Layer 2 (K, the acceptance run) → Layer 3
+(A, the annotated run; L, the completion check).
 
 ### 21.3 Decision points (recorded here when taken)
 
-- **The position gate** (coverage row 10.2.5): default = the gate
-  re-expressed as |sep| − drift_floor(run length) — the HL stays the
-  trimmed ship (the trials' helmsmen trimmed; the LL's kick is an untrimmed
-  artifact). Alternative = a calibrated bias-yaw in the HL (the gate passes
-  as-written but the HL reproduces the artifact). The default is chosen
-  unless a scenario demands untrimmed matching.
+- **The position gate** (coverage row 10.2.5): **decision taken 2026-08-15
+  (task C)** — the bias-yaw: the measured drift is pressure-dependent
+  (spoude −0.0010 vs steady −0.0003 rad/s, flat over rate), so the
+  single-scalar floor (the original default) cannot represent it; the HL
+  now carries the measured drift table (`curves.drift_bias`), matching
+  the LL's untrimmed truth, and the gate stays as-written (0.1 NM). The
+  residual (the table's interpolation vs the scripts' state mixes, the
+  turn-phase interplay) lands in the net separation at K.
 - **The interpolated midpoints** (coverage row 10.2.8): the gates are
   defined at the schema's anchor levels; the numeric-pressure and
   helm-fraction interpolations carry recorded residuals, not gates.
@@ -1222,10 +1199,10 @@ plus the coverage map (VALIDATION §10) showing only **validated** /
 - [ ] **Phase 3** — the annotated script run: the equivalence-table
       deliverable with the tolerance sources (the first table exists in
       VALIDATION §9; the annotated form is the remaining item).
-- [ ] **Full-validation items** (plan §21.2): the comparator's settled-rate
-      metric + the drift-floor-corrected position gate (§21.2.1); the 3-NM
-      script (§21.2.2); the back-tail per-state τ (§21.2.3); the measured
-      turn-deceleration term (§21.2.4); the ch.7 Mark II triple check
-      (§21.2.5); the t_360 hypothesis test (§21.2.6); the Mark IIb blade
-      layer (§21.2.7). The definition of done and the completion check:
-      §21.
+- [ ] **Full-validation tasks** (the DAG — `full-validation-dag.md`): B (settled-rate
+      metric + tempo-loss curve), C (drift-floor-corrected position gate),
+      D (the 3-NM script), E (back-tail per-state τ), F (turn-deceleration
+      term), G (ch.7 Mark II triple check), H (t_360 hypothesis test),
+      I (Mark IIb blade layer); then J → K → A → L (regenerate → accept →
+      annotate → the completion check, §21.1). The definition of done and
+      the completion check: §21.1/§21.4.

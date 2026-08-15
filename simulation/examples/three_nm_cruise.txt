@@ -1,0 +1,6 @@
+# The 3-NM gate script (task D): a long straight cruise that crosses
+# 3 NM — the t_3nm Level-2 gate (plan §6) gets its first number, and the
+# long-run fatigue gate runs at full length.
+# Format: <time_s> <verb> [args]; # comments. See plan §3.5.
+0, rate, 28.8
+2100, oars, bank

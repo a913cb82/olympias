@@ -54,7 +54,10 @@ def _cumulative_distance(rows):
 
 
 def metrics(ll_rows, hl_rows):
-    """The Level-2 metric set; every entry is (ll, hl, tol, unit)."""
+    """The Level-2 metric set; every entry is (ll, hl, tol, unit). The
+    position gate is the raw separation (as-written in plan §6): the HL
+    carries the LL's measured untrimmed drift bias itself (task C, the
+    §21.3 decision) — no correction needed here."""
     def mean_v(rows):
         return sum(r["V"] for r in rows) / len(rows)
 
@@ -73,12 +76,17 @@ def metrics(ll_rows, hl_rows):
                 break
 
     end = lambda rows: rows[-1]                     # noqa: E731
-    dx = end(hl_rows)["x"] - end(ll_rows)["x"]
-    dy = end(hl_rows)["y"] - end(ll_rows)["y"]
-    sep = math.hypot(dx, dy)
+    x_ll, y_ll = end(ll_rows)["x"], end(ll_rows)["y"]
+    x_hl, y_hl = end(hl_rows)["x"], end(hl_rows)["y"]
+    sep = math.hypot(x_hl - x_ll, y_hl - y_ll)
 
     w_ll = end(ll_rows)["crew"]["port"]["W_frac"]
     w_hl = end(hl_rows)["crew"]["port"]["W_frac"]
+
+    def mean_rate(rows):
+        return sum(r["crew"]["port"]["rate_eff"] for r in rows) / len(rows)
+
+    rate_ll, rate_hl = mean_rate(ll_rows), mean_rate(hl_rows)
 
     d_turn = {}
     for name, rows in (("ll", ll_rows), ("hl", hl_rows)):
@@ -114,6 +122,9 @@ def metrics(ll_rows, hl_rows):
         fatigue_consumed=dict(ll=dep_ll, hl=dep_hl, tol=0.05, unit="W' frac"),
         fatigue_consumed_delta=dict(ll=0.0, hl=dep_hl - dep_ll, tol=0.05,
                                     unit="pts"),
+        rate_eff=dict(ll=rate_ll, hl=rate_hl, tol=1.0, unit="spm"),
+        rate_eff_delta=dict(ll=0.0, hl=rate_hl - rate_ll, tol=1.0,
+                            unit="spm"),
         position_sep=dict(ll=0.0, hl=sep / NM, tol=0.1, unit="NM"),
         heading=dict(ll=end(ll_rows)["psi"], hl=end(hl_rows)["psi"],
                      tol=5.0, unit="deg"),

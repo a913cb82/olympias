@@ -18,6 +18,9 @@ every gate, anchor, result and honest mismatch — lives in
   (the equivalence record: VALIDATION.md §9).
 - `harness/` (Phase 3) runs the same command script on both simulators and
   produces the Level-2 equivalence tables (`run_validation.py`).
+- `full-validation-dag.md` is the task graph (A–L) for closing every
+  closable coverage-map row; the row statuses live in VALIDATION.md §10,
+  the definition of done in plan §21.
 
 ## Layout
 
@@ -183,8 +186,10 @@ no CLI: `from commands.parser import parse_file, parse_script` — errors raise
       `comparator.py` + `run_validation.py` + the script set — the
       equivalence tables are the acceptance record (VALIDATION.md §9);
       the annotated script run is the remaining item.
-- [ ] **Full validation** (plan §21, coverage map VALIDATION §10): the
-      comparator's missing gates (settled rate, 3-NM), the turn-heavy
-      mean-speed fixes, the ch.7 Mark II triple check, the t_360
-      hypothesis, the Mark IIb blade layer.
+- [ ] **Full validation** (the DAG — `full-validation-dag.md`): B (settled-
+      rate metric + tempo-loss curve), C (drift-floor-corrected position
+      gate), D (the 3-NM script), E (back-tail per-state τ), F (turn-
+      deceleration term), G (ch.7 Mark II triple check), H (t_360
+      hypothesis test), I (Mark IIb blade layer); then J → K → A → L
+      (regenerate → accept → annotate → the completion check, plan §21.1).
 - [ ] Phase 4 — crew & environment;  [ ] Phase 5 — oar-manoeuvres

@@ -100,6 +100,36 @@ NET_FAST = [-20.3, -3.7, +16.0, +1.4, 0.0]
 # the rest refill: the tank's cap (W_max / tau = 41.7 W/man)
 NET_REST = -41.7
 
+# The achieved-rate curve (task B): the exhausted crew cannot hold the
+# tempo at high rates — the LL's rower.py tempo branch (the drive cannot
+# fit its slot; B_eff falls below the floor). Provisional bootstrap:
+# identity (no loss) — the calibration measures the empty-tank rate_eff
+# over rate at the anchor levels.
+TEMPO_RATES = [25.5, 36.0, 40.0, 44.5, 50.0]
+TEMPO_EMPTY = [25.5, 36.0, 40.0, 44.5, 50.0]
+
+# The untrimmed lateral-drift table, rad/s (task C): the LL's
+# straight-cruise yaw slope at the anchor (rate, pressure) cells — the
+# symmetric crew carries a lateral kick, so a midship-helm cruise curves
+# slowly (~−0.0010 rad/s at spoude vs ~−0.0003 at steady, flat over
+# rate). The HL carries the bias (the §21.3 decision — the single-scalar
+# floor cannot represent the pressure dependence; the HL matches the
+# LL's truth and the position gate stays as-written). Measured in this
+# session; the calibration measures it fresh.
+DRIFT_RATES = [25.5, 28.8, 32.3, 44.5]
+DRIFT_SPOUDE_FULL = [-0.001168, -0.001311, -0.001409, -0.001305]
+DRIFT_SPOUDE_EMPTY = [-0.001109, -0.001044, -0.001169, -0.000381]
+DRIFT_STEADY_FULL = [-0.000709, -0.000827, -0.000866, -0.001053]
+DRIFT_STEADY_EMPTY = [-0.000325, -0.000273, -0.000580, -0.000565]
+
+# The back-state surge lag, s over rate (task E): the entry at high rate
+# is the degenerate regime (back ≡ hold, ~24 s); the low-rate collapse
+# (the cruise_turn 1440 s bin) is dip-and-recover, fitted to the gate
+# window's mean speed (~60 s effective). Provisional bootstrap:
+# identity with the hold value; the calibration measures both anchors.
+TAU_BACK_RATES = [24.0, 44.0]
+TAU_BACK_TAU = [TAU_SURGE, TAU_SURGE]
+
 
 def _pwl(xs, ys, x):
     """Piecewise-linear interpolation with flat clamps."""
@@ -158,6 +188,19 @@ class Calibration:
         self._net_spoude = list(t["net"]["spoude"])
         self._net_steady = list(t["net"]["steady"])
         self._net_fast = list(t["net"]["fast"])
+        tl = t.get("tempo_loss") or {}
+        self._tempo_rates = list(tl.get("rates", TEMPO_RATES))
+        self._tempo_empty = list(tl.get("empty_rate_eff",
+                                        self._tempo_rates))
+        dr = t.get("drift") or {}
+        self._drift_rates = list(dr.get("rates", DRIFT_RATES))
+        self._drift_sf = list(dr.get("spoude_full", DRIFT_SPOUDE_FULL))
+        self._drift_se = list(dr.get("spoude_empty", DRIFT_SPOUDE_EMPTY))
+        self._drift_tf = list(dr.get("steady_full", DRIFT_STEADY_FULL))
+        self._drift_te = list(dr.get("steady_empty", DRIFT_STEADY_EMPTY))
+        tb = t.get("tau_back") or {}
+        self._tau_back_rates = list(tb.get("rates", TAU_BACK_RATES))
+        self._tau_back_tau = list(tb.get("tau", TAU_BACK_TAU))
         self.d_rudder_pts = [tuple(p) for p in t["d_rudder"]]
         self.d_oar_pts = [tuple(p) for p in t["d_oar"]]
         s = scalars or {}
@@ -167,6 +210,9 @@ class Calibration:
         self.p_crit = s.get("p_crit", P_CRIT)
         self.tau_w = s.get("tau_w", TAU)
         self.net_rest = s.get("net_rest", NET_REST)
+        self.tau_hold = s.get("tau_hold", TAU_SURGE)
+        self.turn_drag_extra = s.get("turn_drag_extra", 0.0)
+        self.tau_exit = s.get("tau_exit", TAU_TURN)
         rig = RIGS["Olympias"]
         self.hold_k = HOLD_FRAC * 0.5 * RHO * rig["area"] * CN  # N/(m/s)^2/oar
 
@@ -253,6 +299,46 @@ class Calibration:
         """The measured spoude external power per man, W (P_crit + drain)."""
         return P_CRIT + _pwl(self._net_rates, self._net_spoude, rate)
 
+    def rate_eff(self, rate, empty):
+        """The achieved stroke rate, spm: the commanded rate, except when
+        the tank is empty at high rates — the exhausted crew loses tempo
+        (measured: the LL's rower.py tempo branch — the drive cannot fit
+        its slot; the curve is the empty-tank rate_eff over rate)."""
+        if not empty:
+            return rate
+        return _pwl(self._tempo_rates, self._tempo_empty, rate)
+
+    def drift_bias(self, rate, pressure, w_frac=1.0):
+        """The untrimmed lateral-drift rate, rad/s (task C): the LL's
+        measured straight-cruise yaw bias at (rate, pressure, tank state)
+        — the kick follows the stroke force, so the bias interpolates
+        between the full-tank and the drained anchors by W_frac; scales
+        from 0 at rest (no oar forces, no kick). The HL carries the bias
+        so the position gate stays as-written (§21.3 decision)."""
+        if pressure <= 0.0:
+            return 0.0
+        w = max(0.0, min(1.0, w_frac))
+        sf = _pwl(self._drift_rates, self._drift_sf, rate)
+        se = _pwl(self._drift_rates, self._drift_se, rate)
+        tf = _pwl(self._drift_rates, self._drift_tf, rate)
+        te = _pwl(self._drift_rates, self._drift_te, rate)
+        if pressure >= 1.0:
+            full, empty = sf, se
+        elif pressure <= 0.7:
+            full = tf * pressure / 0.7
+            empty = te * pressure / 0.7
+        else:
+            f = (pressure - 0.7) / 0.3
+            full = tf + (sf - tf) * f
+            empty = te + (se - te) * f
+        return full + (empty - full) * (1.0 - w)
+
+    def tau_back(self, rate):
+        """The back-state surge lag, s at rate (task E): the degenerate
+        entry regime at high rate vs the low-rate collapse — measured
+        anchors, linear between."""
+        return _pwl(self._tau_back_rates, self._tau_back_tau, rate)
+
     def resolve_pressure(self, value):
         """Schema pressure value (enum name or number) -> numeric level."""
         if isinstance(value, str):
@@ -276,12 +362,20 @@ def _tables():
         "d_oar": D_OAR,
         "net": {"rates": NET_RATES, "spoude": NET_SPOUDE,
                  "steady": NET_STEADY, "fast": NET_FAST},
+        "tempo_loss": {"rates": TEMPO_RATES, "full_rate_eff": TEMPO_RATES,
+                        "empty_rate_eff": TEMPO_EMPTY},
+        "drift": {"rates": DRIFT_RATES, "spoude_full": DRIFT_SPOUDE_FULL,
+                   "spoude_empty": DRIFT_SPOUDE_EMPTY,
+                   "steady_full": DRIFT_STEADY_FULL,
+                   "steady_empty": DRIFT_STEADY_EMPTY},
+        "tau_back": {"rates": TAU_BACK_RATES, "tau": TAU_BACK_TAU},
     }
 
 
 def _scalars():
     return dict(tau_surge=TAU_SURGE, tau_turn=TAU_TURN, w_max=W_MAX,
-                p_crit=P_CRIT, tau_w=TAU, net_rest=NET_REST)
+                p_crit=P_CRIT, tau_w=TAU, net_rest=NET_REST,
+                tau_hold=TAU_SURGE, turn_drag_extra=0.0, tau_exit=TAU_TURN)
 
 
 def bootstrap():

@@ -1,0 +1,6 @@
+# The tempo-loss scenario (task B): the settled-rate gate's binding case —
+# a spoude sprint run until the crew is exhausted and the achieved rate
+# has settled at the tempo-lost level, then bank.
+# Format: <time_s> <verb> [args]; # comments. See plan §3.5.
+0, rate, 44.5
+300, oars, bank

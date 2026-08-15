@@ -18,9 +18,11 @@ so the Phase-3 harness runs both simulators identically.
 
 Known HL-loose spots (the honesty contract, plan §20): stroke ripple and
 within-cycle force phase; per-side W' (one shared tank); exhausted-side
-yaw drift; sway/drift in turns (folded into the calibrated D); tempo loss
-(rate_eff = rate always); the applied-rudder drag (only its effect on the
-turn diameter is in). Each is re-visited only if a gate proves it.
+rate call-down; sway in turns (folded into the calibrated D); tempo loss
+(rate_eff = the measured empty-tank curve); the applied-rudder drag
+(only its effect on the turn diameter is in). The straight-cruise drift
+bias is measured (task C) — the HL carries it like the LL's untrimmed
+ship. Each loose spot is re-visited only if a gate proves it.
 """
 
 from __future__ import annotations
@@ -63,6 +65,9 @@ class Ship:
         self.W = self.curves.w_max
         self.W_max = self.curves.w_max
         self.W_frac = 1.0
+        self.rate_eff = rate
+        self._wss_prev = 0.0       # the previous turn target (release detect)
+        self._exit_omega = 0.0     # the fishtail's decaying yaw rate
 
     # ------------------------------------------------------------------
     def step(self, dt: float) -> None:
@@ -73,23 +78,40 @@ class Ship:
                   and self.rate > 0.5]
 
         # -- surge -----------------------------------------------------
+        p_eff = min(c.resolve_pressure(self.pressure[s]) for s in rowing) \
+            if rowing else 0.0
         if rowing:
-            p_eff = min(c.resolve_pressure(self.pressure[s]) for s in rowing)
             empty = self.W <= 0.0
+            # the achieved rate: the exhausted crew loses tempo at high
+            # rates (the LL's rower.py tempo branch — measured curve);
+            # the chase and the tank net evaluate at the achieved rate,
+            # exactly as the LL's equilibrium does
+            r_eff = c.rate_eff(self.rate, empty)
+            self.rate_eff = r_eff
             if len(rowing) == 2:
-                vstar = c.vstar(self.rate, p_eff, empty)
+                vstar = c.vstar(r_eff, p_eff, empty)
+                tau = c.tau_surge
             else:
                 stopped = OTHER[rowing[0]]
-                vstar = c.vasym(self.rate, p_eff, self.oar_state[stopped],
+                # the per-state lag (task E): the one-side-stopped decays
+                # measured separately — the back collapse at low rate
+                # (cruise_turn 1440 s bin) is much slower than the chase
+                tau = c.tau_back(self.rate) \
+                    if self.oar_state[stopped] == "back" else c.tau_hold
+                vstar = c.vasym(r_eff, p_eff, self.oar_state[stopped],
                                 empty)
-            self.V += (vstar - self.V) / c.tau_surge * dt
+            self.V += (vstar - self.V) / tau * dt
             # the applied rudder drag the chase target cannot know (the
             # calibrated V* rows are no-rudder equilibria): the LL loses
-            # ~2 kt in a full-helm turn, the HL must too (harness finding)
+            # ~2 kt in a full-helm turn, the HL must too (harness
+            # finding); turn_drag_extra (task F) is the measured
+            # sway-coupled residual the exact drag law misses
             if (self.helm_dir != "midship" and self.helm_frac > 0.0
                     and self.V > 0.0):
-                a_rud = ((RUDDER_FAC - 1.0) * self.vessel.rudder_straight
-                         * (self.V / KT) ** 2 / self.m_app)
+                a_rud = ((RUDDER_FAC - 1.0)
+                         + c.turn_drag_extra * self.helm_frac) \
+                    * self.vessel.rudder_straight * (self.V / KT) ** 2 \
+                    / self.m_app
                 self.V = max(0.0, self.V - a_rud * dt)
         else:
             vkt = abs(self.V) / KT
@@ -121,13 +143,33 @@ class Ship:
             wss = sign * 2.0 * self.V / c.d_rudder(self.helm_frac)
         else:
             wss = 0.0
+        turn_target = wss
+        # the untrimmed lateral kick (task C): the LL's symmetric crew
+        # carries a measured yaw bias — the HL carries it too, so the
+        # position gate stays as-written (§21.3 decision). Not applied in
+        # the one-side-stopped state (the oar-family D absorbs it).
+        if rowing and not asym:
+            wss += c.drift_bias(self.rate, p_eff, self.W_frac)
+        # the fishtail (the sprint_turn follow-up): at the moment the turn
+        # target disappears (the helm release), the LL keeps turning — the
+        # sway-coupled exit decays slowly (measured tau_exit); the capture
+        # is the yaw rate at the release, decayed in parallel, while the
+        # drift build-up itself keeps the fast tau_turn
+        if self._wss_prev != 0.0 and turn_target == 0.0:
+            self._exit_omega = self.omega
+        self._wss_prev = turn_target
+        if self._exit_omega:
+            self._exit_omega *= math.exp(-dt / c.tau_exit)
+            wss += self._exit_omega
+            if abs(self._exit_omega) < 1e-4:
+                self._exit_omega = 0.0
         self.omega += (wss - self.omega) / c.tau_turn * dt
 
         # -- crew tank ---------------------------------------------------
         # net = the measured drain/refill (W/man) at the anchor levels;
         # the refill is capped at W_max/tau as in the LL
         if rowing:
-            net = c.net(self.rate, p_eff)
+            net = c.net(r_eff, p_eff)
             if net > 0.0:
                 self.W = max(0.0, self.W - net * dt)
             else:
@@ -188,7 +230,7 @@ class Ship:
         for side in ("port", "star"):
             crew[side] = dict(state=self.oar_state[side],
                               pressure=self.pressure[side],
-                              rate_eff=self.rate, W_frac=self.W_frac,
+                              rate_eff=self.rate_eff, W_frac=self.W_frac,
                               limited="none")
         return dict(t=self.t, V=self.V, omega=self.omega, psi=self.psi,
                     x=self.x, y=self.y, rate=self.rate, crew=crew,

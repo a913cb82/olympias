@@ -32,6 +32,8 @@ SCRIPTS = [
     ("sprint + turns (25 min)", "examples/sprint_turn.txt", 0.0),
     ("W' burst + recovery (30 min)", "examples/wprime_burst.txt", 0.0),
     ("sample cruise_turn.txt", "examples/cruise_turn.txt", 5.0 * KT),
+    ("3-NM cruise (35 min)", "examples/three_nm_cruise.txt", 0.0),
+    ("tempo loss (exhausted sprint)", "examples/tempo_loss.txt", 0.0),
 ]
 
 TURNS = [
@@ -97,13 +99,14 @@ def main() -> None:
                      if not ln.startswith("| turn_D")]
             print("\n".join(lines))
             for key in ("mean_speed_pct", "t_3nm_pct",
-                        "fatigue_consumed_delta", "position_sep"):
+                        "fatigue_consumed_delta", "rate_eff_delta",
+                        "position_sep"):
                 row = m[key]
                 if row["hl"] is not None and abs(row["hl"]) >= row["tol"]:
                     note = ""
                     if key == "position_sep":
-                        note = " (LL's untrimmed lateral kick — HL-loose, " \
-                               "plan §19.1; the HL is the trimmed ship)"
+                        note = " (the HL carries the measured drift bias; " \
+                               "the residual is the path fidelity)"
                     violations.append(f"{path}: {key} {row['hl']:+.3f} "
                                       f"(tol {row['tol']}){note}")
 

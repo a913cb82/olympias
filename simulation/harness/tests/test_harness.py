@@ -70,17 +70,17 @@ def test_run_both_deterministic():
 
 def test_long_cruise_level2():
     """The sustainable envelope: W' full, stable speed, inside the gates.
-    Position: the LL carries a documented untrimmed lateral kick (test_trim:
-    the blade's net Fy, ~-0.016 rad/min at cruise — a helmsman would trim
-    it) that the HL — the trimmed ship — does not reproduce; the separation
-    floor is locked here (~0.17 NM over 10 min), not matched silently."""
+    Position (task C): the LL's untrimmed lateral kick is a measured,
+    calibrated bias — the HL carries it now (the §21.3 decision), so the
+    position gate passes as-written; the separation locks small (< 0.1 NM
+    over 10 min), not at the old drift floor."""
     cmds = parse_file(EXAMPLES / "long_cruise.txt")
     out = run_both(cmds, V0=0.0, until=600.0)
     m = metrics(out["ll"], out["hl"])
     assert abs(m["mean_speed_pct"]["hl"]) < 0.01
     assert m["fatigue"]["ll"] > 0.95 and m["fatigue"]["hl"] > 0.95
     sep = m["position_sep"]["hl"]
-    assert 0.1 < sep < 0.25, f"drift floor moved: {sep:.2f} NM"
+    assert sep < 0.1, f"position gate moved: {sep:.2f} NM"
     # and the tables carry the tolerance source label
     from harness.comparator import equivalence_table
     table = equivalence_table(out["ll"], out["hl"], out["meta"])
