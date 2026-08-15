@@ -16,12 +16,16 @@ intent: whatever a trireme commander can order (stroke rhythm, oar state, helm, 
 rest, hold or back water), either simulator must execute faithfully — one at ship level,
 the other at the level of every oar.
 
-Status: **draft v0.6.** **Phase 1 is complete** — the LL is built and validated
-(88 gates, VALIDATION.md); the t_360 residual is the one open discrepancy (§17/§18).
-**Phases 2–3 are next**: the HL from LL response curves (§19) and the pair harness
-(§20). Open questions are numbered oQ-1…oQ-21 in §10 and flagged inline; research
-gaps are tracked in §9. Nothing here is accepted research until it has a source
-citation or a validated run.
+Status: **draft v0.7.** **Phase 1 is complete** — the LL is built and validated
+(56 gates + the command language + the research-chain locks, VALIDATION.md);
+the t_360 residual is the one open discrepancy (§17/§18). **Phase 2 is
+complete** — the HL bootstrap, the machine calibration run (§19.2) and the
+Level-2 equivalence through the harness (VALIDATION.md §9). **Phase 3's
+harness core is implemented** — the equivalence tables are the acceptance
+record; the annotated script run (§20) is the remaining item. Open questions
+are numbered oQ-1…oQ-21 in §10 and flagged inline; research gaps are tracked
+in §9. Nothing here is accepted research until it has a source citation or a
+validated run.
 
 ---
 
@@ -276,9 +280,10 @@ Every HL result carries the tolerance source (calibration run id).
 seeded environment and starting state, then produces the equivalence table above.
 
 **Calibration**: HL response curves are regenerated from LL steady-state runs
-(`calibrate()`); when the LL gains fidelity, the HL curves are refreshed and the
-tolerance annotations updated. The HL is never hand-tuned to old self-numbers; it is
-re-fitted to the LL's new truth.
+(`hl/calibrate.py` — the machine calibration run, §19.2); when the LL gains
+fidelity, the curves are refreshed and the tolerance annotations updated. The
+HL is never hand-tuned to old self-numbers; it is re-fitted to the LL's new
+truth.
 
 ## 7. Architecture sketch (python, matching the repo)
 
@@ -506,11 +511,13 @@ sprint time-history, and asymmetric-side behaviour.
 
 - G4-1 ✓ sustained: steady = the sustainable envelope — W′ full, speed stable
   over 30 min at 25.5/28.8 spm.
-- G4-2 ✓ sprint: spoude bursts (W′ drains in ~90 s), speed fades toward the
-  sustainable cruise — the trials' time-history.
+- G4-2 ✓ sprint: spoude bursts (W′ drains in ~40 s at 44.5 spm — the
+  measured drain 130 W/man), speed fades toward the sustainable cruise —
+  the trials' time-history.
 - G4-3 ✓ rest start: short stretched strokes (sweep shrinks to ~57 %, drive
   stretches to the tempo slot); peak Fh ≤ 700 N; launch **slower than Taylor's
-  bulk law** (7.2 kt @ 30 s vs 9 kt @ 24 s) — the physiology governs the start.
+  bulk law** (6.0 kt @ 30 s vs 9 kt @ 24 s, measured) — the physiology governs
+  the start.
 - G4-4 ✓ backing: **degenerates to the hold-brake at speed** (the flow drag
   exceeds the rower's grip); active + weak at low speed.
 - G4-5 ✓ asymmetric: exhausted side strokes slower (mean-limited) → differential
@@ -877,7 +884,20 @@ justified): **ruled out and reverted** (the code, the bands and the
 telemetry removed). The t_360 remains an open discrepancy with no known
 cause.
 
-## 19. Phase 2 — the HL: **next** (the fast ship-level integrator, `hl/`)
+## 19. Phase 2 — the HL: **in progress** (the fast ship-level integrator, `hl/`)
+
+**Status**: the bootstrap HL is implemented and green — `hl/ship.py` (the whole
+simulator), `hl/curves.py` (Calibration + bootstrap + the calibration-file
+loader), `hl/calibrate.py` (the machine calibration run, §19.2), `hl/run_hl.py`,
+and `hl/tests/test_hl_basics.py` (9 checks). The shared harness (Phase 3's
+first deliverable, `harness/`) drives both simulators on the script set + the
+turn scenarios and produces the equivalence tables: turn diameters within
+±1.3 % of the LL at all five scenarios, cruise/fatigue gates inside on the
+non-turn scripts (the measured divergences and the HL-loose list: VALIDATION.md
+§9), 103 checks green in the full suite. The calibration run is done —
+`hl/calibrate.py` wrote `hl/calibration/calib-2026-08-15-b55e28f.json` (the
+ship's default; the three loop rounds and their protocol fixes: VALIDATION.md
+§9.3).
 
 The LL is complete and ready as the oracle (§15.3). Phase 2 builds its consumer —
 the fast, efficient ship-level integrator of §4 — with the response curves
@@ -899,7 +919,8 @@ the fast, efficient ship-level integrator of §4 — with the response curves
 **Calibration protocol** (the §6 rule, made operational): `hl/calibrate.py` runs the
 LL protocols, fits the curves, and writes each tolerance annotation — every HL
 output carries "±X % of LL, calibration run #N". When the LL gains fidelity, the
-curves are regenerated; the HL is never hand-tuned to its own old numbers.
+curves are regenerated; the HL is never hand-tuned to its own old numbers. The
+full protocol and file format: §19.2.
 
 **Acceptance** (the Level-2 first tolerances, §6): |mean speed| < 1 % over a
 10-minute script including a sprint and a turn; settled rate within 1 spm; G1/F1
@@ -908,7 +929,133 @@ turn diameter within 5 %; accumulated fatigue within 5 %; final position within
 of wall-clock. Gates: a `tests/test_hl_*.py` suite locking each curve against its
 LL calibration run and the Level-2 tolerances.
 
-## 20. Phase 3 — the pair harness: **next** (one script, two ships)
+### 19.1 The bootstrap HL — what is built, and where it is honest
+
+The HL is a curve-chasing ship, deliberately minimal (plan §2.1: complexity only
+when a gate proves it necessary):
+
+- **Surge (rowing)**: V chases the calibrated equilibrium row with a first-order
+  lag — `dV/dt = (V* − V)/tau_surge`. One side stopped: the measured (row, hold)
+  equilibrium (the held blades' brake bites hard — ~3.7 kt, not the no-brake
+  85-oar estimate).
+- **Surge (not rowing)**: the exact drag law `dV/dt = −(D(V) + brake)/m_app` — the
+  same ODE the LL integrates for rest/bank/hold/back.
+- **Yaw**: omega chases `2V/D` with a first-order lag (`tau_turn`); D comes from
+  the calibrated families (rudder, or one-side hold/back — the two measure the
+  same D in the current LL, backing degenerates to the hold-brake at speed).
+- **Crew**: one W' tank (5 kJ, P_crit 80 W/man, tau 120 s — constants imported
+  from `ll.rower`); the drain/refill net (W/man) measured at the anchor levels
+  (the harness fatigue gate: the chain-law + commanded-omega flip estimate ran
+  the refill ~25 % fast); at zero the chase target drops to the measured
+  P_crit-limited row (~6.0–6.4 kt).
+
+**Bootstrap provenance** — every number in `hl/curves.py` is a direct LL
+measurement from the build session (recorded in the table comments):
+
+- V* spoude row: `ll.hull.equilibrium_speed` over the rate grid (12 rates);
+- steady/fast rows: LL ship 300-s settle runs at the pressure levels — the
+  measured rows are ~0.75–0.79 of the spoude V* (a power-law guess would be
+  wrong; the thrust-vs-handle-force relation is strongly nonlinear), and the
+  fast row dips below steady at 44.5 spm (high-rate slot/feather interplay,
+  recorded as printed);
+- empty row: LL ship with the tiers' W preset at zero (the P_crit-limited plan);
+- asym rows: LL ship (row, hold) straight-line settles — and the back rows
+  separately (the reversed oar collapses at ≤ 24 spm: 1.9 kt spoude, 0.9
+  steady vs the hold's 3.6/2.9 — the harness caught the cruise_turn tail);
+- D tables: `ll/run_turn.py` scenarios (G1/F1/tightest/oar-hold/oar-back);
+- tank nets: LL W'-drain/refill runs at the anchor levels (spoude drains
+  37–130 W/man, steady/fast nets measured with a low tank preset and a short
+  window — the refill cap would taint a long one);
+- the drift floor: the LL's untrimmed lateral kick (−0.016 rad/min at cruise,
+  test_trim) — measured and locked as the position-separation floor, not
+  modeled (the HL is the trimmed ship);
+- tau_surge = 20 s: fitted to the LL crewed rest-start (6.0 kt @ 30 s);
+- tau_turn = 4 s: fitted so the first-order yaw lag lands the path-measured D
+  inside the gate (the LL's true sway-coupled build-up, ~8.5 s, inflates |y| at
+  180 deg by ~7 % — documented HL-loose).
+
+**The HL-loose list** (the §20 honesty contract, decided at design time, with the
+triggers that would re-open each): stroke ripple and within-cycle force phase
+(averages out at the 10-min means); per-side W' (one shared tank — re-open if the
+fatigue gate fails); exhausted-side yaw drift (not gated); the LL's untrimmed
+lateral kick — the position-separation floor ~0.017 NM/min, measured and locked
+(§9.3.4, the HL is the trimmed ship); the sway-coupled turn deceleration — the
+LL loses ~0.3 kt more per helm turn (the applied-rudder drag is in; the
+sprint_turn residual +1.5 % vs the 1 % gate); the back-tail transition — the
+LL's rate change re-plans the oar and the brake drives a deep low-speed
+undershoot the smooth chase cannot represent (cruise_turn +1.2 %; the per-state
+tau or a brake-aware decay are the named triggers); tempo loss (rate_eff = rate
+always); start-transient shape (the single tau_surge is a compromise between the
+fast rest-start and the slower high-speed approach — re-open if a script gate
+fails); numeric pressures between the measured anchor levels are interpolated
+linearly.
+
+The harness (Phase 3's first deliverable, `harness/`) is the validation vehicle:
+`run_validation.py` runs the script set + the turn scenarios on both simulators
+and prints the equivalence tables — the acceptance record is VALIDATION.md §9.
+
+### 19.2 Calibration protocol — **implemented** (`hl/calibrate.py`)
+
+The calibration run regenerates the same table structure the bootstrap fills,
+from LL protocols, and writes `hl/calibration/calib_<id>.json` (+ `latest.json`,
+the ship's default): every table machine-measured with its residuals, the
+protocols documented in the file's meta, the LL commit recorded. The run
+(~2.5 min of LL protocols) is the loop's first step: calibrate →
+`harness/run_validation.py` → adjust → repeat. The first calibration
+(`calib-2026-08-15-b55e28f`) took three loop rounds — each found and fixed a
+real measurement-protocol bug (the cap-biased tank slopes, the drained-state
+pressure rows, the applied-0.0-helm rudder residual; VALIDATION.md §9.3).
+
+| Table | LL protocol (all exist today) | Notes |
+| --- | --- | --- |
+| V* spoude row | `ll.hull.equilibrium_speed` over the rate grid (8…50 spm, step 2) | the spoude+full-W' row == the bare commanded oar at cruise |
+| steady / fast rows | LL ship 300-s settle at the pressure (1 Hz samples, tail mean) | the sustainable envelope; tail-mean — a single sample is biased by the surge ripple ±0.1 kt |
+| empty row | LL ship, tiers' W preset 0, settle | the P_crit-limited level |
+| hold / back rows | LL ship (row, hold / row, back), settle, at spoude and steady | the back collapses at ≤ 24 spm — measured separately |
+| tank nets | LL W'-drain/refill slopes at the anchor levels (low preset, short window) | + = drain, − = refill; the refill cap taints a long window |
+| D rudder | `ll/run_turn.py` at helm_frac {1/3, 1/2, 2/3, 1} | extends the interpolation midpoints |
+| D oar | `ll/run_turn.py` oar-hold at helm_frac {0, 1/2, 1} | the tightest family midpoints |
+| tau_surge | least-squares fit of the HL's V(t) to the LL rest-start (0…120 s) | one scalar; per-rate only if a gate fails |
+| tau_turn | fit so the HL's |y| at 180 deg matches the LL's per family | the D gate is the judge |
+| spoude power | LL W'-drain runs over the rate grid | the tank's burst level |
+| residuals | every table stores its max/mean |deviation| vs the raw LL points | → the tolerance labels |
+
+**File schema** (`hl/calibration/calib_<id>.json`):
+
+```json
+{
+  "id": "calib-<date>-<ll-commit>",
+  "ll_commit": "...", "date": "...",
+  "config": {"rig": "Olympias", "fleet": "spruce", "hull": 1.0, "n_oars": 170},
+  "protocols": {"vstar": "ll.hull.equilibrium_speed", "d_rudder": "ll/run_turn.py ..."},
+  "tables": {"vstar": {"rates": [...], "kt": [...]}, "steady": ..., "d_rudder": ...,
+              "p_spoude": ...},
+  "scalars": {"tau_surge": ..., "tau_turn": ..., "w_max": 5000, "p_crit": 80, "tau_w": 120},
+  "residuals": {"vstar_max_pct": ..., "d_rudder_max_pct": ..., "tau_surge_rms": ...}
+}
+```
+
+**Regeneration rule**: when the LL gains fidelity, `calibrate.py --regenerate`
+re-measures and rewrites the file; the tests run against the pinned latest; no
+hand-edited numbers. The residual annotations feed the "±X % of LL, calibration
+run #N" labels every HL output carries.
+
+**Explicit non-goals** (complexity only if a gate fails): no per-tier or per-side
+crew machinery; no sway DOF; no force tables; no fitted constants beyond the
+tables above; no changes to the LL. The triggers: 10-min mean > 1 % → per-rate
+tau_surge; sprint envelope misses → one fitted drain factor; D > 5 % on any turn
+→ tau_turn per family; fatigue > 5 % → a second W' tank (per side); position
+> 0.1 NM → sway/drift terms.
+
+## 20. Phase 3 — the pair harness: **in progress** (one script, two ships)
+
+**Status**: the harness core is implemented and is the validation vehicle —
+`harness/script.py` (one command stream, both simulators, 1 Hz telemetry),
+`harness/comparator.py` (the Level-2 metrics; the fatigue gate is the
+consumption integral), `harness/run_validation.py` (the script set + the turn
+scenarios → equivalence tables + violations), `harness/tests/test_harness.py`
+(6 checks), the script set in `examples/`. The acceptance record:
+VALIDATION.md §9. The remaining item is the annotated script run (below).
 
 The shared command language is already frozen (Step 0); Phase 3 wires it to both
 simulators:
@@ -924,6 +1071,88 @@ simulators:
   sprint+turn, and a W′-burst sequence (the oQ-4 scenarios);
 - deliverable: the equivalence table + the first annotated script run; gates lock
   the table's headline numbers.
+
+## 21. The path to full validation — and how we know when it is reached
+
+The coverage map (VALIDATION.md §10) is the master inventory: every
+scenario, its status, and the path each row takes. This section is the work
+plan for closing every closable row and the definition of done.
+
+### 21.1 Definition of done (what "100 % validation" means)
+
+- **Level 1 (real → LL)**: every anchor either passes its band, or sits on
+  the open-items list with a named cause, a locking test and a path (the
+  t_360; the no-anchor items). No unexplained or silent mismatches.
+- **Level 2 (LL → HL)**: all six §6 gates pass on the defined script set +
+  the five turn scenarios, against the pinned calibration file; the
+  tolerance source is the calibration id on every output.
+- **Evidence**: the coverage map has no failed / never-exercised /
+  not-implemented cells in the in-scope rows; `harness/run_validation.py`
+  prints no unannotated violations; the suite is green (the count lives in
+  VALIDATION §8).
+
+### 21.2 The work items (ordered)
+
+1. **Complete the comparator's §6 gate set** — the settled-rate metric
+   (rate_eff telemetry; the binding case is the exhausted-sprint tempo loss,
+   oQ-14) and the drift-floor-corrected position metric (|sep| minus the
+   measured floor at the run length — the raw separation stays an
+   informational row). Plus a measured tempo-loss curve for the HL (the
+   LL's achieved rate when exhausted at high rates — one LL protocol) so
+   the settled-rate gate can pass the tempo-loss scenario.
+2. **The 3-NM script** — a ~40-min cruise in `examples/` (also exercises
+   the long-run fatigue gate at full length); the t_3nm row gets its first
+   number and must land within 1 % of the LL.
+3. **The back-tail fix** — measure the LL's one-side-stopped decay τ
+   (back and hold; the cruise_turn 1440–1620 s bins are the evidence) →
+   per-state τ in the curves → re-calibrate → the cruise_turn mean gate
+   closes.
+4. **The turn-deceleration term** — measure the LL's speed-loss curve
+   through a turn (the G1-family V(t): 6.0 → 5.4 kt over 54 s) → a
+   calibrated turn-drag response in the HL → re-calibrate → the sprint_turn
+   mean gate closes.
+5. **Level-1 coverage: the ch.7 Mark II triple** — run the LL at
+   hull = 1.08 (the Mark II drag multiplier) vs the 7.0/7.5/8.0 kt
+   references; validates or documents the known tension with the Table 9.6
+   anchors (a research-chain test).
+6. **The t_360 decision** — test the linear yaw-damping hypothesis
+   (register C1's units hint). Closed → the open list shrinks to the
+   no-anchor items; not closed → locked as the sole open physics item with
+   the test recorded in §7.2.
+7. **The Mark IIb blade layer** — implement the ch.9 (q/p)² turning-point
+   law (the §7.6 diagnosis); the oQ-18 equivalence gets its physical
+   implementation; re-run Gates 1/7 and the calibration loop.
+8. **The regeneration discipline** — after every LL change, re-run
+   `hl/calibrate.py` → `harness/run_validation.py`; the verdicts come only
+   from the harness on the pinned calibration.
+
+### 21.3 Decision points (recorded here when taken)
+
+- **The position gate** (coverage row 10.2.5): default = the gate
+  re-expressed as |sep| − drift_floor(run length) — the HL stays the
+  trimmed ship (the trials' helmsmen trimmed; the LL's kick is an untrimmed
+  artifact). Alternative = a calibrated bias-yaw in the HL (the gate passes
+  as-written but the HL reproduces the artifact). The default is chosen
+  unless a scenario demands untrimmed matching.
+- **The interpolated midpoints** (coverage row 10.2.8): the gates are
+  defined at the schema's anchor levels; the numeric-pressure and
+  helm-fraction interpolations carry recorded residuals, not gates.
+- **The scoped rows** (coverage row 10.2.9): waves/environment and
+  oar-manoeuvres get their own gates when Phases 4/5 are built; per-side
+  pressure steering, exhausted-side yaw, tempo loss, the Mark IIb rig, the
+  old-fir fleet, reduced crews and rates < 8 spm re-open only via their
+  named triggers (§19.1).
+
+### 21.4 The completion check
+
+```bash
+cd simulation
+../.venv/bin/python3 -m pytest                    # green; count in VALIDATION §8
+../.venv/bin/python3 harness/run_validation.py   # no unannotated violations
+```
+
+plus the coverage map (VALIDATION §10) showing only **validated** /
+**open-with-locked-test** / **scoped** cells in the in-scope rows.
 
 ## Next actions
 
@@ -964,9 +1193,39 @@ simulators:
       turn halves speed after the burst; rate 50 + exhausted = tempo lost.
       Research subtasks now: ch.9 sprint durations → W′; S6 force-curve
       source → Fh_max; τ (plan §12.6).
-- [ ] **Phase 2** — `hl/` skeleton: the HL tolerance/labels format (the open item
-      below) + the response-curve extraction (`hl/calibrate.py`, LL protocols, §19).
-- [ ] **Phase 2** — consistency gates vs ch.7 cruise and ch.9 sprint; the Level-2
-      first tolerances (§19).
-- [ ] **Phase 3** — the harness: `harness/script.py` + the first equivalence table
-      + the violation loop (§20).
+- [x] **Phase 2 — the HL bootstrap** (`simulation/hl/`, plan §19.1): the
+      curve-chasing fast ship — `ship.py` (the whole simulator, same command
+      API as the LL), `curves.py` (Calibration + bootstrap, every number a
+      direct LL measurement), `run_hl.py`, `hl/tests/test_hl_basics.py`
+      (9 checks). The HL-loose list and the complexity triggers: plan §19.1.
+- [x] **Phase 3 — the harness core** (`simulation/harness/`, plan §20):
+      `script.py` (one command stream, both simulators, 1 Hz telemetry),
+      `comparator.py` (the Level-2 metrics — the fatigue gate is the
+      consumption integral, not the brittle endpoint W_frac),
+      `run_validation.py` (the script set + the turn scenarios, equivalence
+      tables + violations), `harness/tests/test_harness.py` (6 checks), the
+      script set in `examples/`. The acceptance record: VALIDATION.md §9 —
+      turns within ±2 %, cruise/fatigue gates inside, the measured
+      divergences documented (the drift floor, the turn-deceleration
+      residual).
+- [x] **Phase 2 — the calibration run** (`hl/calibrate.py`, plan §19.2):
+      the full protocol set machine-measured from the LL (vstar grid,
+      pressure/empty/hold/back rows, tank nets with the direction-probed
+      cap-safe slope, D tables with the helm_frac midpoints, tau fits)
+      → `hl/calibration/calib-2026-08-15-b55e28f.json` (+ latest.json,
+      the ship's default). Three loop rounds fixed three real protocol
+      bugs (VALIDATION.md §9.3). The Level-2 gates on the calibration:
+      turns within ±1.3 %, fatigue −0.005 pts, cruise gates inside on the
+      non-turn scripts; the measured divergences (the drift floor, the
+      back-tail transition, the turn deceleration) documented in
+      VALIDATION §9.3 with their triggers.
+- [ ] **Phase 3** — the annotated script run: the equivalence-table
+      deliverable with the tolerance sources (the first table exists in
+      VALIDATION §9; the annotated form is the remaining item).
+- [ ] **Full-validation items** (plan §21.2): the comparator's settled-rate
+      metric + the drift-floor-corrected position gate (§21.2.1); the 3-NM
+      script (§21.2.2); the back-tail per-state τ (§21.2.3); the measured
+      turn-deceleration term (§21.2.4); the ch.7 Mark II triple check
+      (§21.2.5); the t_360 hypothesis test (§21.2.6); the Mark IIb blade
+      layer (§21.2.7). The definition of done and the completion check:
+      §21.

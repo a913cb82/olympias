@@ -1,0 +1,5 @@
+# Long cruise — the sustainable envelope (plan §20 script set).
+# 20 min at steady pressure: both sims must hold W' full and a stable speed.
+0, rate, 28.8
+60, pressure, steady
+1200, pressure, rest

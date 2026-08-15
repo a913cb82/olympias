@@ -1,0 +1,11 @@
+# W' burst + recovery (plan §20 script set): a spoude burst, a full rest,
+# a second burst — the tank must drain, refill, and drain again.
+0, rate, 30
+600, pressure, spoude
+660, rate, 44.5
+900, pressure, rest
+1200, pressure, spoude
+1260, rate, 44.5
+1500, pressure, steady
+1560, rate, 28.8
+1800, pressure, rest

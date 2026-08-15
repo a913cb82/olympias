@@ -1,0 +1,16 @@
+# Sprint + turns (plan §20 script set): burn W' at 44.5, turn both ways,
+# ease back to the envelope.
+0, rate, 30
+600, pressure, spoude
+660, rate, 44.5
+780, helm, starboard
+900, helm, midship
+960, pressure, steady
+1020, rate, 28.8
+1140, helm, port
+1260, helm, midship
+1320, pressure, spoude
+1380, rate, 44.5
+1500, pressure, steady
+1560, rate, 28.8
+1680, pressure, rest
