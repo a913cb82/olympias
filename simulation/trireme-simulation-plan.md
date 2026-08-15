@@ -1122,6 +1122,12 @@ last LL-truth change) → Layer 2 (K, the acceptance run) → Layer 3
 
 ### 21.4 The completion check
 
+The review-driven next-step plan (the ch.7 triple tension, the t_360 turn
+drag, the drift angle, the knob audit, the gate-edge rows, the
+strengthening gates a–f) is recorded in VALIDATION §11 — the coverage-map
+statuses there are authoritative. The completion check below stays the
+definition of done; §11's tasks land as their verdicts arrive.
+
 ```bash
 cd simulation
 ../.venv/bin/python3 -m pytest                    # green; count in VALIDATION §8

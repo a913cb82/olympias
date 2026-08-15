@@ -124,3 +124,21 @@ Calibration in force: `calib-2026-08-15-b55e28f.json`.
   `hl/tests/test_drift_closure.py` (the settled cells, the kick curve,
   the slow-decay scalars, the burst-path ω closure, the rest decay).
   The suite: 107 + 13 + 6 = 126 tests.
+- **The 2026-08 critical review + the next-step plan (this session)**: a
+  review of the real→LL and LL→HL validation (methodology + coverage) —
+  findings: (1) the ch.7 cruise triple is not reproduced (the LL's rate
+  curve is flatter: @hull=1.08 −2.5/−4.6/−6.1 %; the Table 9.6 pair
+  remains the acceptance; the Mark II uplift's speed-dependence is the
+  leading candidate — T1); (2) t_360 −23 % and the tightest +9.2 % share
+  the missing turn drag (the trial's 128 s is derived from "halves
+  speed"; the LL loses −32 %, the trial implies −55 % — T2); (3) the
+  drift angle never measured against the time-domain LL (1.4° vs
+  15°/7.8° — T8); (4) the fitted-knob audit + the acceleration
+  locked-context row (M4); (5) the Level-2 soft spots — sprint_turn
+  mean +1.0 % and position 0.096 at the gate edges (T4), the rate_eff
+  identity (T9), the ungated t180 −13 % (T3). The strengthening gates
+  a–f (bins, out-of-sample script, interpolation sweep, dt-convergence,
+  t180 gate, drift-angle check) are planned as T5/T10/T6/T7/T3/T8 with
+  their measurements M1–M8. Full plan: VALIDATION.md §11; the coverage
+  map §10 carries the corrected statuses. Wave 0 (M1–M8, all
+  measurements, no code changes) is the next action.
