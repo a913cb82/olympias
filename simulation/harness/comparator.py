@@ -1,4 +1,4 @@
-"""Level-2 equivalence metrics + the equivalence table (plan §6, §20).
+"""Level-2 equivalence metrics + the equivalence table (the pair contract — simulation/AGENTS.md).
 
 Every metric is computed from the two simulators' 1 Hz telemetry (the snap
 dicts from harness/script.py) and checked against the Level-2 first
@@ -55,7 +55,7 @@ def _cumulative_distance(rows):
 
 def metrics(ll_rows, hl_rows, exclude_bins=()):
     """The Level-2 metric set; every entry is (ll, hl, tol, unit). The
-    position gate is the raw separation (as-written in plan §6): the HL
+    position gate is the raw separation (as-written in the pair contract (simulation/AGENTS.md)): the HL
     carries the LL's measured untrimmed drift bias itself (task C, the
     §21.3 decision) — no correction needed here.
     exclude_bins: the per-script scoped 3-min bins (task T5 — the

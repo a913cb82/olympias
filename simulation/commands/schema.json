@@ -1,6 +1,6 @@
 {
   "schema_version": "0.1.0",
-  "comment": "Command language v1 — the battle set: 4 crew verbs (plan §3.2). Scoping: rate and helm are ship-global; oars and pressure take an optional side (default both); there is no per-tier scope (tiers of a side share one state). Deterministic, fail-fast: unknown verbs and out-of-range args are rejected before a run.",
+  "comment": "Command language v1 — the battle set: 4 crew verbs (the battle set). Scoping: rate and helm are ship-global; oars and pressure take an optional side (default both); there is no per-tier scope (tiers of a side share one state). Deterministic, fail-fast: unknown verbs and out-of-range args are rejected before a run.",
   "verbs": {
     "rate": {
       "intent": "set the stroke cadence; ship-global — both sides listen to the same pipe",

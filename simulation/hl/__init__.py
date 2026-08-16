@@ -1,4 +1,4 @@
-"""The fast high-level simulator (plan §19).
+"""The fast high-level simulator (the calibration protocol — simulation/AGENTS.md).
 
 The HL is a curve-chasing ship: it reads its response curves from a
 Calibration (hl/curves.py), chases the equilibrium speed with a first-order

@@ -1,8 +1,8 @@
-"""HL basics: structure, anchors, turns, burst, performance (plan §19).
+"""HL basics: structure, anchors, turns, burst, performance (the calibration protocol — simulation/AGENTS.md).
 
 Run: python3 hl/tests/test_hl_basics.py  (from simulation/)
 
-Contract (Level 2 first tolerances, plan §6):
+Contract (Level 2 first tolerances, the pair contract (simulation/AGENTS.md)):
   - the HL chases the LL's equilibrium speeds (< 1 % mean over cruise runs);
   - G1/F1/tightest/oar turn diameters within 5 % of the current LL values;
   - the spoude burst drains W' and fades to the P_crit ceiling;

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""HL-vs-LL validation through the shared harness (plan §19, §20).
+"""HL-vs-LL validation through the shared harness (the calibration protocol (simulation/AGENTS.md), §20).
 
 Usage (from simulation/):
     python3 harness/run_validation.py             # the whole script set + turns
@@ -10,7 +10,7 @@ Runs each script on both simulators with the same commands, state and event
 semantics, computes the Level-2 metrics (harness/comparator.py), and prints
 the equivalence table per script plus the summary verdicts. The LL is the
 oracle: any violation is either fixed in the HL or documented as an
-HL-loose place (plan §18) — the honesty contract is a code requirement.
+HL-loose place (the HL — simulation/AGENTS.md) — the honesty contract is a code requirement.
 """
 
 import argparse

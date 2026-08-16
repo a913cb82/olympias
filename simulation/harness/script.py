@@ -1,4 +1,4 @@
-"""Drive one command stream on both simulators (plan §20).
+"""Drive one command stream on both simulators (the harness — simulation/AGENTS.md).
 
 The same parsed commands, the same starting state (V0), the same event
 semantics as the simulators' own run_script — but stepped manually so both
@@ -17,7 +17,7 @@ from hl.ship import Ship as HLShip
 from ll.ship import Ship as LLShip
 
 LL_DT = 0.05               # the LL's comparison dt (the suite's de-facto)
-HL_DT = 0.5                # plan §4: the HL's 0.5-1 s step
+HL_DT = 0.5                # the HL design (simulation/AGENTS.md): the HL's 0.5-1 s step
 SAMPLE_S = 1.0             # common telemetry cadence
 
 

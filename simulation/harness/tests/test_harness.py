@@ -1,5 +1,5 @@
 """Harness checks: the comparator math, determinism, and Level-2 sanity on
-short scripts (plan §20).
+short scripts (the harness — simulation/AGENTS.md).
 
 Run: python3 harness/tests/test_harness.py  (from simulation/)
 
@@ -7,7 +7,7 @@ The harness must be deterministic and its metric computations exact: the
 turn diameter from |y| at 180 deg, the 3-NM crossing time, the position
 separation. The Level-2 tolerances themselves are judged by
 harness/run_validation.py against the full script set (that run is the
-acceptance record, VALIDATION.md §9) — the tests here lock the machinery.
+acceptance record, docs/VALIDATION.md §9) — the tests here lock the machinery.
 """
 
 import math

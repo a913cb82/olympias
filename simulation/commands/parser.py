@@ -1,4 +1,4 @@
-"""Parser for trireme command scripts (plan §3.5).
+"""Parser for trireme command scripts (3).
 
 Format: plain text, one command per line; ``#`` starts a comment; fields are
 comma- or whitespace-separated::

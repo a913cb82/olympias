@@ -1,7 +1,7 @@
 """Shared access to the validated research chain — single source of truth.
 
 Every constant the simulators use lives in the research modules; this module
-only re-exports them (plan §2.3: shared assets, no duplicated numbers).
+only re-exports them (2: shared assets, no duplicated numbers).
 """
 
 import sys
@@ -22,7 +22,7 @@ KT = _rom.KT                 # 0.5148 m/s per knot
 RHO = _rom.RHO               # seawater density, kg/m3
 CN = _rom.CN                 # flat-plate normal coefficient, 1.8
 
-# --- rig geometry (plan §2.3) ---
+# --- rig geometry (2) ---
 RIGS = _rom.RIGS             # Olympias / MarkIIb: lin, lout, blade, sweep, area
 
 # --- stroke timing (Table 9.6: duration of the effective pull, s) ---

@@ -15,7 +15,7 @@ external gaps are listed at the bottom. Read the playbooks in `tasks/`
 | `lane-3-hull` | Hull form & resistance | `parametric-hull-form.md`, `hull-form-summary.csv`, `hull_form.py` (LWL 32.2 m, 41.4 t trial / 25.2 t light; KM caveat on record) |
 | `lane-4-oars` | Oar rig, power, blade physics | `rig-geometry.md`, `oar-data.md` (Rankov Table 3.1/3.2 decoded), `lane4_propulsion.py` (P = 7.43·r chain), `rigid_oar_model.py` (flat-plate per-stroke), `rigid-oar-refinement.md`, `oar_inertia.py` (Table 3.1 inertias, catch-flip) |
 | `lane-5-manoeuvre` | Turning | `manoeuvre-model.md`, `manoeuvre_model.py`, `fg-turns-rerun.md` (F/G ≤ 7 %), `taylor-excel.md`, `clr-rotation.md` |
-| `lane-6-validation` | Cross-cutting validation | `validation-table.md` (research side: bulk models vs trials), `uncertainties-register.md`, `primary-trial-data.md`, `validation_table.py`. The simulator's acceptance record is `../simulation/VALIDATION.md` (the LL side) |
+| `lane-6-validation` | Cross-cutting validation | `validation-table.md` (research side: bulk models vs trials), `uncertainties-register.md`, `primary-trial-data.md`, `validation_table.py`. The simulator's acceptance record is `../simulation/docs/VALIDATION.md` |
 | `data/` | Decoded source tables | `shaw-table-3.1-oar-inertia.csv`, `shaw-table-3.2-stroke-rhythm.csv`, Shaw 8.x tables, Taylor parameters (`table31-1-taylor-model-parameters.csv`) |
 | `tasks/` | Repeatable playbooks | PDF text extraction, subset-font decode, OCR table decoding, verify-decoded-tables |
 
@@ -58,10 +58,10 @@ inline in the same sentences.
 
 ## Open items
 
-**Simulator-side** (mirror plan §8/§9.1): crew endurance model and wave-added
+**Simulator-side** (mirror the simulation's open items): crew endurance model and wave-added
 resistance law (Phase 4); anastrophe / turn-by-oars validation data (thin — the
 LL validates qualitatively); the open physics rows live in
-`../simulation/VALIDATION.md` §10–§11 (t_360, drift angle, ch.7 triple).
+`../simulation/docs/VALIDATION.md` §10–§11 (t_360, drift angle, ch.7 triple).
 
 **External gaps** (archive requests only — nothing here blocks the sims):
 - the raw towing-tank resistance points (Grekoussis & Loukakis 1985, NTUA report

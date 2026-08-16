@@ -14,7 +14,7 @@ With the commanded kinematics configured (the default) the discretisation
 reproduces the rigid-oar model exactly (Gate 1).
 
 Force: flat-plate normal law (ll/blade.py). Massless lever for Gate 1; the
-inertia layer (Table 3.1) lands later per the plan §5.
+inertia layer (Table 3.1) lands later per the the LL design (simulation/AGENTS.md).
 
 Deterministic: oar state is (C, in_drive, cycle_no) — a pure function of time.
 """

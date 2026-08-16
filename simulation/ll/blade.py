@@ -15,7 +15,7 @@ with k = 0.5·rho·A·C_N (flat plate), p = thole -> instantaneous turning
 point (plan), q = turning point -> blade CP. The mean ideal efficiency is
 E = 1/(1 + q/p), and q/p ~ 1/sqrt(n) (170 -> 116 rowers raises q/p x1.21).
 
-TWO turning-point interpretations (the oQ-18 diagnosis, plan §14; the
+TWO turning-point interpretations (the oQ-18 diagnosis, the OQ18 note (common/chain.py); the
 switch below selects between them):
 
   TURNING_POINT = "actual" (DEFAULT) — the kinematic turning point: the
@@ -44,7 +44,7 @@ switch below selects between them):
   deadpoint omega); the physiology planning (ll/rower.py closed forms) and
   the rigid-oar reference model use the actual-turning-point forms only.
 
-Cant (plan §12): a canted rig (the Mark IIb's 18.4-deg sweep-plane
+Cant (the LL gates — docs/VALIDATION.md): a canted rig (the Mark IIb's 18.4-deg sweep-plane
 tilt) reduces the horizontal components of the blade-face normal by
 cos(phi): the ship's flow on the blade shrinks (vn = V·cosC·cos(phi) -
 l_cp·omega) — the blade outruns the water more easily — and the thrust
@@ -57,7 +57,7 @@ import math
 
 from common.chain import CN, RHO
 
-# The (q/p)^2 turning-point law's interpretation switch (plan §14, task I):
+# The (q/p)^2 turning-point law's interpretation switch (the OQ18 note (common/chain.py), task I):
 #   "actual"   — the kinematic turning point (p = V·nx/omega): IDENTICAL to
 #                the flat-plate law (the locked identity) — the default, the
 #                physics the validated chain prescribes.

@@ -34,7 +34,7 @@ RIGS = {
     # name: inboard plan, outboard plan, blade len, sweep B, blade area (m^2),
     # cant (sweep-plane tilt about the athwartships axis, deg; ch.9: the
     # Mark IIb rig is canted 18.4 deg = tan 1/3 — the flat-plate law gains
-    # the cos(cant) flow correction, plan §16.1)
+    # the cos(cant) flow correction, 16)
     "Olympias": dict(lin=0.957, lout=2.696, blade=0.55, sweep=48.1, area=0.078,
                      cant=0.0),
     "MarkIIb": dict(lin=1.061, lout=2.970, blade=0.55, sweep=55.6, area=0.078,
@@ -75,11 +75,11 @@ def rigid_stroke(V, rig, r_spm, t_drive=None, n_pts=600):
         C = sweep / 2 - sweep * (i / (N - 1))
         w = -omega_mean
         ux, uy = math.sin(C), math.cos(C)
-        cf = math.cos(math.radians(rig.get("cant", 0.0)))   # plan §16.1
+        cf = math.cos(math.radians(rig.get("cant", 0.0)))   # 16
         nx, ny = math.cos(C) * cf, -math.sin(C) * cf  # blade face normal (plan)
         # normal flow at the blade CP: the ship's flow on the canted normal
         # (V·nx) minus the blade's own speed along it (l_cp·w) — the direct
-        # form, consistent with ll/blade.py (plan §16.1)
+        # form, consistent with ll/blade.py (16)
         vn = V * nx + l_cp * w
         # pressure force on water, opposes vn; on hull = reaction
         Fn = 0.5 * RHO * area * CN * abs(vn) * vn
@@ -87,7 +87,7 @@ def rigid_stroke(V, rig, r_spm, t_drive=None, n_pts=600):
         Fby = -Fn * ny
         Fb = abs(Fn)                                # full blade force (the
                                                      # rower balances it in
-                                                     # the plane, plan §16.1)
+                                                     # the plane, 16)
         Fh = abs(Fn) * l_cp / lin
         Fx_sum += Fbx * dt
         Ft_sum += Fbx * V * dt

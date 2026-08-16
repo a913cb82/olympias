@@ -44,11 +44,11 @@ TEMPO_CALLDOWN_SPM = 2.0   # sustained per-side rate gap that triggers a call-do
 # (N·m·s), not the quadratic Omega·omega·|omega| (kg·m^2) the model uses. The
 # register's reconciled value Omega = 3.2e6 is the quadratic coefficient; the
 # linear term below is the untested hypothesis for the open t_360 discrepancy
-# (VALIDATION §7.2: 98 vs 128 s). HYPOTHESIS TEST (plan §21.2 task H): the
+# (VALIDATION §7.2: 98 vs 128 s). HYPOTHESIS TEST (the definition of done (simulation/AGENTS.md) task H): the
 # magnitude is NOT the printed 5e6 — at omega ~ 0.06 rad/s that would demand
 # ~3e5 N·m against the ~1e4 N·m the rudder/oars deliver (the turn would
 # stall) — so k is the one tuning knob, scanned toward t_360 ~ 128 s.
-# TEST RESULT (plan §21.2 task H, 2026): the hypothesis FAILS —
+# TEST RESULT (the definition of done (simulation/AGENTS.md) task H, 2026): the hypothesis FAILS —
 # k = 1.385e5 N·m·s closes t_360 (98.2 -> 128.0 s) but inflates every
 # diameter (G1 89.7 -> 111.5 m +24 %, F1 117.4 -> 153.7 m +31 %, tightest
 # 67.7 -> 84.6 m +25 %): linear damping lowers omega everywhere,

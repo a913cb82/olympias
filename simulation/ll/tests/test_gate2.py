@@ -2,7 +2,7 @@
 
 Run: python3 tests/test_gate2.py  (from simulation/)
 
-Contract (plan §6, Level 1; plan next-actions Gate 2):
+Contract (the pair contract (simulation/AGENTS.md), Level 1; plan next-actions Gate 2):
   - The coupled surge integrator settles on the hull=1.0 anchors: 7.2 kt @
     28.8 spm (Table 9.6 / S6), 8.2 kt @ 36 spm (Table 9.6).
   - Sprint (44.5 spm, ~130 effective rowers): the LL prediction brackets the

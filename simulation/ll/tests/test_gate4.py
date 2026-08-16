@@ -1,8 +1,8 @@
-"""Gate 4 — the rower physiology layer (plan §12).
+"""Gate 4 — the rower physiology layer (the LL gates — docs/VALIDATION.md).
 
 Run: python3 tests/test_gate4.py  (from simulation/)
 
-Gates (plan §12):
+Gates (the LL gates — docs/VALIDATION.md):
   G4-1 sustained cruise: steady pressure keeps W' full and speed stable
         (25.5/28.8 spm are the sustainable envelope — P_crit, R&W ch.23).
   G4-2 sprint: spoude at 44.5 spm bursts (W' drains), then the power fades

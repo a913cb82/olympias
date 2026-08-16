@@ -1,4 +1,4 @@
-"""The Level-2 acceptance locked as tests (plan §21.2 task K → regression
+"""The Level-2 acceptance locked as tests (the definition of done (simulation/AGENTS.md) task K → regression
 protection): every script's gate rows and every turn scenario, asserted
 exactly as harness/run_validation.py judges them. The calibration is the
 pinned latest; a code or calibration change that moves any row outside

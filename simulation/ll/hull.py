@@ -9,7 +9,7 @@ State: V (m/s), x along the keel. Equation of motion:
     sum is N × one oar's force — exact, not an approximation).
   - D(V) = W_hull(V)/V from the validated power law (hull = 155V³ + 4.13V⁵,
     ×1.08 for the Mark II hull).
-  - m_app = 1.10 × 41.35 t trial displacement (plan §2.3).
+  - m_app = 1.10 × 41.35 t trial displacement (2).
 
 Regime honesty: prescribed-kinematics oars are only physically valid where the
 required handle force is humanly plausible (near cruise). At low ship speed the
@@ -25,8 +25,8 @@ from __future__ import annotations
 from common.chain import RIGS, T_DRIVE, SPM, hull_power
 from ll.oar import Oar, simulate
 
-M_TRIAL = 41.35e3          # kg — trial displacement (plan §2.3)
-M_APP_FACTOR = 1.10        # apparent-mass factor (plan §2.3)
+M_TRIAL = 41.35e3          # kg — trial displacement (2)
+M_APP_FACTOR = 1.10        # apparent-mass factor (2)
 N_OARS = 170               # Olympias oar count
 
 

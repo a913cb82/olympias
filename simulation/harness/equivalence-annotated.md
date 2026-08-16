@@ -30,7 +30,7 @@ Reproduction (one command, from `simulation/`):
 | date | 2026-08-15 (calibration date; the log run Aug 15 16:54) |
 | dt config | LL dt = 0.05 s · HL dt = 0.5 s · 1 Hz telemetry samples (as printed in every table) |
 | rig / fleet config | Olympias · spruce · hull ×1.0 · 170 oars (`meta.config`) |
-| run tool | `harness/run_validation.py` (one command stream on both simulators, same seeded state; plan §6 harness) |
+| run tool | `harness/run_validation.py` (one command stream on both simulators, same seeded state; the pair contract — simulation/AGENTS.md) |
 
 The calibration's protocols (`meta.protocols`, 13 entries): `vstar`
 (ll.hull.equilibrium_speed), `pressure_rows` (LL ship 420-s settle, 60-s
@@ -47,7 +47,7 @@ decay after the helm returns midship, sprint_turn position follow-up),
 
 Relation to the record: VALIDATION §9 stays the summary acceptance
 record; this file is the per-row annotated run that locks its headline
-numbers (plan §20). The refreshed §9/§10 tables after this calibration
+numbers (the harness). The refreshed §9/§10 tables after this calibration
 are task K's deliverable — this file only annotates what the log shows.
 
 ## 2. The gating rule — quoted from the code
@@ -92,16 +92,16 @@ Per script, only five rows are checked for the violation line —
 `turn_D` (`abs(d_hl / d_ll - 1.0) < 0.05`). `fatigue_delta` is gated by
 the comparator's suffix rule but is outside the violation set: the
 plan's fatigue gate is the consumption integral, not the brittle
-endpoint W_frac (plan §20, VALIDATION §9.3.6).
+endpoint W_frac (the harness, VALIDATION §9.3.6).
 
 The script tables drop the `turn_D` rows by design — "a mid-script
 crossing is contaminated by the LL's untrimmed lateral drift — its own
 table is below" (run_validation.py); the dedicated turn table (§5) is
 where the 5 % gate is judged.
 
-### 2.3 The tolerance sources (plan §6, Level 2 — the first tolerances)
+### 2.3 The tolerance sources (the pair contract, Level 2 — the first tolerances)
 
-| ref | plan §6 clause | gates |
+| ref | pair-contract clause | gates |
 | --- | --- | --- |
 | L2-1 | \|mean speed difference\| < 1 % over a 10-minute script including a sprint and a turn | `mean_speed_pct` |
 | L2-2 | settled stroke rate within 1 spm | `rate_eff_delta` |
@@ -111,11 +111,11 @@ where the 5 % gate is judged.
 | L2-6 | final position within ~0.1 NM after course changes | `position_sep` |
 
 Every HL result carries the tolerance source (the calibration run id) —
-plan §6: "Every HL result carries the tolerance source (calibration run
+the pair contract: "Every HL result carries the tolerance source (calibration run
 id)". Supporting refs: the gates are implemented in comparator.py
 (§6/§20), the fatigue gate as the depletion integral (§20, §9.3.6), the
 calibration residuals live in the pinned JSON (`calib-2026-08-15-c7a6e97
-.json` → `residuals`), and the named decision points in plan §21.3
+.json` → `residuals`), and the named decision points (the definition of done — simulation/AGENTS.md)
 (DAG tasks B–F measured the curves the gates judge).
 
 ## 3. Row-by-row tolerance and residual map
@@ -132,12 +132,12 @@ exercises differently.
 | t_3nm | info | L2-3 raw row | no calibration residual — the crossing is the comparator's linear midpoint interpolation on the 1 Hz telemetry; only the dedicated script crosses (§6.5) |
 | t_3nm_pct | gated | L2-3 | same |
 | fatigue | info | L2-5 raw row, endpoint W_frac — a brittle boundary state, explicitly not the gate (comparator docstring, §9.3.6) | the endpoint form; the gate row below |
-| fatigue_delta | gated by the suffix rule; outside the run's violation set | L2-5 endpoint form | brittle endpoint; the plan's fatigue gate is the consumption integral (plan §20, §9.3.6) |
+| fatigue_delta | gated by the suffix rule; outside the run's violation set | L2-5 endpoint form | brittle endpoint; the fatigue gate is the consumption integral (§9.3.6) |
 | fatigue_consumed | info | L2-5 raw row (the depletion integral: the sum of the negative W_frac steps) | the tank nets: `scalars.net_rest` −41.7 W/man; `protocols.nets` (refills: low preset, short window); §9.3.6 (the net's ±6 % phase spread — −0.005 pts typical) |
 | fatigue_consumed_delta | gated | L2-5 | same as fatigue_consumed |
 | rate_eff | info | L2-2 raw row | `tables.tempo_loss` (full/empty rate_eff at 25.5–50 spm, task B); `residuals.tempo_loss_full_is_commanded` = true |
 | rate_eff_delta | gated | L2-2 | same (the task B gate) |
-| position_sep | gated | L2-6 | the drift table (`tables.drift`, `residuals.drift` note) + plan §21.3 decision (task C): the HL carries the measured drift bias; the residual is the path fidelity — the table's interpolation vs the scripts' state mixes (§6.1) |
+| position_sep | gated | L2-6 | the drift table (`tables.drift`, `residuals.drift` note) + the bias-yaw decision (task C): the HL carries the measured drift bias; the residual is the path fidelity — the table's interpolation vs the scripts' state mixes (§6.1) |
 | heading | info | no §6 gate (the 5.0 deg column is informational) | the fishtail: `scalars.tau_exit` 19.0 s (the LL's omega decay after helm → midship, 240-s exponential fit) |
 | distance | info | no §6 gate (the 0.05 NM column is informational) | covered by the mean-speed and 3-NM gates |
 
@@ -415,7 +415,7 @@ F1 +4.9 %, tightest +9.2 %).
 
 ## 6. The documented divergences — every one with its cause
 
-1. **The drift bias is carried by the HL** — the plan §21.3 decision
+1. **The drift bias is carried by the HL** — the bias-yaw decision
    (task C): the LL's symmetric crew carries an untrimmed lateral kick
    whose measured yaw slope is pressure-dependent (spoude ≈ −0.0010 vs
    steady ≈ −0.0003 rad/s, flat over rate — `tables.drift`,
@@ -465,6 +465,6 @@ rate_eff_delta 0.0 spm, fatigue_consumed_delta ≥ −0.021 pts,
 position_sep ≤ 0.100 NM — the worst row is sprint_turn 0.096). The
 final acceptance: `harness/run_validation.py` prints "violations: none
 — all Level-2 first tolerances inside" on the pinned calibration id
-`calib-2026-08-15-448e849`; the definition of done (plan §21.1) is
+`calib-2026-08-15-448e849`; the definition of done (simulation/AGENTS.md) is
 met, and the gate rows are locked as regression tests
 (`harness/tests/test_equivalence_gates.py`, `hl/tests/test_drift_closure.py`).

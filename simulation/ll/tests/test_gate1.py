@@ -2,7 +2,7 @@
 
 Run: python3 tests/test_gate1.py  (from simulation/)
 
-Contract (plan §6, Level 1 + §5 note):
+Contract (the pair contract (simulation/AGENTS.md), Level 1 + §5 note):
   - The time-stepped oar reproduces the rigid-oar model (rigid_stroke) at the
     four Table 9.6 operating points within 0.5 % (same physics, cleaner
     integration).

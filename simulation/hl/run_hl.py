@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fast-ship demo runner (Phase 2 HL, plan §19).
+"""Fast-ship demo runner (Phase 2 HL, the calibration protocol (simulation/AGENTS.md)).
 
 Usage (from simulation/):
     python3 hl/run_hl.py                    # examples/cruise_turn.txt

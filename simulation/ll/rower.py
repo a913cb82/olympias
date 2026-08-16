@@ -1,7 +1,7 @@
-"""Physiological rower model (Phase 1 Gate 4, plan §12).
+"""Physiological rower model (Phase 1 Gate 4, the LL gates (docs/VALIDATION.md)).
 
 One side's crew, aggregated (85 identical rowers in v1; per-tier factors
-later). Three components, all anchored in the plan §12:
+later). Three components, all anchored in the the LL gates (docs/VALIDATION.md):
 
   - Peak force ceiling Fh_max: the blade may not demand more handle force
     than a rower can pull — the drive slows (omega_p).
@@ -27,7 +27,7 @@ from dataclasses import dataclass
 from common.chain import CN, OAR_TIER_MIT, RHO, RIGS
 from ll.oar import Oar
 
-# --- anchors (plan §12; provisional except P_CRIT) ---
+# --- anchors (the LL gates (docs/VALIDATION.md); provisional except P_CRIT) ---
 Fh_MAX = 700.0          # N peak handle force per rower
 Fh_BURST = 330.0        # N max mean handle force (chain sprint pull at 44.5 spm;
                         # the W'-limited burst level, any rate)

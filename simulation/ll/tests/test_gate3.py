@@ -2,7 +2,7 @@
 
 Run: python3 tests/test_gate3.py  (from simulation/)
 
-Contract (plan §6 Level 1; W5 fg-turns-rerun anchors ≤7 %; plan §5):
+Contract (the pair contract (simulation/AGENTS.md) Level 1; W5 fg-turns-rerun anchors ≤7 %; the LL design (simulation/AGENTS.md)):
   - Rudder turns (G1 89.4 m @ 6 kt full rudder; F1 111.9 m @ 22.5°) reproduced
     by the time-domain integrator within 7 %.
   - One-side-stops tightest turn (62 m @ 6.5 kt, full rudder) within 10 %,

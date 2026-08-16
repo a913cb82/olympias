@@ -1,4 +1,4 @@
-"""The fast high-level ship (plan §19, HL).
+"""The fast high-level ship (the calibration protocol (simulation/AGENTS.md), HL).
 
 The whole simulator in one class. State: V, omega, psi, x, y, rate,
 per-side pressure / oar state, helm, one W' tank. Dynamics:
@@ -16,7 +16,7 @@ per-side pressure / oar state, helm, one W' tank. Dynamics:
 Command API mirrors ll/ship.py exactly (apply / step / run_script / snap)
 so the Phase-3 harness runs both simulators identically.
 
-Known HL-loose spots (the honesty contract, plan §20): stroke ripple and
+Known HL-loose spots (the honesty contract, the harness — simulation/AGENTS.md): stroke ripple and
 within-cycle force phase; per-side W' (one shared tank); exhausted-side
 rate call-down; sway in turns (folded into the calibrated D); tempo loss
 (rate_eff = the measured empty-tank curve); the applied-rudder drag
@@ -35,7 +35,7 @@ from ll.ship import RUDDER_FAC
 
 OTHER = {"port": "star", "star": "port"}
 HELM_SIDES = {"port": "port", "starboard": "star", "midship": "midship"}
-DEFAULT_DT = 0.5          # plan §4: 0.5-1 s step
+DEFAULT_DT = 0.5          # the HL design (simulation/AGENTS.md): 0.5-1 s step
 
 
 class Ship:
