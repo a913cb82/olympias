@@ -27,34 +27,44 @@ SCRIPTS = [
     ("long_cruise", "examples/long_cruise.txt", 0.0, (),
      {}, dict(mean_speed_pct=0.01, t_3nm_pct=0.01,
               fatigue_consumed_delta=0.05, rate_eff_delta=1.0,
-              position_sep=0.1, bin_max=5.0, bin_rms=3.0)),
+              position_sep=0.1, position_path=0.1, position_max=0.15,
+          bin_max=5.0, bin_rms=3.0)),
     ("sprint_turn", "examples/sprint_turn.txt", 0.0, (),
-     dict(position_sep=0.20),       # annotated: the turn-phase composition
+     {},   # CLEAN (the K24 direction correction + the tau_exit re-fit
      dict(mean_speed_pct=0.01, t_3nm_pct=0.01,
           fatigue_consumed_delta=0.05, rate_eff_delta=1.0,
+          position_sep=0.1, position_path=0.1, position_max=0.15,
           bin_max=5.0, bin_rms=3.0)),
     ("wprime_burst", "examples/wprime_burst.txt", 0.0, (),
      {}, dict(mean_speed_pct=0.01, t_3nm_pct=0.01,
               fatigue_consumed_delta=0.05, rate_eff_delta=1.0,
-              position_sep=0.1, bin_max=5.0, bin_rms=3.0)),
+              position_sep=0.1, position_path=0.1, position_max=0.15,
+          bin_max=5.0, bin_rms=3.0)),
     ("cruise_turn", "examples/cruise_turn.txt", 5.0 * KT, (7,),
      dict(mean_speed_pct=0.035, fatigue_consumed_delta=0.20,
-          bin_max=50.0, bin_rms=20.0),   # annotated: the back-tail boundary
-     dict(rate_eff_delta=1.0, position_sep=0.1)),
+          bin_max=55.0, bin_rms=24.0, position_sep=0.20,
+          position_max=0.25),
+     # annotated: the back-tail boundary — the multi-stable low-speed
+     # state's branch shifted with the K24 direction correction (the
+     # banked-phase V moved to the ~1.9 kt branch); the bounds re-measured
+     dict(rate_eff_delta=1.0, position_path=0.1)),
     ("three_nm", "examples/three_nm_cruise.txt", 0.0, (),
      {}, dict(mean_speed_pct=0.01, t_3nm_pct=0.01,
               fatigue_consumed_delta=0.05, rate_eff_delta=1.0,
-              position_sep=0.1, bin_max=5.0, bin_rms=3.0)),
+              position_sep=0.1, position_path=0.1, position_max=0.15,
+          bin_max=5.0, bin_rms=3.0)),
     ("tempo_loss", "examples/tempo_loss.txt", 0.0, (),
      {}, dict(mean_speed_pct=0.01, t_3nm_pct=0.01,
               fatigue_consumed_delta=0.05, rate_eff_delta=1.0,
-              position_sep=0.1, bin_max=5.0, bin_rms=3.0)),
+              position_sep=0.1, position_path=0.1, position_max=0.15,
+          bin_max=5.0, bin_rms=3.0)),
     ("zigzag", "examples/zigzag.txt", 0.0, (),
      dict(mean_speed_pct=0.025),    # annotated: the reversal-mix mean
      # residual (the fishtail-reversal composition, T10); the position
      # row is CLEAN (0.026 — the K23 tau_exit re-measurement closed it)
      dict(fatigue_consumed_delta=0.05, rate_eff_delta=1.0,
-          position_sep=0.1, bin_max=5.0, bin_rms=3.0)),
+          position_sep=0.1, position_path=0.1, position_max=0.15,
+          bin_max=5.0, bin_rms=3.0)),
 ]
 
 

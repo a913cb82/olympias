@@ -88,6 +88,18 @@ def metrics(ll_rows, hl_rows, exclude_bins=()):
     x_ll, y_ll = end(ll_rows)["x"], end(ll_rows)["y"]
     x_hl, y_hl = end(hl_rows)["x"], end(hl_rows)["y"]
     sep = math.hypot(x_hl - x_ll, y_hl - y_ll)
+    # the path-integrated separation (the robust gate — the final
+    # positions alone can coincide while the paths diverge mid-run,
+    # e.g. a fishtail that meets up at the end): the mean per-sample
+    # |pos_ll - pos_hl| over the whole run (the sum normalized by the
+    # duration — the same signal, comparable across scripts)
+    n_path = min(len(ll_rows), len(hl_rows))
+    path = sum(math.hypot(ll_rows[i]["x"] - hl_rows[i]["x"],
+                          ll_rows[i]["y"] - hl_rows[i]["y"]) / NM
+               for i in range(n_path)) / n_path
+    path_max = max(math.hypot(ll_rows[i]["x"] - hl_rows[i]["x"],
+                              ll_rows[i]["y"] - hl_rows[i]["y"]) / NM
+                   for i in range(n_path))
 
     w_ll = end(ll_rows)["crew"]["port"]["W_frac"]
     w_hl = end(hl_rows)["crew"]["port"]["W_frac"]
@@ -161,6 +173,8 @@ def metrics(ll_rows, hl_rows, exclude_bins=()):
         rate_eff_delta=dict(ll=0.0, hl=rate_hl - rate_ll, tol=1.0,
                             unit="spm"),
         position_sep=dict(ll=0.0, hl=sep / NM, tol=0.1, unit="NM"),
+        position_path=dict(ll=0.0, hl=path, tol=0.1, unit="NM"),
+        position_max=dict(ll=0.0, hl=path_max, tol=0.2, unit="NM"),
         heading=dict(ll=end(ll_rows)["psi"], hl=end(hl_rows)["psi"],
                      tol=5.0, unit="deg"),
         distance=dict(ll=d_ll[-1] / NM, hl=d_hl[-1] / NM, tol=0.05,
@@ -193,12 +207,14 @@ def equivalence_table(ll_rows, hl_rows, meta, title="") -> str:
         ll, hl, tol = row["ll"], row["hl"], row["tol"]
         unit = row["unit"]
         gated = key.endswith("_pct") or key.endswith("_delta") \
-            or key == "position_sep"
+            or key in ("position_sep", "position_path",
+                       "position_max")
         if key.endswith("_pct") or key == "turn_D_pct":
             diff = f"{hl * 100:+.1f} %"
             ok = abs(hl) < tol
         elif key in ("fatigue_delta", "fatigue_consumed_delta",
-                     "position_sep"):
+                     "position_sep", "position_path",
+                     "position_max"):
             diff = f"{hl:+.3f}"
             ok = abs(hl) < tol
         else:

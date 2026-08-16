@@ -119,8 +119,12 @@ comma- or space-separated: `<time_s> <verb> [args...]`
   sprint and a turn; settled stroke rate within 1 spm; time to 3 NM
   within 1 %; the standard G1/F1 turn diameters (full rudder at 6 kt /
   22.5° rudder at 6 kt) within 5 %; accumulated crew fatigue within
-  5 %; final position within ~0.1 NM after course changes. Every HL
-  result carries the tolerance source (the calibration run id).
+  5 %; final position within ~0.1 NM after course changes — and the
+  path-gap gates (position_path: the mean per-sample separation < 0.1
+  NM; position_max: the worst single-sample separation < 0.15 NM
+  clean / 0.25 on the annotated cruise_turn — the final position alone
+  can coincide while the paths diverge mid-run). Every HL result
+  carries the tolerance source (the calibration run id).
 
 **The honesty rule**: the HL stays loose only where documented
 (VALIDATION §9.3 — the measured divergences and their triggers); the

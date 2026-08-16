@@ -1,6 +1,7 @@
 """The 170-oar ship: surge + yaw with the physiological crew (Gates 3-4).
 
-States: V (surge), omega (yaw, + = bow to starboard), psi (heading), x, y
+States: V (surge), omega (yaw, + = bow to port, the K24
+sign correction), psi (heading), x, y
 (track). Two SideCrews (port/starboard, 85 rowers each) own the oars, the
 per-side oar state / pressure from the command language, the stroke plan
 (force ceiling + W' endurance -> stroke length / rate), and the W' tanks.
@@ -99,7 +100,7 @@ class Ship:
         }
         self.helm_dir, self.helm_frac = helm
         self.V = 0.0
-        self.v = 0.0            # sway (lateral velocity, + = starboard)
+        self.v = 0.0            # sway (lateral velocity, + = port)
         self.omega = 0.0
         self.psi = 0.0
         self.x = 0.0
@@ -121,8 +122,8 @@ class Ship:
         Fy_oars = self.n_side * (fy_p + fy_s)             # net lateral oars
         # rowing asymmetry: the physical athwartships arm (C3);
         # held-blade brake: the athwartships station arm (LEVER_HOLD)
-        Q_oar = self.n_side * (self.lever * (fx_p - fx_s)
-                               + LEVER_HOLD * (br_p - br_s))  # + = starboard
+        Q_oar = self.n_side * (self.lever * (fx_s - fx_p)
+                               + LEVER_HOLD * (br_s - br_p))  # + = port (psi +)
         # rudder (Taylor ch.31 model; straight-rudder drag at midship)
         vkt = abs(self.V) / KT
         if self.helm_dir == "midship":
@@ -133,7 +134,7 @@ class Ship:
             phi = FULL_RUDDER_DEG * self.helm_frac
             rud_drag = self.vessel.rudder_drag(vkt, phi, RUDDER_FAC)
             f_rud = self.vessel.rudder_coeff(phi) * rud_drag
-            if self.helm_dir == "port":
+            if self.helm_dir == "starboard":
                 f_rud = -f_rud
             Q_rud = f_rud * self.vessel.lever_rudder
         self.hull_advance(dt, Fx, Fy_oars, f_rud, Q_oar + Q_rud, rud_drag)
@@ -150,7 +151,7 @@ class Ship:
         u = self.V
         v = self.v
         f_hull = RHO * self.vessel.A_lat * abs(u) * v      # Taylor: rho A_lat u^2 sin(beta)
-        q_hull = f_hull * self.clr_offset                  # restoring (+ = starboard)
+        q_hull = f_hull * self.clr_offset                  # restoring (+ = port)
         drag = self.vessel.hull_drag(abs(u) / KT) + rud_drag
         u_dot = (Fx - drag) / self.m_app + v * self.omega
         v_dot = (Fy_oars + f_rud - f_hull) / self.m_app - u * self.omega

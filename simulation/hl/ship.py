@@ -151,7 +151,7 @@ class Ship:
                 and self.oar_state[OTHER[s]] == "row"]
         if asym:
             side = asym[0]
-            sign = 1.0 if side == "star" else -1.0     # turn toward the held side
+            sign = -1.0 if side == "star" else 1.0    # turn toward the held side
             frac = self.helm_frac if self.helm_dir == side else 0.0
             # the oar-only turns (no helm) chase the measured speed-
             # dependent orbit (K22: the drained spiral — the LL's orbit
@@ -160,7 +160,7 @@ class Ship:
             d = c.d_oar_v(self.V) if frac <= 0.0 else c.d_oar(frac)
             wss = sign * 2.0 * self.V / d
         elif self.helm_dir != "midship" and self.helm_frac > 0.0:
-            sign = 1.0 if self.helm_dir == "star" else -1.0
+            sign = -1.0 if self.helm_dir == "star" else 1.0
             wss = sign * 2.0 * self.V / c.d_rudder(self.helm_frac)
         else:
             wss = 0.0

@@ -104,7 +104,8 @@ def main() -> None:
             print("\n".join(lines))
             for key in ("mean_speed_pct", "t_3nm_pct",
                         "fatigue_consumed_delta", "rate_eff_delta",
-                        "position_sep", "bin_max", "bin_rms"):
+                        "position_sep", "position_path",
+                        "position_max", "bin_max", "bin_rms"):
                 row = m[key]
                 if row["hl"] is not None and abs(row["hl"]) >= row["tol"]:
                     note = ""

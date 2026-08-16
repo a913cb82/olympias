@@ -86,7 +86,8 @@ def test_tightest_sprint_protocol():
 
 def test_oar_hold():
     r = turn(6.5, rate=RT, oar_state=("row", "hold"), helm=("midship", 0.0))
-    assert r["track"][1] > 0, "starboard hold must turn toward starboard"
+    assert r["track"][1] < 0, "starboard hold must turn toward starboard"
+    # (the K24 direction correction: the starboard turn is the y-negative)
     assert 60.0 <= r["D"] <= 130.0, f"oar-hold D = {r['D']:.1f} m"
 
 
@@ -96,7 +97,7 @@ def test_back_water():
     tighter than hold while decelerating."""
     r_hold = turn(6.5, rate=RT, oar_state=("row", "hold"), helm=("midship", 0.0))
     r_back = turn(6.5, rate=RT, oar_state=("row", "back"), helm=("midship", 0.0))
-    assert r_back["track"][1] > 0
+    assert r_back["track"][1] < 0
     assert abs(r_back["D"] / r_hold["D"] - 1) < 0.15, \
         f"back @6.5kt D {r_back['D']:.1f} must ~= hold D {r_hold['D']:.1f} (degenerates)"
     rl_hold = turn(2.0, rate=RT, oar_state=("row", "hold"), helm=("midship", 0.0))

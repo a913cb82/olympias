@@ -63,7 +63,11 @@ def test_emergent_drift():
         s.step(0.02)
     beta = math.degrees(math.atan2(s.v, s.V))
     assert 0.5 <= abs(beta) <= 20.0, f"drift {beta:.1f} deg"
-    assert beta < 0, "the drift is into the turn (starboard -> port drift)"
+    # the corrected direction convention (K24): the helm starboard turns
+    # the bow to starboard (psi -) and the tightest's drift is +2.4 deg
+    # (the velocity on the turn's outside — the sign recorded in the T8
+    # row); the pre-K24 sign assertion carried the flipped convention
+    assert beta > 0, "the tightest's drift sign (the T8 row, K24)"
 
 
 def test_lateral_damping():

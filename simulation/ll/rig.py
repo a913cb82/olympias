@@ -5,7 +5,7 @@ register B6). Taylor's fitted oar-race lever (Table 31.1 row 10: 4.8 m
 Olympias, 5.4 m Mark IIb) is the validated yaw-moment scale for
 side-asymmetric oar forces:
 
-    Q_oar = (n/2) · lever · (fx_port − fx_starboard)     [M_z > 0 = starboard]
+    Q_oar = (n/2) · lever · (fx_starboard − fx_port)     [M_z > 0 = port]
 
 which reproduces the one-side-stops trial turns (W5, ≤7 %). For mirrored
 station distributions (which the rig is), side asymmetry in force is captured
