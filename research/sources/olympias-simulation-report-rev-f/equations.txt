@@ -1,0 +1,116 @@
+x_{0} = x_{OG} +xcos ψ - ysin ψ
+y_{0} = y_{OG} +xsin ψ +ycos ψ
+X = X_O cos ψ + Y_O sin ψ
+Y = -X_O sin ψ + Y_O cos ψ
+Ẋ_{OG} =ucos ψ - vsin ψ
+Ẏ_{OG} =usin ψ +vcos ψ
+Ẋ[̈]_{OG} = u[̇] cos ψ - u ψ[̇] sin ψ- v[̇] sin ψ - v ψ[̇] cos ψ
+y[̈]_{OG} = u[̇] sin ψ +u ψ[̇] cos ψ+ v[̇] cos ψ - v ψ[̇] sin ψ
+X_{0} =m x[̈]
+Y_{0} =m y[̈]
+N=I ψ[̈]
+X =m (u[̇]-vψ[̇])
+Y =m (v[̇]+uψ[̇])
+N=I ψ[̈]
+X= X_U u+ X_{u[̇]} u[̇]
+Y= Y_v v+ X_{v[̇]} v[̇] + Y_r r+ X_{r[̇]} r[̇]
+N= N_v v+ N_{v[̇]} v[̇] + N_r r+ N_{r[̇]} r[̇]
+ψ
+X_U = (∂X)/(∂u)  ,  Y_v = (∂Y)/(∂v)  ,  N_v = (∂N)/(∂v)   etc.
+m (u[̇]-vr) = X_U u+ X_{u[̇]} u[̇]
+m (v[̇]+ur) = Y_v v+ Y_{v[̇]} v[̇] + Y_r r+ Y_{r[̇]} r[̇]
+I r[̇] = N_v v+ N_{v[̇]} v+N_rr+N_{r[̇]}r[̇][̇]
+(m-X_{u[̇]}) u[̇] = X_U u+m v r
+(m-Y_{v[̇]}) v[̇] - Y_{r[̇]} r[̇] = Y_v v+ Y_r r-m u r
+- N_{v[̇]} v[̇] + (I-N_{r[̇]}) r[̇] = N_v v+ N_r r
+([(m-X_{u[̇]}) 0 0; 0 (m-Y_{v[̇]}) -Y_{r[̇]}; 0 -N_{v[̇]} (I-N_{r[̇]})]) ([u[̇] | v[̇] | r[̇]]) = ([X_Uu+mvr | Y_vv+Y_rr-mur | N_vv+N_rr])
+M x[̇] =F
+x[̇] = M^{-1} F
+M^{-1} = ([(1)/(m-X_{u[̇]}) 0 0; 0 ((I-N_{r[̇]}))/((m-Y_{v[̇]})(I-N_{r[̇]})-Y_{r[̇]}N_{v[̇]}) (Y_{r[̇]})/((m-Y_{v[̇]})(I-N_{r[̇]})-Y_{r[̇]}N_{v[̇]}); 0 (N_{v[̇]})/((m-Y_{v[̇]})(I-N_{r[̇]})-Y_{r[̇]}N_{v[̇]}) ((m-Y_{v[̇]}))/((m-Y_{v[̇]})(I-N_{r[̇]})-Y_{r[̇]}N_{v[̇]})])
+F= ([fX; fY; fZ]) = ([f(u^{2})+mvr | Y_vv+Y_rr-mur | N_vv+f(r^{2})]) +a+b+c+.....
+u[̇] = (fX)/((m-X_{u[̇]}))
+v[̇] = ((I-N_{r[̇]})fY+Y_{r[̇]}fZ)/((m-Y_{v[̇]})(I-N_{r[̇]})-Y_{r[̇]}N_{v[̇]})
+r[̇] = (N_{v[̇]}fY+(m-Y_{v[̇]})fZ)/((m-Y_{v[̇]})(I-N_{r[̇]})-Y_{r[̇]}N_{v[̇]})
+(-Y[́]_{v[̇]})/(π((T)/(L))^{2}=1+0.16C_B(B)/(T)-5.1((B)/(L))^{2})
+(-Y[́]_{r[̇]})/(π((T)/(L))^{2}=0.67(B)/(L)-0.003((B)/(T))^{2})
+(-N[́]_{v[̇]})/(π((T)/(L))^{2}=1.1(B)/(L)-0.041(B)/(T))
+(-N[́]_{r[̇]})/(π((T)/(L))^{2}=(1)/(12)+0.017C_B(B)/(T)-0.33(B)/(L))
+(-Y[́]_v)/(π((T)/(L))^{2}=1+0.40C_B(B)/(T))
+(-Y[́]_r)/(π((T)/(L))^{2}=-(1)/(2)+2.2(B)/(L-)) 0.080 (B)/(T)
+(-N[́]_v)/(π((T)/(L))^{2}=(1)/(2)+) 2.4 (T)/(L)
+(-N[́]_r)/(π((T)/(L))^{2}=(1)/(4)+) 0.039B/T-2.4 (B)/(L)
+Y[́]_{v[̇]} = (Y_{v[̇]})/(((1)/(2)ρL^{3}))
+Y[́]_{r[̇]} = (Y_{r[̇]})/(((1)/(2)ρL^{4}))
+N[́]_{v[̇]} = (N_{v[̇]})/(((1)/(2)ρL^{4}))
+N[́]_{r[̇]} = (N_{r[̇]})/(((1)/(2)ρL^{5}))
+Y[́]_v = (Y_v)/(((1)/(2)ρL^{2}U))
+Y[́]_r = (Y_r)/(((1)/(2)ρL^{3}U))
+N[́]_v = (N_v)/(((1)/(2)ρL^{3}U))
+N[́]_r = (N_r)/(((1)/(2)ρL^{4}U))
+U=
+Iω[̇] =M= F^' L_i
+distanceToTravel= (ω_f^{2})/(2((M_f)/(I)))
+θ_f =-D ((θ_R)/(2)-distanceToTravel)
+θ_{rel} =A t^{2} +Bt+C
+ω=2At+B
+ω[̇] =2A
+θ_{rel} = θ -θ_k
+A=D (ω[̇])/(2) =D (M_f)/(2I)
+θ = θ_k +θ_f
+ω = ω_f
+  C = θ_k +θ_f
+ B= ω_f
+t_f = ((ω_f)/(ω[̇]))
+θ_{rel} =A t'^{3} +B t'^{2} +Ct'+D
+ω=3A t^{'2} +2Bt'+C
+ω[̇] =6At'+2B
+θ_{rel} =-D (θ_R)/(2)
+ω=0=C
+ω=0=3A t_{re}^{2} +2B t_{re}
+θ_{rel} =D (θ_R)/(2) = A t_{re}^{3} +B t_{re}^{2} -D (θ_R)/(2)
+D θ_R = A t_{re}^{3} +B t_{re}^{2}
+ω=- ω_f =3A t_{re}^{2} +2B t_{re} - ω_f
+A=- (2B)/(3t_{re})
+B=3 (θ_R)/(t_{re}^{2})
+θ_{rel} =A t'^{2} +Bt'+C
+ω=2At'+B
+ω[̇] =2A
+θ_{rel} =D (θ_R)/(2) =A t'^{2} +Bt'+C
+ω=0=B
+θ_{rel} =D θ_f =A t_f^{2} +B t_f +C
+ω=-D ω_f =2A t_f +B
+A=- (Dω_f)/(2t_f)
+B=0
+C=D (θ_R)/(2)
+distanceToTravel= (ω^{2})/(2ω[̇]_f)
+(ω^{2})/(2ω[̇]_f) - ((θ_R)/(2)-Dθ_{rel}) >0
+SPM= (60)/(t)
+V_w (x) = - u+side. . cos(θ) .r
+V_w (y) = - v - . sin(θ) .r
+OA • V_{brel} = (OA) (V_{brel}) cos((α))
+α =a cos(((V_{brel}[x].OA[x]+V_{brel}[y].OA[y])/()))
+C_D =2. sin((α))^{2}
+C_L = sin((2.α))
+θ_{2} =acos ((Lift(x)OA(x)+Lift(y)OA(y))/())
+bladeForceMoment= F_{b(y)} (P_{b(x)}-P_{t(x)}) - F_{b(x)} (P_{b(y)}-P_{t(y)})
+oarInertiaMoment= side*Iω[̇]
+θ_f =atan ((P_{h(y)}-P_{f(y)})/(P_{h(x)}-P_{f(x)}))
+F_h =-side* ((bladeForceMoment+oarInertiaMoment)/(L_icos(θ+side*θ_f)))
+L_i ω[̇]
+L_i ω[̇] cos (θ+side*θ_f)
+L_i ω[̇] cos (θ+side*θ_f) A
+(F_f) =- F_h + L_i ω[̇] cos (θ+side*θ_f) A. m_r
+F_{f(x)} = (F_f) cos θ_f
+F_{f(y)} = (F_f) sin θ_f
+F_t (x) = (F_hcos(θ_f)+F_b(x))
+F_t (y) = (-F_hsin(θ_{kf})+F_b(y))
+F_{sys} (x) = F_{t(x)} + F_{f(x)}
+F_{sys} (y) = F_{t(y)} + F_{f(y)}
+F_{sys} (z) = F_{f(y)} P_{f(x)} -F_{f(x)} P_{f(y)} + F_{t(y)} P_{t(x)} -F_{t(x)} P_{t(y)}
+ΔWork_t =IL.handleForce. cosθω.timestep
+Power= (nary_{t=0}^{t=t_s} ΔWork_t)/(t_s)
+Target blade force moment=maximum moment. (1-(relative oar angle^{2})/((catchFactor.(range)/(2))^{2}))
+catchFactor= (1)/((1-(blade force moment At Catch)/(maximum moment)))
+Target blade force moment=maximum moment. (1-(relative oar angle^{2})/(((range)/(2))^{2}))
+ω_{1} =direction ((W(x)-))/(OL)
+error1=moment1-direction.arget blade force moment
