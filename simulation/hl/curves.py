@@ -24,7 +24,7 @@ from ll.rower import HOLD_FRAC, P_CRIT, PRESSURE, TAU, W_MAX
 
 # ---------------------------------------------------------------------------
 # Bootstrap tables — measured from the current LL (the HL build session;
-# ll/hull.equilibrium_speed and ll/ship runs, see the calibration the calibration protocol (simulation/AGENTS.md)).
+# ll/hull.equilibrium_speed and ll/ship runs; the calibration protocol: simulation/AGENTS.md).
 # Calibration pending: these are provisional, labelled, never silent.
 # ---------------------------------------------------------------------------
 
@@ -473,7 +473,7 @@ def bootstrap():
         meta=dict(
             id="bootstrap-0",
             source="validated chain anchors + direct LL measurements "
-                   "(HL build session); calibration pending, the calibration protocol (simulation/AGENTS.md)",
+                   "(HL build session); calibration pending — the protocol: simulation/AGENTS.md",
             note="provisional: pressure rows measured at the anchor levels, "
                  "numeric pressures interpolated; the oar-family helm blend "
                  "and the tau fits land inside the Level-2 gates — refined "
