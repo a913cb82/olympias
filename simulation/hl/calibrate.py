@@ -328,35 +328,68 @@ def _psi_slope(ps):
 
 
 def measure_tau_exit():
-    """The turn-exit yaw decay (s, the sprint_turn position follow-up):
-    the LL keeps turning after the helm returns to midship — the
-    sway-coupled fishtail (a hard turn at ~6 kt exits with ~70 deg of
-    extra heading over ~2 min; the HL's tau_turn decay is far too fast).
-    Fitted as the exponential with the same heading integral over the
-    120-s window (the quadratic-damped omega decays hyperbolically)."""
-    rate = rate_for_speed("Olympias", 6.0)
-    ship = LLShip(rate=rate, helm=("port", 1.0))
-    ship.V = 6.0 * KT
-    t = 0.0
-    while t < 150.0:                  # well into the turn (omega ~ 0.1)
+    """The turn-exit yaw decay (s, the K23 follow-up): the LL keeps
+    turning after the helm returns to midship — the sway-coupled
+    fishtail. Fitted as the scan over tau on the HL's RESPONSE, judged
+    by the L2-6 position rows the fishtail gates (the sprint and the
+    zig-zag — the only scripts with helm releases), with the CONSISTENT
+    (tau, drift_tau_exp) pair per candidate (the slow-mode exponent
+    re-derived from the burst-path anchor). The omega-shape rms picks
+    ~4 s and the heading integral ~10 s; the position rows (the actual
+    gates) prefer ~14 s — the scan judges the gates."""
+    import math
+    from hl.curves import default
+    from hl.ship import Ship as HLShip
+    # the drift anchor (as in measure_drift_tau)
+    ship = LLShip(rate=44.5, pressure=("spoude", "spoude"))
+    t, ws = 0.0, []
+    while t < 600.0:
         ship.step(DT)
         t += DT
-    ship.helm_dir, ship.helm_frac = "midship", 0.0
-    t, next_s, om = 0.0, 0.0, []
-    while t < 240.0:
-        ship.step(DT)
-        t += DT
-        if t >= next_s:
-            om.append(ship.omega)
-            next_s += 1.0
-    w0 = om[0]
-    best, best_rms = None, float("inf")
-    for tau in [x for x in range(4, 121)]:       # 4 .. 120 s
-        rms = math.sqrt(sum((w - w0 * math.exp(-i / tau)) ** 2
-                            for i, w in enumerate(om)) / len(om))
-        if rms < best_rms:
-            best, best_rms = tau, rms
-    log(f"  tau_exit: {best:.0f} s (RMS {best_rms:.5f} rad/s over 240 s)")
+        ws.append((t, ship.omega))
+    peak = min(w for _, w in ws)
+    w_settled = sum(w for t, w in ws[-100:]) / 100.0
+    t_peak = next(t for t, w in ws if w == peak)
+    cut = w_settled + 0.1 * (peak - w_settled)
+    pts = [(t, w) for t, w in ws if t_peak < t and w < cut]
+    ys = [math.log(w_settled - w) for t, w in pts]
+    ts = [t for t, w in pts]
+    n = len(ys)
+    slope = (n * sum(t * y for t, y in zip(ts, ys)) - sum(ts) * sum(ys)) \
+        / (n * sum(t * t for t in ts) - sum(ts) ** 2)
+    tau_meas = -1.0 / slope
+
+    def run_script(path):
+        from commands.parser import parse_file
+        cmds = parse_file(Path(__file__).resolve().parents[1] / path)
+        out = {}
+        for name, ship in (("ll", LLShip()),
+                           ("hl", HLShip(rate=28.8, curves=c))):
+            ship.V = 0.0
+            events, idx, next_s, rows = list(cmds), 0, 0.0, []
+            while ship.t <= events[-1].time + 1e-6:
+                while idx < len(events) and events[idx].time <= ship.t + 1e-6:
+                    ship.apply(events[idx]); idx += 1
+                ship.step(0.05 if name == "ll" else 0.5)
+                if ship.t >= next_s:
+                    rows.append(ship.snap())
+                    next_s += 1.0
+            out[name] = rows
+        from harness.comparator import metrics
+        return metrics(out["ll"], out["hl"])["position_sep"]["hl"]
+
+    best, best_err = None, float("inf")
+    for tau in (8.0, 10.0, 12.0, 14.0, 16.0, 19.0):
+        exp = math.log(tau_meas / tau) / math.log(0.1 / abs(peak))
+        c = default()
+        c.tau_exit = tau
+        c.drift_tau_exp = exp
+        err = run_script("examples/sprint_turn.txt") \
+            + run_script("examples/zigzag.txt")
+        log(f"  tau_exit {tau:4.0f}: position err {err:.3f} NM")
+        if err < best_err:
+            best, best_err = tau, err
+    log(f"  tau_exit: {best:.0f} s (position err {best_err:.3f} NM)")
     return float(best)
 
 

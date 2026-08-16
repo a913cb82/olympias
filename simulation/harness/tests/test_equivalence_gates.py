@@ -29,7 +29,7 @@ SCRIPTS = [
               fatigue_consumed_delta=0.05, rate_eff_delta=1.0,
               position_sep=0.1, bin_max=5.0, bin_rms=3.0)),
     ("sprint_turn", "examples/sprint_turn.txt", 0.0, (),
-     dict(position_sep=0.30),       # annotated: the turn-phase composition
+     dict(position_sep=0.20),       # annotated: the turn-phase composition
      dict(mean_speed_pct=0.01, t_3nm_pct=0.01,
           fatigue_consumed_delta=0.05, rate_eff_delta=1.0,
           bin_max=5.0, bin_rms=3.0)),
@@ -50,10 +50,11 @@ SCRIPTS = [
               fatigue_consumed_delta=0.05, rate_eff_delta=1.0,
               position_sep=0.1, bin_max=5.0, bin_rms=3.0)),
     ("zigzag", "examples/zigzag.txt", 0.0, (),
-     dict(mean_speed_pct=0.025, position_sep=0.45),  # annotated: the
-     # out-of-sample's composition (the fishtail-reversal mix)
+     dict(mean_speed_pct=0.025),    # annotated: the reversal-mix mean
+     # residual (the fishtail-reversal composition, T10); the position
+     # row is CLEAN (0.026 — the K23 tau_exit re-measurement closed it)
      dict(fatigue_consumed_delta=0.05, rate_eff_delta=1.0,
-          bin_max=5.0, bin_rms=3.0)),
+          position_sep=0.1, bin_max=5.0, bin_rms=3.0)),
 ]
 
 

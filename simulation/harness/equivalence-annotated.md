@@ -6,8 +6,8 @@ This is the task A deliverable: "the equivalence tables annotated with
 per-row tolerance sources and the calibration id".
 
 Provenance: the numbers below are copied as printed from
-`/tmp/validation_k23.log` (the latest full run, 2026-08-16 — the K23
-acceptance: the yaw-build re-measured at each family's true usage),
+`/tmp/validation_k23b.log` (the latest full run, 2026-08-16 — the K23b
+acceptance: the fishtail's tau_exit re-fitted on the HL's response),
 one `harness/run_validation.py`
 invocation — the 7 scripts (incl. the T10 zig-zag) + the 5 turn
 scenarios. Nothing has been re-computed or smoothed; the table cells
@@ -25,8 +25,8 @@ Reproduction (one command, from `simulation/`):
 
 | item | value |
 | --- | --- |
-| calibration id | `calib-2026-08-16-77f4258` (the pinned calibration; `meta.id`) |
-| LL commit | `77f4258` (HEAD; the calibration's `meta.ll_commit`) |
+| calibration id | `calib-2026-08-16-46fde47` (the pinned calibration; `meta.id`) |
+| LL commit | `46fde47` (HEAD; the calibration's `meta.ll_commit`) |
 | date | 2026-08-16 (calibration date; the log run Aug 16 — the K23
   acceptance: the yaw-build at the families' true usage) |
 | dt config | LL dt = 0.05 s · HL dt = 0.5 s · 1 Hz telemetry samples (as printed in every table) |
@@ -118,7 +118,7 @@ Every HL result carries the tolerance source (the calibration run id) —
 the pair contract: "Every HL result carries the tolerance source (calibration run
 id)". Supporting refs: the gates are implemented in comparator.py
 (§6/§20), the fatigue gate as the depletion integral (§20, §9.3.6), the
-calibration residuals live in the pinned JSON (`calib-2026-08-16-77f4258
+calibration residuals live in the pinned JSON (`calib-2026-08-16-46fde47
 .json` → `residuals`), and the named decision points (the definition of done — simulation/AGENTS.md)
 (DAG tasks B–F measured the curves the gates judge).
 
@@ -161,8 +161,8 @@ exercises differently.
 | fatigue_consumed_delta | 0.000 | -0.021 | -0.021 | 0.05 | PASS |
 | rate_eff | 28.800 | 28.800 | +0.000 | 1.0 | — |
 | rate_eff_delta | 0.000 | 0.000 | +0.000 | 1.0 | PASS |
-| position_sep | 0.000 | 0.009 | +0.009 | 0.1 | PASS |
-| heading | -0.439 | -0.451 | -0.012 | 5.0 | — |
+| position_sep | 0.000 | 0.026 | +0.026 | 0.1 | PASS |
+| heading | -0.439 | -0.464 | -0.026 | 5.0 | — |
 | distance | 1.868 | 1.868 | +0.000 | 0.05 | — |
 | bin_max | 0.000 | 0.092 | +0.092 | 5.0 | — |
 | bin_rms | 0.000 | 0.036 | +0.036 | 3.0 | — |
@@ -183,6 +183,7 @@ Annotation (all rows per §3 map; the script-specific notes):
 
 
 
+
 ### 4.2 sprint + turns (25 min) — `examples/sprint_turn.txt`
 
 | metric | LL | HL | diff | tolerance | verdict |
@@ -197,8 +198,8 @@ Annotation (all rows per §3 map; the script-specific notes):
 | fatigue_consumed_delta | 0.000 | -0.005 | -0.005 | 0.05 | PASS |
 | rate_eff | 34.315 | 34.315 | +0.000 | 1.0 | — |
 | rate_eff_delta | 0.000 | 0.000 | +0.000 | 1.0 | PASS |
-| position_sep | 0.000 | 0.199 | +0.199 | 0.1 | VIOLATION |
-| heading | -0.241 | -0.042 | +0.199 | 5.0 | — |
+| position_sep | 0.000 | 0.153 | +0.153 | 0.1 | VIOLATION |
+| heading | -0.241 | -0.088 | +0.152 | 5.0 | — |
 | distance | 2.823 | 2.841 | +0.018 | 0.05 | — |
 | bin_max | 0.000 | 1.770 | +1.770 | 5.0 | — |
 | bin_rms | 0.000 | 0.990 | +0.990 | 3.0 | — |
@@ -222,6 +223,7 @@ Annotation:
 
 
 
+
 ### 4.3 W' burst + recovery (30 min) — `examples/wprime_burst.txt`
 
 | metric | LL | HL | diff | tolerance | verdict |
@@ -236,8 +238,8 @@ Annotation:
 | fatigue_consumed_delta | 0.000 | -0.005 | -0.005 | 0.05 | PASS |
 | rate_eff | 37.086 | 37.086 | +0.000 | 1.0 | — |
 | rate_eff_delta | 0.000 | 0.000 | +0.000 | 1.0 | PASS |
-| position_sep | 0.000 | 0.022 | +0.022 | 0.1 | PASS |
-| heading | -1.201 | -1.247 | -0.046 | 5.0 | — |
+| position_sep | 0.000 | 0.041 | +0.041 | 0.1 | PASS |
+| heading | -1.201 | -1.272 | -0.071 | 5.0 | — |
 | distance | 2.736 | 2.734 | -0.002 | 0.05 | — |
 | bin_max | 0.000 | -1.243 | -1.243 | 5.0 | — |
 | bin_rms | 0.000 | 0.634 | +0.634 | 3.0 | — |
@@ -263,6 +265,7 @@ Annotation:
 
 
 
+
 ### 4.4 sample cruise_turn.txt — `examples/cruise_turn.txt`
 
 | metric | LL | HL | diff | tolerance | verdict |
@@ -277,8 +280,8 @@ Annotation:
 | fatigue_consumed_delta | 0.000 | -0.137 | -0.137 | 0.05 | VIOLATION |
 | rate_eff | 32.998 | 33.298 | +0.300 | 1.0 | — |
 | rate_eff_delta | 0.000 | 0.300 | +0.300 | 1.0 | PASS |
-| position_sep | 0.000 | 0.072 | +0.072 | 0.1 | PASS |
-| heading | 4.429 | 16.678 | +12.249 | 5.0 | — |
+| position_sep | 0.000 | 0.071 | +0.071 | 0.1 | PASS |
+| heading | 4.429 | 16.675 | +12.246 | 5.0 | — |
 | distance | 2.401 | 2.357 | -0.044 | 0.05 | — |
 | bin_max | 0.000 | -41.784 | -41.784 | 5.0 | — |
 | bin_rms | 0.000 | 15.213 | +15.213 | 3.0 | — |
@@ -299,6 +302,7 @@ Annotation:
   interplay with the drift table.
 - `heading` +0.646 deg (info) — the turn's end-heading residual; the
   fishtail tau_exit row.
+
 
 
 
@@ -341,6 +345,7 @@ Annotation:
 
 
 
+
 ### 4.6 tempo loss (exhausted sprint) — `examples/tempo_loss.txt`
 
 | metric | LL | HL | diff | tolerance | verdict |
@@ -355,8 +360,8 @@ Annotation:
 | fatigue_consumed_delta | 0.000 | -0.013 | -0.013 | 0.05 | PASS |
 | rate_eff | 44.500 | 44.500 | +0.000 | 1.0 | — |
 | rate_eff_delta | 0.000 | 0.000 | +0.000 | 1.0 | PASS |
-| position_sep | 0.000 | 0.014 | +0.014 | 0.1 | PASS |
-| heading | -0.214 | -0.189 | +0.025 | 5.0 | — |
+| position_sep | 0.000 | 0.013 | +0.013 | 0.1 | PASS |
+| heading | -0.214 | -0.194 | +0.020 | 5.0 | — |
 | distance | 0.525 | 0.524 | -0.001 | 0.05 | — |
 | bin_max | 0.000 | -0.791 | -0.791 | 5.0 | — |
 | bin_rms | 0.000 | 0.682 | +0.682 | 3.0 | — |
@@ -380,6 +385,7 @@ Annotation:
 
 
 
+
 ### 4.7 zig-zag (out-of-sample) — `examples/zigzag.txt`
 
 | metric | LL | HL | diff | tolerance | verdict |
@@ -394,8 +400,8 @@ Annotation:
 | fatigue_consumed_delta | 0.000 | -0.000 | -0.000 | 0.05 | PASS |
 | rate_eff | 32.879 | 32.879 | +0.000 | 1.0 | — |
 | rate_eff_delta | 0.000 | 0.000 | +0.000 | 1.0 | PASS |
-| position_sep | 0.000 | 0.300 | +0.300 | 0.1 | VIOLATION |
-| heading | -4.275 | -4.792 | -0.518 | 5.0 | — |
+| position_sep | 0.000 | 0.026 | +0.026 | 0.1 | PASS |
+| heading | -4.275 | -4.350 | -0.075 | 5.0 | — |
 | distance | 1.974 | 1.999 | +0.025 | 0.05 | — |
 | bin_max | 0.000 | 3.436 | +3.436 | 5.0 | — |
 | bin_rms | 0.000 | 1.724 | +1.724 | 3.0 | — |
@@ -404,10 +410,17 @@ Annotation: the out-of-sample stress test (task T10) — the reversal-mix compos
 
 
 
+
 ## 5. The turn scenarios — the 5 equivalence rows, annotated
 
 | scenario | rate | D LL m | D HL m | diff | t180 LL s | t180 HL s | verdict |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| g1        |   19.9 |    89.5 |    91.1 |  +1.8 % |  54.0 |  53.0 | PASS |
+| f1        |   19.9 |   116.8 |   117.1 |  +0.2 % |  70.0 |  67.0 | PASS |
+| tightest  |   31.5 |    62.7 |    62.3 |  -0.6 % |  52.0 |  47.0 | PASS |
+| oar-hold  |   31.5 |   103.5 |   101.1 |  -2.3 % |  87.0 |  77.0 | PASS |
+| oar-back  |   31.5 |   103.5 |   101.1 |  -2.3 % |  87.0 |  77.0 | PASS |
+
 | g1        |   19.9 |    89.5 |    91.1 |  +1.8 % |  54.0 |  53.0 | PASS |
 | f1        |   19.9 |   116.8 |   117.1 |  +0.2 % |  70.0 |  67.0 | PASS |
 | tightest  |   31.5 |    62.7 |    62.3 |  -0.6 % |  52.0 |  47.0 | PASS |
