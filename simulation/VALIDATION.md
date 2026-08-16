@@ -455,3 +455,55 @@ zig-zag's composition (+1.3 % / 0.318 — the turn-phase composition
 residual: the yaw-build/drift/fishtail interplay). All five turns PASS
 (±3.9 %; the tightest 62.7/61.7 — the +9.2 % row closed); the t180's
 inside the ±20 % band; the suite: 141 checks green.
+
+### 11.8 The open items, in plain language
+
+The short version of §11.7 for a reader who wants the story, not the
+ledger. Every item below is open with its cause measured and a named
+suspect; none is unexplained, and each has a regression lock.
+
+**1. The 360° turn takes 98 s; the trial's took 128 s (−23 %).**
+The turn *size* matches (62 m ✓) — the *speed* doesn't. Turn time =
+distance ÷ speed, and the LL's tightest turn runs at ~3.8 kt mean vs
+the trial's ~2.9 kt (+28 %): the model's ship simply does not slow down
+enough in the turn (its speed floor there is ~0.5 kt too high). Every
+suspect was measured and excluded: the crew-fatigue drain (65 vs
+68 W/man — not elevated), the rudder drag (makes the turn size wrong —
+the wrong direction), the hold brake (fixes the size, not the speed),
+the yaw damping (breaks everything else). Named suspect: the turn's
+speed floor itself — the one number left unexplained.
+
+**2. The hull's drift angle in a hard turn is 1.4°; the trials report
+8–15°.**
+The model's ship doesn't lean sideways into its turns as much as the
+real one. A fix would have to preserve the validated turn sizes AND
+the straight-line drift behavior at once; none found, so the gap is
+recorded with the candidates named (A_lat, the CLR position).
+
+**3. The model's cruise power curve is flatter than the reference
+chain (−2.5/−4.6/−6.1 % at the three cruise rates).**
+At the same stroke rate the model's rowers deliver 4–15 % less power
+per man than the ch.7 chain expects, and the gap grows with rate —
+the model produces less thrust per stroke at high rates. The hull
+factor is not the cause (a more accurate one makes the gap worse);
+the named suspect is the oar/blade power chain at high rates.
+
+**4. The cruise_turn script's slow-speed backing phase (mean −1.7 %,
+fatigue −0.14).**
+At the low backing speeds the LL's speed oscillates wildly (0.8–1.4 kt
+depending on how the state is entered), so no single-value model can
+match it. The fast sim's fatigue tank also behaves differently there
+(the rowers' demand drops below the refill threshold — the tank
+refills and re-drains, which the fast sim doesn't track).
+
+**5. The sprint_turn script's final position is 0.2 NM off.**
+Small turn-timing differences (the heading drifts ~0.4 rad through the
+turns) plus the wiggly turn-exit behavior add up over the 25-minute
+script. The drift-model interpolation at the turn-mixed states is the
+named suspect.
+
+**6. The zig-zag stress-test script (+1.3 % speed, 0.32 NM position).**
+A scenario we invented to stress untested combinations (quick helm
+reversals). It shows the same turn-timing drift as #5, amplified by
+the rapid direction changes — the fast sim's turn-exit model can't
+follow the LL's oscillatory fishtail through a reversal.
