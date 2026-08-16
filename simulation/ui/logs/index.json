@@ -1,0 +1,98 @@
+[
+ {
+  "id": "long_cruise",
+  "label": "long cruise (20 min, steady)",
+  "sims": [
+   "ll",
+   "hl"
+  ]
+ },
+ {
+  "id": "sprint_turn",
+  "label": "sprint + turns (25 min)",
+  "sims": [
+   "ll",
+   "hl"
+  ]
+ },
+ {
+  "id": "wprime_burst",
+  "label": "W' burst + recovery (30 min)",
+  "sims": [
+   "ll",
+   "hl"
+  ]
+ },
+ {
+  "id": "cruise_turn",
+  "label": "sample cruise_turn.txt",
+  "sims": [
+   "ll",
+   "hl"
+  ]
+ },
+ {
+  "id": "three_nm_cruise",
+  "label": "3-NM cruise (35 min)",
+  "sims": [
+   "ll",
+   "hl"
+  ]
+ },
+ {
+  "id": "tempo_loss",
+  "label": "tempo loss (exhausted sprint)",
+  "sims": [
+   "ll",
+   "hl"
+  ]
+ },
+ {
+  "id": "zigzag",
+  "label": "zig-zag (out-of-sample, task T10)",
+  "sims": [
+   "ll",
+   "hl"
+  ]
+ },
+ {
+  "id": "g1",
+  "label": "turn g1 \u2014 full rudder @ 6 kt",
+  "sims": [
+   "ll",
+   "hl"
+  ]
+ },
+ {
+  "id": "f1",
+  "label": "turn f1 \u2014 22.5\u00b0 rudder @ 6 kt",
+  "sims": [
+   "ll",
+   "hl"
+  ]
+ },
+ {
+  "id": "tightest",
+  "label": "turn tightest \u2014 helm + hold one side @ 6.5 kt",
+  "sims": [
+   "ll",
+   "hl"
+  ]
+ },
+ {
+  "id": "oar-hold",
+  "label": "turn oar-hold \u2014 one side holds, midship helm",
+  "sims": [
+   "ll",
+   "hl"
+  ]
+ },
+ {
+  "id": "oar-back",
+  "label": "turn oar-back \u2014 one side backs, midship helm",
+  "sims": [
+   "ll",
+   "hl"
+  ]
+ }
+]

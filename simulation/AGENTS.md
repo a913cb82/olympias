@@ -47,6 +47,12 @@ harness/    the pair harness — same script, both ships, then compare
 examples/   the script set: cruise_turn.txt + long_cruise / sprint_turn /
             wprime_burst / three_nm_cruise / tempo_loss / the zig-zag
             out-of-sample
+ui/         the browser replay UI (zero dependencies, no build)
+  dump.py       one-time: dumps deterministic 1 Hz telemetry logs of the
+                script set + turn scenarios (harness run_both) to logs/
+  viewer.html   the viewer — one self-contained file (vanilla JS + SVG)
+  serve.py      stdlib HTTP server (python3 ui/serve.py opens the browser)
+  logs/         the committed replay logs (<id>.<ll|hl>.json + index.json)
 tests/      test_parser.py — command-language checks
 ```
 
@@ -177,6 +183,30 @@ turn diameter D > 5 % on any turn → tau_turn per family; fatigue > 5 %
 cd simulation
 ../.venv/bin/python3 -m pytest                    # green; count in VALIDATION §8
 ../.venv/bin/python3 harness/run_validation.py   # no unannotated violations
+```
+
+## Replay UI (browser)
+
+The UI replays already-computed runs from their telemetry logs — no
+simulation runs in the browser, nothing to install, no build step:
+
+```bash
+../.venv/bin/python3 ui/serve.py       # opens the viewer in your browser
+```
+
+The dropdown lists every run; each loads both sims' 1 Hz telemetry (the
+same `harness/run_both` telemetry the validation uses — LL solid, HL
+outline, toggle the comparison). Play/pause (space), 0.5–10× speed, a
+scrubber, clickable command markers on the timeline (jump to the command
+and its state), readouts (speed, rate, heading, yaw, helm, per-side
+state/pressure and the W′ meter).
+
+The logs live in `ui/logs/` and are committed (deterministic — no RNG in
+the sims). Regenerate them after any LL/HL change:
+
+```bash
+../.venv/bin/python3 ui/dump.py        # everything (~1 min; 12 runs × 2 sims)
+../.venv/bin/python3 ui/dump.py --only g1
 ```
 
 ## Running (pytest)
