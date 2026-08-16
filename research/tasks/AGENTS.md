@@ -7,7 +7,7 @@ session doesn't re-learn them the hard way.
 | Playbook | When to read |
 |---|---|
 | [pdf-ocr-table-decoding.md](pdf-ocr-table-decoding.md) | You need the **numbers inside a table** in a PDF where text extraction fails (subset/custom fonts, e.g. Rankov 2012 Tables 8.x, 31.1). |
-| [pdf-subset-font-decode.md](pdf-subset-font-decode.md) | You need the **running prose text** of a PDF rendered with embedded subset TT fonts that `get_text()` returns as PUA chars / `?`. |
+| [pdf-subset-font-decode.md](pdf-subset-font-decode.md) | You need the **running prose text** of a PDF rendered with embedded subset TT (TrueType) fonts that `get_text()` returns as PUA (Private-Use-Area) characters / `?`. |
 | [verify-decoded-tables.md](verify-decoded-tables.md) | You decoded numbers from a table and need to **independently check they are right** (reconstruction vs source equations). |
 | [pdf-text-extraction.md](pdf-text-extraction.md) | Simple case: PDF text extracts fine — pull clean text/pages quickly. |
 

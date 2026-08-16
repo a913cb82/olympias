@@ -1,13 +1,15 @@
 # Trireme — Olympias-class trireme performance: research + simulation
 
-An evidence-driven project on the performance of the Athenian trireme (Olympias
-reconstruction): a **validated physics chain** (`research/`) feeding **two
-simulators** (`simulation/`) that share one commander command language.
+An evidence-driven project on the performance of the Athenian trireme (the
+Olympias reconstruction): a **validated physics chain** (`research/`) feeding
+**two simulators** (`simulation/`) that share one commander command language.
 
-Chain of trust: **real-world data → LL → HL**. The low-level simulator (LL, per-oar
-physics) is the oracle against the validated numbers; the high-level simulator (HL,
-fast ship-level) is an approximation validated against the LL. The design
-and the definition of done: `simulation/AGENTS.md`; the acceptance record:
+Chain of trust: **real-world data → LL → HL**. The low-level simulator (LL —
+per-oar physics, one simulator) is the oracle: it must reproduce the
+researched, trial-validated numbers exactly. The high-level simulator (HL — a
+fast, ship-level approximation) is validated against the LL, not against
+reality directly. The design and the definition of done: `simulation/AGENTS.md`;
+the acceptance record (what is validated, what is open, and why):
 `simulation/docs/VALIDATION.md`.
 
 ## Layout
@@ -17,33 +19,45 @@ research/                        the validated evidence base (see research/AGENT
   lane-1-read … lane-6-validation   one topic per lane (oars, hull, waves, manoeuvre…)
   data/                            decoded source tables (CSV, # comments allowed)
   sources/                         source PDFs (Rankov 2012, Carter, …) + build
-                                   logs + the MSW-21958 recovery cluster (recovery/)
+                                   logs + the recovered archived build log (recovery/)
   tools/                           decode/OCR helpers + fonts + renders (scratch/ for
                                    one-off iteration scripts)
   tasks/                           repeatable extraction/decoding playbooks
 simulation/                      the simulators (see simulation/AGENTS.md)
   commands/  schema + script parser (the frozen command language)
-  ll/        per-oar reality-grade sim — Phase 1 complete (the oracle;
+  ll/        the LL — per-oar reality-grade sim (Phase 1 complete; the
              acceptance record: simulation/docs/VALIDATION.md)
-  hl/        fast ship-level sim — Phase 2 complete (the response
+  hl/        the HL — fast ship-level sim (Phase 2 complete; its response
              curves live in hl/calibration/calib_<id>.json, generated
              by hl/calibrate.py from LL runs)
-  harness/   the pair harness — script.py + comparator.py +
-             run_validation.py (the equivalence tables, VALIDATION §9)
+  harness/   the pair harness — runs the same command script on both
+             simulators and compares them (script.py + comparator.py +
+             run_validation.py; the equivalence tables, VALIDATION §9)
   docs/      VALIDATION.md — the acceptance record (§1–8 the LL gates, §9 the
              HL-vs-LL equivalence, §10 the coverage map, §11 the open items)
 ```
 
-## Key facts (validated chain, the acceptance floor)
+## Key facts (the validated chain — the numbers every result must satisfy)
 
-- Rig: tiers 62/54/54, interscalmium 0.888 m, inboard 1.092 m, sweeps 48.1/48.4/55.6°,
-  blade 0.55 m, area 0.078 m².
-- Power: W_hull = 155V³ + 4.13V⁵ (×1.08 Mark II), P = 7.43·r, E = 0.756–0.78.
-- Blade: Fn = ½ρAC_N·|v_n|·v_n, C_N = 1.8, blade CP 0.26 m from tip; m_app = 1.10·m.
-- Cruise 25.5/28.8/32.3 spm → 7/7.5/8 kt; sprint 44.5 spm → 8.2–8.4 kt (measured);
-  F/G turns validated ≤ 7 %.
-- Command language: 4 crew verbs — `rate`, `oars`, `pressure`, `helm` (per-side
-  scoping; see simulation/AGENTS.md).
+Units: spm = strokes per minute; kt = knots.
+
+- Rig: three oar tiers (banks) of 62/54/54 oars (170 total); interscalmium
+  (the spacing between oar stations) 0.888 m; inboard (the oar's length from
+  its pivot to the handle) 1.092 m; sweep angles (the arc each oar swings
+  through) 48.1/48.4/55.6°; blade length 0.55 m; blade area 0.078 m².
+- Power: the hull needs W_hull = 155V³ + 4.13V⁵ watts at speed V in kt (the
+  trial-validated hull-power law; ×1.08 for the Mark II rig variant). Each
+  rower produces P = 7.43·r watts at stroke rate r, with a rowing efficiency
+  E = 0.756–0.78.
+- Blade: the blade's water force is Fn = ½ρAC_N·|v_n|·v_n (the flat-plate law,
+  C_N = 1.8), acting at the blade's centre of pressure 0.26 m from the tip;
+  the hull's apparent mass m_app = 1.10 × the ship's mass (the added mass of
+  the water the hull drags along).
+- Cruise 25.5/28.8/32.3 spm → 7/7.5/8 kt (Rankov 2012 ch.7); sprint 44.5 spm →
+  8.2–8.4 kt (measured in the sea trials, ch.9); the F/G trial turns (the two
+  turn families recorded in the Olympias sea trials) validated ≤ 7 %.
+- Command language: 4 crew verbs — `rate`, `oars`, `pressure`, `helm`
+  (per-side scoping; see simulation/AGENTS.md).
 
 ## Conventions (read before touching files)
 
@@ -57,26 +71,31 @@ simulation/                      the simulators (see simulation/AGENTS.md)
 - **Confidence flags** in research docs: `[x]` = confirmed from a cited source,
   `[?]` = uncertain/conflicting.
 - **Record as printed**: decoded tables keep the source's values even where they are
-  internally inconsistent (e.g. Table 3.1 A/B MIT anomaly) — flag in docs, never
-  alter to force consistency.
-- **Determinism**: simulators are deterministic/replayable (fixed dt, seeded RNG,
-  logged command stream).
+  internally inconsistent (e.g. the Table 3.1 oar-inertia A/B anomaly) — flag in
+  docs, never alter to force consistency.
+- **Determinism**: simulators are deterministic/replayable (fixed time step dt,
+  seeded random generator, logged command stream).
 - **Honest layers**: new physics is labelled and swappable; tuning never silently
-  overrides the validated chain (oQ-18 is the standing example).
+  overrides the validated chain (oQ-18 — one of the original design questions, the
+  Mark IIb blade shortfall — is the standing example).
 
 ## Status (current state)
 
-- Research chain: validated for cruise/sprint/turn (ch.7/ch.9, F/G ≤ 7 %).
-- Sim: all three phases complete — the LL oracle (gates 1–8), the HL (the
-  machine-calibrated fast ship) and the pair harness (the Level-2
-  equivalence). The acceptance record is `simulation/docs/VALIDATION.md` (§1–8
-  the LL, §9 the HL vs the LL, §10 the coverage map, §11 the open items
-  with their quantified causes and locks). The suite is green (141 checks).
-- Open: the t_360 (−23 %, the turn-speed floor), the drift angle (1.4° vs
-  8–15°), the ch.7 triple (the rate→power shape) — each with a named cause
-  and a regression lock (§11); the annotated HL-loose boundaries
-  (cruise_turn's back-tail, the sprint/zig-zag positions). Remaining
-  phases: 4/5 (crew & environment, oar-manoeuvres).
+- Research chain: validated for cruise/sprint/turn (Rankov ch.7/ch.9; the F/G
+  turns ≤ 7 %).
+- Sim: all three phases complete — the LL oracle (gates 1–8, its acceptance
+  checks), the HL (the machine-calibrated fast ship) and the pair harness (the
+  Level-2 equivalence — how close the HL stays to the LL). The acceptance
+  record is `simulation/docs/VALIDATION.md` (§1–8 the LL, §9 the HL vs the LL,
+  §10 the coverage map — every scenario's status — §11 the open items with
+  their quantified causes and locks). The suite is green (141 checks).
+- Open (each with a named cause and a regression lock, §11): the 360°-turn
+  time (−23 % — the model's turn-speed floor), the drift angle (the hull's
+  sideways lean in a hard turn: 1.4° vs the trials' 8–15°), the ch.7 cruise
+  triple (the model's rate→power curve is flatter than the reference chain).
+  Plus the documented HL-loose boundaries (places the fast sim is allowed to
+  deviate: the cruise_turn back-tail, the sprint/zig-zag positions).
+  Remaining phases: 4/5 (crew & environment, oar-manoeuvres).
 
 ## Quick commands
 
@@ -87,12 +106,12 @@ $V -m pytest                      # the whole test suite, one command — the cu
                                   # count and per-gate breakdown live in
                                   # simulation/docs/VALIDATION.md (not here, to stay
                                   # in date)
-$V ll/run_one_oar.py              # one-oar table at the anchored cruise point
-$V ll/run_turn.py table           # turn scenarios vs the W5 anchors
-$V ll/run_hull.py --table         # equilibrium curve over the rates
+$V ll/run_one_oar.py              # the one-oar table at the 7.2 kt cruise point
+$V ll/run_turn.py table           # the turn scenarios vs the trial anchors
+$V ll/run_hull.py --table         # the equilibrium speed curve over the rates
 $V hl/run_hl.py --turn table      # the fast ship's turn scenarios
 $V hl/calibrate.py                # regenerate the HL's response curves from
-                                  # the LL (~2.5 min; writes hl/calibration/)
+                                  # the LL (~4 min; writes hl/calibration/)
 $V harness/run_validation.py      # the HL-vs-LL equivalence tables (the loop:
                                   # calibrate -> validate -> adjust -> repeat)
 ```
