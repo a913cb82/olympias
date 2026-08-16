@@ -429,7 +429,7 @@ function paintReadouts(sim, p, i) {
     <table>
       <tr><td>speed</td><td class="big">${(p.V / KT).toFixed(2)} kt</td></tr>
       <tr><td>rate</td><td>${p.rate.toFixed(1)} spm</td></tr>
-      <tr><td>heading</td><td>${(headingDeg(l, i == null ? Math.floor(S.t) : i) + 360) % 360 | 0}°</td></tr>
+      <tr><td>heading</td><td>${compassHeading(l, i == null ? Math.floor(S.t) : i)}°</td></tr>
       <tr><td>yaw rate</td><td>${(p.omega * 180 / Math.PI).toFixed(1)}°/s</td></tr>
       <tr><td>helm</td><td>${helmText(p.helm)}</td></tr>
     </table>`));
@@ -444,7 +444,7 @@ function paintReadouts(sim, p, i) {
   }
 }
 
-function headingDeg(l, i) {              // unwrapped cumulative heading, in rad
+function headingRad(l, i) {            // unwrapped cumulative heading, radians
   if (!l._cum) {
     let acc = 0; l._cum = [0];
     for (let k = 1; k < l.rows.length; k++) {
@@ -454,6 +454,11 @@ function headingDeg(l, i) {              // unwrapped cumulative heading, in rad
     }
   }
   return l._cum[Math.min(l.rows.length - 1, Math.max(0, Math.floor(i)))];
+}
+
+function compassHeading(l, i) {        // compass bearing, north = 0° — matches
+  const deg = headingRad(l, i) * 180 / Math.PI;   // the north-up map and the
+  return Math.round(((90 - deg) % 360 + 360) % 360);   // ship icon's facing
 }
 
 function helmText(helm) {

@@ -198,7 +198,7 @@ The dropdown lists every run; each loads both sims' 1 Hz telemetry (the
 same `harness/run_both` telemetry the validation uses — LL solid, HL
 outline, toggle the comparison). Play/pause (space), 0.5–100× speed, a
 scrubber, clickable command markers on the timeline (jump to the command
-and its state), readouts (speed, rate, heading, yaw, helm, per-side
+and its state), readouts (speed, rate, heading in compass degrees — north = 0°, matching the ship icon's facing — yaw, helm, per-side
 state/pressure and the W′ meter). The map zooms with the wheel (around
 the cursor) and pans by dragging (⤢ refits); the ship is drawn at its
 TRUE world scale (37 m, clamped to 26–200 px) — the turning circles are
