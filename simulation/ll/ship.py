@@ -1,7 +1,6 @@
 """The 170-oar ship: surge + yaw with the physiological crew (Gates 3-4).
 
-States: V (surge), omega (yaw, + = bow to port, the K24
-sign correction), psi (heading), x, y
+States: V (surge), omega (yaw, + = bow to port), psi (heading), x, y
 (track). Two SideCrews (port/starboard, 85 rowers each) own the oars, the
 per-side oar state / pressure from the command language, the stroke plan
 (force ceiling + W' endurance -> stroke length / rate), and the W' tanks.

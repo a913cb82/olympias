@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""HL-vs-LL validation through the shared harness (the calibration protocol (simulation/AGENTS.md), §20).
+"""HL-vs-LL validation through the shared harness (the calibration protocol (simulation/AGENTS.md)).
 
 Usage (from simulation/):
     python3 harness/run_validation.py             # the whole script set + turns

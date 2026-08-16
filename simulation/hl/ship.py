@@ -68,7 +68,7 @@ class Ship:
         self.rate_eff = rate
         self._wss_prev = 0.0       # the previous turn target (release detect)
         self._exit_omega = 0.0     # the fishtail's decaying yaw rate
-        self._yb_delay = 0.0       # the yaw-build's S-shape delay (K26)
+        self._yb_delay = 0.0       # the yaw-build's S-shape delay (s; the omega is frozen during it)
         self._v_prev = 0.0         # the previous V (the ramp detect)
 
     # ------------------------------------------------------------------
@@ -99,15 +99,15 @@ class Ship:
                 # measured separately — the back collapse at low rate
                 # (cruise_turn 1440 s bin) is much slower than the chase.
                 # The back's FRESH phase decays like the hold (the
-                # degeneration — the identical V/W traces, K22); the slow
-                # tau_back applies only in the drained state (the K13
+                # degeneration — the identical V/W traces); the slow
+                # tau_back applies only in the drained state (the
                 # low-speed context)
                 if self.oar_state[stopped] == "back" and empty:
                     # the drained decay: the power-limited COLLAPSE is
                     # fast above v_collapse (the oar-back's ~12-s drop
                     # after the tank empties); the low-speed drift below
                     # is the slow measured tau_back (the cruise_turn's
-                    # 1440-s bin context, K13)
+                    # 1440-s bin context)
                     if self.V > c.v_collapse * KT:
                         tau = c.tau_hold(self.rate)
                     else:
@@ -155,11 +155,11 @@ class Ship:
             sign = -1.0 if side == "star" else 1.0    # turn toward the held side
             frac = self.helm_frac if self.helm_dir == side else 0.0
             # the oar-only turns (no helm) chase the measured speed-
-            # dependent orbit (K22: the drained spiral — the LL's orbit
+            # dependent orbit (the drained spiral — the LL's orbit
             # shrinks ~linearly with V); the helm-frac oar turns keep
             # the fixed d_oar cell (the rudder-dominated tightest)
             d = c.d_oar_v(self.V) if frac <= 0.0 else c.d_oar(frac)
-            # the pressure scaling (the K27): the LL's oar-turn orbit
+            # the pressure scaling: the LL's oar-turn orbit
             # grows as the rowing side's effort falls (the measured
             # ~1/p_row — the weaker drive, the slower V, the larger
             # orbit — 1.36-1.38x at the steady rows vs 1/0.7); the
@@ -168,7 +168,7 @@ class Ship:
             if frac <= 0.0:
                 if (self.helm_frac > 0.0 and self.helm_dir != "midship"
                         and self.oar_state[side] == "hold"):
-                    # the mixed hold (the K28): the helm + the OPPOSITE-
+                    # the mixed hold: the helm + the OPPOSITE-
                     # side hold — the LL's turn is the HELM's (the rudder
                     # dominates at speed, the hold's brake only widens
                     # the orbit — the measured d_mixed_hold family); the
@@ -187,7 +187,8 @@ class Ship:
         turn_target = wss
         # the untrimmed lateral kick (task C): the LL's symmetric crew
         # carries a measured yaw bias — the HL carries it too, so the
-        # position gate stays as-written (§21.3 decision). Not applied in
+        # position gate stays as-written (the drift-bias decision). Not
+        # applied in
         # the one-side-stopped state (the oar-family D absorbs it).
         if rowing and not asym:
             drift = c.drift_bias(self.rate, p_eff, self.W_frac)
@@ -199,7 +200,7 @@ class Ship:
             if self.V > 0.5 and (self.V - self._v_prev) / dt > 0.02:
                 drift = min(drift, c.drift_kick(self.V))
             wss += drift
-        # the fishtail (the sprint_turn follow-up): at the moment the turn
+        # the fishtail: at the moment the turn
         # target disappears (the helm release), the LL keeps turning — the
         # sway-coupled exit decays slowly (measured tau_exit); the capture
         # is the yaw rate at the release, decayed in parallel, while the
@@ -226,27 +227,28 @@ class Ship:
         # share A at the chase's tau, then the sway-coupled slow tail
         # (the measured yaw_build families — the HL's single-tau build
         # phased the turn's psi early and accumulated in the position
-        # rows, the K16 finding)
+        # rows)
         if (abs(wss) < abs(self.omega) * 0.99
                 and abs(self.omega) < 0.005):
             tau_yaw = c.tau_exit * (0.1 / max(abs(self.omega), 1e-4)) \
                 ** c.drift_tau_exp
         else:
             b = c.yaw_build(self.helm_frac, bool(asym))
-            # the S-shape's delay (the K26): the LL's build is slow-early
+            # the S-shape's delay: the LL's build is slow-early
             # (the yaw's inertia — a delayed exponential); the delay
-            # re-arms when the turn target jumps; during the delay the
-            # omega is frozen (no chase)
+            # re-arms when the turn target jumps (the |wss| > 0.005 —
+            # the turn scale, 3x above the straight drift — so the
+            # drift's slow W'-variation never re-arms it); during the
+            # delay the omega is frozen (no chase)
             if (abs(wss - prev_target) > 0.1 * abs(wss)
-                    and abs(wss) > 1e-6):
+                    and abs(wss) > 0.005):
                 self._yb_delay = b.get("td", 0.0)
             if self._yb_delay > 0:
                 self._yb_delay -= dt
                 tau_yaw = None
             elif abs(wss - self.omega) > (1.0 - b["A"]) * abs(wss):
-                tau_yaw = b["tf"]        # the fast rise (the fitted tau —
-                # the K25 fix: this was the hardcoded tau_turn, so the
-                # measured tf never applied and the builds ran ~2x fast)
+                tau_yaw = b["tf"]        # the fast rise (the fitted tau,
+                # measured per family)
             else:
                 tau_yaw = b["ts"]          # the sway-coupled tail
         if tau_yaw is not None:
@@ -257,12 +259,12 @@ class Ship:
         # net = the measured drain/refill (W/man) at the anchor levels;
         # the refill is capped at W_max/tau as in the LL. In the
         # one-side-stopped legs the rowing side's drain is measured
-        # separately (task T4 follow-up): the LL's rowing side pulls
+        # separately (the one-side-stopped legs): the LL's rowing side pulls
         # less at the low hold/back speeds (~28 W/man spoude vs the
         # symmetric ~68) — the symmetric net would drain the tank ~2.4x
         # too fast and drop the chase target early (the cruise_turn
-        # fatigue/mean regressions, K13)
-        # -- crew tank (per side, K22) --------------------------------
+        # fatigue/mean rows)
+        # -- crew tank (per side) -------------------------------------
         # The LL's tanks are per side: the rowing side drains first (the
         # fresh nets), the backing side only after the V collapse unlocks
         # its blades (the flow limit at v_flow — the back stroke degener-
@@ -281,7 +283,7 @@ class Ship:
                 # the FRESH-phase drain is the commanded pull (the
                 # measured net_fresh — the turns' full-tank entry); the
                 # drained nets (net_asym ~ 0) apply only after the tank
-                # empties (the K13 cruise_turn context, unchanged)
+                # empties (the drained cruise_turn context)
                 row_net = c.net_asym(r_eff, p_eff,
                                      self.oar_state[stop_side]) \
                     if empty else c.net_fresh(r_eff, p_eff)
@@ -308,7 +310,7 @@ class Ship:
 
         # -- position ----------------------------------------------------
         self.psi += self.omega * dt
-        # the turn-sway's lateral displacement (the K25 addition): the
+        # the turn-sway's lateral displacement: the
         # LL's crab (the measured drift angle, turn_beta) shifts its
         # path laterally — the HL has no sway DOF, so the path would
         # miss the crab (the |y| at 180 deg runs ~5-6 % high); the crab

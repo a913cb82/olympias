@@ -329,7 +329,7 @@ def _psi_slope(ps):
 
 
 def measure_tau_exit():
-    """The turn-exit yaw decay (s, the K23 follow-up): the LL keeps
+    """The turn-exit yaw decay (s): the LL keeps
     turning after the helm returns to midship — the sway-coupled
     fishtail. Fitted as the scan over tau on the HL's RESPONSE, judged
     by the L2-6 position rows the fishtail gates (the sprint and the
@@ -430,13 +430,14 @@ def _entry_decay(state, rate, pressure="fast", v0_kt=6.0, t_end=330.0):
 
 
 def measure_tau_hold_at(rate, v0_kt=6.5, helm=("starboard", 1.0)):
-    """The hold-state entry lag at its true usage (the K29): the
+    """The hold-state entry lag at its usage: the
     tightest's context — the helm + the same-side hold at 31.5 spm.
     The LL's V-collapse is drag-driven (fast-early — the hold's brake
     at ~V^2); the HL's single-tau chase + the rudder-drag term is
     scanned so the HL's V(t) matches the LL's at the 5/10/15/30 s
     points (the window the turn's yaw reads — the wss = 2V/d runs on
-    the V). The old 44-spm anchor stays as the table's second cell."""
+    the V). The 44-spm cell (the tempo-loss usage) completes the
+    table."""
     from hl.ship import Ship as HLShip
     from commands.parser import Command
     ll = LLShip(rate=rate, oar_state=("row", "hold"))
@@ -574,8 +575,7 @@ def measure_turn_drag(tables):
     is today's ship). The LL's loss is nonlinear in helm and the
     pressure's turn state differs (the zigzag found the steady turns
     lose relatively more — the fitted spoude curve under-applied there);
-    the per-fraction x per-pressure table (T4) replaces the old linear
-    k·frac scalar."""
+    the per-fraction x per-pressure table (T4)."""
     from hl.ship import Ship as HLShip
     rates = [rate_for_speed("Olympias", 6.0),   # 19.9 — the G1 anchor
              28.8, 30.0, 44.5]
@@ -623,35 +623,46 @@ def measure_turn_drag(tables):
 
 def measure_yaw_build():
     """The yaw build-up (task T3): the LL's omega's approach to its
-    turn rate. The fit: omega(t) = ss*(1 - A*exp(-t/tf) -
-    (1-A)*exp(-t/ts)) per family, measured at the family's TRUE usage:
-    the helm turns measured PER HELM FRACTION from the settled steady
+    turn rate. The fit: the delayed two-timescale exponential
+    omega(t) = ss*(1 - A*exp(-(t-td)/tf) - (1-A)*exp(-(t-td)/ts))
+    (the S-shape's delay td) per family, measured at the family's
+    usage: the helm turns PER HELM FRACTION from the settled steady
     straight (the 28.8 steady cruise — the sprint/zig-zag turns'
-    context; the build slows as the fraction falls — the K25 finding:
-    tf 7.5/7.5/9.0 at 1.0/2/3/1/3) vs the oar-only turns (midship
-    helm, one side holds). The fits are near single exponentials, so
-    the grid includes A = 1.0 and tf up to 12."""
+    context) vs the oar-only turns (midship helm, one side holds).
+    The fits are near single exponentials, so the grid includes
+    A = 1.0 and tf up to 12."""
     import math
     builds = {}
 
-    def fit(rec, ss):
+    def fit(rec, ss, with_delay=False):
+        """The delayed two-timescale exponential: the LL's
+        yaw rise is a DELAYED exponential — the yaw inertia leaves the
+        omega flat for ~1 s before the rise (the helm family's measured
+        td 1.0 s at all fractions); the tightest/oar families (the
+        rudder's/back's instant force) fit td 0."""
+        tds = (0.0, 0.5, 1.0, 1.5, 2.0, 3.0) if with_delay else (0.0,)
         best = None
         for A in (0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 1.0):
             for tf in (1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 8.0, 10.0, 12.0):
                 for ts in (10.0, 12.0, 15.0, 18.0, 22.0, 26.0, 31.6, 40.0):
-                    err = 0.0
-                    for i, w in enumerate(rec):
-                        t = (i + 1) * DT
-                        pred = ss * (1 - A * math.exp(-t / tf)
-                                     - (1 - A) * math.exp(-t / ts))
-                        err += (w - pred) ** 2
-                    if best is None or err < best[0]:
-                        best = (err, A, tf, ts)
+                    for td in tds:
+                        err = 0.0
+                        for i, w in enumerate(rec):
+                            t = (i + 1) * DT
+                            if t < td:
+                                pred = 0.0
+                            else:
+                                tt = t - td
+                                pred = ss * (1 - A * math.exp(-tt / tf)
+                                             - (1 - A) * math.exp(-tt / ts))
+                            err += (w - pred) ** 2
+                        if best is None or err < best[0]:
+                            best = (err, A, tf, ts, td)
         return best
 
     # the helm family: per fraction, from the settled steady straight
     rate = rate_for_speed("Olympias", 28.8)
-    fracs, As, tfs, tss = [], [], [], []
+    fracs, As, tfs, tss, tds = [], [], [], [], []
     for frac in (1.0, 2.0 / 3.0, 1.0 / 3.0):
         ship = LLShip(rate=rate, pressure=("steady", "steady"))
         ship.V = 0.0
@@ -662,10 +673,12 @@ def measure_yaw_build():
         while ship.t < 720.0:
             ship.step(DT)
             rec.append(abs(ship.omega))
-        e, A, tf, ts = fit(rec, rec[-1])
+        e, A, tf, ts, td = fit(rec, rec[-1], with_delay=True)
         fracs.append(frac); As.append(A); tfs.append(tf); tss.append(ts)
-        log(f"  yaw build helm {frac:.3f}: A={A:.2f} tf={tf:.1f} ts={ts:.0f}")
-    builds["helm"] = dict(fracs=fracs, A=As, tf=tfs, ts=tss)
+        tds.append(td)
+        log(f"  yaw build helm {frac:.3f}: A={A:.2f} tf={tf:.1f} "
+            f"ts={ts:.0f} td={td:.1f}")
+    builds["helm"] = dict(fracs=fracs, A=As, tf=tfs, ts=tss, td=tds)
     # the tightest (helm 1.0 + one side holds) and the oar family
     rate = rate_for_speed("Olympias", 6.5, n_oars=85)
     ship = LLShip(rate=rate, helm=("starboard", 1.0),
@@ -675,18 +688,19 @@ def measure_yaw_build():
     while ship.t < 120.0:
         ship.step(DT)
         rec.append(abs(ship.omega))
-    e, A, tf, ts = fit(rec, rec[-1])
-    builds["tightest"] = dict(A=A, tf=tf, ts=ts)
-    log(f"  yaw build tightest: A={A:.2f} tf={tf:.1f} ts={ts:.0f}")
+    e, A, tf, ts, td = fit(rec, rec[-1], with_delay=True)
+    builds["tightest"] = dict(A=A, tf=tf, ts=ts, td=td)
+    log(f"  yaw build tightest: A={A:.2f} tf={tf:.1f} ts={ts:.0f} "
+        f"td={td:.1f}")
     ship = LLShip(rate=rate, helm=("midship", 0.0), oar_state=("row", "hold"))
     ship.V = 6.5 * KT
     rec = []
     while ship.t < 120.0:
         ship.step(DT)
         rec.append(abs(ship.omega))
-    e, A, tf, ts = fit(rec, rec[-1])
-    builds["oar"] = dict(A=A, tf=tf, ts=ts)
-    log(f"  yaw build oar: A={A:.2f} tf={tf:.1f} ts={ts:.0f}")
+    e, A, tf, ts, td = fit(rec, rec[-1], with_delay=True)
+    builds["oar"] = dict(A=A, tf=tf, ts=ts, td=td)
+    log(f"  yaw build oar: A={A:.2f} tf={tf:.1f} ts={ts:.0f} td={td:.1f}")
     return builds
 
 
@@ -795,15 +809,13 @@ def fit_tau_turn(tables, ll_d, scalars=None):
 
 
 def fit_d_scale(tables, ll_d, scalars):
-    """The per-scenario D-multiplier scan (the K26 D-compensation): the
+    """The per-scenario D-multiplier scan (the D-compensation): the
     HL's |y| at 180 deg runs ~6 % high on the g1 with the honest build
     (the LL's path runs ~2-3 % lower V through the turn plus its
     S-shaped yaw — the build itself barely moves the |y|, measured).
-    The old tau_turn scan compensated this by accident (its fast build
-    happened to shrink the |y|); the K25 fix made the measured tf
-    apply, so the compensation must move to the TARGET: the d_tables'
-    cells are rescaled per scenario (the g1's full-helm cell, the f1's
-    1/3 cell, the tightest's d_oar 1.0 cell, the oar turns' d_oar 0.0
+    The compensation scales the TARGET: the d_tables' cells are
+    rescaled per scenario (the g1's full-helm cell, the f1's 1/3
+    cell, the tightest's d_oar 1.0 cell, the oar turns' d_oar 0.0
     cell), with the scales recorded. The measured build's tf is
     untouched."""
     from hl.ship import Ship as HLShip
@@ -917,10 +929,9 @@ def main() -> None:
     log(f"  tau_turn fit: {tau_turn:.1f} s "
         f"(max |D diff| {max_d*100:.1f} % across the families)")
 
-    # the K29: the hold's entry decay re-measured at its true usages —
-    # the tightest's 31.5 spm helm+hold V-collapse fit (16.0 s, scanned
-    # on the HL's V-shape vs the LL's) + the old 44-spm anchor (28.0,
-    # the tempo-loss context) — a rate table, like the back's
+    # the hold's entry decay at its usages — the tightest's 31.5 spm
+    # helm+hold V-collapse fit (scanned on the HL's V-shape vs the LL's)
+    # + the 44-spm tempo-loss cell — a rate table, like the back's
     tau_hold_31 = measure_tau_hold_at(31.5)
     scalars = dict(_scalars(), tau_surge=tau_surge, tau_turn=tau_turn,
                    tau_hold=dict(rates=[31.5, 44.0],
@@ -974,10 +985,10 @@ def main() -> None:
             tau_surge="LSQ of the chase to the 28.8 spm rest start",
             tau_turn="scan so the HL's |y| at 180 deg matches the LL's",
             drift="LL straight-cruise yaw slope at the anchors (task C)",
-            tau_exit="LL omega decay after the helm returns midship "
-                     "(sprint_turn position follow-up)",
+            tau_exit="LL omega decay after the helm returns midship",
             tempo_loss="LL exhausted rate_eff at the anchor rates (task B)",
-            tau_hold="LL (row, hold) entry decay fit at 44 spm (task E)",
+            tau_hold="LL (row, hold) entry decay fits at 31.5/44 spm "
+                     "(task E)",
             tau_back="LL (row, back) entry fit at 44 + the 44->24 collapse "
                      "window-mean fit (task E)",
             turn_drag="LL G1-turn V(t) vs the HL's, extra-drag scan (task F)",
@@ -996,8 +1007,8 @@ def main() -> None:
         "re-run -> re-validate)")
 
 def measure_asym_nets():
-    """The rowing side's tank net in the one-side-stopped legs (task
-    T4 follow-up): (row,hold) and (row,back) at the asym anchor rates,
+    """The rowing side's tank net in the one-side-stopped legs:
+    (row,hold) and (row,back) at the asym anchor rates,
     spoude and steady, from the STATE'S SETTLED ORBIT (the scripts'
     context — the legs start from the hold's speed, not the 6-kt crash;
     the back's low-speed state is multi-stable, the orbit selects the
@@ -1031,7 +1042,7 @@ def measure_fresh_nets(rates):
     entry with a full tank and drain at the commanded pull; the
     settled-orbit nets (measure_asym_nets) are the drained-state
     values). Cell = the FULL-DRAIN mean (the tier's W / the time to
-    empty, K22): the LL's drain rate decays as V falls, so the HL's
+    empty): the LL's drain rate decays as V falls, so the HL's
     linear drain must empty the tank in the LL's time (the sequence —
     the rowing side's empty before the 180° crossing — depends on it).
     The empty is detected on the side's W_frac (the min across the
@@ -1068,7 +1079,7 @@ def measure_fresh_nets(rates):
 
 
 def measure_turn_beta():
-    """The LL's turn drift angles, deg (the T8 row — the K25 addition):
+    """The LL's turn drift angles, deg (the T8 row):
     the sway's lateral crab per turn family — the helm turns per
     fraction (g1 1.0 / f1 1/3), the tightest (helm 1.0 + one side
     holds), and the oar-only turns per stopped state. The HL carries
@@ -1101,7 +1112,7 @@ def measure_turn_beta():
 
 
 def measure_d_oar_v():
-    """The oar-family orbit diameter vs the ship's speed, m (K22): the
+    """The oar-family orbit diameter vs the ship's speed, m: the
     LL's one-side-back turn's settled orbits. Drained cells: the
     oar-back 600-s run's instantaneous 2V/|omega| binned by V (the
     multi-stable band's means); the fresh plateau = the d_oar(0) gate
@@ -1133,7 +1144,7 @@ def measure_d_oar_v():
 
 
 def measure_v_flow():
-    """The backing side's flow-limit threshold, kt (K22): the V below
+    """The backing side's flow-limit threshold, kt: the V below
     which the back stroke unlocks (the peak-force cap stops degenerating
     it to the hold-brake) and its W' starts draining. From the oar-back
     run: the star's W' slope vs V — locked (slope ~ 0) at 3.37 kt,

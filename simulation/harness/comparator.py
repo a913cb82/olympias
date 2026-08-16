@@ -57,15 +57,14 @@ def metrics(ll_rows, hl_rows, exclude_bins=()):
     """The Level-2 metric set; every entry is (ll, hl, tol, unit). The
     position gate is the raw separation (as-written in the pair contract (simulation/AGENTS.md)): the HL
     carries the LL's measured untrimmed drift bias itself (task C, the
-    §21.3 decision) — no correction needed here.
+    drift-bias decision) — no correction needed here.
     exclude_bins: the per-script scoped 3-min bins (task T5 — the
     cruise_turn back-tail window, the HL's documented domain boundary)."""
     def mean_v(rows):
         # the distance/time integral — the honest mean speed. The
         # sample-mean aliases the low-speed per-stroke surge ripple
         # (the ±40 % oscillation at the back rates: the sampled mean is
-        # phase-dependent, the integral is not — the cruise_turn
-        # finding, K14).
+        # phase-dependent, the integral is not).
         d = _cumulative_distance(rows)
         t = rows[-1]["t"] - rows[0]["t"]
         return d[-1] / t if t > 0.0 else 0.0

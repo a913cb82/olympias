@@ -339,7 +339,7 @@ TIER_SPLIT = {"thranite": 31, "zygian": 27, "thalmian": 27}   # per side
 def thalmian_power_factor(rate: float) -> float:
     """Thalmian head-room factor (the ch.9 L-model: a reduced effective pull
     scales the POWER, not the kinematics): the manikin reaches 720 mm of the
-    800 mm design stroke (0.9 — rig-geometry §4); 'the thalmian tier's power
+    800 mm design stroke (0.9 — the rig's design stroke); 'the thalmian tier's power
     contribution fell sharply at higher speeds' (ch.9 p.77) — linear decline
     to 0.6 at 44.5 spm. Flag [?]: the exact rate-shape is unmeasured."""
     if rate <= 32.0:
@@ -349,7 +349,7 @@ def thalmian_power_factor(rate: float) -> float:
 
 class SideCrew:
     """One side's crew: three TierCrews (thranite 31 / zygian 27 / thalmian
-    27 per side). Exposes the old single-crew API — the returned forces are
+    27 per side). Exposes the single-crew API — the returned forces are
     per-oar averages over the side's 85 rowers, so the ship's math is
     unchanged; the tier split lives inside (per-tier W', rate, power)."""
 

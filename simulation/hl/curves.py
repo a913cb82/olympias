@@ -112,10 +112,10 @@ TEMPO_EMPTY = [25.5, 36.0, 40.0, 44.5, 50.0]
 # straight-cruise yaw slope at the anchor (rate, pressure) cells — the
 # symmetric crew carries a lateral kick, so a midship-helm cruise curves
 # slowly (~−0.0010 rad/s at spoude vs ~−0.0003 at steady, flat over
-# rate). The HL carries the bias (the §21.3 decision — the single-scalar
-# floor cannot represent the pressure dependence; the HL matches the
-# LL's truth and the position gate stays as-written). Measured in this
-# session; the calibration measures it fresh.
+# rate). The HL carries the bias (the single-scalar floor cannot
+# represent the pressure dependence; the HL matches the LL's truth and
+# the position gate stays as-written). The calibration measures it
+# fresh.
 DRIFT_RATES = [25.5, 28.8, 32.3, 44.5]
 DRIFT_SPOUDE_FULL = [-0.001168, -0.001311, -0.001409, -0.001305]
 DRIFT_SPOUDE_EMPTY = [-0.001109, -0.001044, -0.001169, -0.000381]
@@ -249,14 +249,14 @@ class Calibration:
         if isinstance(th, (int, float)):       # the legacy scalar: the
             th = {"rates": [31.5, 44.0], "tau": [16.0, th]}   # 44-spm anchor
         self._tau_hold_rates = list(th.get("rates", [31.5, 44.0]))
-        self._tau_hold_tau = list(th.get("tau", [16.0, 28.0]))
+        self._tau_hold_tau = list(th.get("tau", [18.0, 28.0]))
         self.turn_drag_extra = s.get("turn_drag_extra", 0.0)
         td = t.get("turn_drag") or {}
         self._td_fracs = list(td.get("fracs", [1.0]))
         self._td_rates = list(td.get("rates", [19.9]))
         self._td_spoude = td.get("spoude", [[self.turn_drag_extra]])
         self._td_steady = td.get("steady", self._td_spoude)
-        # tolerate the pre-rate-dimension flat format (the old k lists)
+        # accept the flat (pre-rate-dimension) calibration format
         if self._td_spoude and isinstance(self._td_spoude[0], (int, float)):
             self._td_spoude = [self._td_spoude]
         if self._td_steady and isinstance(self._td_steady[0], (int, float)):
@@ -341,13 +341,14 @@ class Calibration:
         return _d_inv_lin(self.d_rudder_pts, helm_frac)
 
     def yaw_build(self, helm_frac, asym=False):
-        """The yaw approach's two-timescale shape (task T3): (A, tf, ts)
-        — the fast share A of the rise at the fitted tf, then the
-        sway-coupled slow tail at ts. The helm turns are measured per
-        helm fraction (the build slows as the fraction falls — the K25
-        finding); the tightest (helm + one side stopped) and the
-        midship oar turns are separate cells. The per-scenario tf
-        scale (the K25 D-compensation — the LL's S-shaped build vs the
+        """The yaw approach's two-timescale shape (task T3): (A, tf, ts,
+        td) — the fast share A of the rise at the fitted tf after the
+        S-shape's delay td (the yaw inertia leaves the omega flat ~1 s
+        before the rise), then the sway-coupled slow tail at ts. The
+        helm turns are measured per helm fraction (the build slows as
+        the fraction falls); the tightest (helm + one side stopped)
+        and the midship oar turns are separate cells. The per-scenario
+        tf scale (the D-compensation — the LL's S-shaped build vs the
         HL's exponential leaves the |y| at 180 deg ~6 % high on the
         g1; the scanned scales are recorded in the calibration) is
         folded into the returned tf."""
@@ -396,7 +397,7 @@ class Calibration:
 
     def turn_beta(self, helm_frac, oar_state="row", asym=False):
         """The LL's turn drift angle, deg (the measured crab — the T8
-        row, the K25 addition): the sway's lateral shifts the LL's path
+        row): the sway's lateral shifts the LL's path
         by ~V·tan(beta) (the |y| at 180 deg runs ~5-6 % high without
         it); the HL has no sway DOF, so it carries the crab explicitly."""
         if asym:
@@ -409,20 +410,20 @@ class Calibration:
         return _d_inv_lin(self.d_oar_pts, helm_frac)
 
     def d_oar_v(self, v):
-        """The oar-family orbit diameter vs the ship's speed, m (the K22
-        measurement — the one-side-stopped turns' settled orbits): the
-        drained cells measured from the LL's oar-back run (the
-        instantaneous 2V/|omega| binned by V: 18.3 @ 1.0 kt … 55.2 @
-        2.5 kt), the fresh plateau anchored to the half-circle gate cell
-        (103.5 m = d_oar(0)) above 3.0 kt, the transition interpolated
-        (the LL's collapse transient — no settled states exist there).
-        The drained orbit is ~linear in V, so the settled yaw rate
-        (~2.9-3.2 deg/s) is speed-independent, like the LL's."""
+        """The oar-family orbit diameter vs the ship's speed, m — the
+        one-side-stopped turns' settled orbits: the drained cells
+        measured from the LL's oar-back run (the instantaneous
+        2V/|omega| binned by V: 20.0 @ 1.0 kt … 54.9 @ 2.5 kt), the
+        fresh plateau anchored to the half-circle gate cell (103.5 m =
+        d_oar(0)) above 3.0 kt, the transition interpolated (the LL's
+        collapse transient — no settled states exist there). The
+        drained orbit is ~linear in V, so the settled yaw rate
+        (~2.7-3.3 deg/s) is speed-independent, like the LL's."""
         return self._dov_impl(v)
 
     def d_mixed_hold(self, v):
-        """The mixed hold's orbit diameter vs the ship's speed, m (the
-        K28 measurement — the helm + the OPPOSITE-side hold, the LL's
+        """The mixed hold's orbit diameter vs the ship's speed, m — the
+        helm + the OPPOSITE-side hold state's settled orbits (the LL's
         cruise_turn hold leg): the turn is the HELM's throughout (the
         rudder dominates at speed — the D at 5.65 kt is the full-helm's
         85 m; the hold's brake only widens the orbit as V falls — 206.8
@@ -465,8 +466,8 @@ class Calibration:
         return fast + (spoude - fast) * (pressure - 0.85) / 0.15
 
     def net_asym(self, rate, pressure, state):
-        """The rowing side's tank net in the one-side-stopped legs, W/man
-        (task T4 follow-up): the LL's rowing side pulls less at the low
+        """The rowing side's tank net in the one-side-stopped legs, W/man:
+        the LL's rowing side pulls less at the low
         hold/back speeds (~28 W/man spoude vs the symmetric ~68 — the
         measured hold/back drains, flat over rate; the back ~= the hold,
         the degeneration)."""
@@ -527,7 +528,7 @@ class Calibration:
         — the kick follows the stroke force, so the bias interpolates
         between the full-tank and the drained anchors by W_frac; scales
         from 0 at rest (no oar forces, no kick). The HL carries the bias
-        so the position gate stays as-written (§21.3 decision)."""
+        so the position gate stays as-written (the drift-bias decision)."""
         if pressure <= 0.0:
             return 0.0
         w = max(0.0, min(1.0, w_frac))
@@ -553,11 +554,10 @@ class Calibration:
         return _pwl(self._tau_back_rates, self._tau_back_tau, rate)
 
     def tau_hold(self, rate):
-        """The hold-state surge lag, s at rate (the K29 re-measurement):
-        the entry decay measured at its true usages — the tightest's
-        31.5 spm helm+hold V-collapse fit (16.0 s) vs the tempo-loss's
-        44 spm (28.0 s, the old single scalar's anchor). Linear
-        between; flat outside."""
+        """The hold-state surge lag, s at rate — the entry decay at its
+        usages: the tightest's 31.5 spm helm+hold V-collapse fit
+        (18.0 s) and the tempo-loss's 44 spm (28.0 s). Linear between;
+        flat outside."""
         if rate >= self._tau_hold_rates[-1]:
             return self._tau_hold_tau[-1]
         if rate <= self._tau_hold_rates[0]:
