@@ -385,7 +385,7 @@ Every exit criterion included its regression lock; the suite is green
 | Task | Verdict |
 | --- | --- |
 | T1 — the ch.7 triple | open-with-locked-test — the cause named: the LL's rate→power shape (per-man gross 110/129/152 W vs the chain's 115/145/180, the gap growing with rate; E_g flat 51.5–52.3 % vs the 53–55 % band — the blade/kinematics chain, not the hull factor; the speed-dependent uplift moves the reference the wrong way). Lock: `ll/tests/test_triple_lock.py` |
-| T2 — the tightest turn + t_360 | part-closed — the hold_frac re-measurement (0.05 → 0.08) closes the tightest D (62.6 m, +1.0 %, was +9.2 %) and lands the drained floor (3.22 kt ≈ the halved 3.25); the t_360 stays open with the cause quantified: the turn-time = π·D/V̄ is the surge problem (the LL's turn-mean 3.8 kt vs the trial's 2.91; every mechanism measured and excluded — the W′ drain, the rudder drag, the hold brake, the linear yaw damping) |
+| T2 — the tightest turn + t_360 | part-closed — the hold_frac re-measurement (0.05 → 0.08) closes the tightest D (62.6 m, +1.0 %, was +9.2 %) and lands the drained floor (3.22 kt ≈ the halved 3.25); the t_360 stays open with the cause quantified: the turn-time = π·D/V̄ is the surge problem (the LL's turn-mean 3.8 kt vs the trial's 2.91; every mechanism measured and excluded — the W′ drain, the rudder drag, the hold brake, the linear yaw damping). The Rev F stationary-turn anchor adds the SECOND direction (register C7): the trials' partial-crew turn from rest at 27 spm = 3.5°/s vs the LL's 2.32°/s in-place (−34 %) / 1.06°/s one-side (−70 %) — the model is now too SLOW at low-speed partial crew (the t_360 is too FAST at full crew); the turn-speed family's envelope is measured, the mechanisms still open (the yaw build's reversal + the sway damping at low V) |
 | T3 — the turn timing | the t180 row is gated at ±20 % (the measured timing-loose band: the HL systematically fast in the D-matched turns, the worst row −6 % after the K29 hold-decay re-measurement at the tightest's true usage (the HL's hold-state V collapsed too slowly — the wss = 2V/d ran 1.4× high in the first 10 s; the τ_hold is now a rate table 18.0 s @ 31.5 / 28.0 s @ 44); the K27: the oar-only d_oar_v is scaled by the rowing side's pressure — the LL's oar orbit grows as the effort falls (measured ~1/p_row), so the cruise's steady-rowed back leg no longer runs ~2× fast in yaw) |
 | T4 — the turn-state drag | landed — the per-helm × per-pressure × per-rate curve (the k falls with rate) + the settled-orbit asym nets; the sprint_turn mean +1.0 % → +0.7 % |
 | T5 — the bin gate | landed — `bin_max` 5 % / `bin_rms` 3 % in the comparator + the violation set; the cruise_turn's back-tail bin scoped |
@@ -393,12 +393,15 @@ Every exit criterion included its regression lock; the suite is green
 | T7 — the dt-lock | landed — the drift cells are dt-sensitive (+120–1025 % at dt 0.1–0.2); the validation dt pinned at 0.05 |
 | T8 — the drift angle | open-with-locked-test — the LL's time-domain β measured (the corrected direction convention, K24): −1.50° (G1) / −1.18° (F1) / +2.24° (tightest) vs the reported 15°±2° / Taylor's 7.8°; no A_lat/clr adjustment holds the turns AND the wprime closure — the gap is quantified, the row open |
 | T9 — the rate_eff identity | measured, not assumed — the settled crew-level achieved rate = the commanded rate at all anchors incl. rate 50; the tempo loss is a start transient only |
-| T10 — the zig-zag (out-of-sample) | landed + part-closed — found the steady-turns' deceleration (fixed by T4); the reversal-mix's position row CLOSED by the K29 tau_exit re-scan (0.186 → 0.010, clean — the sprint's row re-annotated 0.280 as the pair's cost); the mean +1.3 % residual stays (the annotated mean row) |
+| T10 — the zig-zag (out-of-sample) | landed + part-closed — found the steady-turns' deceleration (fixed by T4); the reversal-mix's position row CLOSED by the K29 tau_exit re-scan (0.186 → 0.010, clean — the sprint's row re-annotated 0.280 as the pair's cost); the mean +1.3 % residual stays (the annotated mean row). The Rev F Kempf overshoots add a NEW honest row (register C8): the LL's zig-zag (helm 22.5, steady 28.8, ±20° targets) overshoots 11.0° then 12.8–13.0° vs the trials' 8°/7° (+60–85 %) — the fishtail's reversal carries ~5–6° too far (the yaw momentum decays too slowly — the same family as the t_360's dynamics); locked in `ll/tests/test_revf_anchors.py` |
 
 **The open rows (K19, the final acceptance)**: the t_360 (−23 %, the
 named cause: the turn-speed floor — the trial's implied ~2.9 vs the
-LL's ~3.2), the drift angle (1.4° vs 7.8–15°, the quantified gap), the
-ch.7 triple (−2.5/−4.6/−6.1 %, the rate→power shape), and the Level-2
+LL's ~3.2) + the Rev F stationary-turn second direction (−34/−70 %
+at partial crew, low speed), the zig-zag overshoots (11–13° vs the
+trials' 8/7 — the fishtail's too-long reversal), the drift angle
+(1.4° vs 7.8–15°, the quantified gap), the ch.7 triple
+(−2.5/−4.6/−6.1 %, the rate→power shape), and the Level-2
 annotated boundaries (measured, named, locked): the cruise_turn back-tail
 (mean −1.9 %, fatigue −0.142 — the multi-stable low-speed state: the
 orbits 0.83–1.38 kt, the ±40 % per-stroke ripple, the V-dependent
@@ -457,7 +460,22 @@ suspect was measured and excluded: the crew-fatigue drain (65 vs
 68 W/man — not elevated), the rudder drag (makes the turn size wrong —
 the wrong direction), the hold brake (fixes the size, not the speed),
 the yaw damping (breaks everything else). Named suspect: the turn's
-speed floor itself — the one number left unexplained.
+speed floor itself — the one number left unexplained. The Rev F
+stationary-turn anchor (3.5°/s at 27 spm, Zygian+Thranite only, from
+rest) adds the family's SECOND direction: the model turns 2.32°/s
+in-place (−34 %) and 1.06°/s one-side (−70 %) — too SLOW at partial
+crew, low speed, while too FAST at full crew. The envelope between the
+two regimes is measured; the mechanism (the yaw build's reversal +
+the sway damping at low V) is the next suspect for the whole family.
+
+**1b. The zig-zag overshoots are ~13°; the trials' were 8° then 7°.**
+The model's heading carries ~5–6° too far past the ±20° targets before
+the reversed helm takes hold (11.0° first, then 12.8–13.0°): the turn's
+momentum decays too slowly — the same yaw-reversal softness as the
+t_360 family. The Kempf scenario (helm 22.5, flip at the ±20°
+crossings) is locked in `ll/tests/test_revf_anchors.py`; the mismatch
+is recorded, the cause named, the fix (if any) must preserve the
+turn-size gates.
 
 **2. The hull's drift angle in a hard turn is 1.4°; the trials report
 8–15°.**

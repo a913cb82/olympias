@@ -99,47 +99,52 @@ and the short oars at the extremes. No separate work.
 
 ## C. New data from the report → new validation
 
-**C1. The stationary-turn anchor (Ref (1) p30, via the report).**
-"Stationary turning Zygian and Thranite only at 27 [spm] … 3.5 degrees/
-second". A new scenario for the t_360 item (VALIDATION §7.2): the LL from
-rest with the two lower tiers at 27 spm, measure the settled turn rate vs
-3.5°/s. Context: the model's full-crew 360° is 98 s (3.67°/s) vs the
-trial's ~128 s (2.81°/s); this anchor sits between (102.9 s) and is a
-PARTIAL-crew turn — the source is ambiguous about one side (58 oars) or
-both (116) [?] — the scenario should be built to show both readings.
+**C1. The stationary-turn anchor (Ref (1) p30, via the report). — DONE**
+The scenario's built (both readings: one side's Z+T ahead vs the other's
+back — the in-place turn — and the one-side ahead-vs-rest reading) and
+locked in `ll/tests/test_revf_anchors.py`. The measured verdicts: the
+in-place turn settles **2.32°/s** (−34 % vs 3.5) and the one-side reading
+**1.06°/s** (−70 %). The model is now too SLOW at low-speed partial crew —
+the SECOND direction of the turn-speed family (the t_360 item is the
+model too FAST at full crew). Recorded as the register C7 row + the
+VALIDATION §11.2/§11.3 rows; no gate (it would fail) — the item joins the
+turn-speed family's ledger as the envelope datum.
 
-**C2. The zig-zag overshoots (p30).** First overshoot 8°, subsequent 7°
-past the 20° targets — a gate candidate we do not gate on today (the
-zig-zag row is position/mean-gated, VALIDATION §9.3). The LL's overshoot
-is measurable from the existing scenario; add the check if it discriminates.
+**C2. The zig-zag overshoots (p30). — DONE** A true Kempf zig-zag (helm
+22.5, flips at the ±20° crossings — the harness's zigzag script is a
+fixed-time sequence, NOT the trial's manoeuvre) built and locked in
+`ll/tests/test_revf_anchors.py`. The measured verdict: the LL overshoots
+**11.0° then 12.8–13.0°** vs the trials' 8°/7° (+60–85 %) — the
+fishtail's reversal carries ~5–6° too far (the yaw momentum decays too
+slowly — the t_360 family's dynamics). A NEW honest row (VALIDATION
+§11.2 T10 + §11.3 item 1b, register C8); no gate (it would fail).
 
-**C3. The rudder-drag constant cross-check.** His "rudders only
-137.0v² + 0.65v" (v in m/s) vs our rudder_straight 39.4 per kt²: measured
-**+8-9 %** agreement at 5-8 kt — an independent confirmation of the
-constant. Record in the register (lane-5, the rudder row).
+**C3. The rudder-drag constant cross-check. — DONE** Measured +8–9 % at
+5–8 kt — an independent confirmation of the 39.4/kt² constant. Recorded
+in the register C3 row + locked in `test_revf_anchors.py` (the 0–12 %
+band).
 
-**C4. The hull-resistance piecewise (p74).** The raw trials bands now
-quoted in our sources: 40.2v² / 75.2v² − 1560 / 88.6v² − 2640 (rudders
-raised, v in kt). Confirms the Taylor band base but shows the LL's current
-band set has the −1560/−2640 offsets collapsed — feeds B4.
+**C4. The hull-resistance piecewise (p74). — DONE** The raw trials bands
+(40.2v² / 75.2v² − 1560 / 88.6v² − 2640) now quoted in the register B2
+row, with Rev F's whole-range cubic (51.4v³ − 76v² + 223v) and the
+measured 10–20 % gap vs the chain law. The band set's collapsed offsets
+are the B4 investigation's input (see B4).
 
-**C5. The oar table (Table 3).** Blade area 0.113 m² — the A5 register
-entry's independent 1.45× confirmation (quote it in the register); oar
-inertia 30 kg m² — the Table 3.1 A-family value in the wild (the A/B
-anomaly is source-side); the short-oar geometry (4.0 m overall, 0.774 m
-inboard) for A1; the blade-CP distances (0.297-0.363 m from the end vs our
-0.26); the rake (4/8/9°); the θ column (32/24/13° — meaning unclear [?]).
+**C5. The oar table (Table 3). — DONE** The blade area 0.113 m² is now
+the register A5 row's source-side anchor (the chain's 0.078 = 1.45×
+smaller); the MOI 30 kg m² recorded in the new A9 row (the Table 3.1
+A-family value in the wild — the A/B anomaly is source-side); the short-
+oar geometry, the CP distances and the rake are in the A9 row for A1.
 
-**C6. The stroke-time budget (p28).** 1.8 s stroke, 0.7 s in water, 0.2 s
-catch+finish, rhythm factor 2.6, stroke length 0.7 m vs the 1.0 m
-achievable (butt end). Feeds A2; the handle-arc cross-check: our sweep
-48.1° × lin 0.957 m = 0.80 m vs his 0.7 measured / 1.0 achievable — ours
-sits between, consistent.
+**C6. The stroke-time budget (p28). — DONE** The in-water fraction
+0.39 vs the chain's effective-pull 0.21 at 28.8 spm is recorded in the
+register D10 row; the handle-arc cross-check (our 0.80 m vs his 0.7
+measured / 1.0 achievable) is consistent. Feeds A2.
 
-**C7. The thranite-only speed (p50).** "Speed = 3.3 knots" in the skilled-
-thranite record — a partial-crew equilibrium cross-check (rate_for_speed
-with n_oars = 62 at the record's ~33 spm vs 3.3 kt). The source's context
-is loose [?] — verify the reading before building anything on it.
+**C7. The thranite-only speed (p50). — DONE** The LL's 62-oar (thranites
+both sides) equilibrium at 33.3 spm: **4.31 kt** (+31 % vs the reported
+3.3 kt). The record's context (which crew/sides/rate) is unresolved [?] —
+recorded in the register D10 row as a loose cross-check only, no gate.
 
 ## Kept as-is (choices that stay unless a gate says otherwise)
 
