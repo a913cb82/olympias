@@ -38,12 +38,18 @@ moves toward the trials' 8-15°.
 import math
 
 INT = 0.888            # m — interscalmium (the chain)
-# the thole athwartships arms, grounded in the outrigger beam (the
-# register B6: 5.45-5.6 m — the thranite tholes sit ON the outrigger,
-# ~half of it; the zygian tholes on its inner rail; the thalmian tholes
-# near the hull's side [?] — the station decode (Rev F Figure 16) is
-# the follow-up that would pin them exactly)
-ARM = {"thranite": 2.7, "zygian": 2.1, "thalmian": 1.5}   # m [?] (B6)
+# the thole athwartships arms — PHYSICAL geometry, bounded by the
+# sources (not tuning coefficients; the per-station layer's whole
+# point is that the fitted lever disappears):
+#   thranite 2.7 m  — the outrigger's centre: the register B6 beam
+#                    5.45-5.6 m, the tholes drilled through the upper
+#                    + lower outrigger rails (build log, rig-geometry
+#                    §2) — GROUNDED
+#   zygian   ~2.0 m — between the top timbers, lining up with the
+#                    outrigger brackets [?] (the B6 decode would pin it)
+#   thalmian ~1.2 m — "far inboard" (to keep the lower oar angle
+#                    shallow — the build log's own words) [?]
+ARM = {"thranite": 2.7, "zygian": 2.0, "thalmian": 1.2}   # m
 # the short oars (Rev F Table 3): overall 4.0 vs 4.22; the inboard to
 # the handle centre 0.774 vs 0.935, the outboard to the blade centre
 # 2.781 vs 2.873 — the chain's rig scaled by those ratios

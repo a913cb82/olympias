@@ -66,6 +66,17 @@ from common.chain import CN, RHO
 #                thrust, negative at our points; lower bound, locked).
 TURNING_POINT = "actual"
 
+# The macon-polars variant (the Rev F B2 item): the report's
+# Caplan-Gardiner approximations C_L = sin(2a), C_D = 2 sin^2 a — the
+# NORMAL-component form (the lift's normal share + the drag's normal
+# share, the direction along the blade normal — the full vector's
+# refinement noted). Measured at the trireme's working angles (54-58
+# deg): the lift is ~55 % of the total force and the polar's normal
+# coefficient 2 sin a is 1.37x the flat plate's 1.8 sin^2 a — NOT
+# negligible; the chain's calibrated C_N·A product absorbs the
+# shortfall (the A5 register). OFF by default.
+BLADE_POLAR = False
+
 
 def _d_turning_point(C: float, B: float) -> float:
     """Shaw's appendix d-formula: tip -> turning-point distance in plan (m).
@@ -121,7 +132,20 @@ def blade_force(C: float, omega: float, V: float, rig: dict,
             vn = (V * nx + l_cp * omega) * slip
         p = -V * nx / omega if abs(omega) > 1e-12 else None
         q = l_cp - p if p is not None else None
-    Fn = 0.5 * RHO * rig["area"] * CN * abs(vn) * vn
+    if BLADE_POLAR:
+        # the macon polars' normal-component form: Fn = 0.5 rho A |v|^2
+        # (C_L cos a + C_D sin a) = 0.5 rho A 2 |v| |vn| (the 2 sin a
+        # identity), with |v| = sqrt(vn^2 + vt^2) and vt the flow's
+        # along-the-face projection (the blade's own motion is normal)
+        if flow is not None:
+            u, v, r, x, y = flow
+            vt = (u - r * y) * math.sin(C) + (v + r * x) * math.cos(C)
+        else:
+            vt = V * math.sin(C)
+        vm = math.hypot(vn, vt)
+        Fn = 0.5 * RHO * rig["area"] * 2.0 * vm * vn * slip
+    else:
+        Fn = 0.5 * RHO * rig["area"] * CN * abs(vn) * vn
     Fx = -Fn * nx                                 # force on hull, along keel
     Fy = -Fn * ny
     Fh = abs(Fn) * l_cp / lin

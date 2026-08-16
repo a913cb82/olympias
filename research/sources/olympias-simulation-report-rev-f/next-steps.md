@@ -84,47 +84,65 @@ plans surface.
 
 ## B. Differing choices — investigate the impact
 
-**B1. Scalar added mass vs the mass matrix.** His (m − X_u̇, m − Y_v̇, Y_ṙ,
-N_v̇, I − N_ṙ) matrix with the sway-yaw COUPLING terms vs our scalar
-m_app = 1.10 × displacement for both surge and sway. The off-diagonal
-terms act exactly in the drift regime — our open item (1.4° vs the
-trials' 8-15°). Test: estimate the derivative magnitudes (Clarke-Gedling-
-Hine, his Ref 9, or our own A_lat/CLR parameters) and measure whether the
-coupling moves the drift toward the trials.
+**B1. Scalar added mass vs the mass matrix. — DONE (the measured no-op)**
+The labelled option's built (`Ship(mass_matrix=True)` — the 2×2 sway-yaw
+solve with the semi-empirical added masses, add_v 0.9 / add_r 0.2 /
+add_c 0.1 [?]) and measured: the g1's D shifts +2.3 % and the drift
+−1.5° → −1.4° — the couplings act on the TRANSIENTS, the drift is a
+steady-state balance. The trial-measured scalar m_app (1.10×) stays;
+the option's locked (`test_mass_matrix_noop`).
 
-**B2. Flat-plate normal law vs the lift+drag polars.** Evaluate the
-Caplan-Gardiner macon polars (his Figure 8 — the CL/CD data is in media/)
-at our stroke's angles of attack and quantify the lift's contribution to
-the mean thrust and to the lateral force in turns. If the lift is < 5 %
-at our angles, the choice is documented as negligible; if not, a labelled,
-swappable lift term is the follow-up (the chain's C_N = 1.8 and the A5
-area gap stay the compensating knobs unless a gate says otherwise).
+**B2. Flat-plate normal law vs the lift+drag polars. — DONE (the lift is
+NOT negligible — the labelled polar variant's built)**
+The report's polars decoded from the docx's OMML: **C_D = 2·sin²α,
+C_L = sin(2α)**. Measured at our stroke: the angles of attack run 54-58°
+(the mean 58°, median 54°), where C_L ≈ 0.90-0.95 — the lift is ~55 % of
+the total force — and the polar's normal coefficient (2 sin α = 1.62) is
+**1.37× the flat plate's** (1.8 sin²α = 1.19) at the median angle. The
+labelled variant (`BLADE_POLAR` — the normal-component form) gives +40 %
+mean thrust at 7.2 kt — the flat-plate's a drag-only approximation whose
+shortfall the calibrated C_N·A product absorbs (the A5 register's family:
+the physical blade's 0.113 m² + the polars would produce ~2× the chain's
+force). The full vector form (the lift ⊥ flow, the drag ∥ flow — the
+report's Fb(x)/Fb(y)) is the noted refinement. Locked
+(`test_polar_variant_thrust`).
 
-**B3. Kinematic vs force control — a force-anchor cross-check.** His
-force curve (catchFactor continuity, the max-force line falling with ship
-speed — his Figure 10, the Hill-like strain-rate factor) vs our measured
-kinematics + the Fh anchors. Compare his intercept/gradient against our
-Fh_MAX 700 N / Fh_BURST 330 N. A cross-check only — the measured
-kinematics stay the ceiling (the gates are built on them).
+**B3. Kinematic vs force control — a force-anchor cross-check. — DONE
+(the structure decoded, the values blocked)**
+The report's force curve's structure recovered from the OMML: the target
+blade moment's a PARABOLA of the relative oar angle — maximum moment ·
+(1 − θ_rel²/(catchFactor·range/2)²) — with the catchFactor's continuity
+(1/(1 − moment_at_catch/maximum)) and the max moment LINEAR in the ship
+speed (the Hill-like strain-rate factor). The quantitative intercept/
+gradient live only in the raster Figure 10 (image12.png — no text layer;
+the OCR stack's not installed) — the cross-check's blocked on that decode
+[?]. The forms differ (his speed-dependent max vs our flat Fh_BURST 330 N
+mean + the W′-limited); our anchors're trial-derived — a cross-check only,
+the measured kinematics stay the ceiling.
 
-**B4. The turn model's drag law — a measured inconsistency.** Three drag
-representations disagree at cruise speeds (measured here for the first
-time): the chain law (W = 155V³ + 4.13V⁵, V in m/s → 2.70 kN at 7 kt), the
-LL's turn-model Taylor bands (40.2v² → 1.97 kN, **−27 %**), and the trials'
-raw piecewise as the report quotes it (75.2v² − 1560 → 2.13 kN, −21 %).
-The turn gates pass with the 40.2v² law because the turn diameters are
-torque-dominated — but the drag the turn model carries should be the
-trial-validated one. Investigate whether switching the turn model to the
-chain law (or the piecewise with its offsets) moves the turn gates and
-the t_360 item, and record the verdict either way.
+**B4. The turn model's drag law — a measured inconsistency. — DONE (the
+measured no-op — the concern dissolves)**
+The labelled option's built (`Ship(drag_law=...)` — taylor/trials/chain)
+and measured on the harness's five cells: the D's shift ≤ 1.1 % across
+the laws and the tightest's t_360's unchanged (101 s either way). The
+reason: the turns run BELOW 6.7 kt, where the taylor band set and the
+trials' raw piecewise agree on 40.2v² (the collapsed −1560/−2640 offsets
+only matter above 6.7 kt — the turns never go there), and the chain law's
+drag at the turn speeds is a small share (the rudder's drag dominates the
+turn's balance). The t_360's −23 % is NOT the drag law's — the item stays
+open with this lever measured and excluded. Locked (`test_drag_law_noop`).
 
-**B5. The rower's moving mass (expected: negligible, to be documented).**
-His explicit 51.02 kg footplate model vs ours absent. The argument to
-test: for the hull+crew as one rigid body the footplate/handle split is
-internal — the hull's motion is unchanged (his own note: the ship is
-treated as a rigid body including the oarsmen; fixed seats, small mass
-fraction). Matters only for local loads and pitch, and we have no pitch
-DOF. Verdict expected: investigated, negligible.
+**B5. The rower's moving mass (expected: negligible, to be documented).
+— DONE (documented)**
+The argument's confirmed by the report's own equations: his F_sys =
+thole's + footplate's reactions with the handle/footplate forces internal
+to the hull+crew rigid body (his note: "the ship as a rigid body including
+the mass of the oars and oarsmen") — the net hull force is the blade's
+alone, and the moving-mass inertial loads (the 51.02 kg, A = 0.547)
+transfer through the footplate only as internal loads. They matter for
+the local loads and the pitch (no pitch DOF) — negligible for the
+surge/sway/yaw. The register D10's already got the anthropometrics; the
+verdict's recorded, no code.
 
 **B6. Aggregated tiers vs per-oar.** Overlaps A1 — the per-station flow
 and the short oars at the extremes. No separate work.

@@ -97,6 +97,58 @@ def test_stations_effective_lever():
     assert 300 < damp < 500, f"damping {damp:.0f} kN m s"
 
 
+def test_polar_variant_thrust():
+    """B2: the macon-polars variant (C_L = sin 2a, C_D = 2 sin^2 a —
+    the normal-component form) gives +40 % mean thrust at 7.2 kt/28.8
+    — the lift is NOT negligible at the trireme's 54-58 deg angles of
+    attack; the chain's calibrated C_N·A absorbs the shortfall (the A5
+    register). The variant's OFF by default."""
+    import ll.blade
+    rig = RIGS["Olympias"]
+    ref = simulate(Oar(rig, 28.8, 0.43), 7.2 * KT, 0.43 / 600, 6)
+    ll.blade.BLADE_POLAR = True
+    try:
+        pol = simulate(Oar(rig, 28.8, 0.43), 7.2 * KT, 0.43 / 600, 6)
+    finally:
+        ll.blade.BLADE_POLAR = False
+    assert 1.25 < pol["mean_thrust"] / ref["mean_thrust"] < 1.55
+
+
+def test_drag_law_noop():
+    """B4: the turn model's drag law is a measured no-op for the turn
+    gates — the turns run below 6.7 kt where the taylor/trials laws
+    agree on 40.2v^2, and the chain law shifts the D's by <= 1.1 % (the
+    turn's drag is rudder-dominated). The t_360 is unchanged too."""
+    from ll.ship import rate_for_speed
+    rate = rate_for_speed("Olympias", 6.5, n_oars=85)
+    ds = []
+    for law in ("taylor", "trials", "chain"):
+        s = Ship(rate=rate, n_oars=85, helm=("starboard", 1.0),
+                 oar_state=("row", "hold"), pressure=("spoude", "spoude"),
+                 drag_law=law)
+        s.V = 6.5 * KT
+        r = run_turn(s, dt=0.02, target_psi=math.pi)
+        ds.append(r["D"])
+    assert max(ds) - min(ds) < 1.5, ds
+
+
+def test_mass_matrix_noop():
+    """B1: the sway-yaw coupling matrix (the [?] semi-empirical added
+    masses) shifts the g1 by < 3 % and the drift by < 0.3 deg — the
+    couplings act on the transients, the drift is a steady-state
+    balance; the trial-measured scalar m_app stays."""
+    from ll.ship import rate_for_speed
+    rate = rate_for_speed("Olympias", 6.0)
+    ds = []
+    for mm in (False, True):
+        s = Ship(rate=rate, helm=("port", 1.0), oar_state=("row", "row"),
+                 pressure=("spoude", "spoude"), mass_matrix=mm)
+        s.V = 6.0 * KT
+        r = run_turn(s, dt=0.02, target_psi=math.pi)
+        ds.append(r["D"])
+    assert abs(ds[1] - ds[0]) / ds[0] < 0.03, ds
+
+
 def test_trap_profile_thrust():
     """A2: the trapezoidal drive with the report's in-water fraction at
     7.2 kt/28.8 spm — the measured NEGATIVE mean thrust (the negative

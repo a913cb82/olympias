@@ -64,7 +64,8 @@ class Ship:
                  rate: float = 28.8, pressure: tuple = ("spoude", "spoude"),
                  oar_state: tuple = ("row", "row"), helm: tuple = ("midship", 0.0),
                  fleet: str = "spruce", hold_frac: float | None = None,
-                 stations: bool = False):
+                 stations: bool = False, drag_law: str = "taylor",
+                 mass_matrix: bool = False):
         # hold_frac default: the calibrated value (ll/rower.HOLD_FRAC)
         """fleet: 'spruce' (all tiers, MIT 9.7 — the 1994 setup) or
         'old-fir' (thranites 13.1, zygians 18.0, thalmians 13.1 approx —
@@ -79,6 +80,17 @@ class Ship:
         # (5e6) and LEVER_OAR (4.8) stay for the steady research model.
         self.lever = 1.8
         self.Omega = 3.2e6
+        # the mass-matrix option (the Rev F B1 item): the report's
+        # derivative-based sway-yaw coupling — the lateral added mass
+        # and the yaw added inertia with the off-diagonal Y_r_dot,
+        # N_v_dot terms, semi-empirical magnitudes [?] (a hull's
+        # lateral added mass ~0.8-1.2x the displacement; the yaw's
+        # ~0.1-0.3x I; the couplings ~0.1x m·L). OFF by default — the
+        # scalar m_app is the trial-measured 1.10x.
+        self.mass_matrix = mass_matrix
+        self.add_v = 0.9          # [?] lateral added-mass fraction
+        self.add_r = 0.2          # [?] yaw added-inertia fraction
+        self.add_c = 0.1          # [?] coupling fraction (m·L)
         self.m_app = self.vessel.m_app
         self.I = self.vessel.I
         self.n = n_oars
@@ -118,6 +130,13 @@ class Ship:
                              side=-1),
         }
         self.helm_dir, self.helm_frac = helm
+        # the turn model's drag law (the Rev F B4 item): "taylor" (the
+        # 40.2v^2 band set — the sway-calibrated default), "chain" (the
+        # trial-validated W = 155V^3 + 4.13V^5, D = W/V — the law the
+        # power chain closes on, measured 27 % above the Taylor set at
+        # 7 kt), or "trials" (the raw piecewise 40.2v^2 / 75.2v^2-1560 /
+        # 88.6v^2-2640, v in kt — the register B2 row)
+        self.drag_law = drag_law
         self.V = 0.0
         self.v = 0.0            # sway (lateral velocity, + = port)
         self.omega = 0.0
@@ -186,11 +205,38 @@ class Ship:
         v = self.v
         f_hull = RHO * self.vessel.A_lat * abs(u) * v      # Taylor: rho A_lat u^2 sin(beta)
         q_hull = f_hull * self.clr_offset                  # restoring (+ = port)
-        drag = self.vessel.hull_drag(abs(u) / KT) + rud_drag
+        if self.mass_matrix:
+            # the 2x2 sway-yaw solve (the report's eq. 3.6-family): the
+            # added masses on the diagonal, the couplings off it
+            L = 33.0                                       # LWL, m
+            m_yy = self.m_app * (1.0 + self.add_v)
+            i_rr = self.I * (1.0 + self.add_r)
+            y_r = self.add_c * self.m_app * L
+            n_v = self.add_c * self.m_app * L
+            det = m_yy * i_rr - y_r * n_v
+            fy_net = (Fy_oars + f_rud - f_hull - self.m_app * u * self.omega)
+            q_net = (Q + q_hull - self.Omega * self.omega * abs(self.omega))
+            v_dot = (i_rr * fy_net + y_r * q_net) / det
+            omega_dot = (n_v * fy_net + m_yy * q_net) / det
+        else:
+            v_dot = (Fy_oars + f_rud - f_hull) / self.m_app - u * self.omega
+            omega_dot = (Q + q_hull - self.Omega * self.omega * abs(self.omega)
+                         - YAW_LIN_DAMP * self.omega) / self.I   # linear damper (C1 hypothesis)
+        vkt = abs(u) / KT
+        if self.drag_law == "chain":
+            from common.chain import hull_power
+            drag = hull_power(abs(u)) / max(abs(u), 1e-6)
+        elif self.drag_law == "trials":
+            if vkt <= 6.7:
+                drag = 40.2 * vkt * vkt
+            elif vkt <= 9.0:
+                drag = 75.2 * vkt * vkt - 1560.0
+            else:
+                drag = 88.6 * vkt * vkt - 2640.0
+        else:
+            drag = self.vessel.hull_drag(vkt)
+        drag += rud_drag
         u_dot = (Fx - drag) / self.m_app + v * self.omega
-        v_dot = (Fy_oars + f_rud - f_hull) / self.m_app - u * self.omega
-        omega_dot = (Q + q_hull - self.Omega * self.omega * abs(self.omega)
-                     - YAW_LIN_DAMP * self.omega) / self.I   # linear damper (C1 hypothesis)
         self.V += u_dot * dt
         self.v += v_dot * dt
         self.omega += omega_dot * dt
