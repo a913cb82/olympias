@@ -135,6 +135,13 @@ def test_turn_gate(name, v0_kt, n_oars, helm, oar_state, tol):
     assert ratio < bound, \
         f"{name}: settled-orbit D ratio {ratio:.2f}x vs the " \
         f"{bound:.2f}x bound"
+    # the crew fatigue through the turn (the K20 follow-up): the LL's
+    # rowing side drains its W' in ~90 s of the one-side-stopped turn;
+    # the HL's fresh-phase net (the measured net_fresh table) must keep
+    # the depletion within 5 % of the LL's on every turn scenario
+    fd = metrics(out["ll"], out["hl"])["fatigue_consumed_delta"]["hl"]
+    assert fd is not None and abs(fd) < 0.05, \
+        f"{name}: fatigue depletion delta {fd:+.3f} vs the 0.05 gate"
 
 
 def _t180(rows):

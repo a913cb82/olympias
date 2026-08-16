@@ -219,6 +219,12 @@ class Calibration:
         self._net_hold_steady = list(na.get("steady", [0.0, 0.0, 9.3]))
         self._net_back_spoude = list(nb.get("spoude", [24.4, 27.7, 27.7]))
         self._net_back_steady = list(nb.get("steady", [0.0, 0.0, 8.0]))
+        nf = t.get("net_fresh") or {}
+        self._fresh_rates = list(nf.get("rates", self._net_rates))
+        self._fresh_spoude = list(nf.get("spoude",
+                                          [36.6, 51.8, 68.1, 70.1, 67.0]))
+        self._fresh_steady = list(nf.get("steady",
+                                          [0.0, 0.0, 0.0, 14.5, 64.3]))
         s = scalars or {}
         self.tau_surge = s.get("tau_surge", TAU_SURGE)
         self.tau_turn = s.get("tau_turn", TAU_TURN)
@@ -370,6 +376,22 @@ class Calibration:
             return spoude
         if pressure <= 0.7:
             return steady * pressure / 0.7
+        return steady + (spoude - steady) * (pressure - 0.7) / 0.3
+
+    def net_fresh(self, rate, pressure):
+        """The rowing side's FRESH-phase tank net in the one-side-stopped
+        state, W/man (measured — the turns' full-tank entry: the drain is
+        the commanded pull, ~the symmetric net at the low rates, less at
+        the high rates where the ship collapses faster; back == hold, the
+        degeneration). The drained state uses net_asym."""
+        if pressure <= 0.0:
+            return self.net_rest
+        spoude = _pwl(self._fresh_rates, self._fresh_spoude, rate)
+        if pressure >= 1.0:
+            return spoude
+        steady = _pwl(self._fresh_rates, self._fresh_steady, rate)
+        if pressure <= 0.7:
+            return self.net_rest + (steady - self.net_rest) * pressure / 0.7
         return steady + (spoude - steady) * (pressure - 0.7) / 0.3
 
     def p_spoude(self, rate):

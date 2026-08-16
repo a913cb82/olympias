@@ -707,6 +707,8 @@ def main() -> None:
     asym_nets = measure_asym_nets()
     tables["net_hold"] = asym_nets["hold"]
     tables["net_back"] = asym_nets["back"]
+    fresh_nets = measure_fresh_nets(NET_RATES)
+    tables["net_fresh"] = fresh_nets["hold"]  # back == hold (the degeneration)
     d_tables = measure_d_tables()
     tables["d_rudder"] = [[f, None] if f == 0.0 else [f, d]
                           for f, d in d_tables["rudder"]]
@@ -770,6 +772,8 @@ def main() -> None:
             asym="LL ship (row, hold / row, back), spoude + steady, settle",
             nets="LL tank slope at the settled speed (refills: low preset, "
                  "short window)",
+            net_fresh="LL tank slope over the first 70 s from the 6.5-kt "
+                      "entry (the turns' full-tank context)",
             d_tables="ll.ship.run_turn protocol (|y| at 180 deg)",
             tau_surge="LSQ of the chase to the 28.8 spm rest start",
             tau_turn="scan so the HL's |y| at 180 deg matches the LL's",
@@ -825,34 +829,38 @@ def measure_asym_nets():
     return out
 
 
-if __name__ == "__main__":
-    main()
-
-def measure_asym_nets():
-    """The rowing side's tank net in the one-side-stopped legs (task
-    T4 follow-up): (row,hold) and (row,back) at the asym anchor rates,
-    spoude and steady, from the STATE'S SETTLED ORBIT (the scripts'
-    context — the legs start from the hold's speed, not the 6-kt crash;
-    the back's low-speed state is multi-stable, the orbit selects the
-    mean; the settled demand sits at P_crit, so the nets are ~0 — the
-    HL must not drain the tank at the symmetric rate in those legs)."""
+def measure_fresh_nets(rates):
+    """The rowing side's FRESH-phase tank net in the one-side-stopped
+    state, W/man (the turns' context — the legs start from the 6.5-kt
+    entry with a full tank and drain at the commanded pull; the
+    settled-orbit nets (measure_asym_nets) are the drained-state
+    values). Window: the first 70 s from the entry, the tank far from
+    empty at every rate (the 44.5 cell ends at ~15 %). The hold and
+    back states share the fresh phase — the measured V/W traces are
+    identical (the back degenerates to the hold at speed, VALIDATION
+    §3), so one table serves both; the drain peaks at 36 spm and
+    falls at 44.5 (the ship collapses faster, less blade work)."""
     out = {}
     for state in ("hold", "back"):
         spoude, steady = [], []
-        for rate in [24.0, 30.0, 36.0]:
+        for rate in rates:
             for preset, outk in (("spoude", spoude), ("steady", steady)):
                 ship = LLShip(rate=rate, pressure=(preset, preset),
                               oar_state=("row", state))
-                ship.V = 3.3                     # the hold-speed entry
-                for _ in range(int(300.0 / DT)):  # settle into the orbit
+                ship.V = 6.5 * KT
+                for _ in range(int(5.0 / DT)):
                     ship.step(DT)
                 w0 = [t.W for t in ship.crew["port"].tiers.values()]
-                for _ in range(int(120.0 / DT)):
+                for _ in range(int(65.0 / DT)):
                     ship.step(DT)
                 w1 = [t.W for t in ship.crew["port"].tiers.values()]
                 outk.append(round(sum(a - b for a, b in zip(w0, w1))
-                                  / 3.0 / 120.0, 1))
-        out[state] = dict(rates=[24.0, 30.0, 36.0],
+                                  / 3.0 / 65.0, 1))
+        out[state] = dict(rates=list(rates),
                           spoude=spoude, steady=steady)
-        log(f"  asym nets {state}: spoude {spoude} steady {steady}")
+        log(f"  fresh nets {state}: spoude {spoude} steady {steady}")
     return out
+
+
+if __name__ == "__main__":
+    main()

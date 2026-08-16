@@ -212,8 +212,18 @@ class Ship:
         if rowing:
             stopped = [s for s in ("port", "star")
                        if self.oar_state[s] in ("hold", "back")]
-            net = c.net_asym(r_eff, p_eff, self.oar_state[stopped[0]]) \
-                if len(rowing) == 1 and stopped else c.net(r_eff, p_eff)
+            if len(rowing) == 1 and stopped:
+                # the FRESH-phase drain is the commanded pull (the
+                # measured net_fresh — the turns' full-tank entry, ~the
+                # symmetric net at the low rates); the drained nets
+                # (net_asym ~ 0) apply only after the tank empties — the
+                # legs entered drained (the K13 cruise_turn context)
+                # keep the ~0 nets, exactly as before
+                net = c.net_asym(r_eff, p_eff,
+                                 self.oar_state[stopped[0]]) \
+                    if empty else c.net_fresh(r_eff, p_eff)
+            else:
+                net = c.net(r_eff, p_eff)
             if net > 0.0:
                 self.W = max(0.0, self.W - net * dt)
             else:
