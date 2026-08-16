@@ -161,10 +161,10 @@ exercises differently.
 | fatigue_consumed_delta | 0.000 | -0.021 | -0.021 | 0.05 | PASS |
 | rate_eff | 28.800 | 28.800 | +0.000 | 1.0 | — |
 | rate_eff_delta | 0.000 | 0.000 | +0.000 | 1.0 | PASS |
-| position_sep | 0.000 | 0.035 | +0.035 | 0.1 | PASS |
-| position_path | 0.000 | 0.011 | +0.011 | 0.1 | PASS |
-| position_max | 0.000 | 0.035 | +0.035 | 0.2 | PASS |
-| heading | -0.439 | -0.471 | -0.032 | 5.0 | — |
+| position_sep | 0.000 | 0.079 | +0.079 | 0.1 | PASS |
+| position_path | 0.000 | 0.031 | +0.031 | 0.1 | PASS |
+| position_max | 0.000 | 0.079 | +0.079 | 0.2 | PASS |
+| heading | -0.439 | -0.469 | -0.030 | 5.0 | — |
 | distance | 1.868 | 1.868 | +0.000 | 0.05 | — |
 | bin_max | 0.000 | 0.092 | +0.092 | 5.0 | — |
 | bin_rms | 0.000 | 0.036 | +0.036 | 3.0 | — |
@@ -187,6 +187,7 @@ Annotation (all rows per §3 map; the script-specific notes):
 
 
 
+
 ### 4.2 sprint + turns (25 min) — `examples/sprint_turn.txt`
 
 | metric | LL | HL | diff | tolerance | verdict |
@@ -201,10 +202,10 @@ Annotation (all rows per §3 map; the script-specific notes):
 | fatigue_consumed_delta | 0.000 | -0.005 | -0.005 | 0.05 | PASS |
 | rate_eff | 34.315 | 34.315 | +0.000 | 1.0 | — |
 | rate_eff_delta | 0.000 | 0.000 | +0.000 | 1.0 | PASS |
-| position_sep | 0.000 | 0.099 | +0.099 | 0.1 | PASS |
-| position_path | 0.000 | 0.038 | +0.038 | 0.1 | PASS |
-| position_max | 0.000 | 0.099 | +0.099 | 0.2 | PASS |
-| heading | -2.225 | -2.358 | -0.133 | 5.0 | — |
+| position_sep | 0.000 | 0.162 | +0.162 | 0.1 | VIOLATION |
+| position_path | 0.000 | 0.043 | +0.043 | 0.1 | PASS |
+| position_max | 0.000 | 0.162 | +0.162 | 0.2 | PASS |
+| heading | -2.225 | -2.404 | -0.179 | 5.0 | — |
 | distance | 2.823 | 2.841 | +0.018 | 0.05 | — |
 | bin_max | 0.000 | 1.810 | +1.810 | 5.0 | — |
 | bin_rms | 0.000 | 0.986 | +0.986 | 3.0 | — |
@@ -230,6 +231,7 @@ Annotation:
 
 
 
+
 ### 4.3 W' burst + recovery (30 min) — `examples/wprime_burst.txt`
 
 | metric | LL | HL | diff | tolerance | verdict |
@@ -244,10 +246,10 @@ Annotation:
 | fatigue_consumed_delta | 0.000 | -0.005 | -0.005 | 0.05 | PASS |
 | rate_eff | 37.086 | 37.086 | +0.000 | 1.0 | — |
 | rate_eff_delta | 0.000 | 0.000 | +0.000 | 1.0 | PASS |
-| position_sep | 0.000 | 0.051 | +0.051 | 0.1 | PASS |
-| position_path | 0.000 | 0.017 | +0.017 | 0.1 | PASS |
-| position_max | 0.000 | 0.051 | +0.051 | 0.2 | PASS |
-| heading | -1.201 | -1.283 | -0.082 | 5.0 | — |
+| position_sep | 0.000 | 0.099 | +0.099 | 0.1 | PASS |
+| position_path | 0.000 | 0.024 | +0.024 | 0.1 | PASS |
+| position_max | 0.000 | 0.099 | +0.099 | 0.2 | PASS |
+| heading | -1.201 | -1.279 | -0.078 | 5.0 | — |
 | distance | 2.736 | 2.734 | -0.002 | 0.05 | — |
 | bin_max | 0.000 | -1.243 | -1.243 | 5.0 | — |
 | bin_rms | 0.000 | 0.634 | +0.634 | 3.0 | — |
@@ -275,6 +277,7 @@ Annotation:
 
 
 
+
 ### 4.4 sample cruise_turn.txt — `examples/cruise_turn.txt`
 
 | metric | LL | HL | diff | tolerance | verdict |
@@ -289,10 +292,10 @@ Annotation:
 | fatigue_consumed_delta | 0.000 | -0.142 | -0.142 | 0.05 | VIOLATION |
 | rate_eff | 32.998 | 33.298 | +0.300 | 1.0 | — |
 | rate_eff_delta | 0.000 | 0.300 | +0.300 | 1.0 | PASS |
-| position_sep | 0.000 | 0.152 | +0.152 | 0.1 | VIOLATION |
-| position_path | 0.000 | 0.064 | +0.064 | 0.1 | PASS |
-| position_max | 0.000 | 0.174 | +0.174 | 0.2 | PASS |
-| heading | -5.361 | -17.188 | -11.826 | 5.0 | — |
+| position_sep | 0.000 | 0.181 | +0.181 | 0.1 | VIOLATION |
+| position_path | 0.000 | 0.088 | +0.088 | 0.1 | PASS |
+| position_max | 0.000 | 0.201 | +0.201 | 0.2 | VIOLATION |
+| heading | -5.361 | -16.650 | -11.289 | 5.0 | — |
 | distance | 2.400 | 2.353 | -0.047 | 0.05 | — |
 | bin_max | 0.000 | -52.303 | -52.303 | 5.0 | — |
 | bin_rms | 0.000 | 22.010 | +22.010 | 3.0 | — |
@@ -319,6 +322,7 @@ Annotation:
 
 
 
+
 ### 4.5 3-NM cruise (35 min) — `examples/three_nm_cruise.txt`
 
 | metric | LL | HL | diff | tolerance | verdict |
@@ -333,10 +337,10 @@ Annotation:
 | fatigue_consumed_delta | 0.000 | -0.005 | -0.005 | 0.05 | PASS |
 | rate_eff | 28.800 | 28.800 | +0.000 | 1.0 | — |
 | rate_eff_delta | 0.000 | 0.000 | +0.000 | 1.0 | PASS |
-| position_sep | 0.000 | 0.048 | +0.048 | 0.1 | PASS |
-| position_path | 0.000 | 0.027 | +0.027 | 0.1 | PASS |
-| position_max | 0.000 | 0.048 | +0.048 | 0.2 | PASS |
-| heading | -2.203 | -2.187 | +0.016 | 5.0 | — |
+| position_sep | 0.000 | 0.023 | +0.023 | 0.1 | PASS |
+| position_path | 0.000 | 0.013 | +0.013 | 0.1 | PASS |
+| position_max | 0.000 | 0.023 | +0.023 | 0.2 | PASS |
+| heading | -2.203 | -2.185 | +0.018 | 5.0 | — |
 | distance | 3.669 | 3.670 | +0.001 | 0.05 | — |
 | bin_max | 0.000 | 0.355 | +0.355 | 5.0 | — |
 | bin_rms | 0.000 | 0.103 | +0.103 | 3.0 | — |
@@ -361,6 +365,7 @@ Annotation:
 
 
 
+
 ### 4.6 tempo loss (exhausted sprint) — `examples/tempo_loss.txt`
 
 | metric | LL | HL | diff | tolerance | verdict |
@@ -375,10 +380,10 @@ Annotation:
 | fatigue_consumed_delta | 0.000 | -0.013 | -0.013 | 0.05 | PASS |
 | rate_eff | 44.500 | 44.500 | +0.000 | 1.0 | — |
 | rate_eff_delta | 0.000 | 0.000 | +0.000 | 1.0 | PASS |
-| position_sep | 0.000 | 0.012 | +0.012 | 0.1 | PASS |
-| position_path | 0.000 | 0.006 | +0.006 | 0.1 | PASS |
-| position_max | 0.000 | 0.012 | +0.012 | 0.2 | PASS |
-| heading | -0.214 | -0.197 | +0.018 | 5.0 | — |
+| position_sep | 0.000 | 0.001 | +0.001 | 0.1 | PASS |
+| position_path | 0.000 | 0.001 | +0.001 | 0.1 | PASS |
+| position_max | 0.000 | 0.003 | +0.003 | 0.2 | PASS |
+| heading | -0.214 | -0.195 | +0.020 | 5.0 | — |
 | distance | 0.525 | 0.524 | -0.001 | 0.05 | — |
 | bin_max | 0.000 | -0.791 | -0.791 | 5.0 | — |
 | bin_rms | 0.000 | 0.682 | +0.682 | 3.0 | — |
@@ -404,6 +409,7 @@ Annotation:
 
 
 
+
 ### 4.7 zig-zag (out-of-sample) — `examples/zigzag.txt`
 
 | metric | LL | HL | diff | tolerance | verdict |
@@ -418,10 +424,10 @@ Annotation:
 | fatigue_consumed_delta | 0.000 | -0.000 | -0.000 | 0.05 | PASS |
 | rate_eff | 32.879 | 32.879 | +0.000 | 1.0 | — |
 | rate_eff_delta | 0.000 | 0.000 | +0.000 | 1.0 | PASS |
-| position_sep | 0.000 | 0.013 | +0.013 | 0.1 | PASS |
-| position_path | 0.000 | 0.011 | +0.011 | 0.1 | PASS |
-| position_max | 0.000 | 0.028 | +0.028 | 0.2 | PASS |
-| heading | 3.104 | 3.137 | +0.033 | 5.0 | — |
+| position_sep | 0.000 | 0.186 | +0.186 | 0.1 | VIOLATION |
+| position_path | 0.000 | 0.056 | +0.056 | 0.1 | PASS |
+| position_max | 0.000 | 0.186 | +0.186 | 0.2 | PASS |
+| heading | 3.104 | 2.846 | -0.258 | 5.0 | — |
 | distance | 1.974 | 1.999 | +0.025 | 0.05 | — |
 | bin_max | 0.000 | 3.436 | +3.436 | 5.0 | — |
 | bin_rms | 0.000 | 1.725 | +1.725 | 3.0 | — |
@@ -432,10 +438,17 @@ Annotation: the out-of-sample stress test (task T10) — the reversal-mix compos
 
 
 
+
 ## 5. The turn scenarios — the 5 equivalence rows, annotated
 
 | scenario | rate | D LL m | D HL m | diff | t180 LL s | t180 HL s | verdict |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| g1        |   19.9 |    90.1 |    90.6 |  +0.5 % |  55.0 |  52.0 | PASS |
+| f1        |   19.9 |   118.3 |   118.0 |  -0.2 % |  71.0 |  67.0 | PASS |
+| tightest  |   31.5 |    62.5 |    62.8 |  +0.5 % |  52.0 |  46.0 | PASS |
+| oar-hold  |   31.5 |   102.7 |   101.7 |  -0.9 % |  87.0 |  79.0 | PASS |
+| oar-back  |   31.5 |   102.7 |   101.7 |  -0.9 % |  87.0 |  79.0 | PASS |
+
 | g1        |   19.9 |    90.1 |    92.6 |  +2.7 % |  55.0 |  53.0 | PASS |
 | f1        |   19.9 |   118.3 |   121.1 |  +2.4 % |  71.0 |  68.0 | PASS |
 | tightest  |   31.5 |    62.5 |    61.7 |  -1.3 % |  52.0 |  45.0 | PASS |

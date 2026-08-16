@@ -217,6 +217,11 @@ class Calibration:
         self._dov_d = list(dv.get("d", [18.3, 25.7, 41.4, 55.2, 103.5]))
         self.v_flow = (scalars or {}).get("v_flow", 3.0)
         self.v_collapse = (scalars or {}).get("v_collapse", 1.5)
+        tb = t.get("turn_beta") or {}
+        self._tb_fracs = list(tb.get("fracs", [1.0, 0.333]))
+        self._tb_helm = list(tb.get("helm", [-1.49, -1.19]))
+        self._tb_tightest = tb.get("tightest", 2.24)
+        self._tb_oar = tb.get("oar", {"hold": 1.53, "back": 3.40})
         na = t.get("net_hold") or {}
         nb = t.get("net_back") or {}
         self._asym_rates = list(na.get("rates", [24.0, 30.0, 36.0]))
@@ -252,8 +257,12 @@ class Calibration:
         if len(self._td_rates) != len(self._td_spoude):
             self._td_rates = [self._td_rates[0]] * len(self._td_spoude)
         yb = t.get("yaw_build") or {}
-        self._yb_helm = yb.get("helm", dict(A=0.6, tf=6.0, ts=10.0))
-        self._yb_oar = yb.get("oar", dict(A=0.95, tf=3.0, ts=10.0))
+        self._yb_helm = yb.get("helm", dict(A=0.6, tf=6.0, ts=10.0,
+                                          scale=[1.0, 1.0]))
+        self._yb_oar = yb.get("oar", dict(A=0.95, tf=3.0, ts=10.0,
+                                          scale=1.0))
+        self._yb_tightest = yb.get("tightest", dict(A=0.6, tf=6.0,
+                                                     ts=10.0, scale=1.0))
         self.tau_exit = s.get("tau_exit", TAU_TURN)
         self.drift_tau_exp = s.get("drift_tau_exp", 0.0)
         rig = RIGS["Olympias"]
@@ -324,12 +333,39 @@ class Calibration:
     def d_rudder(self, helm_frac):
         return _d_inv_lin(self.d_rudder_pts, helm_frac)
 
-    def yaw_build(self, helm_frac):
-        """The yaw approach's two-timescale shape (task T3): (A, ts) —
-        the fast share A of the rise at the chase's tau, then the
-        sway-coupled slow tail at ts. The helm turns vs the one-side-
-        stopped turns (the measured families)."""
-        return self._yb_helm if helm_frac > 0.0 else self._yb_oar
+    def yaw_build(self, helm_frac, asym=False):
+        """The yaw approach's two-timescale shape (task T3): (A, tf, ts)
+        — the fast share A of the rise at the fitted tf, then the
+        sway-coupled slow tail at ts. The helm turns are measured per
+        helm fraction (the build slows as the fraction falls — the K25
+        finding); the tightest (helm + one side stopped) and the
+        midship oar turns are separate cells. The per-scenario tf
+        scale (the K25 D-compensation — the LL's S-shaped build vs the
+        HL's exponential leaves the |y| at 180 deg ~6 % high on the
+        g1; the scanned scales are recorded in the calibration) is
+        folded into the returned tf."""
+        if asym:
+            if helm_frac > 0.0:
+                b = self._yb_tightest
+                return dict(A=b["A"], tf=b["tf"] * b.get("scale", 1.0),
+                            ts=b["ts"], td=b.get("td", 0.0))
+            b = self._yb_oar
+            return dict(A=b["A"], tf=b["tf"] * b.get("scale", 1.0),
+                        ts=b["ts"], td=b.get("td", 0.0))
+        if helm_frac <= 0.0:
+            b = self._yb_oar
+            return dict(A=b["A"], tf=b["tf"] * b.get("scale", 1.0),
+                        ts=b["ts"], td=b.get("td", 0.0))
+        h = self._yb_helm
+        if len(h.get("fracs", [])) >= 2:
+            return dict(A=_pwl(h["fracs"], h["A"], helm_frac),
+                        tf=_pwl(h["fracs"], h["tf"], helm_frac)
+                        * _pwl(h["fracs"], h.get("scale", [1.0, 1.0]),
+                               helm_frac),
+                        ts=_pwl(h["fracs"], h["ts"], helm_frac),
+                        td=_pwl(h["fracs"], h.get("td", [0.0, 0.0]),
+                                helm_frac))
+        return h
 
     def turn_drag(self, helm_frac, pressure=1.0, rate=19.9):
         """The measured turn-deceleration extra-drag factor vs helm
@@ -350,6 +386,17 @@ class Calibration:
             f = (rate - self._td_rates[i0]) /                 (self._td_rates[i0 + 1] - self._td_rates[i0])
             k = k0 + f * (k1 - k0)
         return k
+
+    def turn_beta(self, helm_frac, oar_state="row", asym=False):
+        """The LL's turn drift angle, deg (the measured crab — the T8
+        row, the K25 addition): the sway's lateral shifts the LL's path
+        by ~V·tan(beta) (the |y| at 180 deg runs ~5-6 % high without
+        it); the HL has no sway DOF, so it carries the crab explicitly."""
+        if asym:
+            if helm_frac > 0.0:
+                return self._tb_tightest     # the helm + one-side-stopped
+            return self._tb_oar.get(oar_state, 0.0)
+        return _pwl(self._tb_fracs, self._tb_helm, helm_frac)
 
     def d_oar(self, helm_frac):
         return _d_inv_lin(self.d_oar_pts, helm_frac)

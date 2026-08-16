@@ -68,6 +68,7 @@ class Ship:
         self.rate_eff = rate
         self._wss_prev = 0.0       # the previous turn target (release detect)
         self._exit_omega = 0.0     # the fishtail's decaying yaw rate
+        self._yb_delay = 0.0       # the yaw-build's S-shape delay (K26)
         self._v_prev = 0.0         # the previous V (the ramp detect)
 
     # ------------------------------------------------------------------
@@ -186,6 +187,7 @@ class Ship:
         # drift build-up itself keeps the fast tau_turn
         if self._wss_prev != 0.0 and turn_target == 0.0:
             self._exit_omega = self.omega
+        prev_target = self._wss_prev          # the delay trigger's reference
         self._wss_prev = turn_target
         if self._exit_omega:
             self._exit_omega *= math.exp(-dt / c.tau_exit)
@@ -211,12 +213,25 @@ class Ship:
             tau_yaw = c.tau_exit * (0.1 / max(abs(self.omega), 1e-4)) \
                 ** c.drift_tau_exp
         else:
-            b = c.yaw_build(self.helm_frac)
-            if abs(wss - self.omega) > (1.0 - b["A"]) * abs(wss):
-                tau_yaw = c.tau_turn        # the fast rise
+            b = c.yaw_build(self.helm_frac, bool(asym))
+            # the S-shape's delay (the K26): the LL's build is slow-early
+            # (the yaw's inertia — a delayed exponential); the delay
+            # re-arms when the turn target jumps; during the delay the
+            # omega is frozen (no chase)
+            if (abs(wss - prev_target) > 0.1 * abs(wss)
+                    and abs(wss) > 1e-6):
+                self._yb_delay = b.get("td", 0.0)
+            if self._yb_delay > 0:
+                self._yb_delay -= dt
+                tau_yaw = None
+            elif abs(wss - self.omega) > (1.0 - b["A"]) * abs(wss):
+                tau_yaw = b["tf"]        # the fast rise (the fitted tau —
+                # the K25 fix: this was the hardcoded tau_turn, so the
+                # measured tf never applied and the builds ran ~2x fast)
             else:
                 tau_yaw = b["ts"]          # the sway-coupled tail
-        self.omega += (wss - self.omega) / tau_yaw * dt
+        if tau_yaw is not None:
+            self.omega += (wss - self.omega) / tau_yaw * dt
         self._v_prev = self.V
 
         # -- crew tank ---------------------------------------------------
@@ -274,8 +289,24 @@ class Ship:
 
         # -- position ----------------------------------------------------
         self.psi += self.omega * dt
-        self.x += self.V * math.cos(self.psi) * dt
-        self.y += self.V * math.sin(self.psi) * dt
+        # the turn-sway's lateral displacement (the K25 addition): the
+        # LL's crab (the measured drift angle, turn_beta) shifts its
+        # path laterally — the HL has no sway DOF, so the path would
+        # miss the crab (the |y| at 180 deg runs ~5-6 % high); the crab
+        # ramps with the turn (|omega|/|wss|) and follows the turn's
+        # sign convention (the beta's measured sign)
+        v_sway = 0.0
+        if abs(wss) > 1e-6:
+            beta = c.turn_beta(self.helm_frac, self.oar_state[
+                next((s for s in ("port", "star")
+                      if self.oar_state[s] in ("hold", "back")), "port")],
+                bool(asym))
+            v_sway = self.V * math.tan(math.radians(beta)) \
+                * min(1.0, abs(self.omega) / abs(wss))
+        self.x += (self.V * math.cos(self.psi)
+                   - v_sway * math.sin(self.psi)) * dt
+        self.y += (self.V * math.sin(self.psi)
+                   + v_sway * math.cos(self.psi)) * dt
         self.t += dt
 
     # ------------------------------------------------------------------

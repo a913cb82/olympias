@@ -24,6 +24,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+from commands.parser import Command
 from common.chain import KT
 from hl.curves import Calibration, _scalars, _tables
 from ll.hull import equilibrium_speed
@@ -577,25 +578,16 @@ def measure_yaw_build():
     """The yaw build-up (task T3): the LL's omega's approach to its
     turn rate. The fit: omega(t) = ss*(1 - A*exp(-t/tf) -
     (1-A)*exp(-t/ts)) per family, measured at the family's TRUE usage:
-    the helm turns (g1 — full helm, both rowing) vs the oar-only turns
-    (MIDSHIP helm, one side holds — the oar family was previously
-    measured on the helm-assisted setup, which uses the helm family in
-    the HL, making the midship oar turns build ~2x too fast — the K23
-    finding). The LL's builds are near single exponentials (helm tau ~8
-    s, oar tau ~11-12 s), so the grid includes A = 1.0 and tf up to 12."""
+    the helm turns measured PER HELM FRACTION from the settled steady
+    straight (the 28.8 steady cruise — the sprint/zig-zag turns'
+    context; the build slows as the fraction falls — the K25 finding:
+    tf 7.5/7.5/9.0 at 1.0/2/3/1/3) vs the oar-only turns (midship
+    helm, one side holds). The fits are near single exponentials, so
+    the grid includes A = 1.0 and tf up to 12."""
     import math
     builds = {}
-    for name, v0_kt, n_oars, helm, oar in (
-            ("helm", 6.0, 170, ("port", 1.0), ("row", "row")),
-            ("oar", 6.5, 85, ("midship", 0.0), ("row", "hold"))):
-        rate = rate_for_speed("Olympias", v0_kt, n_oars=n_oars)
-        ship = LLShip(rate=rate, helm=helm, oar_state=oar)
-        ship.V = v0_kt * KT
-        rec = []
-        while ship.t < 120.0:
-            ship.step(DT)
-            rec.append(abs(ship.omega))
-        ss = rec[-1]
+
+    def fit(rec, ss):
         best = None
         for A in (0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 1.0):
             for tf in (1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 8.0, 10.0, 12.0):
@@ -608,9 +600,46 @@ def measure_yaw_build():
                         err += (w - pred) ** 2
                     if best is None or err < best[0]:
                         best = (err, A, tf, ts)
-        builds[name] = dict(A=best[1], tf=best[2], ts=best[3])
-        log(f"  yaw build {name}: A={best[1]:.2f} tf={best[2]:.1f} "
-            f"ts={best[3]:.1f}")
+        return best
+
+    # the helm family: per fraction, from the settled steady straight
+    rate = rate_for_speed("Olympias", 28.8)
+    fracs, As, tfs, tss = [], [], [], []
+    for frac in (1.0, 2.0 / 3.0, 1.0 / 3.0):
+        ship = LLShip(rate=rate, pressure=("steady", "steady"))
+        ship.V = 0.0
+        while ship.t < 600.0:              # the steady straight
+            ship.step(DT)
+        ship.helm_dir, ship.helm_frac = "port", frac
+        rec = []
+        while ship.t < 720.0:
+            ship.step(DT)
+            rec.append(abs(ship.omega))
+        e, A, tf, ts = fit(rec, rec[-1])
+        fracs.append(frac); As.append(A); tfs.append(tf); tss.append(ts)
+        log(f"  yaw build helm {frac:.3f}: A={A:.2f} tf={tf:.1f} ts={ts:.0f}")
+    builds["helm"] = dict(fracs=fracs, A=As, tf=tfs, ts=tss)
+    # the tightest (helm 1.0 + one side holds) and the oar family
+    rate = rate_for_speed("Olympias", 6.5, n_oars=85)
+    ship = LLShip(rate=rate, helm=("starboard", 1.0),
+                  oar_state=("row", "hold"))
+    ship.V = 6.5 * KT
+    rec = []
+    while ship.t < 120.0:
+        ship.step(DT)
+        rec.append(abs(ship.omega))
+    e, A, tf, ts = fit(rec, rec[-1])
+    builds["tightest"] = dict(A=A, tf=tf, ts=ts)
+    log(f"  yaw build tightest: A={A:.2f} tf={tf:.1f} ts={ts:.0f}")
+    ship = LLShip(rate=rate, helm=("midship", 0.0), oar_state=("row", "hold"))
+    ship.V = 6.5 * KT
+    rec = []
+    while ship.t < 120.0:
+        ship.step(DT)
+        rec.append(abs(ship.omega))
+    e, A, tf, ts = fit(rec, rec[-1])
+    builds["oar"] = dict(A=A, tf=tf, ts=ts)
+    log(f"  yaw build oar: A={A:.2f} tf={tf:.1f} ts={ts:.0f}")
     return builds
 
 
@@ -718,7 +747,63 @@ def fit_tau_turn(tables, ll_d, scalars=None):
     return best, best_max
 
 
-# ---------------------------------------------------------------------------
+def fit_d_scale(tables, ll_d, scalars):
+    """The per-scenario D-multiplier scan (the K26 D-compensation): the
+    HL's |y| at 180 deg runs ~6 % high on the g1 with the honest build
+    (the LL's path runs ~2-3 % lower V through the turn plus its
+    S-shaped yaw — the build itself barely moves the |y|, measured).
+    The old tau_turn scan compensated this by accident (its fast build
+    happened to shrink the |y|); the K25 fix made the measured tf
+    apply, so the compensation must move to the TARGET: the d_tables'
+    cells are rescaled per scenario (the g1's full-helm cell, the f1's
+    1/3 cell, the tightest's d_oar 1.0 cell, the oar turns' d_oar 0.0
+    cell), with the scales recorded. The measured build's tf is
+    untouched."""
+    from hl.ship import Ship as HLShip
+    scenarios = [
+        ("g1", ll_d["g1"], rate_for_speed("Olympias", 6.0),
+         ("port", 1.0), ("row", "row"), 6.0),
+        ("f1", ll_d["f1"], rate_for_speed("Olympias", 6.0),
+         ("port", 1.0 / 3), ("row", "row"), 6.0),
+        ("tightest", ll_d["tightest"], rate_for_speed("Olympias", 6.5,
+                                                      n_oars=85),
+         ("starboard", 1.0), ("row", "hold"), 6.5),
+        ("oar_hold", ll_d["oar_hold"], rate_for_speed("Olympias", 6.5,
+                                                      n_oars=85),
+         ("midship", 0.0), ("row", "hold"), 6.5),
+    ]
+    scales, worst = {}, 0.0
+    for name, d_ref, rate, helm, oar_state, v0 in scenarios:
+        best = None
+        for s in [x / 100.0 for x in range(80, 121)]:      # 0.80 .. 1.20
+            cal_tables = dict(tables)
+            dr = [[f, d] for f, d in cal_tables["d_rudder"]]
+            do = [[f, d] for f, d in cal_tables["d_oar"]]
+            if name == "g1":
+                dr = [[f, d * s if f == 1.0 else d] for f, d in dr]
+            elif name == "f1":
+                dr = [[f, d * s if abs(f - 1 / 3) < 1e-3 else d]
+                      for f, d in dr]
+            elif name == "tightest":
+                do = [[f, d * s if f == 1.0 else d] for f, d in do]
+            else:
+                do = [[f, d * s if f == 0.0 else d] for f, d in do]
+            cal_tables["d_rudder"], cal_tables["d_oar"] = dr, do
+            cal = Calibration(dict(id="fit"), cal_tables, scalars)
+            ship = HLShip(rate=rate, helm=helm, oar_state=oar_state,
+                          curves=cal)
+            ship.V = v0 * KT
+            while abs(ship.psi) < math.pi and ship.t < 900.0:
+                ship.step(ship.dt)
+            err = abs(abs(ship.y) / d_ref - 1.0)
+            if best is None or err < best[0]:
+                best = (err, s)
+        scales[name] = best[1]
+        worst = max(worst, best[0])
+        log(f"  d scale {name:9s}: {best[1]:.3f} (|y| err {best[0]*100:.1f} %)")
+    return scales, worst
+
+
 def main() -> None:
     t_all = time.time()
     commit = git_commit()
@@ -744,6 +829,7 @@ def main() -> None:
     fresh_nets = measure_fresh_nets(NET_RATES)
     tables["net_fresh"] = fresh_nets["hold"]  # back == hold (the degeneration)
     tables["d_oar_v"] = measure_d_oar_v()
+    tables["turn_beta"] = measure_turn_beta()
     d_tables = measure_d_tables()
     tables["d_rudder"] = [[f, None] if f == 0.0 else [f, d]
                           for f, d in d_tables["rudder"]]
@@ -762,6 +848,19 @@ def main() -> None:
     turn_k = turn_drag["spoude"][0][-1]        # the G1-anchor full-helm cell
     tables["turn_drag"] = turn_drag
     tables["yaw_build"] = measure_yaw_build()
+    d_scales, d_worst = fit_d_scale(tables, dict(
+        g1=[d for f, d in d_tables["rudder"] if f == 1.0][0],
+        f1=[d for f, d in d_tables["rudder"] if abs(f - 1 / 3) < 1e-3][0],
+        tightest=[d for f, d in d_tables["oar"] if f == 1.0][0],
+        oar_hold=[d for f, d in d_tables["oar"] if f == 0.0][0],
+    ), _scalars())
+    tables["d_rudder"] = [[f, d * d_scales["g1"] if f == 1.0
+                           else d * d_scales["f1"]
+                           if abs(f - 1 / 3) < 1e-3 else d]
+                          for f, d in tables["d_rudder"]]
+    tables["d_oar"] = [[f, d * d_scales["tightest"] if f == 1.0
+                        else d * d_scales["oar_hold"] if f == 0.0 else d]
+                       for f, d in tables["d_oar"]]
     tau_turn, max_d = fit_tau_turn(tables, dict(
         g1=[d for f, d in d_tables["rudder"] if f == 1.0][0],
         f1=[d for f, d in d_tables["rudder"] if abs(f - 1 / 3) < 1e-3][0],
@@ -777,6 +876,8 @@ def main() -> None:
                    drift_tau_exp=measure_drift_tau(tau_exit),
                    v_flow=measure_v_flow())
     residuals = dict(
+        d_scale_max_d_pct=d_worst * 100.0,
+        d_scales=d_scales,
         vstar="exact at the grid points (mean-force bisection)",
         pressure_rows_std_kt=dict(
             steady=tables["steady"].pop("std_kt"),
@@ -909,6 +1010,39 @@ def measure_fresh_nets(rates):
         out[state] = dict(rates=list(rates),
                           spoude=spoude, steady=steady)
         log(f"  fresh nets {state}: spoude {spoude} steady {steady}")
+    return out
+
+
+def measure_turn_beta():
+    """The LL's turn drift angles, deg (the T8 row — the K25 addition):
+    the sway's lateral crab per turn family — the helm turns per
+    fraction (g1 1.0 / f1 1/3), the tightest (helm 1.0 + one side
+    holds), and the oar-only turns per stopped state. The HL carries
+    the crab explicitly in its path integration (no sway DOF)."""
+    import math
+
+    def beta_of(v0_kt, n_oars, helm, oar_state=("row", "row")):
+        rate = rate_for_speed("Olympias", v0_kt, n_oars=n_oars)
+        ship = LLShip(rate=rate, oar_state=oar_state)
+        ship.V = v0_kt * KT
+        ship.apply(Command(0.0, "helm", list(helm), 1))
+        bs = []
+        while ship.t < 150.0:
+            ship.step(DT)
+            if 60 <= ship.t <= 140 and int(ship.t * 2) % 2 == 0:
+                bs.append(math.degrees(math.atan2(ship.v, ship.V)))
+        return round(sum(bs) / len(bs), 2)
+
+    out = dict(
+        fracs=[1.0, 1.0 / 3.0],
+        helm=[beta_of(6.0, 170, ("port", 1.0)),
+              beta_of(6.0, 170, ("port", 22.5 / 67.5))],
+        tightest=beta_of(6.5, 85, ("starboard", 1.0), ("row", "hold")),
+        oar=dict(hold=beta_of(6.5, 85, ("midship", 0.0), ("row", "hold")),
+                 back=beta_of(6.5, 85, ("midship", 0.0), ("row", "back"))),
+    )
+    log(f"  turn_beta: helm {out['helm']} tightest {out['tightest']} "
+        f"oar {out['oar']}")
     return out
 
 
