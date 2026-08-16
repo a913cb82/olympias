@@ -25,6 +25,8 @@ Source document: `Olympias-Simulation-Report-Rev-F.docx` (the repo's original
 - `media/` — the 22 embedded images (jpeg/png/emf/wmf).
 - `comparison-with-ll.md` — the deep-dive comparison with the low-level
   simulator's methodology.
+- `next-steps.md` — the planned work from that comparison (realism
+  upgrades, the differing choices to investigate, the new anchors).
 
 Conversion route (no external tools; the venv has no docx library): the docx
 is a ZIP; `word/document.xml` parsed with stdlib `xml.etree` (paragraphs,
