@@ -6,8 +6,8 @@ This is the task A deliverable: "the equivalence tables annotated with
 per-row tolerance sources and the calibration id".
 
 Provenance: the numbers below are copied as printed from
-`/tmp/validation_k22.log` (the latest full run, 2026-08-16 — the K22
-acceptance: the per-side tanks + the speed-dependent oar orbit),
+`/tmp/validation_k23.log` (the latest full run, 2026-08-16 — the K23
+acceptance: the yaw-build re-measured at each family's true usage),
 one `harness/run_validation.py`
 invocation — the 7 scripts (incl. the T10 zig-zag) + the 5 turn
 scenarios. Nothing has been re-computed or smoothed; the table cells
@@ -25,10 +25,10 @@ Reproduction (one command, from `simulation/`):
 
 | item | value |
 | --- | --- |
-| calibration id | `calib-2026-08-16-6da11f0` (the pinned calibration; `meta.id`) |
-| LL commit | `6da11f0` (HEAD; the calibration's `meta.ll_commit`) |
-| date | 2026-08-16 (calibration date; the log run Aug 16 — the K22
-  acceptance: the per-side tanks + the speed-dependent oar orbit) |
+| calibration id | `calib-2026-08-16-77f4258` (the pinned calibration; `meta.id`) |
+| LL commit | `77f4258` (HEAD; the calibration's `meta.ll_commit`) |
+| date | 2026-08-16 (calibration date; the log run Aug 16 — the K23
+  acceptance: the yaw-build at the families' true usage) |
 | dt config | LL dt = 0.05 s · HL dt = 0.5 s · 1 Hz telemetry samples (as printed in every table) |
 | rig / fleet config | Olympias · spruce · hull ×1.0 · 170 oars (`meta.config`) |
 | run tool | `harness/run_validation.py` (one command stream on both simulators, same seeded state; the pair contract — simulation/AGENTS.md) |
@@ -118,7 +118,7 @@ Every HL result carries the tolerance source (the calibration run id) —
 the pair contract: "Every HL result carries the tolerance source (calibration run
 id)". Supporting refs: the gates are implemented in comparator.py
 (§6/§20), the fatigue gate as the depletion integral (§20, §9.3.6), the
-calibration residuals live in the pinned JSON (`calib-2026-08-16-6da11f0
+calibration residuals live in the pinned JSON (`calib-2026-08-16-77f4258
 .json` → `residuals`), and the named decision points (the definition of done — simulation/AGENTS.md)
 (DAG tasks B–F measured the curves the gates judge).
 
@@ -161,8 +161,8 @@ exercises differently.
 | fatigue_consumed_delta | 0.000 | -0.021 | -0.021 | 0.05 | PASS |
 | rate_eff | 28.800 | 28.800 | +0.000 | 1.0 | — |
 | rate_eff_delta | 0.000 | 0.000 | +0.000 | 1.0 | PASS |
-| position_sep | 0.000 | 0.018 | +0.018 | 0.1 | PASS |
-| heading | -0.439 | -0.456 | -0.017 | 5.0 | — |
+| position_sep | 0.000 | 0.009 | +0.009 | 0.1 | PASS |
+| heading | -0.439 | -0.451 | -0.012 | 5.0 | — |
 | distance | 1.868 | 1.868 | +0.000 | 0.05 | — |
 | bin_max | 0.000 | 0.092 | +0.092 | 5.0 | — |
 | bin_rms | 0.000 | 0.036 | +0.036 | 3.0 | — |
@@ -182,6 +182,7 @@ Annotation (all rows per §3 map; the script-specific notes):
 
 
 
+
 ### 4.2 sprint + turns (25 min) — `examples/sprint_turn.txt`
 
 | metric | LL | HL | diff | tolerance | verdict |
@@ -196,8 +197,8 @@ Annotation (all rows per §3 map; the script-specific notes):
 | fatigue_consumed_delta | 0.000 | -0.005 | -0.005 | 0.05 | PASS |
 | rate_eff | 34.315 | 34.315 | +0.000 | 1.0 | — |
 | rate_eff_delta | 0.000 | 0.000 | +0.000 | 1.0 | PASS |
-| position_sep | 0.000 | 0.201 | +0.201 | 0.1 | VIOLATION |
-| heading | -0.241 | -0.057 | +0.183 | 5.0 | — |
+| position_sep | 0.000 | 0.199 | +0.199 | 0.1 | VIOLATION |
+| heading | -0.241 | -0.042 | +0.199 | 5.0 | — |
 | distance | 2.823 | 2.841 | +0.018 | 0.05 | — |
 | bin_max | 0.000 | 1.770 | +1.770 | 5.0 | — |
 | bin_rms | 0.000 | 0.990 | +0.990 | 3.0 | — |
@@ -220,6 +221,7 @@ Annotation:
 
 
 
+
 ### 4.3 W' burst + recovery (30 min) — `examples/wprime_burst.txt`
 
 | metric | LL | HL | diff | tolerance | verdict |
@@ -234,8 +236,8 @@ Annotation:
 | fatigue_consumed_delta | 0.000 | -0.005 | -0.005 | 0.05 | PASS |
 | rate_eff | 37.086 | 37.086 | +0.000 | 1.0 | — |
 | rate_eff_delta | 0.000 | 0.000 | +0.000 | 1.0 | PASS |
-| position_sep | 0.000 | 0.043 | +0.043 | 0.1 | PASS |
-| heading | -1.201 | -1.270 | -0.069 | 5.0 | — |
+| position_sep | 0.000 | 0.022 | +0.022 | 0.1 | PASS |
+| heading | -1.201 | -1.247 | -0.046 | 5.0 | — |
 | distance | 2.736 | 2.734 | -0.002 | 0.05 | — |
 | bin_max | 0.000 | -1.243 | -1.243 | 5.0 | — |
 | bin_rms | 0.000 | 0.634 | +0.634 | 3.0 | — |
@@ -260,12 +262,13 @@ Annotation:
 
 
 
+
 ### 4.4 sample cruise_turn.txt — `examples/cruise_turn.txt`
 
 | metric | LL | HL | diff | tolerance | verdict |
 | --- | --- | --- | --- | --- | --- |
-| mean_speed | 4.798 | 4.726 | -0.072 | 0.01 | — |
-| mean_speed_pct | 0.000 | -0.015 | -1.5 % | 0.01 | VIOLATION |
+| mean_speed | 4.798 | 4.712 | -0.086 | 0.01 | — |
+| mean_speed_pct | 0.000 | -0.018 | -1.8 % | 0.01 | VIOLATION |
 | t_3nm | None | n/a | n/a | ±0.01 | — |
 | t_3nm_pct | 0.0 | n/a | n/a | ±0.01 | — |
 | fatigue | 1.000 | 0.000 | -1.000 | 0.05 | — |
@@ -274,11 +277,11 @@ Annotation:
 | fatigue_consumed_delta | 0.000 | -0.137 | -0.137 | 0.05 | VIOLATION |
 | rate_eff | 32.998 | 33.298 | +0.300 | 1.0 | — |
 | rate_eff_delta | 0.000 | 0.300 | +0.300 | 1.0 | PASS |
-| position_sep | 0.000 | 0.071 | +0.071 | 0.1 | PASS |
-| heading | 4.429 | 17.223 | +12.795 | 5.0 | — |
-| distance | 2.401 | 2.364 | -0.037 | 0.05 | — |
-| bin_max | 0.000 | -42.918 | -42.918 | 5.0 | — |
-| bin_rms | 0.000 | 14.378 | +14.378 | 3.0 | — |
+| position_sep | 0.000 | 0.072 | +0.072 | 0.1 | PASS |
+| heading | 4.429 | 16.678 | +12.249 | 5.0 | — |
+| distance | 2.401 | 2.357 | -0.044 | 0.05 | — |
+| bin_max | 0.000 | -41.784 | -41.784 | 5.0 | — |
+| bin_rms | 0.000 | 15.213 | +15.213 | 3.0 | — |
 
 Annotation:
 
@@ -299,6 +302,7 @@ Annotation:
 
 
 
+
 ### 4.5 3-NM cruise (35 min) — `examples/three_nm_cruise.txt`
 
 | metric | LL | HL | diff | tolerance | verdict |
@@ -313,8 +317,8 @@ Annotation:
 | fatigue_consumed_delta | 0.000 | -0.005 | -0.005 | 0.05 | PASS |
 | rate_eff | 28.800 | 28.800 | +0.000 | 1.0 | — |
 | rate_eff_delta | 0.000 | 0.000 | +0.000 | 1.0 | PASS |
-| position_sep | 0.000 | 0.037 | +0.037 | 0.1 | PASS |
-| heading | -2.203 | -2.190 | +0.012 | 5.0 | — |
+| position_sep | 0.000 | 0.050 | +0.050 | 0.1 | PASS |
+| heading | -2.203 | -2.186 | +0.017 | 5.0 | — |
 | distance | 3.669 | 3.670 | +0.001 | 0.05 | — |
 | bin_max | 0.000 | 0.355 | +0.355 | 5.0 | — |
 | bin_rms | 0.000 | 0.103 | +0.103 | 3.0 | — |
@@ -336,6 +340,7 @@ Annotation:
 
 
 
+
 ### 4.6 tempo loss (exhausted sprint) — `examples/tempo_loss.txt`
 
 | metric | LL | HL | diff | tolerance | verdict |
@@ -350,8 +355,8 @@ Annotation:
 | fatigue_consumed_delta | 0.000 | -0.013 | -0.013 | 0.05 | PASS |
 | rate_eff | 44.500 | 44.500 | +0.000 | 1.0 | — |
 | rate_eff_delta | 0.000 | 0.000 | +0.000 | 1.0 | PASS |
-| position_sep | 0.000 | 0.007 | +0.007 | 0.1 | PASS |
-| heading | -0.214 | -0.207 | +0.008 | 5.0 | — |
+| position_sep | 0.000 | 0.014 | +0.014 | 0.1 | PASS |
+| heading | -0.214 | -0.189 | +0.025 | 5.0 | — |
 | distance | 0.525 | 0.524 | -0.001 | 0.05 | — |
 | bin_max | 0.000 | -0.791 | -0.791 | 5.0 | — |
 | bin_rms | 0.000 | 0.682 | +0.682 | 3.0 | — |
@@ -374,6 +379,7 @@ Annotation:
 
 
 
+
 ### 4.7 zig-zag (out-of-sample) — `examples/zigzag.txt`
 
 | metric | LL | HL | diff | tolerance | verdict |
@@ -388,8 +394,8 @@ Annotation:
 | fatigue_consumed_delta | 0.000 | -0.000 | -0.000 | 0.05 | PASS |
 | rate_eff | 32.879 | 32.879 | +0.000 | 1.0 | — |
 | rate_eff_delta | 0.000 | 0.000 | +0.000 | 1.0 | PASS |
-| position_sep | 0.000 | 0.318 | +0.318 | 0.1 | VIOLATION |
-| heading | -4.275 | -4.827 | -0.553 | 5.0 | — |
+| position_sep | 0.000 | 0.300 | +0.300 | 0.1 | VIOLATION |
+| heading | -4.275 | -4.792 | -0.518 | 5.0 | — |
 | distance | 1.974 | 1.999 | +0.025 | 0.05 | — |
 | bin_max | 0.000 | 3.436 | +3.436 | 5.0 | — |
 | bin_rms | 0.000 | 1.724 | +1.724 | 3.0 | — |
@@ -397,11 +403,17 @@ Annotation:
 Annotation: the out-of-sample stress test (task T10) — the reversal-mix composition residual (+1.3 % mean, 0.318 NM position — §6, VALIDATION §11.2).
 
 
-## 5. The turn scenarios — the 5 equivalence rows, annotated
 
+## 5. The turn scenarios — the 5 equivalence rows, annotated
 
 | scenario | rate | D LL m | D HL m | diff | t180 LL s | t180 HL s | verdict |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| g1        |   19.9 |    89.5 |    91.1 |  +1.8 % |  54.0 |  53.0 | PASS |
+| f1        |   19.9 |   116.8 |   117.1 |  +0.2 % |  70.0 |  67.0 | PASS |
+| tightest  |   31.5 |    62.7 |    62.3 |  -0.6 % |  52.0 |  47.0 | PASS |
+| oar-hold  |   31.5 |   103.5 |   101.1 |  -2.3 % |  87.0 |  77.0 | PASS |
+| oar-back  |   31.5 |   103.5 |   101.1 |  -2.3 % |  87.0 |  77.0 | PASS |
+
 | g1        |   19.9 |    89.5 |    92.9 |  +3.9 % |  54.0 |  52.0 | PASS |
 | f1        |   19.9 |   116.8 |   118.8 |  +1.7 % |  70.0 |  66.0 | PASS |
 | tightest  |   31.5 |    62.7 |    61.7 |  -1.6 % |  52.0 |  44.0 | PASS |
@@ -425,9 +437,9 @@ Annotation per scenario:
   `tau_hold_settles_kt` 3.343); t180 52.0 vs 44.0 s.
 - **oar-hold** (no rudder): −3.3 % — the `d_oar` 0-helm cell (103.5 m);
   t180 87.0 vs 72.0 s carries the hold-entry transient (tau_hold).
-- **oar-back** (no rudder): −3.3 % on D (the back ≡ hold degeneration
+- **oar-back** (no rudder): −2.3 % on D (the back ≡ hold degeneration
   at speed, VALIDATION §3) — the `tau_back` collapse fit; its t180
-  (72.0 s) sits inside the ±20 % band. The *settled orbit after the
+  (77.0 s) sits inside the ±20 % band. The *settled orbit after the
   turn* is CLOSED (K22): the HL's per-side tanks + the v_flow-gated
   backing drain + the speed-dependent d_oar_v orbit reproduce the
   LL's drained spiral (settled D 40.4/43.0 m — 1.06×, was 2.56×) and
@@ -443,61 +455,4 @@ The D verdicts here are HL-vs-LL (the L2-4 gate); the LL's own anchors
 vs the W5 trials are the Level-1 record (VALIDATION §3: G1 +0.3 %,
 F1 +4.9 %, tightest +1.0 %).
 
-## 6. The documented divergences — every one with its cause
-
-1. **The drift bias is carried by the HL** — the bias-yaw decision
-   (task C): the LL's symmetric crew carries an untrimmed lateral kick
-   whose measured yaw slope is pressure-dependent (spoude ≈ −0.0010 vs
-   steady ≈ −0.0003 rad/s, flat over rate — `tables.drift`,
-   `residuals.drift` note: LSQ slope at the (rate, pressure, tank)
-   cells, full-tank window 20–60 s + the drained 600–900 s). The HL now
-   carries the measured drift table itself, matching the LL's untrimmed
-   truth, and the L2-6 gate stays as-written (0.1 NM). The residual —
-   the table's interpolation vs each script's state mix, and the
-   turn-phase interplay — lands in the net separation at K. On this log
-   that is the wprime `position_sep` row (§4.3, pending).
-2. **The fishtail `tau_exit`** — 19.0 s, the LL's omega decay after the
-   helm returns midship (exponential fit over 240 s, the sprint_turn
-   position follow-up; `protocols.tau_exit`). The HL's single-tau decay
-   cannot reproduce the LL's per-stroke fishtail; measured and bounded,
-   it shapes the turn-heavy scripts' `heading` (info) and `position_sep`
-   rows (§4.2).
-3. **The back-tail dip-and-recover residual** — the LL's rate change
-   re-plans the oar and the back-brake drives a deep undershoot with a
-   ±50 % low-speed ripple; the HL's smooth chase cannot represent
-   per-stroke transition dynamics (VALIDATION §9.3.5). On this
-   calibration the per-state tau_back (10.0 s @ 24 → 37.5 s @ 44 spm,
-   task E) bounds it — cruise_turn's mean gate is −0.0 % (was +1.2 %)
-   — and the residual itself stays documented, not tuned away (§4.4).
-4. **The turn-deceleration term** — `turn_drag_extra` 0.28, fitted to
-   the LL's G1-turn V(t) (6.0 → 5.4 kt over 54 s, `turn_drag_rms_mps`
-   0.0298, task F); the part of the per-turn loss the chase cannot
-   absorb remains in sprint_turn's mean speed (+1.0 %, at the L2-1
-   edge; §4.2, §9.3.5).
-5. **The 3-NM row** — the L2-3 gate needed a script that actually
-   crosses 3 NM; the dedicated 35-min cruise (task D) provides it, and
-   the row passes −0.0 % (§4.5). The previous record's "never
-   exercised" status (VALIDATION §10.2) is what this row closes.
-6. **The wprime `position_sep` row** — **closed** (task K11, the
-   sway-transient closure): the row went 0.217 → 0.022 NM. The named
-   cause was the LL's sway-coupled yaw during the burst phases — the
-   settled drift cells (300-600 s anchors; the 20-60 s window is the
-   sway transient, 2-3x the settle), the V-ramp kick-transient curve
-   (`tables.drift_kick`) and the |omega|-dependent slow decay
-   (`scalars.drift_tau_exp`) now represent it (§6.1).
-
-## 7. Verdict summary
-
-On this log (the K22 acceptance, calibration `calib-2026-08-16-6da11f0`),
-every L2-4 turn row passes (max |diff| 3.9 % vs the 5 % gate, inside
-the 3.6 % tau_turn residual); the script set carries only the three
-documented annotated violations (sprint_turn's position 0.201 NM, the
-cruise_turn back-tail mean/fatigue/bins, the zig-zag mean/position —
-each with its named cause, §6); the oar-back follow-up (K20-K22) is
-closed: the per-side tank sequence and the drained spiral are
-reproduced (settled orbit 1.06×, depletion −0.006, all five turns'
-settled orbits within 1.09× — locked in
-`harness/tests/test_equivalence_gates.py`). The definition of done
-(simulation/AGENTS.md) is met — no unexplained or silent mismatches —
-and the gate rows are locked as regression tests
-(`harness/tests/test_equivalence_gates.py`, `hl/tests/test_drift_closure.py`).
+## 6.

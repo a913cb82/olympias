@@ -542,18 +542,19 @@ def measure_turn_drag(tables):
 
 def measure_yaw_build():
     """The yaw build-up (task T3): the LL's omega's approach to its
-    turn rate is TWO-timescale — a fast rise (~70-95 % in 3-5 s) plus
-    the sway's coupled slow mode (~15-30 s, the same mode as the
-    wprime's decay). The HL's single-tau chase builds the whole way
-    fast, phasing the turn's psi early — the position rows' driver
-    (the sprint_turn K16 finding). The fit: omega(t) = ss*(1 -
-    A*exp(-t/tf) - (1-A)*exp(-t/ts)) per family (the d_rudder helm
-    turns vs the d_oar one-side-stopped turns)."""
+    turn rate. The fit: omega(t) = ss*(1 - A*exp(-t/tf) -
+    (1-A)*exp(-t/ts)) per family, measured at the family's TRUE usage:
+    the helm turns (g1 — full helm, both rowing) vs the oar-only turns
+    (MIDSHIP helm, one side holds — the oar family was previously
+    measured on the helm-assisted setup, which uses the helm family in
+    the HL, making the midship oar turns build ~2x too fast — the K23
+    finding). The LL's builds are near single exponentials (helm tau ~8
+    s, oar tau ~11-12 s), so the grid includes A = 1.0 and tf up to 12."""
     import math
     builds = {}
     for name, v0_kt, n_oars, helm, oar in (
             ("helm", 6.0, 170, ("port", 1.0), ("row", "row")),
-            ("oar", 6.5, 85, ("starboard", 1.0), ("row", "hold"))):
+            ("oar", 6.5, 85, ("midship", 0.0), ("row", "hold"))):
         rate = rate_for_speed("Olympias", v0_kt, n_oars=n_oars)
         ship = LLShip(rate=rate, helm=helm, oar_state=oar)
         ship.V = v0_kt * KT
@@ -563,8 +564,8 @@ def measure_yaw_build():
             rec.append(abs(ship.omega))
         ss = rec[-1]
         best = None
-        for A in (0.5, 0.6, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95):
-            for tf in (1.0, 2.0, 3.0, 4.0, 5.0, 6.0):
+        for A in (0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 1.0):
+            for tf in (1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 8.0, 10.0, 12.0):
                 for ts in (10.0, 12.0, 15.0, 18.0, 22.0, 26.0, 31.6, 40.0):
                     err = 0.0
                     for i, w in enumerate(rec):
