@@ -391,9 +391,11 @@ function render() {
     if (!l) continue;
     const p = pose(l.rows, S.t);
     const ship = svg._ships[sim];
-    // true world scale: 37 m long, clamped so the icon stays usable
+    // the TRUE world scale, always — 37 m on the ground at every zoom
+    // level (no clamp; at the fit on a long track the ship is small and
+    // grows honestly as you zoom in)
     const v = S.view;
-    const shipPx = Math.max(26, Math.min(200, 37 * v.k * v.zoom));
+    const shipPx = 37 * v.k * v.zoom;
     ship.setAttribute("transform",
       `translate(${sx(p.x).toFixed(1)} ${sy(p.y).toFixed(1)}) rotate(${(-p.psi * 180 / Math.PI).toFixed(1)}) scale(${(shipPx / 52.5).toFixed(3)})`);
     updateShipOrders(sim, p.crew, p.helm, S.t, p.rate);

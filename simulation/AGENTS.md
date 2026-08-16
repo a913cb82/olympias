@@ -205,7 +205,9 @@ scrubber, clickable command markers on the timeline (jump to the command
 and its state), readouts (speed, rate, heading in compass degrees — north = 0°, matching the ship icon's facing — yaw, helm, per-side
 state/pressure and the W′ meter). The map zooms with the wheel (around
 the cursor) and pans by dragging (⤢ refits); the ship is drawn at its
-TRUE world scale (37 m, clamped to 26–200 px) — the turning circles are
+TRUE world scale (37 m on the ground at every zoom level — no clamp,
+so the ships keep growing honestly however far you zoom in) — the
+turning circles are
 the trial's measured diameters, and zooming into a turn shows the ship
 in honest proportion to its circle. The ships carry their orders: oar
 angle = state (row sweeps at the stroke rate, hold perpendicular, back
