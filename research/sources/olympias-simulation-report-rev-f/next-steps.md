@@ -11,44 +11,76 @@ silently (the oQ-18 discipline). Items are ordered by expected impact.
 
 ## A. LL realism improvements
 
-**A1. Per-station oar model with local flow (unpack the 4.8 m lever).**
-Today the oar yaw moment is the fitted oar-race lever (4.8 m, Taylor
-ch.31 row 10) times the side-thrust difference, and the held-blade brake
-uses a separate fitted arm (LEVER_HOLD 1.5 m) — the register C3 explicitly
-flags the lever as a lump that folds in station arms, stopped-blade drag
-and drift dynamics. The report gives the material to unpack it: Figure 16
-(the original oar configuration — the station plan the register B6 lists
-as missing) and Table 3 (per-tier geometry, including the SHORT oars at
-the bow/stern — the stations with the longest yaw arms, which our rig does
-not carry). The upgrade: place the 170 oars per the plan, compute each
-blade's flow from the ship's (u, v, r) at its station, and let the yaw
-moment and the brake emerge from the per-oar sums.
+**A1. Per-station oar model with local flow (unpack the 4.8 m lever).
+— the layer built; the decomposition CORRECTED; the layer's net pattern
+inverted vs the trials (the over-damping, named) — the follow-up's the
+grounding + the damping's verification.**
+The layer's built: `ll/stations.py` + the ship's `stations=True` mode —
+170 oars at their stations (interscalmium 0.888, the thole arms grounded
+in the outrigger beam 2.7/2.1/1.5 m [?], the short oars at the bow/stern
+ends per Rev F Table 3), each blade's flow from the ship's (u, v, r) at
+its station, the yaw moment from the per-oar sums at the BLADE positions.
+The measured verdicts (the realism direction's CONFIRMED, the
+completion's open):
+- the yaw moment's arm is the blade's position (r_blade x F — the oar
+  and the rower are internal to the hull): the mean blade arm's **4.82 m
+  — the Taylor 4.8 IS the blade's arm**, and the LL's sway-calibrated
+  1.8 m is the NET (blade arm − the oars' local-flow damping, measured
+  ~400 kN m s at the g1 settle). The register C3's earlier 'physical
+  athwartships arm 1.8' reading was the wrong decomposition — corrected.
+- BUT the layer's turn pattern is INVERTED vs the trials (measured on
+  the harness's own cells at the current sway set): the helm turns
+  WIDER (g1 90.1 → 128.0, f1 118.0 → 232.1) while the oar turns come
+  out TIGHTER (tightest 62.5 → 57.4, oar-hold 102.9 → 81.4, oar-back
+  102.9 → 78.7). The investigation (per the 'realism making results
+  worse = investigate' rule):
+  - a REAL BUG found and fixed: the held/back-hold stations' tuples
+    carried zero blade positions — the brake's moment (−y_b·br) was
+    silently dropped (minor in effect: the brake's the small term);
+  - the re-tuning check: no (Ω, clr) resolves the inversion — the helm
+    turns'd need Ω DOWN (the explicit local-flow damping ~9.8 kN·m at
+    the settles — ~73 % of the 22.5°-helm rudder torque — eats the
+    small-helm turns) while the oar turns'd need it UP (the rowing
+    side's 4.8-arm counter's under-absorbed — the lateral's too weak,
+    the SAME direction as the open drift item: the model's 1.4° vs the
+    trials' 8-15°);
+  - the damping's form matches the report's per-oar formula (his
+    Vb = Lo·ω·cosθ and the water's (u, v, r) at the blade — the same
+    local flow), so the mechanism's not a transcription error; its
+    MAGNITUDE's the open question — the outside blades bite harder,
+    and the aggregated's net-arms (1.8/1.5) + the calibrated Ω had
+    absorbed that share.
+The follow-ups (what the layer needs to become a clean win): the
+station decode (B6 — Figure 16's plan pins the arms), the lateral
+model's strengthening (A_lat/clr — the drift item's own fix — would
+absorb the oar turns' counter), and the sway re-calibration with the
+layer as the default (the lever's elimination is the fitting
+reduction).
 
-Acceptance: the one-side-stops gates stay ≤ 7 % — the computed sum must
-reproduce the 4.8 m the fitted lever encodes — and the drift angle should
-move toward the trials' 8-15° (the open item, VALIDATION §11.3). The
-station decoding from image21.jpeg is a research task first.
+**A2. The stroke phase structure. — DONE (the negative result)**
+The trapezoidal drive profile's built (`ll/oar.py profile="trap"` — the
+ramps at the catch/finish, the sweep conserved) and measured at the
+cruise point (7.2 kt, 28.8 spm): with the report's in-water fraction 0.39
+(0.72 s) the mean thrust's **−35.5 N vs the chain's +17.5 N** — the same
+sweep over a longer in-water time forces a lower mean ω, and the blade
+cannot outrun the water during the ramps (the vn turns positive — the
+blade dragged forward). The two measurements are jointly incompatible
+with ANY trapezoid: the effective-pull (the chain's 0.43 s — the force's
+equivalent rectangle) and the kinematic in-water (the report's 0.7 s)
+imply a PEAKED mid-stroke ω(t) (~1.5-2× the mean) whose shape the
+available data does not determine (the Table 9.6's the effective time,
+not the ω(t) shape). The constant-ω + the effective-pull stays the
+validated kinematics; the negative result's locked
+(`ll/tests/test_revf_layers.py`). The shape's measurement (a force-trace
+or blade-video record) would be the unlock — not in our sources.
 
-**A2. The stroke phase structure.** His model puts the oar inertia inside
-the stroke dynamics: the finish/catch are constant-moment phases solved so
-the oar's angular velocity reaches zero at the stroke ends (ω(t) decelerates
-into the finish, accelerates out of the catch); ours is a constant-ω drive
-plus the Table 3.1 impulse corrections. The report's stroke-time budget
-(p28, the skilled thranite) quantifies the difference: 1.8 s stroke at
-33 spm, **0.7 s in the water** (fraction 0.39), 0.2 s catch+finish — vs our
-Table 9.6 effective-pull 0.43 s at 28.8 spm (fraction **0.21**). The blade
-spends ~2× longer in the water than the effective-pull time implies, with
-weaker force at the stroke ends. Investigate a phase-based ω(t) profile
-that reproduces the measured timings AND keeps the mean thrust and the
-Gate-1 agreement with the rigid-oar reference (the effective time is the
-chain's validated quantity; the in-water time is a different measurement —
-the two must both be met).
-
-**A3. The rudder as an aerofoil (low priority).** His full lift/drag foil
-at the stock (his Figure 12) vs our Taylor empirical drag-fraction law.
-Ours is calibrated and gate-passing; the foil only matters off-design
-(reversals, the mixed-hold families). Needs the rudder's geometry from the
-report before it can be costed.
+**A3. The rudder as an aerofoil (low priority). — DONE (blocked, named)**
+The report's Figure 12 shows the rudder's location diagrammatically with
+NO printed dimensions (the area, section, stock position); the trials'
+rudder plans are not in our sources. The aerofoil upgrade is not
+implementable from the report — the Taylor empirical model stays
+gate-passing. The blocker's named; the item's closed unless the rudder
+plans surface.
 
 ## B. Differing choices — investigate the impact
 

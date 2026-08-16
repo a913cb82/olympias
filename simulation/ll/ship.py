@@ -63,7 +63,8 @@ class Ship:
     def __init__(self, rig_name: str = "Olympias", n_oars: int = 170,
                  rate: float = 28.8, pressure: tuple = ("spoude", "spoude"),
                  oar_state: tuple = ("row", "row"), helm: tuple = ("midship", 0.0),
-                 fleet: str = "spruce", hold_frac: float | None = None):
+                 fleet: str = "spruce", hold_frac: float | None = None,
+                 stations: bool = False):
         # hold_frac default: the calibrated value (ll/rower.HOLD_FRAC)
         """fleet: 'spruce' (all tiers, MIT 9.7 — the 1994 setup) or
         'old-fir' (thranites 13.1, zygians 18.0, thalmians 13.1 approx —
@@ -87,15 +88,34 @@ class Ship:
         td, _ = t_drive_for(rig_name, rate)
         self.mit = ({"spruce": 9.7, "old-fir": 14.7, None: 0.0}[fleet]
                     if fleet in ("spruce", "old-fir", None) else 9.7)
+        # the per-station layer (ll/stations.py — the Rev F A1 item):
+        # 170 oars at their stations, the yaw moment from the per-oar
+        # sums with the local (u, v, r) flow; swappable, the aggregated
+        # validated default stays
+        self.stations = stations
+        side_layout = None
+        if stations:
+            from ll.stations import station_layout
+            base = station_layout()
+            side_layout = {
+                "port": {t: [(x, y, s) for x, y, s in base[t]]
+                         for t in base},
+                "star": {t: [(x, -y, s) for x, y, s in base[t]]
+                         for t in base},
+            }
         self.crew = {
             "port": SideCrew(rig_name, self.n_side, rate, td,
                              pressure=pressure[0], state=oar_state[0],
                              fleet=fleet,
-                             hold_frac=hold_frac if hold_frac is not None else HOLD_FRAC_DEFAULT),
+                             hold_frac=hold_frac if hold_frac is not None else HOLD_FRAC_DEFAULT,
+                             stations=side_layout and side_layout["port"],
+                             side=1),
             "star": SideCrew(rig_name, self.n_side, rate, td,
                              pressure=pressure[1], state=oar_state[1],
                              fleet=fleet,
-                             hold_frac=hold_frac if hold_frac is not None else HOLD_FRAC_DEFAULT),
+                             hold_frac=hold_frac if hold_frac is not None else HOLD_FRAC_DEFAULT,
+                             stations=side_layout and side_layout["star"],
+                             side=-1),
         }
         self.helm_dir, self.helm_frac = helm
         self.V = 0.0
@@ -113,16 +133,31 @@ class Ship:
 
     # ------------------------------------------------------------------
     def step(self, dt: float) -> None:
-        fx_p, peak_p, br_p, fy_p = self.crew["port"].step(dt, self.V)
-        fx_s, peak_s, br_s, fy_s = self.crew["star"].step(dt, self.V)
+        ship_state = (self.v, self.omega) if self.stations else None
+        fx_p, peak_p, br_p, fy_p = self.crew["port"].step(dt, self.V,
+                                                          ship_state)
+        fx_s, peak_s, br_s, fy_s = self.crew["star"].step(dt, self.V,
+                                                          ship_state)
         for crew in self.crew.values():
             crew.end_of_step(dt)
         Fx = self.n_side * (fx_p + fx_s + br_p + br_s)
-        Fy_oars = self.n_side * (fy_p + fy_s)             # net lateral oars
-        # rowing asymmetry: the physical athwartships arm (C3);
-        # held-blade brake: the athwartships station arm (LEVER_HOLD)
-        Q_oar = self.n_side * (self.lever * (fx_s - fx_p)
-                               + LEVER_HOLD * (br_s - br_p))  # + = port (psi +)
+        if self.stations:
+            # the per-station sums: the yaw moment and the lateral force
+            # emerge from the per-oar sums at the BLADE positions (the
+            # oar and the rower are internal to the hull — the net
+            # moment is r_blade x F) with the local (u, v, r) flow
+            Fy_oars = 0.0
+            Q_oar = 0.0
+            for crew in self.crew.values():
+                for fxi, fyi, bri, x_b, y_b in crew._stations:
+                    Fy_oars += fyi
+                    Q_oar += x_b * fyi - y_b * fxi - y_b * bri
+        else:
+            Fy_oars = self.n_side * (fy_p + fy_s)         # net lateral oars
+            # rowing asymmetry: the physical athwartships arm (C3);
+            # held-blade brake: the athwartships station arm (LEVER_HOLD)
+            Q_oar = self.n_side * (self.lever * (fx_s - fx_p)
+                                   + LEVER_HOLD * (br_s - br_p))  # + = port (psi +)
         # rudder (Taylor ch.31 model; straight-rudder drag at midship)
         vkt = abs(self.V) / KT
         if self.helm_dir == "midship":

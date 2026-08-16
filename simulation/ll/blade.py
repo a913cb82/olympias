@@ -79,10 +79,16 @@ def _d_turning_point(C: float, B: float) -> float:
 
 
 def blade_force(C: float, omega: float, V: float, rig: dict,
-                immersed: bool = True) -> dict:
+                immersed: bool = True, flow: tuple | None = None) -> dict:
     """Blade force at oar angle C (rad) and angular rate omega (rad/s, + = bowward),
     hull speed V (m/s). Returns vn, Fn, Fx, Fy, Fh (N) and the law's
     turning-point geometry p, q (m; None when undefined).
+
+    flow: the per-station layer's ship state (u, v, r, x, y) — the
+    blade's normal flow then includes the ship's rotation and sway at
+    the station (ll/stations.py, the Rev F A1 item): vn = (u - r·y)·nx
+    + (v + r·x)·ny + l_cp·omega. None keeps the base law (the hull
+    speed only).
 
     Evaluates the (q/p)^2 turning-point law at the interpretation selected
     by TURNING_POINT (module constant, see the module docstring)."""
@@ -107,8 +113,12 @@ def blade_force(C: float, omega: float, V: float, rig: dict,
         # flow; slip is a force-side correction, so it does not move the
         # turning point), q = l_cp - p, vn = slip·omega·q =
         # slip·(V·nx - l_cp·|omega|) — the flat-plate form (the locked
-        # identity)
-        vn = (V * nx + l_cp * omega) * slip
+        # identity); the per-station flow replaces the bare hull speed
+        if flow is not None:
+            u, v, r, x, y = flow
+            vn = ((u - r * y) * nx + (v + r * x) * ny + l_cp * omega) * slip
+        else:
+            vn = (V * nx + l_cp * omega) * slip
         p = -V * nx / omega if abs(omega) > 1e-12 else None
         q = l_cp - p if p is not None else None
     Fn = 0.5 * RHO * rig["area"] * CN * abs(vn) * vn

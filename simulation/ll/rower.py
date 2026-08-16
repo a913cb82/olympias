@@ -26,6 +26,7 @@ from dataclasses import dataclass
 
 from common.chain import CN, OAR_TIER_MIT, RHO, RIGS
 from ll.oar import Oar
+from ll.stations import short_rig as stations_short_rig
 
 # --- anchors (the LL gates (docs/VALIDATION.md); provisional except P_CRIT) ---
 Fh_MAX = 700.0          # N peak handle force per rower
@@ -82,11 +83,18 @@ class TierCrew:
     def __init__(self, rig_name: str, n: int, rate: float, t_drive: float,
                  pressure: str = "spoude", state: str = "row",
                  direction: int = 1, mit: float = 0.0, t_rise: float = 0.15,
-                 hold_frac: float = HOLD_FRAC, power_factor: float = 1.0):
+                 hold_frac: float = HOLD_FRAC, power_factor: float = 1.0,
+                 stations: list | None = None, side: int = 1):
         rig = RIGS[rig_name]
         self.rig_name = rig_name
         self.rig = rig
         self.n = n
+        # the per-station layer (ll/stations.py): stations = the tier's
+        # [(x, y, short)] — one Oar per station, the short oars scaled
+        self._stations_geom = stations
+        self._side = side
+        self._rigs = ([stations_short_rig(rig) if st[2] else rig
+                      for st in stations] if stations else None)
         self.power_factor = power_factor   # the ch.9 L-model: a reduced
                                            # effective pull scales the POWER,
                                            # not the kinematics
@@ -113,9 +121,18 @@ class TierCrew:
         self.t_rise = t_rise
         self.hold_frac = hold_frac
         self.hold_k = hold_frac * self.k
-        self.oar = Oar(rig, rate, t_drive, direction=direction, mit=mit,
-                       t_rise=t_rise)
+        if stations:
+            self.oars = [Oar(rg, rate, t_drive, direction=direction,
+                             mit=mit, t_rise=t_rise,
+                             station=(st[0], st[1], side))
+                         for rg, st in zip(self._rigs, stations)]
+            self.oar = self.oars[0]
+        else:
+            self.oars = [Oar(rig, rate, t_drive, direction=direction,
+                             mit=mit, t_rise=t_rise)]
+            self.oar = self.oars[0]
         self.omega_cmd = self.oar.omega_cmd
+        self._stations = []
         self.plan: StrokePlan | None = None
         self.rate_eff = rate
         self.W_frac = 1.0
@@ -161,6 +178,23 @@ class TierCrew:
         if backing:
             return (-V * cos_mean + math.sqrt(disc)) / self.l_cp
         return (V * cos_mean + math.sqrt(disc)) / self.l_cp
+
+    def _held_stations(self, brake: float) -> list:
+        """The per-station tuples for the held/back-hold state: the brake
+        at each held blade's position (the oar parked at its current C —
+        the blade's reach y_b = y_t + lout·cos(C_eff) is the brake's
+        yaw arm, r_blade x F)."""
+        from ll.stations import blade_pos
+        out = []
+        for o, rg, st in zip(self.oars, self._rigs or (self.rig,),
+                             self._stations_geom or (None,)):
+            if o.station is not None:
+                x_b, y_b = blade_pos(st[0], st[1], self._side, rg["lout"],
+                                     self._side * o.C)
+            else:
+                x_b = y_b = 0.0
+            out.append((0.0, 0.0, brake, x_b, y_b))
+        return out
 
     # ------------------------------------------------------------------
     def plan_stroke(self, V: float) -> StrokePlan:
@@ -252,7 +286,8 @@ class TierCrew:
                           limited_by=limited)
 
     # ------------------------------------------------------------------
-    def step(self, dt: float, V: float) -> tuple[float, float, float]:
+    def step(self, dt: float, V: float,
+            ship_state: tuple | None = None) -> tuple[float, float, float]:
         """Advance one step; returns (rowing force N/oar, fh_peak N,
         hold-brake force N/oar — split so the ship can use different yaw
         levers for the two: the brake is a keel-aligned drag at the oar
@@ -260,19 +295,23 @@ class TierCrew:
         if self.pressure == "rest":
             self.p_gross_current = 0.0
             self.plan = None
+            self._stations = [(0.0, 0.0, 0.0, 0.0, 0.0) for _ in self.oars]
             return 0.0, 0.0, 0.0, 0.0
         if self.state in ("bank", "hold"):
             self.p_gross_current = 0.0
             if self.state == "hold":
                 brake = -self.hold_k * V * abs(V)
+                self._stations = self._held_stations(brake)
                 return 0.0, 0.0, brake, 0.0
+            self._stations = [(0.0, 0.0, 0.0, 0.0, 0.0) for _ in self.oars]
             return 0.0, 0.0, 0.0, 0.0
         # plan at the catch (first stroke, or the step after a catch crossing)
         if self.plan is None or (self.oar.in_drive
                                  and self.oar.t_since_catch <= dt + 1e-12):
             self.plan = self.plan_stroke(V)
-            self.oar.configure_stroke(self.plan.omega, self.plan.omega_recover,
-                                      self.plan.sweep)
+            for o in self.oars:
+                o.configure_stroke(self.plan.omega, self.plan.omega_recover,
+                                   self.plan.sweep)
             self.rate_eff = self.plan.rate_eff
         if self.plan.limited_by == "back-hold":
             # backing at speed degenerates: the crew can only check the
@@ -280,19 +319,38 @@ class TierCrew:
             # would compute the full flow drag, not the held brake)
             self.p_gross_current = 0.0
             brake = -self.hold_k * V * abs(V)
+            self._stations = self._held_stations(brake)
             return 0.0, 0.0, brake, 0.0
         if self.plan.limited_by == "feathered":
-            self.oar.step(dt, V)                  # cadence continues, no force
+            for o in self.oars:                   # cadence continues, no force
+                o.step(dt, V, ship_state)
             self.p_gross_current = 0.0
             self.last_fh = 0.0
+            self._stations = [(0.0, 0.0, 0.0, 0.0, 0.0) for _ in self.oars]
             return 0.0, 0.0, 0.0, 0.0
-        s = self.oar.step(dt, V)
+        n = len(self.oars)
+        fx = fy = fh = 0.0
+        out = []
+        for o, rg, st in zip(self.oars, self._rigs or (self.rig,),
+                             self._stations_geom or (None,)):
+            s = o.step(dt, V, ship_state)
+            if o.station is not None:
+                from ll.stations import blade_pos
+                x_b, y_b = blade_pos(st[0], st[1], self._side, rg["lout"],
+                                     self._side * o.C)
+            else:
+                x_b = y_b = 0.0
+            out.append((s.Fx * self.power_factor, s.Fy * self.power_factor,
+                        0.0, x_b, y_b))
+            fx += s.Fx * self.power_factor
+            fy += s.Fy * self.power_factor
+            fh += s.Fh
+        self._stations = out
         self.p_gross_current = (self.plan.p_ext * self.power_factor
                                + self.oar.flip_power(self.plan.rate_eff)
                                + oar_absorbed(self.plan.rate_eff))
-        self.last_fh = s.Fh * self.power_factor
-        return (s.Fx * self.power_factor, s.Fh * self.power_factor, 0.0,
-                s.Fy * self.power_factor)
+        self.last_fh = fh / n * self.power_factor
+        return (fx / n, fh / n * self.power_factor, 0.0, fy / n)
 
     def end_of_step(self, dt: float) -> None:
         """W' tank update (drain on gross excess, refill at rest)."""
@@ -311,11 +369,17 @@ class TierCrew:
         self.state = state
         need_dir = -1 if state == "back" else 1
         if need_dir != self.oar.dir:
-            self.oar = Oar(self.rig, self.rate_cmd, self.oar.t_drive,
-                           direction=need_dir, mit=self.mit, t_rise=self.t_rise)
+            self.oars = [
+                Oar(rg, self.rate_cmd, self.oar.t_drive, direction=need_dir,
+                    mit=self.mit, t_rise=self.t_rise,
+                    station=((st[0], st[1], self._side)
+                             if self._stations_geom else None))
+                for rg, st in zip(self._rigs or (self.rig,), self._stations_geom or (None,))]
+            self.oar = self.oars[0]
             self.omega_cmd = self.oar.omega_cmd
         else:
-            self.oar.reset()
+            for o in self.oars:
+                o.reset()
         self.plan = None
 
     def set_pressure(self, level: str) -> None:
@@ -325,8 +389,13 @@ class TierCrew:
 
     def set_rate(self, rate: float, t_drive: float) -> None:
         self.rate_cmd = rate
-        self.oar = Oar(self.rig, rate, t_drive, direction=self.oar.dir,
-                       mit=self.mit, t_rise=self.t_rise)
+        self.oars = [
+            Oar(rg, rate, t_drive, direction=self.oar.dir,
+                mit=self.mit, t_rise=self.t_rise,
+                station=((st[0], st[1], self._side)
+                         if self._stations_geom else None))
+            for rg, st in zip(self._rigs or (self.rig,), self._stations_geom or (None,))]
+        self.oar = self.oars[0]
         self.omega_cmd = self.oar.omega_cmd
         self.rate_eff = rate
         self.plan = None
@@ -356,7 +425,8 @@ class SideCrew:
     def __init__(self, rig_name: str, n_side: int, rate: float, t_drive: float,
                  pressure: str = "spoude", state: str = "row",
                  direction: int = 1, fleet: str = "spruce",
-                 t_rise: float = 0.15, hold_frac: float = HOLD_FRAC):
+                 t_rise: float = 0.15, hold_frac: float = HOLD_FRAC,
+                 stations: dict | None = None, side: int = 1):
         self.rig_name = rig_name
         self.n = n_side
         self.state = state
@@ -374,31 +444,43 @@ class SideCrew:
             "thranite": TierCrew(rig_name, TIER_SPLIT["thranite"], rate,
                                  t_drive, pressure, state, direction,
                                  mit=mit["thranite"], t_rise=t_rise,
-                                 hold_frac=hold_frac, power_factor=1.0),
+                                 hold_frac=hold_frac, power_factor=1.0,
+                                 stations=stations and stations["thranite"],
+                                 side=side),
             "zygian": TierCrew(rig_name, TIER_SPLIT["zygian"], rate,
                                t_drive, pressure, state, direction,
                                mit=mit["zygian"], t_rise=t_rise,
-                               hold_frac=hold_frac, power_factor=1.0),
+                               hold_frac=hold_frac, power_factor=1.0,
+                               stations=stations and stations["zygian"],
+                               side=side),
             "thalmian": TierCrew(rig_name, TIER_SPLIT["thalmian"], rate,
                                  t_drive, pressure, state, direction,
                                  mit=mit["thalmian"], t_rise=t_rise,
                                  hold_frac=hold_frac,
-                                 power_factor=thalmian_power_factor(rate)),
+                                 power_factor=thalmian_power_factor(rate),
+                                 stations=stations and stations["thalmian"],
+                                 side=side),
         }
         self.rate_eff = rate
         self.W_frac = 1.0
         self.last_fh = 0.0
         self.plan = None
+        self._geom = ([(st[0], st[1]) for t in self.tiers.values()
+                       for st in (t._stations_geom or [])]
+                      if stations else [])
 
-    def step(self, dt: float, V: float) -> tuple[float, float, float, float]:
+    def step(self, dt: float, V: float,
+            ship_state: tuple | None = None) -> tuple[float, float, float, float]:
         fx = br = fy = 0.0
         fh = 0.0
+        self._stations = []
         for t in self.tiers.values():
-            f, h, b, y = t.step(dt, V)
+            f, h, b, y = t.step(dt, V, ship_state)
             fx += t.n * f
             br += t.n * b
             fy += t.n * y
             fh = max(fh, h)
+            self._stations.extend(t._stations)
         self.last_fh = fh
         weakest = min(self.tiers.values(), key=lambda t: t.rate_eff)
         self.plan = weakest.plan
