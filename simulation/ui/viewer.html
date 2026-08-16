@@ -30,10 +30,14 @@
   .ship .hull { stroke:#fff; stroke-width:1; }
   .ship.ll .hull { fill:var(--ll); }
   .ship.hl .hull { fill:rgba(194,96,10,.22); stroke:var(--hl); stroke-width:2.2; }
-  .ship .oar { stroke:#fff; stroke-width:1.1; }
-  .ship.hl .oar { stroke:var(--hl); stroke-width:1.2; }
-  .ship .steer { stroke:#fff; stroke-width:2.2; }
-  .ship.hl .steer { stroke:var(--hl); stroke-width:2.6; }
+  .ship .oar-line { stroke:#fff; stroke-width:1.1; }
+  .ship.hl .oar-line { stroke-width:1.3; }
+  .ship .steer-line { stroke:#fff; stroke-width:2.2; }
+  .ship.hl .steer-line { stroke:var(--hl); stroke-width:2.6; }
+  #legend { margin-top:6px; color:var(--mut); font-size:12px; }
+  #legend b { color:var(--ink); font-weight:600; }
+  .sw { display:inline-block; width:9px; height:9px; border-radius:2px;
+        margin:0 2px 0 5px; vertical-align:-1px; }
   aside { width:250px; border-left:1px solid var(--line); background:#fff;
           padding:12px; overflow-y:auto; }
   aside h3 { font-size:12px; margin:0 0 6px; text-transform:uppercase;
@@ -68,7 +72,8 @@
   <select id="speed">
     <option value="0.5">0.5×</option><option value="1" selected>1×</option>
     <option value="2">2×</option><option value="5">5×</option>
-    <option value="10">10×</option>
+    <option value="10">10×</option><option value="20">20×</option>
+    <option value="50">50×</option><option value="100">100×</option>
   </select>
   <span id="clock">0:00 / 0:00</span>
   <span id="meta"></span>
@@ -80,6 +85,13 @@
 <footer>
   <div id="cmdbar"></div>
   <div id="cmdstrip"></div>
+  <div id="legend">orders on the ships — <b>oar angle</b>: row (sweeping at the rate) ·
+    hold (perpendicular) · back (blades forward) · bank (raised) —
+    <b>oar colour</b>: <span class="sw" style="background:#9e9e9e"></span>rest
+    <span class="sw" style="background:#43a047"></span>steady
+    <span class="sw" style="background:#f9a825"></span>fast
+    <span class="sw" style="background:#e53935"></span>spoude —
+    <b>stern oar</b>: helm direction</div>
 </footer>
 <script>
 "use strict";
@@ -228,22 +240,78 @@ function drawShip(svg, sim) {
   poly.setAttribute("class", "hull");
   poly.setAttribute("points", hullPts().map(p => p.join(",")).join(" "));
   g.appendChild(poly);
-  for (const side of [1, -1])                       // three oar banks per side
+  svg._oars = svg._oars || {}; svg._steer = svg._steer || {};
+  svg._oars[sim] = [];
+  for (const side of [1, -1])          // 1 = starboard (+y local), -1 = port
     for (let b = 0; b < 3; b++)
       for (const x of [2, -4, -10, -16]) {
-        const o = document.createElementNS(NS, "line");
-        o.setAttribute("class", "oar");
-        o.setAttribute("x1", x); o.setAttribute("y1", side * (3.3 + b * 1.7));
-        o.setAttribute("x2", x - 4); o.setAttribute("y2", side * (4.3 + b * 1.7));
-        g.appendChild(o);
+        const y0 = side * (3.3 + b * 1.7);
+        const og = document.createElementNS(NS, "g");   // pivots at the gunwale
+        og.setAttribute("class", "oar");
+        og.setAttribute("transform", `translate(${x} ${y0})`);
+        const ln = document.createElementNS(NS, "line");
+        ln.setAttribute("class", "oar-line");
+        ln.setAttribute("x1", 0); ln.setAttribute("y1", 0);
+        ln.setAttribute("x2", 0); ln.setAttribute("y2", side * 4.8);
+        og.appendChild(ln);
+        g.appendChild(og);
+        svg._oars[sim].push({ el: og, line: ln, side, x, y0, color: null });
       }
-  const st = document.createElementNS(NS, "line");  // steering oar (stern)
-  st.setAttribute("class", "steer");
-  st.setAttribute("x1", -23); st.setAttribute("y1", 0);
-  st.setAttribute("x2", -34); st.setAttribute("y2", 3);
-  g.appendChild(st);
+  const stg = document.createElementNS(NS, "g");   // steering oar, pivots at the stern
+  stg.setAttribute("class", "steer");
+  stg.setAttribute("transform", "translate(-23 0)");
+  const st = document.createElementNS(NS, "line");
+  st.setAttribute("class", "steer-line");
+  st.setAttribute("x1", 0); st.setAttribute("y1", 0);
+  st.setAttribute("x2", -11); st.setAttribute("y2", 3);
+  stg.appendChild(st);
+  g.appendChild(stg);
+  svg._steer[sim] = stg;
   svg.appendChild(g);
   svg._ships = svg._ships || {}; svg._ships[sim] = g;
+}
+
+/* -------- orders on the ship icon --------
+   oar angle = oar state: row sweeps at the stroke rate; hold = blades
+   perpendicular; back = blades forward; bank = raised (short).
+   oar colour = pressure level: rest grey, steady green, fast amber,
+   spoude red (numeric 0-1 interpolates grey->red).
+   the stern (steering) oar deflects with the helm order. */
+const PRESSURE_COLOR = { rest: "#9e9e9e", steady: "#43a047", fast: "#f9a825", spoude: "#e53935" };
+
+function pressureColor(p) {
+  if (PRESSURE_COLOR[p]) return PRESSURE_COLOR[p];
+  const f = Math.max(0, Math.min(1, Number(p) || 0));   // numeric pressure
+  const a = [0x9e, 0x9e, 0x9e], b = [0xe5, 0x39, 0x35];
+  return "#" + a.map((v, i) =>
+    Math.round(v + (b[i] - v) * f).toString(16).padStart(2, "0")).join("");
+}
+
+function oarPose(state, t, rate) {      // [angle deg, scale] (shared sign)
+  if (state === "hold") return [0, 1];
+  if (state === "back") return [-38, 1];
+  if (state === "bank") return [180, 0.55];
+  const T = 60 / Math.max(rate, 1e-3);  // row: sweep catch -> finish -> catch
+  const p = (t / T) % 1, D = 0.35;       // drive is ~35% of the cycle
+  return [p < D ? -35 + 65 * (p / D) : 30 - 65 * ((p - D) / (1 - D)), 1];
+}
+
+function updateShipOrders(sim, crew, helm, t, rate) {
+  const svg = $("map");
+  const oars = svg._oars[sim];
+  if (!oars) return;
+  for (const o of oars) {
+    const c = crew[o.side === 1 ? "star" : "port"];
+    const [a, s] = oarPose(c.state, t, rate);
+    o.el.setAttribute("transform",
+      `translate(${o.x} ${o.y0}) rotate(${(o.side * a).toFixed(1)}) scale(${s})`);
+    const col = pressureColor(c.pressure);
+    if (col !== o.color) { o.line.setAttribute("stroke", col); o.color = col; }
+  }
+  const [dir, frac] = helm;
+  const sign = dir === "port" ? 1 : dir === "starboard" ? -1 : 0;
+  svg._steer[sim].setAttribute("transform",
+    `translate(-23 0) rotate(${(sign * frac * 32).toFixed(1)})`);
 }
 
 /* ---------- the command strip ---------- */
@@ -295,6 +363,7 @@ function render() {
     const ship = svg._ships[sim];
     ship.setAttribute("transform",
       `translate(${sx(p.x).toFixed(1)} ${sy(p.y).toFixed(1)}) rotate(${(-p.psi * 180 / Math.PI).toFixed(1)}) scale(1.05)`);
+    updateShipOrders(sim, p.crew, p.helm, S.t, p.rate);
     const i = Math.min(l.rows.length - 1, Math.max(0, Math.floor(S.t)));
     if (i !== S.iDone[sim]) {           // redraw the laid path once per second
       S.iDone[sim] = i;

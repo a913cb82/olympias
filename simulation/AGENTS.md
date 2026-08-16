@@ -196,10 +196,13 @@ simulation runs in the browser, nothing to install, no build step:
 
 The dropdown lists every run; each loads both sims' 1 Hz telemetry (the
 same `harness/run_both` telemetry the validation uses — LL solid, HL
-outline, toggle the comparison). Play/pause (space), 0.5–10× speed, a
+outline, toggle the comparison). Play/pause (space), 0.5–100× speed, a
 scrubber, clickable command markers on the timeline (jump to the command
 and its state), readouts (speed, rate, heading, yaw, helm, per-side
-state/pressure and the W′ meter).
+state/pressure and the W′ meter). The ships carry their orders: oar
+angle = state (row sweeps at the stroke rate, hold perpendicular, back
+blades forward, bank raised), oar colour = pressure (rest grey → steady
+green → fast amber → spoude red), the stern oar = helm deflection.
 
 The logs live in `ui/logs/` and are committed (deterministic — no RNG in
 the sims). Regenerate them after any LL/HL change:
