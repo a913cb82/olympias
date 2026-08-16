@@ -91,7 +91,7 @@
   <div id="cmdbar"></div>
   <div id="cmdstrip"></div>
   <div id="legend">orders on the ships — <b>oar angle</b>: row (sweeping at the rate) ·
-    hold (perpendicular) · back (blades forward) · bank (raised) —
+    rest (still in the water) · hold (perpendicular) · back (blades forward) · bank (raised) —
     <b>oar colour</b>: <span class="sw" style="background:#6b7280"></span>rest
     <span class="sw" style="background:#2e7d32"></span>steady
     <span class="sw" style="background:#ef6c00"></span>fast
@@ -316,10 +316,12 @@ function pressureColor(p) {
     Math.round(v + (b[i] - v) * f).toString(16).padStart(2, "0")).join("");
 }
 
-function oarPose(state, t, rate) {      // [angle deg, scale] (shared sign)
+function oarPose(state, pressure, t, rate) {   // [angle deg, scale] (shared sign)
   if (state === "hold") return [0, 1];
   if (state === "back") return [-38, 1];
   if (state === "bank") return [180, 0.55];
+  if (!pressure || pressure === "rest")
+    return [0, 1];          // the rowers rest: the oars stay still in the water
   const T = 60 / Math.max(rate, 1e-3);  // row: sweep catch -> finish -> catch
   const p = (t / T) % 1, D = 0.35;       // drive is ~35% of the cycle
   return [p < D ? -35 + 65 * (p / D) : 30 - 65 * ((p - D) / (1 - D)), 1];
@@ -331,7 +333,7 @@ function updateShipOrders(sim, crew, helm, t, rate) {
   if (!oars) return;
   for (const o of oars) {
     const c = crew[o.side === 1 ? "star" : "port"];
-    const [a, s] = oarPose(c.state, t, rate);
+    const [a, s] = oarPose(c.state, c.pressure, t, rate);
     o.el.setAttribute("transform",
       `translate(${o.x} ${o.y0}) rotate(${(o.side * a).toFixed(1)}) scale(${s})`);
     const col = pressureColor(c.pressure);

@@ -63,7 +63,10 @@ def dump_script(entry: tuple, index: list, only: str | None) -> None:
         return
     cmds = parse_file(Path(__file__).resolve().parents[1] / path)
     t0 = time.time()
-    out = run_both(cmds, V0=v0)
+    # run ~5 s past the last command so its effect is sampled (the
+    # harness's default stops at the command + 1 us — the final order
+    # would be invisible in the replay)
+    out = run_both(cmds, V0=v0, until=cmds[-1].time + 5.0)
     sims = []
     for sim in ("ll", "hl"):
         write_log(id_, sim, label,
