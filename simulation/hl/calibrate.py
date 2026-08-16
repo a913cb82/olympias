@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""The HL calibration run (plan §19.2) — measure the response curves from
+"""The HL calibration run (plan §19) — measure the response curves from
 the LL and write hl/calibration/calib_<id>.json (+ latest.json).
 
 Every table is produced by an LL protocol — nothing is hand-entered. The
 residuals (fit quality per table) feed the tolerance labels. The loop:
 run this, then harness/run_validation.py; if a gate fails, the trigger
-table in plan §19.2 names the adjustment; repeat until the HL matches
+table in plan §19 names the adjustment; repeat until the HL matches
 the LL. The calibration file records its LL commit — when the LL gains
 fidelity, re-run and re-validate.
 
@@ -648,7 +648,7 @@ def fit_tau_turn(tables, ll_d, scalars=None):
     """Scan tau_turn so the HL's path-measured D matches the LL's across
     the four families (g1/f1/tightest/oar-hold) — the first-order lag
     inflates |y| at 180 deg, so the fit is against the path, not the raw
-    build-up (plan §19.2). scalars: the measured extras (turn_drag_extra
+    build-up (plan §19). scalars: the measured extras (turn_drag_extra
     must be in — the ship's turn deceleration changes the path D)."""
     scalars = _scalars() if scalars is None else scalars
     from hl.ship import Ship as HLShip

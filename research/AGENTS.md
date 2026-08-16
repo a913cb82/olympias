@@ -1,8 +1,9 @@
 # research/ — the validated evidence base
 
-Everything the simulators rely on, with provenance and confidence flags. The
-top-level tracker is `./trireme-rowing-simulation-research.md` (status legend:
-`[x]` done, `[ ]` pending, `[?]` uncertain). Read the playbooks in `tasks/`
+Everything the simulators rely on, with provenance and confidence flags
+(status legend: `[x]` confirmed from a cited source, `[?]` uncertain/conflicting).
+The lanes below are complete as far as the sources permit; the still-open
+external gaps are listed at the bottom. Read the playbooks in `tasks/`
 *before* any extraction/decoding task.
 
 ## Lane map
@@ -32,6 +33,12 @@ top-level tracker is `./trireme-rowing-simulation-research.md` (status legend:
   thranite 11.0 kg hand mass); Table 3.2 couple/rhythm vs rate cross-checks
   (32 spm couple 246 N·m ↔ 225 N handle at 1.092 m).
 
+**Session markers**: provenance shorthands like "(S12)" in the lane
+notes refer to the research session log S1–S16, which now lives in git
+history (the file `research/trireme-rowing-simulation-research.md` up to
+the 2026-08 restructure commit); the underlying sources are always cited
+inline in the same sentences.
+
 ## Conventions
 
 - **Confidence flags**: `[x]` confirmed directly from a cited source; `[?]`
@@ -45,15 +52,23 @@ top-level tracker is `./trireme-rowing-simulation-research.md` (status legend:
   pymupdf/PIL included). The OCR stack (easyocr+torch) is on-demand only — recipe
   in `tasks/AGENTS.md`. The old /tmp/opencode venv split is deprecated.
 - **Rankov 2012 pages**: PDF page index = printed book page + 12.
-- When a finding changes the chain, update: the tracker, the relevant lane doc, the
+- When a finding changes the chain, update: the relevant lane doc, the
   `uncertainties-register.md`, and — if a sim consumes it — `../simulation/common/chain.py`
   plus the affected gate tests.
 
-## Open items (living; mirror plan oQ-* and §9.1)
+## Open items
 
-- Crew endurance model (duration at rate/pressure) — Phase 4.
-- Wave-added resistance law — Phase 4 (labelled approximation acceptable).
-- Ergonomics digits: ANSUR 1988 50th-percentile values, Greek mean-height estimate
-  (1.70 m) — flagged `[?]` pending primary-table reads.
-- Anastrophe / turn-by-oars validation data — thin; LL validates qualitatively.
-- A/B MIT anomaly — parked: only the 1994/1996 raw report appendix could resolve.
+**Simulator-side** (mirror plan §8/§9.1): crew endurance model and wave-added
+resistance law (Phase 4); anastrophe / turn-by-oars validation data (thin — the
+LL validates qualitatively); the open physics rows live in
+`../simulation/VALIDATION.md` §10–§11 (t_360, drift angle, ch.7 triple).
+
+**External gaps** (archive requests only — nothing here blocks the sims):
+- the raw towing-tank resistance points (Grekoussis & Loukakis 1985, NTUA report
+  NAL 06-F-1985 — hardcopy only; the deduced law is trial-validated);
+- Taylor's Excel workbook behind ch.31 (Wolfson/Trireme Trust archive leads);
+- the hull offsets from Coates Plans 2/7 (Trireme Trust archivist);
+- the full BMT 1991 inclining-experiment report (TR01/R1952 — headline numbers
+  already in the ch.25 text);
+- the A/B MIT anomaly (parked — only the 1994/1996 raw appendix could resolve);
+- ANSUR 1988 50th-percentile ergonomics digits (flagged `[?]` in oar-data.md §6).

@@ -1,4 +1,4 @@
-# The annotated script run — task A (plan §20, full-validation-dag.md task A)
+# The annotated script run — the Level-2 equivalence tables, annotated
 
 The Level-2 equivalence tables (HL vs the LL) annotated with per-row
 tolerance sources, the calibration id, and every documented divergence.

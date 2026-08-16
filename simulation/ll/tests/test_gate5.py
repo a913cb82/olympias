@@ -1,8 +1,8 @@
-"""Gate 5 — the oar inertia layer (plan §13).
+"""Gate 5 — the oar inertia layer (plan §12).
 
 Run: python3 tests/test_gate5.py  (from simulation/)
 
-Gates (plan §13.4):
+Gates (plan §12):
   G5-1 spike magnitudes reproduce oar_inertia.py (116 / 215 / 156 N at
         t_rise 0.15 s, 28.8 spm — the Table-1.092-m reference convention);
         the full-reversal physical values (w_rec + w_drive) reported.
@@ -89,7 +89,7 @@ def test_energy_closure():
     opposite impulses (the oar returns to the same angular momentum each
     cycle). The flip ENERGY is accounted exactly in the W' basis
     (flip_power = 1/2·I·w_d^2·r/60) — the pulses are impulse-equivalent,
-    not energy-shape-exact (documented in plan §13.2/13.4)."""
+    not energy-shape-exact (documented in plan §12)."""
     oar = Oar(RIGS["Olympias"], 28.8, T_DRIVE[("Olympias", 7.2)],
               mit=FAM["old-zygian"], t_rise=0.15)
     V = 7.2 * KT
@@ -115,7 +115,7 @@ def test_energy_closure():
 def test_couple_anchor():
     """Drive-mean handle force at the anchored point (28.8 spm / 7.2 kt —
     Table 9.6) stays on the Table 3.2 couple anchor: 224 N x 1.092 m =
-    244.6 vs Table 3.2's 246 N m (0.6 % — plan §13.1); the cycle-mean adds
+    244.6 vs Table 3.2's 246 N m (0.6 % — plan §12); the cycle-mean adds
     the flip pulses."""
     td = T_DRIVE[("Olympias", 7.2)]
     oar = Oar(RIGS["Olympias"], 28.8, td, mit=FAM["spruce"], t_rise=0.15)
@@ -148,7 +148,7 @@ def test_ceiling():
 # --- G5-7 companion: force-driven drive time ---
 
 def test_force_driven():
-    """Companion (plan §13.2 Option A): solve I·theta_ddot = -Fh·lin + Fn·l_cp
+    """Companion (plan §12): solve I·theta_ddot = -Fh·lin + Fn·l_cp
     with a constant demanded handle force. The catch flip happens in the air
     (blade out — the spike spins the oar up), so the blade enters at ~full
     drive speed; the emerging effective-pull duration must sit near Table 9.6

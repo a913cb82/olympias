@@ -16,16 +16,15 @@ intent: whatever a trireme commander can order (stroke rhythm, oar state, helm, 
 rest, hold or back water), either simulator must execute faithfully — one at ship level,
 the other at the level of every oar.
 
-Status: **draft v0.7.** **Phase 1 is complete** — the LL is built and validated
-(56 gates + the command language + the research-chain locks, VALIDATION.md);
-the t_360 residual is the one open discrepancy (§17/§18). **Phase 2 is
-complete** — the HL bootstrap, the machine calibration run (§19.2) and the
-Level-2 equivalence through the harness (VALIDATION.md §9). **Phase 3's
-harness core is implemented** — the equivalence tables are the acceptance
-record; the annotated script run (§20) is the remaining item. Open questions
-are numbered oQ-1…oQ-21 in §10 and flagged inline; research gaps are tracked
-in §9. Nothing here is accepted research until it has a source citation or a
-validated run.
+Status: **all three phases complete.** The LL is the validated oracle
+(VALIDATION.md §1–§8, the honest mismatch ledger §7); the HL is the
+machine-calibrated fast ship (§18–§19); the pair harness produces the
+Level-2 equivalence tables (VALIDATION.md §9) with the annotated run in
+`harness/equivalence-annotated.md`. The current state — what is
+validated, what is open with a named cause and a lock — lives in
+VALIDATION.md §10–§11. Open questions are numbered oQ-1…oQ-21 in §10 and
+flagged inline; research gaps are tracked in §9. Nothing here is accepted
+research until it has a source citation or a validated run.
 
 ---
 
@@ -280,7 +279,7 @@ Every HL result carries the tolerance source (calibration run id).
 seeded environment and starting state, then produces the equivalence table above.
 
 **Calibration**: HL response curves are regenerated from LL steady-state runs
-(`hl/calibrate.py` — the machine calibration run, §19.2); when the LL gains
+(`hl/calibrate.py` — the machine calibration run, §19); when the LL gains
 fidelity, the curves are refreshed and the tolerance annotations updated. The
 HL is never hand-tuned to old self-numbers; it is re-fitted to the LL's new
 truth.
@@ -314,10 +313,10 @@ simulation/
    the oracle).
 2. **Phase 2 — HL from LL.** Build the fast ship-level integrator, but generate its
    response curves **from the LL**, not from hand-entered numbers; ships first
-   consistency gates vs ch.7 cruise and ch.9 sprint. **NEXT** — see §19.
+   consistency gates vs ch.7 cruise and ch.9 sprint. **DONE** — the fast ship with the machine-measured curves (§19); the Level-2 equivalence is the acceptance record (VALIDATION §9).
 3. **Phase 3 — the pair harness.** Run the same scripts on both; produce the first
    equivalence table; fix the biggest violations; document where HL must stay loose.
-   **NEXT** — see §20.
+   **DONE** — the harness runs the script set + the turn scenarios and prints the equivalence tables (VALIDATION §9); the annotated run: `harness/equivalence-annotated.md`.
 4. **Phase 4 — crew & environment.** Fatigue, VO2 ceiling, sea state as driven inputs;
    long-run scenarios; reach limits from `oar-data.md` §6.
 5. **Phase 5 — oar-manoeuvres.** Anastrophe family, banked turns, backing; validate
@@ -351,7 +350,7 @@ parked items that do not affect the build.
 | --- | --- | --- | --- |
 | **Crew endurance/duration model** — how long a given `rate`+`pressure` is sustainable before output drops | Phase 4 crew model; HL long-run scenarios | open — power-at-rate (115/145/180 W/man) and VO2 ceiling exist, but no validated duration curve | primary-source work: ch.7/9 Olympias sustained-run records; S6 fixed-seat ergometer studies |
 | **Wave-induced added resistance** — drag penalty of a sea state at a heading | Phase 4 environment | open — Shaw tables give sea *states*, not resistance penalties | standard naval-architecture added-resistance estimate as labelled tuning (layered fidelity), or dedicated research if fidelity demands |
-| **Ergonomics digits** — ANSUR 1988 50th-percentile values; Greek mean height ≈ 1.70 m | Phase 4 / oQ-13 (reach, stroke length) | flagged [?] in `trireme-rowing-simulation-research.md` | focused primary-table read (DTIC ADA225094) |
+| **Ergonomics digits** — ANSUR 1988 50th-percentile values; Greek mean height ≈ 1.70 m | Phase 4 / oQ-13 (reach, stroke length) | flagged [?] in `research/lane-4-oars/oar-data.md` §6 | focused primary-table read (DTIC ADA225094) |
 | **Turn-by-oars (anastrophe) quantitative data** | Phase 5 oar-manoeuvres | thin — F/G sets are rudder turns at 6–6.5 kt | qualitative validation vs ancient descriptions + physics consistency; F/G sets remain the quantitative floor |
 | **A/B MIT anomaly** (Table 3.1, confined to the MIT cell, ≈ −9.7 % deviation) | none | resolved as recorded-as-printed, flagged in `oar-data.md` | only the physical 1994/1996 report raw appendix could settle it; parked |
 | **Taylor Excel workbook** (yaw-resistance coefficient 5×10⁶–6×10⁶ kg·m² [?]) | Phase 5 yaw fidelity (nice-to-have) | leads exist (Wolfson archive) | contact archivist@wolfson.cam.ac.uk; not required — F/G turns validated ≤ 7 % cover the turn model |
@@ -443,568 +442,105 @@ Two expectations that shape the build:
   verb set.
 
 
-## 12. Phase 1 Gate 4 — the rower physiology layer (oQ-13): **implemented**
-
-`ll/rower.py` (SideCrew) + `ll/ship.py` integration, 8 Gate-4 checks, all 55
-checks green (commit 438585a). Replaced the crude demo clamp with a
-physiological rower: peak force ceiling, endurance/fatigue, and their effect
-on stroke length and rate. Resolves oQ-13, answers oQ-14 (impossible commands
-→ physical consequence + telemetry), and unlocks rest-starts, honest backing,
-sprint time-history, and asymmetric-side behaviour.
-
-### 12.1 The anchors (all from our own chain, all consistent)
-
-| Quantity | Value | Source | Status |
-| --- | --- | --- | --- |
-| Sustainable external power P_crit | **≈ 80 W/man** | Rossiter & Whipp, Rankov ch.23 (verified in our text dump: "maximum estimate of ~80 W per oarsman … for external power production", below lactate threshold, RER ≤ 0.74) | `[x]` primary |
-| Self-check | 7-kt cruise = 79.5 W handle power (ch.7, 25.5 spm) | matches R&W to 0.6 % | `[x]` |
-| Gross at 7 kt | 115 W/man (80 external + 34.8 oar-absorbed) | ch.7 | `[x]` |
-| Sprint external power | ~190 W/man @ 44.5 spm (L = 0.78 Olympias); ~240 W (L = 0.99 Mark IIb) | ch.9 | `[x]` |
-| Sprint gross | ~265–320 W/man (D4 "300 W/rower Mark IIb short sprint") | register D4 | `[x]`/`[?]` |
-| Anaerobic capacity W′ | **5 kJ/man in use** — anchored | ch.9 four-run sprint: 8.2–8.3 kt sustained ~45 s at 44.5 spm → excess 116.6 W/man × 45 s ≈ 5.2 kJ; ¾-NM 6.5-min run implies ~9.5 kJ (2-parameter CP tension — register D7) | `[x]` anchor / tension noted |
-| Peak handle force Fh_max | **700 N in use** (model-implied) | chain max mean pull 330 N × peak ≈ 2×; no force traces in our sources (ch.4 ergometer = 6-min power tests only; S6 = session marker, not a source) — register D8 | `[?]` |
-| Recovery floor | ~0.5 s (in use) | body mechanics | `[?]` |
-| W′ refill time constant | **120 s in use** (provisional) | literature band ~1–3 min; ch.22 sources (Monod/MacFarlane/Nadel, Daedalus) constrain long-term endurance only — register D9 | `[?]` |
-
-### 12.2 The model (per side in v1 — the Ship's existing structure)
-
-1. **Command → demanded mean handle force**: steady/fast = P = 7.43·r·pressure
-   (unchanged chain); **spoude = the burst level Fh_BURST = 330 N** (the chain's
-   sprint mean pull at 44.5 spm — the W′-limited maximum at any rate). The
-   demand sets the drive ω via the blade resistance (the stroke follows the
-   force), not the other way round.
-2. **Instantaneous ceiling**: Fh_max (per-rower equal in v1; per-tier factors
-   as parameters — the thalmian head-room limit already lives in the rig data).
-3. **Endurance state**: a W′ tank per side — drains when gross power exceeds
-   P_crit_gross (= 80 W + oar_absorbed(r)), refills at rest with time constant
-   τ. Available mean force = f(W′ state).
-4. **Stroke adaptation at fixed tempo** (the pipe is master): Fh_max →
-   ω_max(V) → B_eff = min(B, ω_max·t_drive) — the stroke shortens, not the
-   tempo. If B_eff < B_floor (~40 % of B) the rate is unattainable at that
-   pressure → achieved rate falls; the **weakest side governs** the common
-   rate.
-5. **Power accounting**: P_external = Fh·B_eff·lin·r/60 (the oar-level form of
-   the L·P·r chain); gross = external + oar_absorbed(r); W′ drains on gross
-   excess.
-6. **Backing**: force-limited weak backing (the 12× problem disappears — the
-   ceiling governs ω, exactly as in the start).
-7. **Hold**: the calibrated 2 % brake stays (isometric fatigue cost = v2).
-
-### 12.3 What this changes in the ship
-
-- `Ship` gains per-side: B_eff, achieved_rate, W′ state; telemetry reports
-  **commanded vs achieved** for rate and pressure (oQ-14's answer: physical
-  consequence + explicit report — never an error, never a silent clamp).
-- The crude `--fh-max` clamp is deleted; `ll/rower.py` replaces it.
-- `rate` remains a demand; achieved tempo is output, not input. (The
-  equivalence contract's "settled stroke rate within 1 spm" needs care when
-  the crew legitimately falls off tempo — HL must mirror the physiology or the
-  tolerance applies to achieved rate.)
-
-### 12.4 Command semantics become physiological
-
-- `pressure steady` = sustainable (P ≤ P_crit; the ch.7 cruise envelope);
-- `pressure spoude` = W′-limited burst (the ch.9 sprint is its anchor);
-- `fast` between; `rest` = minimal. Schema numeric anchors replaced.
-
-### 12.5 Validation gates — **all passing (8 checks, `ll/tests/test_gate4.py`)**
-
-- G4-1 ✓ sustained: steady = the sustainable envelope — W′ full, speed stable
-  over 30 min at 25.5/28.8 spm.
-- G4-2 ✓ sprint: spoude bursts (W′ drains in ~40 s at 44.5 spm — the
-  measured drain 130 W/man), speed fades toward the sustainable cruise —
-  the trials' time-history.
-- G4-3 ✓ rest start: short stretched strokes (sweep shrinks to ~57 %, drive
-  stretches to the tempo slot); peak Fh ≤ 700 N; launch **slower than Taylor's
-  bulk law** (6.0 kt @ 30 s vs 9 kt @ 24 s, measured) — the physiology governs
-  the start.
-- G4-4 ✓ backing: **degenerates to the hold-brake at speed** (the flow drag
-  exceeds the rower's grip); active + weak at low speed.
-- G4-5 ✓ asymmetric: exhausted side strokes slower (mean-limited) → differential
-  thrust → yaw (~215° in 3 min at 40 spm); tiny deadspot refills snap the W′
-  step-function back to full demand (classic critical-power behaviour).
-- G4-6 ✓ tightest-turn re-check: W′ drains at sprint effort → speed fades to
-  ~4.4 kt from 6.6 kt peak — the "halves speed" mechanism, now emergent.
-- G4-7 ✓ impossible command: `rate 50` + exhausted from rest → tempo lost
-  (achieved ~40 spm), telemetry shows commanded vs achieved — oQ-14's answer.
-- G4-8 ✓ regression: 19 + 7 + 12 + 9 checks green with the physiology on.
-
-Implementation notes: the Oar became angle-based (effective ω per catch);
-the keleustes call-down re-syncs both sides at the weaker side's rate; two
-real bugs fixed en route (stale t_drive in the sweep-shortening branch;
-pressure now scales force through the demand).
-
-### 12.6 Research to run alongside (small, mostly in-house)
-
-1. [x] Extract R&W ch.23 and pin the 80 W context — done during planning
-   ("maximum estimate of ~80 W per oarsman … for external power production",
-   below lactate threshold, RER ≤ 0.74; self-consistent with ch.7 to 0.6 %).
-2. [x] **Ch.9 four-run sprint durations → W′**: each run sustained max speed
-   ~45 s (8.2/8.3 kt) → W′ = 5 kJ/man (sim burst window now ~43 s, matching);
-   the ¾-NM 6.5-min calibration run (104.3 W/man, P = 288 N = 7.43·38.75 ✓)
-   implies up to ~9.5 kJ — 2-parameter CP tension recorded (register D7).
-3. [x] **"S6" identified**: a session marker (paleo-bioenergetics session),
-   not a force-curve source. Ch.4 ergometer tests report 6-min POWER outputs
-   (16–29 % efficiency) but no force traces → Fh_max = 700 N stays
-   model-implied (chain max mean pull 330 N × peak ≈ 2×), register D8.
-4. [x] **W′ refill τ**: ch.22's Monod/MacFarlane/Nadel/Daedalus sources
-   constrain long-term endurance (4-h-on/2-h-off shifts) and the
-   "2-min ≈ 1.2× 6-min" power rule (ch.4), not W′-kinetics; τ = 120 s stays
-   literature-based (register D9).
-5. [ ] Per-tier stroke factors: thalmian head-room already quantified
-   (effective L); per-tier Fh factor = open (v2).
-
-### 12.7 Deliverables
-
-`ll/rower.py` (Fh_max, P_crit, W′, τ; per-side aggregates), `ll/ship.py`
-per-side stroke adaptation + weakest-governs + telemetry, physiological
-pressure anchors in `schema.json`, `ll/tests/test_gate4.py`, register rows
-(W′, τ, Fh_max status), oQ-13/14 resolution notes.
-
-## 13. Phase 1 Gate 5 — the oar inertia layer: **implemented**
-
-`ll/oar.py` (mit/t_rise) + `common/chain.py` (Table 3.1 families) +
-`ll/ship.py` (fleet), 7 Gate-5 checks, all 62 checks green.
-The massless lever becomes a rigid body about the thole:
-
-    Fh = (Fn·l_cp + I_thole·θ-ddot) / lin
-
-which adds the catch-phase inertia spike (spinning the oar from rest to the
-drive speed over the water-entry time t_rise), the finish-phase release (the
-oar's momentum assists), and the handiness differences between the Table 3.1
-oar families. The research is done — this gate wires it into the LL.
-
-### 13.1 The research (done, decoded & verified)
-
-- Table 3.1 (ten oars, MIT about the thole): family means — **spruce 9.7,
-  old-zygian 18.0, old-thranite 13.1 kg·m²** (m_hand 8.2 / 15.1 / 11.0 kg at
-  1.092 m). A/B MIT anomaly recorded as printed (register; zygian mean uses
-  the printed values).
-- `oar_inertia.py` spike formula: F_spike = I·ω/(t_rise·lin). At the 28.8-spm
-  drive (ω = 1.95 rad/s), t_rise 0.15 s: **spruce ≈ 116 N, old-zygian ≈ 215 N,
-  old-thranite ≈ 156 N** — 52–96 % of the 224 N mean handle force; the
-  zygian/spruce ratio 1.85× is the "old fir ≈ 2× spruce handiness" (plan §6
-  Level-1 acceptance).
-- Flip energy per stroke ½·I·ω² → the extra metabolic cost of flipping the
-  heavy oars: spruce ≈ 9 W/man, old-zygian ≈ 16 W/man at 28.8 spm (≈ 7 W/man
-  handiness penalty) — the W′ tank must pay it.
-- Couple cross-check (Table 3.2) stands at 0.6 % — the mean handle force must
-  survive the layer.
-
-### 13.2 Implementation design — two options
-
-**Option B — hybrid (recommended for the LL):** keep the validated prescribed
-kinematics, add smooth catch/finish transitions (finite t_rise) and the
-inertia torque term in Fh. The spike emerges from θ-ddot at the catch; the net
-inertia work over a cycle ≈ 0 (energy-conserving). The means stay within the
-Gate-1 tolerance of the rigid model — the layer is a labelled refinement, not
-a re-anchoring. The rise transitions must preserve the swept angle (the
-constant-ω mid-drive shortens by the rise times).
-
-**Option A — force-driven (companion validation):** solve the torque-balance
-ODE I·θ-ddot = τ_rower(t) − τ_blade(θ, ω) with the physiology's demand force
-profile; the emerging drive time must land near Table 9.6 — validating that
-the measured kinematics are consistent with the rower forces + inertia. A
-companion script, not the LL's production path.
-
-### 13.3 The layer in the LL
-
-- `ll/oar.py`: `mit` parameter; rise-time transitions (t_rise 0.10–0.20 s
-  band, 0.15 s nominal — source flag, §13.5); Fh = (Fn·l_cp + I·θ-ddot)/lin;
-  `simulate()` gains an inertial variant.
-- `common/chain.py`: load the Table 3.1 CSV (shared asset — the oar families
-  and their tier labels: old-zygian → zygian tier, old-thranite → thranite).
-- `ll/ship.py` / `rower.py`: the fleet = per-family assignment (v1 scenarios:
-  all-spruce = the 1994 setup; old-fir mixed = the 1990 setup); the force
-  ceiling applies to the **total** instantaneous Fh (blade + spike — separate
-  instants: catch spike vs mid-drive blade peak); the W′ drain includes the
-  flip energy ½·I·ω²·r/60 per man.
-
-### 13.4 Validation gates — **all passing (7 checks, `ll/tests/test_gate5.py`)**
-
-- G5-1 ✓ spikes reproduce `oar_inertia.py` (116 / 215 / 156 N at t_rise
-  0.15 s, 28.8 spm — the Table-1.092-m reference) within 2 %; the physical
-  full-reversal values (ω_rec + ω_drive) reported: 146 / 270 / 197 N.
-- G5-2 ✓ handiness: zygian/spruce spike 1.85× (the §6 Level-1 acceptance).
-- G5-3 ✓ hull observables unchanged with the layer ON (< 1 % at the four
-  Table 9.6 points) — the inertia is internal to the rower-oar system.
-- G5-4 ✓ momentum closure: net pulse impulse ≈ 0 per cycle; the flip energy
-  (½·I·ω_drive²·r/60) is accounted exactly in the W′ basis — the pulses are
-  impulse-equivalent, not energy-shape-exact (rectangular, documented).
-- G5-5 ✓ couple anchor: drive-mean Fh at the anchored point 224 N ± 3 %.
-- G5-6 ✓ ceiling: total peak Fh ≤ Fh_max through a 30-s burst, both fleets
-  (the spike and the blade peak are sequential, not summed).
-- G5-7 ✓ companion (Option A): the force-driven ODE with the chain's mean
-  pull reproduces the Table 9.6 drive time — 0.43 s vs 0.43 s, essentially
-  exact: the prescribed kinematics are consistent with forces + inertia.
-- G5-8 ✓ regression: 19 + 7 + 12 + 9 + 8 checks green with the layer on;
-  fleet = None restores the massless behaviour.
-
-Design notes: the fleet's per-side MIT is the tier-weighted mean (spruce
-9.7 kg·m²; old-fir (31·13.1 + 27·18.0 + 27·13.1)/85 = 14.7); the flip pulses
-sit outside the effective pull (the catch flip in the air — blade out), so
-the drive and its means are untouched by construction.
-
-### 13.5 Open items
-
-- t_rise source: 0.10–0.20 s band is the plausible water-entry / flip time
-  (the 1994 trials describe the hands "coming up hard at the end of the
-  recovery" — line 3262 of the txt dump); no measured value — `[?]`
-  (register D10). 0.15 s nominal in use.
-- Fleet assignment: the 1994 trials' tier→oar mapping (spruce new-builds vs
-  the old-fir oars' tier labels in Table 3.1) — check the ch.4/ch.3 text.
-- Recovery-phase inertia (the swing reversal costs the rower work both ways;
-  the finish braking is eccentric — cheaper): v1 counts the concentric flip
-  energy, notes the eccentric part.
-- The A/B anomaly stays recorded-as-printed (the zygian family inherits it).
-
-## 14. Mismatch-closure roadmap (VALIDATION.md §7) — status
-
-| # | Mismatch | Path | Status |
-| --- | --- | --- | --- |
-| 1 | Tightest-turn 360°-time (73 vs 128 s) | **done** (15.3): two-lever decomposition + hold fraction 0.05 + the sprint protocol + the sway DOF — the physical CLR restoring moment + the C3 lever (4.8 → 1.8 m) + the ship's effective Ω 3.2e6 (C1 reconciled): D = 67.8 m ✓, the speed halves ✓, t_360 = 98 s vs 128 — the ~23 % residual is the turn's build-up (the trial's entry vs the instant hard-over), documented | [x] — residual documented as the build-up |
-| 2 | Sprint t_drive data gap (A8) | **done**: t_drive(44.5) = 0.371 s calibrated to the trial speed (8.30 kt at 130 oars — IN the 8.2–8.4 band); wired into t_drive_for as a tagged entry; matches the bracket analysis's 0.375 estimate | [x] |
-| 3 | 2-parameter CP tension (D7) | **done (no model change)**: the ¾-NM's 4–5-kt tailwind gives ~0.5–1.5 kW assistance (the ch.4 1.3–4.4 kW band is for a 10–15-kt wind) → true crew power 91–100 W/man → W′ = 5 kJ predicts 4–7.5 min; the observed 6.5 min sits inside the band. The 2-min rule and the 45-s sprint also check out | [x] |
-| 4 | Mark IIb shortfall (oQ-18) | **resolved as an equivalence** (15.2): Shaw's form k·(q/p)²·V²·sin²C with the ACTUAL turning point (p = V·cosC/ω) reduces algebraically to the flat-plate law — the flat-plate law IS Shaw's force form (locked as a test). The geometric-deadpoint slip limit (ω = V·cosC/p(C)) gives less thrust than the measured Table 9.6 kinematics (negative at our points) — the prescribed (measured) kinematics are the truth. The shortfall is therefore the UNKNOWN Mark II blade area (register A5 — our RIGS uses the Olympias 0.078 m²; the ch.9 ×3.3 note is the design's requirement, i.e. the Mark II's actual blade area ~0.26 m²). Closure: the A5 data (Coates plans) or the 'Mark IIb as designed' scenario at 0.26 m² | [x] resolved — A5 data gap named |
-| 5 | Per-tier factors (v2) | **done** (Gate 6, 4 checks): SideCrew = 3 TierCrews (31/27/27, per-tier MIT + W′); the thalmian head-room as the ch.9 L-model power factor (0.9 cruise → 0.6 sprint, shape [?]) + the feather clamp; the thalmian share falls with rate (0.34 → 0.30) and the 170-oar sprint overshoot closes (8.54 → ~7.9 kt) | [x] |
-| 6 | Archival (F/G raw data, Plan 8 stations, trials video) | Wolfson archive / Oxbow / Actium team; t_rise from film | background |
-
-## 15. Closure work plan for the remaining mismatches
-
-Sequenced by dependency: per-tier crews first (self-contained, may close the
-170-oar overshoot), then the turning-point blade law (its forces feed the
-sway work), then the sway DOF (its acceptance is the Ω reconciliation). The
-archival trio is background. An item closes when its gates pass AND its
-VALIDATION.md ledger row moves from [!] to [x] with the residual documented.
-
-### 15.1 #5 — per-tier crews (**done**, Gate 6, 4 checks)
-
-- SideCrew = three TierCrews (31/27/27 per side; per-tier MIT and W′
-  tanks; the ship's per-oar-average API unchanged).
-- Thalmian head-room as the **ch.9 L-model power factor** (a reduced pull
-  scales the POWER, not the kinematics — a kinematic sweep cut dragged the
-  tier into the deadspot and broke the cruise anchors; the L-model + the
-  **feather clamp** (the deadspot slips the blade — "ineffective", not
-  drag) reproduce the trial character). Factor 0.9 at cruise (720/800 mm
-  manikin ratio), linear to 0.6 at 44.5 spm — shape flagged `[?]`.
-- Findings: the thalmian share falls 0.34 → 0.30 from cruise to sprint
-  (time-averaged — the W′-boundary surging averages out); the 170-oar
-  sprint overshoot closes: bare-oar 8.54 → ~7.9 kt burst (below the trial
-  band's top — the 130-effective + ineffective-thalmian reality now both
-  represented).
-- The W′ P_crit availability scales with the power factor (a reduced tier
-  sustains factor × P_crit) — without it the tier oscillates at the W′
-  boundary.
-
-### 15.2 #4 — the turning-point blade law (**resolved as an equivalence**)
-
-1. **Appendix decoded**: the d-formula is correct as printed (A = the catch
-   angle: 0.477 at catch/finish, 0.953 at mid ✓ — the earlier 'cos vs
-   sin+30°' flag was a convention error, resolved); p = L_plan − d.
-2. **The unification**: k·(q/p)²·V²·sin²C with the ACTUAL turning point
-   (p = V·cosC/ω, q = l_cp − p) reduces algebraically to the flat-plate law
-   k·v_n² — **the flat-plate law IS Shaw's force form** (numeric identity
-   locked as a research-chain test). The geometric-deadpoint slip limit
-   (ω = V·cosC/p(C), p = L_plan − d) gives less thrust than the measured
-   Table 9.6 kinematics — negative at all four points (the crews sweep
-   ~30 % faster than the deadpoint-stationary speed): the prescribed
-   (measured) kinematics are the truth, the slip limit is a lower bound
-   (locked as a test).
-3. **The Mark IIb conclusion**: the shortfall is NOT a law error — it is
-   the UNKNOWN Mark II blade area (register A5: our RIGS uses the Olympias
-   0.078 m² for the Mark IIb; the ch.9 ×3.3 note is the design requirement
-   ≈ 0.26 m² of actual Mark II blade). Closure: the A5 data (Coates
-   plans / archival) or the documented 'Mark IIb as designed' scenario.
-4. No BLADE_LAW flag needed — the flat-plate law is confirmed; the prop-
-   fraction gate stays locked (the 0.078-area Mark IIb is 'Olympias blades
-   on a Mark II rig', a scenario, not a model error).
-
-### 15.3 #1 — the sway DOF (**done**, Gate 8, 5 checks) — the LL is complete
-
-- The hull is now surge + sway + yaw: the per-oar Fy sums into the sway
-  (the crew returns it), the rudder's lateral force enters, and the hull's
-  lateral resistance (ρ·A_lat·|u|·v, A_lat = 35 m²) acts at the CLR
-  (x_clr = 0.8 m forward of the CG) producing the physical restoring
-  moment the lumped Ω·ω² cannot represent. The ship-frame dynamics with
-  the centripetal couplings.
-- The calibration (calibrate_sway.py) revealed the reconciliation:
-  with the sway explicit, the fitted 4.8 m lever double-counted the
-  lateral dynamics — the lever drops to the physical athwartships arm
-  (1.8 m, the C3 decomposition completed) and the ship's effective Ω
-  becomes 3.2e6 (the vessel's 5e6 stays for the steady research model —
-  C1 reconciled).
-- Acceptance: the diameters held (G1 89.7 / F1 117.4 / tightest 67.8 m,
-  all in their bands) AND the sprint-protocol t_360 = 98 s vs the trial's
-  128 — the ~23 % residual is the turn's build-up (the trial's entry vs
-  the instant hard-over), documented, not parameter-fittable within the
-  physical ranges.
-- The drift emerges: −2.2° mid-turn (between the Taylor balance's 1.4°
-  and the reported 15°); the lateral velocity damps (no divergent
-  instability); the trim shows the physical per-stroke Fy kick a real
-  helmsman would trim (gate-3 trim updated to the physical band).
-- 88 tests green — the LL's physics is complete.
-
-### 15.4 Archival items (background, anytime — **no email outreach**)
-
-- The print-only F/G report: Oxbow out-of-print copies, the U. Crete
-  catalogue record, the Actium/CNRS team — only if they surface without an
-  email campaign.
-- The 1990 trials video → t_rise from film (the catch-flip time), if the
-  footage surfaces in our own sources.
-- Acceptance: the per-turn F/G data (per-angle rudder drag factors), the
-  station plan (sway moments, C3 closure), a measured t_rise.
-
-### 15.5 Sequence
-
-1. #5 per-tier crews — self-contained quick win.
-2. #4 blade law — its forces feed #1's sway.
-3. #1 sway DOF — the Ω reconciliation is its acceptance.
-4. Archival — background; the emails first.
-
-## 16. Cant + slip-assumption fixes for the Mark IIb (plan)
-
-The Mark IIb shortfall (oQ-18) is the aggregate of missing physics at its
-points, expressed as the ×3.3 area-equivalent (register A5). Two named
-mechanisms to incorporate into the LL code.
-
-### 16.1 The cant term — **implemented** (Gate 7, 4 checks; commit …)
-
-RIGS gained `cant` (0.0 / 18.4); the blade law and the rigid reference
-use vn = V·cosC·cos(φ) − l_cp·ω with the thrust carrying cosφ (identity at
-φ = 0 by construction). The Mark IIb prop fraction rose ~0.30 → **0.51–0.54**
-(~1.7× — the deadspot shallows). The OQ18 lock, the research-chain band
-and the Gate-1 band all moved TOGETHER with the docs.
-
-The Mark IIb rig is canted 18.4° (tan = 1/3): the oar's sweep plane is tilted
-about the athwartships axis, so the blade-face normal is not horizontal. The
-flat-plate law gains a geometry term:
-
-    vn = V·cosC·cos(φ) − l_cp·ω        (φ = cant angle; 0 for Olympias)
-    Fx = −Fn·cosC·cos(φ)               (the thrust component of the normal)
-
-- The rig dicts gain `cant_deg`: 0.0 (Olympias), 18.4 (Mark IIb) — the
-  bladeless change: φ = 0 ⇒ cosφ = 1 ⇒ the Olympias law is IDENTICAL (the
-  validated anchors are untouched by construction — a strong property).
-- At the Mark IIb's deep deadspot (vn ≈ −0.53 at mid, 9.7 kt): the flow
-  reduction deepens vn to ≈ −0.76 → force ×~2 (the deadspot shallows — the
-  blade outruns the water more easily). Expected: the prop fraction
-  ~30 % → ~55–65 %.
-- The handle force lever (l_cp/lin) and the Fy unchanged in v1; the vertical
-  force component Fz = Fn·sinφ (a small heel moment) is v2.
-
-### 16.2 The slip-assumption analysis — **implemented** (the scenario knob)
-
-The slip-factor is a rig key (default 1.0 — identity); the sensitivity
-(G7-3): prop fraction 0.51 → 0.85 at f = 1.3 (monotonic, ~f²). The
-**"Mark IIb as designed" scenario** (G7-4): cant + area 1.3× (the A5
-estimate) + slip 1.2 → the equilibrium at 46.3 spm lands on the chain's
-9.7 kt — every factor labelled, the slip ~1.2 is the aggregate of the
-unmodelled taper and attack-angle dynamics, NOT a blade dimension.
-
-The model's slip = vn from the prescribed (measured) ω — proven right at the
-Olympias points (15.2). The Mark IIb's residual after the cant is exactly
-the ch.9 caveat zone ("if he has assumed too little slip on the blades…").
-Tools:
-
-- A **slip-sensitivity diagnostic**: thrust vs a slip-factor f
-  (Fn = k·|vn·f|·(vn·f), f = 1.0 at Olympias — the validated anchor; the
-  Mark IIb's residual → the required f). This quantifies how much data would
-  pin the slip, without adopting a value.
-- A **documented scenario knob**: the "Mark IIb as designed" scenario =
-  cant (16.1) + a modest area increase (A5 estimate 1.2–1.5×, NOT 3.3×) +
-  the residual slip-factor f ≈ 1.1–1.2 — every factor labelled, none
-  silent. The knob is Mark-IIb-scenario-scoped, never a global retune.
-
-### 16.3 The payoff: a usable Mark IIb for the tactical layer
-
-The manoeuvre model's anastrophes run at 9.7 kt (the Mark IIb) — the LL's
-Mark IIb needs a consistent thrust to be usable there. The scenario's
-acceptance: the equilibrium at 46.3 spm lands near the chain's 9.7 kt
-(Table 9.7) — then the turn gates at the Mark IIb points open up.
-
-### 16.4 Validation gates — **all passing (4 checks, `ll/tests/test_gate7.py`) + regression**
-
-- G7-1 ✓ the cant's measured effect: 0.51 with vs 0.30 without (ratio
-  1.7×, asserted); the identity at φ = 0 (< 1e-9 — the Olympias anchors
-  untouched by construction).
-- G7-2 ✓ (folded into the research-chain + Gate-1 bands, moved together
-  with the OQ18 doc): the Mark IIb prop fraction now 0.51–0.54, locked.
-- G7-3 ✓ the slip sensitivity: 0.51 → 0.85 at f = 1.3 (monotonic ~f²,
-  diagnostic only).
-- G7-4 ✓ the as-designed scenario: cant + area 1.3× + slip 1.2 → the
-  equilibrium at 46.3 spm lands on the chain's 9.7 kt.
-- G7-5 ✓ regression: 79 + 4 = 83 tests.
-
-### 16.5 Sequence and dependencies
-
-1. 16.1 the cant term (a day — the law change + the re-locks).
-2. 16.2 the sensitivity + the scenario knob (the diagnostics + docs).
-3. **Before 15.3 (the sway DOF)**: the cant changes the blade forces the
-   sway consumes — land 16.1 first.
-4. The A5 data (Coates plans, archival) would pin the real area and shrink
-   the slip-factor to zero — the background path.
-
-## 17. The turn build-up — **investigated, ruled out, reverted**
-
-Implemented the build-up (the helm as a human action: tau_rud lag + the
-helmsman's strength clamp; the held blades' brake ramp tau_hold) and
-measured its contribution: **~2 s of the ~28 s discrepancy** (98 → 100 s)
-— negligible, the ramps overlap the W' fade which dominates the timing.
-
-**Conclusion**: the build-up is NOT the cause of the t_360 discrepancy
-(100 vs the trial's 128 s). The code was reverted (no complexity for a
-ruled-out mechanism); the timings would be physical to include later, but
-only if a discrepancy worth their magnitude appears.
-
-**The t_360 residual is an OPEN discrepancy with no known cause.** The
-candidates examined and their status: the hold fraction (calibrated, two-
-anchor), the W' fade (in), the sway/CLR physics (in), the turn build-up
-(implemented, tested, ruled out). A linear yaw-damping form (register C1's
-units hint — the printed 'kg m²' fits a linear coefficient) is an untested
-hypothesis, not a cause.
-
-## 18. The yaw-induced oar/water differential — **investigated, ruled out, reverted**
-
-During a turn the oar stations carry the yaw's tangential velocity: the
-outside oars travel faster through the water, the inside slower — the blade
-flow becomes vn = (u − ω·y)·cosC − l_cp·ω_drive (the arm = the mean
-athwartships oar offset). Correction record: an earlier draft had the sign
-backwards (the outside oars' force was mis-stated); the correct physics is
-that the outside oars see a LOWER oar/water differential → less force — a
-**yaw damper** (the inside oars ~3.15 % stronger in the G1 steady turn,
-measured).
-
-**Quantified contribution** (measured, term on vs off): G1 D +0.35 m
-(+0.39 %), F1 D +0.51 m (+0.44 %), tightest D +0.73 m (+1.08 %), t_360
-+1.0 s (+1.0 %); the damper moment ~83 N·m = 0.3 % of the rudder torque.
-
-**Conclusion**: a real physical term, in the right direction for the t_360
-discrepancy but far from the ~30 s needed (~1 s — the complexity is not
-justified): **ruled out and reverted** (the code, the bands and the
-telemetry removed). The t_360 remains an open discrepancy with no known
-cause.
-
-## 19. Phase 2 — the HL: **in progress** (the fast ship-level integrator, `hl/`)
-
-**Status**: the bootstrap HL is implemented and green — `hl/ship.py` (the whole
-simulator), `hl/curves.py` (Calibration + bootstrap + the calibration-file
-loader), `hl/calibrate.py` (the machine calibration run, §19.2), `hl/run_hl.py`,
-and `hl/tests/test_hl_basics.py` (9 checks). The shared harness (Phase 3's
-first deliverable, `harness/`) drives both simulators on the script set + the
-turn scenarios and produces the equivalence tables: turn diameters within
-±1.3 % of the LL at all five scenarios, cruise/fatigue gates inside on the
-non-turn scripts (the measured divergences and the HL-loose list: VALIDATION.md
-§9), 103 checks green in the full suite. The calibration run is done —
-`hl/calibrate.py` wrote `hl/calibration/calib-2026-08-15-b55e28f.json` (the
-ship's default; the three loop rounds and their protocol fixes: VALIDATION.md
-§9.3).
-
-The LL is complete and ready as the oracle (§15.3). Phase 2 builds its consumer —
-the fast, efficient ship-level integrator of §4 — with the response curves
-**measured from LL runs**, never hand-entered (§2.1's chain: real-world → LL → HL).
+## 12. The LL's layers — what the phases left behind
+
+The LL is complete and is the oracle. The layer designs below were
+implemented and gate-validated in Phase 1; the gate records (anchors,
+checks, the honest ledger) live in VALIDATION.md §1–§7, and the design
+detail lives in the code (`ll/rower.py`, `ll/blade.py`, `ll/ship.py`).
+
+- **Gate 4 — the rower physiology layer** (oQ-13): the physiological
+  rower — peak-force ceiling, endurance/fatigue, the W′ burst tank
+  (8 checks, `ll/tests/test_gate4.py`).
+- **Gate 5 — the oar-inertia layer**: Table 3.1 inertias drive the
+  catch-flip dynamics (7 checks, `ll/tests/test_gate5.py`); the A/B MIT
+  anomaly stays recorded-as-printed.
+- **Gate 6 — per-tier crews** (4 checks).
+- **Gate 7 — the cant term** for the Mark IIb geometry (4 checks).
+- **Gate 8 — the sway DOF**: the coupled sway/yaw drift state that the
+  wprime closure and the turn physics rest on (5 checks).
+
+## 13. Two investigated-and-reverted hypotheses
+
+The turn build-up (§17 below was investigated, ruled out and reverted)
+and the yaw-induced oar/water differential were both tested against the
+turn anchors and rejected — the verdicts are in VALIDATION.md §7.2 with
+the numbers; the terms stayed OFF (0.0) in `ll/ship.py`.
+
+## 14. The mismatch-closure roadmap — all landed
+
+Every planned closure of the LL's mismatch ledger (VALIDATION.md §7)
+landed: the per-tier crews (Gate 6), the turning-point blade law
+(resolved as an equivalence — the (q/p)² law is an algebraic identity
+with the flat-plate law at the actual turning point, `ll/blade.py`),
+and the sway DOF (Gate 8). The Mark IIb blade-area gap (×3.3) is a
+research-side finding, not a blade-law error (oQ-18, resolved-as-physics
+in `chain.py`).
+
+## 15. The LL is the oracle
+
+No further LL changes are planned outside measured mechanisms: the
+Level-1 open items (t_360, the drift angle, the ch.7 triple — the
+open-with-locked-test rows, VALIDATION.md §11.2) each have a named
+cause and a locking test, and each would enter through a re-measurement,
+never a tuning pass.
+
+## 16. The turn build-up — investigated, ruled out, reverted
+
+The yaw build-up hypothesis (the slow 3–5 s ω rise into the turns) was
+tested against the G1/F1 anchors and rejected — see VALIDATION.md §7.2
+and the yaw-build term the HL uses (the two-timescale approach, §19).
+
+## 17. The yaw-induced oar/water differential — investigated, ruled out, reverted
+
+Same verdict as §16: the per-stroke yaw differential does not close the
+t_360 row and breaks the diameters; the terms are OFF with the negative
+result in the code's docstrings.
+
+## 18. Phase 2 — the HL (the fast ship-level integrator)
+
+**Complete** — `hl/ship.py` (the whole simulator), `hl/curves.py` (the
+Calibration + the calibration-file loader), `hl/calibrate.py` (the
+machine calibration run, §19), `hl/run_hl.py`. The HL is a
+curve-chasing ship, deliberately minimal (plan §2.1: complexity only
+when a gate proves it necessary): every response curve is machine-
+measured from LL runs, never hand-entered, and every HL output carries
+its tolerance label ("±X % of LL, calibration run #N").
 
 **The response-curve set** (each generated by an LL protocol, refit by
 `hl/calibrate.py`):
 
-- cruise: rate → speed over the rowing range — the ch.7 triple (25.5 / 28.8 / 32.3
-  spm → 7 / 7.5 / 8 kt) plus the full LL curve between and beyond;
-- sprint: rate 44.5 → the 8.2–8.4 kt band, plus the W′ burst envelope (spoude
-  duration, speed-over-time, recovery);
-- steering: helm → yaw rate / turn diameter per speed (the G1/F1 protocols at the
-  cruise speeds, the tightest-turn family);
-- pressure: the steady / rest / spoude envelopes — the P_crit-limited sustainable
-  speeds, per-side pressure as the steering tool;
-- fatigue: man-hours → power-ceiling decay for long runs.
+- cruise: rate → speed over the rowing range — the ch.7 triple
+  (25.5 / 28.8 / 32.3 spm → 7 / 7.5 / 8 kt) plus the full LL curve
+  between and beyond;
+- sprint: rate 44.5 → the 8.2–8.4 kt band, plus the W′ burst envelope
+  (spoude duration, speed-over-time, recovery);
+- steering: helm → yaw rate / turn diameter per speed (the G1/F1
+  protocols at the cruise speeds, the tightest-turn family), per
+  helm-fraction and per pressure (the measured k falls with rate);
+- pressure: the steady / rest / spoude envelopes — the P_crit-limited
+  sustainable speeds, per-side pressure as the steering tool;
+- fatigue: man-hours → power-ceiling decay for long runs;
+- the drift cells (the pressure-dependent untrimmed yaw slope), the
+  turn-drag curve, the asym nets (the one-side-stopped legs drain ≈ 0),
+  the two-timescale yaw-build (the sway-coupled slow mode).
 
-**Calibration protocol** (the §6 rule, made operational): `hl/calibrate.py` runs the
-LL protocols, fits the curves, and writes each tolerance annotation — every HL
-output carries "±X % of LL, calibration run #N". When the LL gains fidelity, the
-curves are regenerated; the HL is never hand-tuned to its own old numbers. The
-full protocol and file format: §19.2.
+**Acceptance** (the Level-2 first tolerances, §6): |mean speed| < 1 %
+over a 10-minute script including a sprint and a turn; settled rate
+within 1 spm; G1/F1 turn diameter within 5 %; accumulated fatigue within
+5 %; final position within ~0.1 NM after course changes. Performance
+target: minutes of ship-time per second of wall-clock. Gates: a
+`tests/test_hl_*.py` suite locking each curve against its LL calibration
+run and the Level-2 tolerances.
 
-**Acceptance** (the Level-2 first tolerances, §6): |mean speed| < 1 % over a
-10-minute script including a sprint and a turn; settled rate within 1 spm; G1/F1
-turn diameter within 5 %; accumulated fatigue within 5 %; final position within
-~0.1 NM after course changes. Performance target: minutes of ship-time per second
-of wall-clock. Gates: a `tests/test_hl_*.py` suite locking each curve against its
-LL calibration run and the Level-2 tolerances.
+## 19. The calibration protocol (`hl/calibrate.py`)
 
-### 19.1 The bootstrap HL — what is built, and where it is honest
-
-The HL is a curve-chasing ship, deliberately minimal (plan §2.1: complexity only
-when a gate proves it necessary):
-
-- **Surge (rowing)**: V chases the calibrated equilibrium row with a first-order
-  lag — `dV/dt = (V* − V)/tau_surge`. One side stopped: the measured (row, hold)
-  equilibrium (the held blades' brake bites hard — ~3.7 kt, not the no-brake
-  85-oar estimate).
-- **Surge (not rowing)**: the exact drag law `dV/dt = −(D(V) + brake)/m_app` — the
-  same ODE the LL integrates for rest/bank/hold/back.
-- **Yaw**: omega chases `2V/D` with a first-order lag (`tau_turn`); D comes from
-  the calibrated families (rudder, or one-side hold/back — the two measure the
-  same D in the current LL, backing degenerates to the hold-brake at speed).
-- **Crew**: one W' tank (5 kJ, P_crit 80 W/man, tau 120 s — constants imported
-  from `ll.rower`); the drain/refill net (W/man) measured at the anchor levels
-  (the harness fatigue gate: the chain-law + commanded-omega flip estimate ran
-  the refill ~25 % fast); at zero the chase target drops to the measured
-  P_crit-limited row (~6.0–6.4 kt).
-
-**Bootstrap provenance** — every number in `hl/curves.py` is a direct LL
-measurement from the build session (recorded in the table comments):
-
-- V* spoude row: `ll.hull.equilibrium_speed` over the rate grid (12 rates);
-- steady/fast rows: LL ship 300-s settle runs at the pressure levels — the
-  measured rows are ~0.75–0.79 of the spoude V* (a power-law guess would be
-  wrong; the thrust-vs-handle-force relation is strongly nonlinear), and the
-  fast row dips below steady at 44.5 spm (high-rate slot/feather interplay,
-  recorded as printed);
-- empty row: LL ship with the tiers' W preset at zero (the P_crit-limited plan);
-- asym rows: LL ship (row, hold) straight-line settles — and the back rows
-  separately (the reversed oar collapses at ≤ 24 spm: 1.9 kt spoude, 0.9
-  steady vs the hold's 3.6/2.9 — the harness caught the cruise_turn tail);
-- D tables: `ll/run_turn.py` scenarios (G1/F1/tightest/oar-hold/oar-back);
-- tank nets: LL W'-drain/refill runs at the anchor levels (spoude drains
-  37–130 W/man, steady/fast nets measured with a low tank preset and a short
-  window — the refill cap would taint a long one);
-- the drift floor: the LL's untrimmed lateral kick (−0.016 rad/min at cruise,
-  test_trim) — measured and locked as the position-separation floor, not
-  modeled (the HL is the trimmed ship);
-- tau_surge = 20 s: fitted to the LL crewed rest-start (6.0 kt @ 30 s);
-- tau_turn = 4 s: fitted so the first-order yaw lag lands the path-measured D
-  inside the gate (the LL's true sway-coupled build-up, ~8.5 s, inflates |y| at
-  180 deg by ~7 % — documented HL-loose).
-
-**The HL-loose list** (the §20 honesty contract, decided at design time, with the
-triggers that would re-open each): stroke ripple and within-cycle force phase
-(averages out at the 10-min means); per-side W' (one shared tank — re-open if the
-fatigue gate fails); exhausted-side yaw drift (not gated); the LL's untrimmed
-lateral kick — the position-separation floor ~0.017 NM/min, measured and locked
-(§9.3.4, the HL is the trimmed ship); the sway-coupled turn deceleration — the
-LL loses ~0.3 kt more per helm turn (the applied-rudder drag is in; the
-sprint_turn residual +1.5 % vs the 1 % gate); the back-tail transition — the
-LL's rate change re-plans the oar and the brake drives a deep low-speed
-undershoot the smooth chase cannot represent (cruise_turn +1.2 %; the per-state
-tau or a brake-aware decay are the named triggers); tempo loss (rate_eff = rate
-always); start-transient shape (the single tau_surge is a compromise between the
-fast rest-start and the slower high-speed approach — re-open if a script gate
-fails); numeric pressures between the measured anchor levels are interpolated
-linearly.
-
-The harness (Phase 3's first deliverable, `harness/`) is the validation vehicle:
-`run_validation.py` runs the script set + the turn scenarios on both simulators
-and prints the equivalence tables — the acceptance record is VALIDATION.md §9.
-
-### 19.2 Calibration protocol — **implemented** (`hl/calibrate.py`)
-
-The calibration run regenerates the same table structure the bootstrap fills,
-from LL protocols, and writes `hl/calibration/calib_<id>.json` (+ `latest.json`,
-the ship's default): every table machine-measured with its residuals, the
-protocols documented in the file's meta, the LL commit recorded. The run
-(~2.5 min of LL protocols) is the loop's first step: calibrate →
-`harness/run_validation.py` → adjust → repeat. The first calibration
-(`calib-2026-08-15-b55e28f`) took three loop rounds — each found and fixed a
-real measurement-protocol bug (the cap-biased tank slopes, the drained-state
-pressure rows, the applied-0.0-helm rudder residual; VALIDATION.md §9.3).
+The calibration run regenerates the same table structure the bootstrap
+fills, from LL protocols, and writes `hl/calibration/calib_<id>.json`
+(+ `latest.json`, the ship's default): every table machine-measured with
+its residuals, the protocols documented in the file's meta, the LL
+commit recorded. The run (~4 min of LL protocols) is the loop's first
+step: calibrate → `harness/run_validation.py` → adjust → repeat.
 
 | Table | LL protocol (all exist today) | Notes |
 | --- | --- | --- |
@@ -1016,7 +552,7 @@ pressure rows, the applied-0.0-helm rudder residual; VALIDATION.md §9.3).
 | D rudder | `ll/run_turn.py` at helm_frac {1/3, 1/2, 2/3, 1} | extends the interpolation midpoints |
 | D oar | `ll/run_turn.py` oar-hold at helm_frac {0, 1/2, 1} | the tightest family midpoints |
 | tau_surge | least-squares fit of the HL's V(t) to the LL rest-start (0…120 s) | one scalar; per-rate only if a gate fails |
-| tau_turn | fit so the HL's |y| at 180 deg matches the LL's per family | the D gate is the judge |
+| tau_turn | fit so the HL's |y| at 180 deg matches the LL's per family | the D gate is the judge; the yaw-build two-timescale (A, tf, ts) per family |
 | spoude power | LL W'-drain runs over the rate grid | the tank's burst level |
 | residuals | every table stores its max/mean |deviation| vs the raw LL points | → the tolerance labels |
 
@@ -1047,30 +583,18 @@ tau_surge; sprint envelope misses → one fitted drain factor; D > 5 % on any tu
 → tau_turn per family; fatigue > 5 % → a second W' tank (per side); position
 > 0.1 NM → sway/drift terms.
 
-## 20. Phase 3 — the pair harness: **in progress** (one script, two ships)
+## 20. Phase 3 — the pair harness
 
-**Status**: the harness core is implemented and is the validation vehicle —
-`harness/script.py` (one command stream, both simulators, 1 Hz telemetry),
-`harness/comparator.py` (the Level-2 metrics; the fatigue gate is the
-consumption integral), `harness/run_validation.py` (the script set + the turn
-scenarios → equivalence tables + violations), `harness/tests/test_harness.py`
-(6 checks), the script set in `examples/`. The acceptance record:
-VALIDATION.md §9. The remaining item is the annotated script run (below).
+**Complete** — `harness/script.py` (one command stream, both simulators,
+1 Hz telemetry), `harness/comparator.py` (the Level-2 metrics: the mean
+is the distance/time integral — the sample-mean aliases the low-speed
+per-stroke ripple; the fatigue gate is the consumption integral),
+`harness/run_validation.py` (the script set + the turn scenarios →
+equivalence tables + violations; the T5 bin gates), the script set in
+`examples/` (incl. the T10 zig-zag out-of-sample). The acceptance record
+is VALIDATION.md §9; the annotated script run with the per-row tolerance
+sources: `harness/equivalence-annotated.md`.
 
-The shared command language is already frozen (Step 0); Phase 3 wires it to both
-simulators:
-
-- `harness/script.py` runs the same command script on the HL and the LL with the
-  same seeded environment and starting state; `harness/comparator.py` produces the
-  **equivalence table** — the Level-2 metrics of §6, each with its tolerance source;
-- the violation loop: the first equivalence table names the biggest violations;
-  each is either fixed in the HL (re-fit to the LL) or documented as a place the HL
-  must stay loose — the HL's honesty contract (§2.1) is a code requirement, not a
-  note;
-- script set: the existing `examples/cruise_turn.txt` plus a long cruise, a
-  sprint+turn, and a W′-burst sequence (the oQ-4 scenarios);
-- deliverable: the equivalence table + the first annotated script run; gates lock
-  the table's headline numbers.
 
 ## 21. The path to full validation — and how we know when it is reached
 
@@ -1091,16 +615,16 @@ plan for closing every closable row and the definition of done.
   prints no unannotated violations; the suite is green (the count lives in
   VALIDATION §8).
 
-### 21.2 The task DAG
+### 21.2 The task DAG — executed (2026-08-15)
 
-The task graph for closing every closable row — tasks A–L, the layers,
-the per-task exit criteria, the convergence rule, the critical path
-(`I → R2 → J → K → A → L`) and the loop guard — is recorded in
-[`full-validation-dag.md`](full-validation-dag.md) (the single source).
-In one line: Layer 0 (B–I, all parallel) → Layer 1 (R1/R2, J — after the
-last LL-truth change) → Layer 2 (K, the acceptance run) → Layer 3
-(A, the annotated run; L, the completion check).
-
+The task graph for closing every closable row — tasks A–L (B settled-rate
+gate, C drift-floor position gate, D 3-NM script, E back-tail τ, F turn
+deceleration, G ch.7 triple check, H t_360 hypothesis test, I Mark IIb
+blade layer, R1/R2 re-validations, J calibration, K acceptance run,
+A annotated run, L the completion check) — was executed in full; every
+task's verdict landed in VALIDATION §10/§11 (the acceptance run K19 on
+`calib-2026-08-15-c243c01`). The open items that survived the DAG are the
+open-with-locked-test rows of §21.1's Level-1 list.
 ### 21.3 Decision points (recorded here when taken)
 
 - **The position gate** (coverage row 10.2.5): **decision taken 2026-08-15
@@ -1118,15 +642,16 @@ last LL-truth change) → Layer 2 (K, the acceptance run) → Layer 3
   oar-manoeuvres get their own gates when Phases 4/5 are built; per-side
   pressure steering, exhausted-side yaw, tempo loss, the Mark IIb rig, the
   old-fir fleet, reduced crews and rates < 8 spm re-open only via their
-  named triggers (§19.1).
+  named triggers (§18).
 
 ### 21.4 The completion check
 
 The review-driven next-step plan (the ch.7 triple tension, the t_360 turn
 drag, the drift angle, the knob audit, the gate-edge rows, the
-strengthening gates a–f) is recorded in VALIDATION §11 — the coverage-map
-statuses there are authoritative. The completion check below stays the
-definition of done; §11's tasks land as their verdicts arrive.
+strengthening gates a–f) is executed — the verdicts, the constants
+ledger and the open items are recorded in VALIDATION §11, and the
+coverage-map statuses there are authoritative. The completion check
+below is the definition of done.
 
 ```bash
 cd simulation
@@ -1136,79 +661,3 @@ cd simulation
 
 plus the coverage map (VALIDATION §10) showing only **validated** /
 **open-with-locked-test** / **scoped** cells in the in-scope rows.
-
-## Next actions
-
-- [x] Freeze the **verb set** (§3.2: 4 crew verbs). oQ-1, 2, 5, 6, 7 resolved; only
-      oQ-4 remains for the schema round.
-- [x] Freeze `commands/schema.json` v0.1 + parser + sample script (`simulation/`;
-      parser: 19 checks passing, fail-fast + deterministic).
-- [x] **Phase 1 Gate 1 — LL one-oar skeleton** (`simulation/ll/`): time-stepped oar
-      with the flat-blade law; reproduces the rigid model at all four Table 9.6
-      points (<0.5 %), mean handle force 224/208 N in the cruise family,
-      prop W/man 102 % at 7.2 kt, dt-converged, oQ-18 shortfall inherited
-      honestly (7 checks).
-- [x] **Phase 1 Gate 2 — hull surge** (`ll/hull.py`, 12 checks): per-step
-      coupling settles on the hull=1.0 anchors — 7.22 kt @ 28.8 spm,
-      7.98 kt @ 36 spm; sprint (130 oars, 44.5 spm) brackets the 8.2–8.4 kt
-      trial over the unmeasured t_drive range (data gap — uncertainties
-      register A8). oQ-18 answered empirically for the Olympias rig: the
-      flat-plate 0.078 m2 law suffices there (Mark IIb shortfall stands).
-      Stroke surge ripple ≈ 0.2 kt; start-from-rest deferred to the oQ-13
-      force ceiling (crude provisional clamp exists for demos).
-- [x] **Phase 1 Gate 3 — 170-oar surge+yaw ship** (`ll/ship.py`, `rig.py`, 9
-      checks): time-domain turns reproduce the W5 anchors within 5 % (G1
-      93.5 m vs 89.4; F1 117.2 vs 111.9; tightest 64.4 vs 62). oQ-4 gets its
-      first quantitative answer: hold-water = trailing + a 2 % brake
-      fraction calibrated to the tightest-turn diameter (the speed history
-      still needs the trial's rate + the hold spectrum). Oar yaw uses
-      Taylor's fitted lever 4.8 m (decomposition open — register C3);
-      back-water = force-limited 80 % astern (manoeuvre 5.x). Sample script
-      runs end-to-end: first command-language → LL pipeline.
-- [x] **Phase 1 Gate 4 — rower physiology layer** (plan §12, 8 checks):
-      `ll/rower.py` — Fh_max 700 N, P_crit 80 W/man (R&W ch.23, primary),
-      W′ 10 kJ (provisional), per-side stroke adaptation (demand-limited
-      drive, sweep shortening, tempo loss with weakest-side-governs),
-      commanded-vs-achieved telemetry. Findings: steady = sustainable
-      envelope; spoude = W′-limited burst (~90 s); rest start = short
-      stretched strokes, launch slower than the bulk law; backing
-      degenerates to a hold-brake at speed; exhausted-side yaw; tightest
-      turn halves speed after the burst; rate 50 + exhausted = tempo lost.
-      Research subtasks now: ch.9 sprint durations → W′; S6 force-curve
-      source → Fh_max; τ (plan §12.6).
-- [x] **Phase 2 — the HL bootstrap** (`simulation/hl/`, plan §19.1): the
-      curve-chasing fast ship — `ship.py` (the whole simulator, same command
-      API as the LL), `curves.py` (Calibration + bootstrap, every number a
-      direct LL measurement), `run_hl.py`, `hl/tests/test_hl_basics.py`
-      (9 checks). The HL-loose list and the complexity triggers: plan §19.1.
-- [x] **Phase 3 — the harness core** (`simulation/harness/`, plan §20):
-      `script.py` (one command stream, both simulators, 1 Hz telemetry),
-      `comparator.py` (the Level-2 metrics — the fatigue gate is the
-      consumption integral, not the brittle endpoint W_frac),
-      `run_validation.py` (the script set + the turn scenarios, equivalence
-      tables + violations), `harness/tests/test_harness.py` (6 checks), the
-      script set in `examples/`. The acceptance record: VALIDATION.md §9 —
-      turns within ±2 %, cruise/fatigue gates inside, the measured
-      divergences documented (the drift floor, the turn-deceleration
-      residual).
-- [x] **Phase 2 — the calibration run** (`hl/calibrate.py`, plan §19.2):
-      the full protocol set machine-measured from the LL (vstar grid,
-      pressure/empty/hold/back rows, tank nets with the direction-probed
-      cap-safe slope, D tables with the helm_frac midpoints, tau fits)
-      → `hl/calibration/calib-2026-08-15-b55e28f.json` (+ latest.json,
-      the ship's default). Three loop rounds fixed three real protocol
-      bugs (VALIDATION.md §9.3). The Level-2 gates on the calibration:
-      turns within ±1.3 %, fatigue −0.005 pts, cruise gates inside on the
-      non-turn scripts; the measured divergences (the drift floor, the
-      back-tail transition, the turn deceleration) documented in
-      VALIDATION §9.3 with their triggers.
-- [ ] **Phase 3** — the annotated script run: the equivalence-table
-      deliverable with the tolerance sources (the first table exists in
-      VALIDATION §9; the annotated form is the remaining item).
-- [ ] **Full-validation tasks** (the DAG — `full-validation-dag.md`): B (settled-rate
-      metric + tempo-loss curve), C (drift-floor-corrected position gate),
-      D (the 3-NM script), E (back-tail per-state τ), F (turn-deceleration
-      term), G (ch.7 Mark II triple check), H (t_360 hypothesis test),
-      I (Mark IIb blade layer); then J → K → A → L (regenerate → accept →
-      annotate → the completion check, §21.1). The definition of done and
-      the completion check: §21.1/§21.4.

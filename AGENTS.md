@@ -19,7 +19,6 @@ research/                        the validated evidence base (see research/AGENT
   tools/                           decode/OCR helpers + fonts + renders (scratch/ for
                                    one-off iteration scripts)
   tasks/                           repeatable extraction/decoding playbooks
-  trireme-rowing-simulation-research.md   research tracker (status legend inside)
 simulation/                      the simulators (see simulation/AGENTS.md)
   commands/  schema + script parser (the frozen command language)
   ll/        per-oar reality-grade sim — Phase 1 complete (the oracle;
@@ -62,17 +61,19 @@ simulation/                      the simulators (see simulation/AGENTS.md)
 - **Honest layers**: new physics is labelled and swappable; tuning never silently
   overrides the validated chain (oQ-18 is the standing example).
 
-## Status
+## Status (current state)
 
 - Research chain: validated for cruise/sprint/turn (ch.7/ch.9, F/G ≤ 7 %).
-- Sim: Step 0 (command language), Phase 1 (the LL oracle, gates 1–8) and
-  Phase 2 (the HL: bootstrap + machine calibration + the Level-2 equivalence
-  through the harness) complete — the acceptance records:
-  `simulation/VALIDATION.md` (§1–8 the LL, §9 the HL vs the LL, §10 the
-  coverage map: every scenario's status and its path). The remaining items:
-  Phase 3's annotated script run (plan §20), the full-validation work list
-  (plan §21 — the definition of done and the completion check), and
-  Phase 4/5 (crew & environment, oar-manoeuvres).
+- Sim: all three phases complete — the LL oracle (gates 1–8), the HL (the
+  machine-calibrated fast ship) and the pair harness (the Level-2
+  equivalence). The acceptance record is `simulation/VALIDATION.md` (§1–8
+  the LL, §9 the HL vs the LL, §10 the coverage map, §11 the open items
+  with their quantified causes and locks). The suite is green (141 checks).
+- Open: the t_360 (−23 %, the turn-speed floor), the drift angle (1.4° vs
+  8–15°), the ch.7 triple (the rate→power shape) — each with a named cause
+  and a regression lock (§11); the annotated HL-loose boundaries
+  (cruise_turn's back-tail, the sprint/zig-zag positions). Remaining
+  phases: 4/5 (crew & environment, oar-manoeuvres).
 
 ## Quick commands
 
