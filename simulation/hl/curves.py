@@ -213,8 +213,16 @@ class Calibration:
         self.d_rudder_pts = [tuple(p) for p in t["d_rudder"]]
         self.d_oar_pts = [tuple(p) for p in t["d_oar"]]
         dv = t.get("d_oar_v") or {}
-        self._dov_kt = list(dv.get("v_kt", [1.0, 1.5, 2.0, 2.5, 3.0]))
-        self._dov_d = list(dv.get("d", [18.3, 25.7, 41.4, 55.2, 103.5]))
+        fp = dv.get("fp")
+        if fp:
+            self._dov_fp = dict(deg=fp["deg"], p1=fp["p1"], p2=fp["p2"],
+                                coeffs=list(fp["coeffs"]))
+            self._dov_vp = float(dv.get("v_plateau", 3.0))
+            self._dov_dp = float(dv.get("plateau_d", 103.5))
+        else:
+            self._dov_fp = None       # the legacy binned cells' fallback
+            self._dov_kt = list(dv.get("v_kt", [1.0, 1.5, 2.0, 2.5, 3.0]))
+            self._dov_d = list(dv.get("d", [18.3, 25.7, 41.4, 55.2, 103.5]))
         mh = t.get("d_mixed_hold") or {}
         self._dmh_kt = list(mh.get("v_kt", [3.0, 3.3, 3.4, 3.5, 4.2, 5.65]))
         self._dmh_d = list(mh.get("d", [305.7, 206.8, 156.3, 129.3, 90.3, 85.1]))
@@ -411,14 +419,13 @@ class Calibration:
 
     def d_oar_v(self, v):
         """The oar-family orbit diameter vs the ship's speed, m — the
-        one-side-stopped turns' settled orbits: the drained cells
-        measured from the LL's oar-back run (the instantaneous
-        2V/|omega| binned by V: 20.0 @ 1.0 kt … 54.9 @ 2.5 kt), the
-        fresh plateau anchored to the half-circle gate cell (103.5 m =
-        d_oar(0)) above 3.0 kt, the transition interpolated (the LL's
-        collapse transient — no settled states exist there). The
-        drained orbit is ~linear in V, so the settled yaw rate
-        (~2.7-3.3 deg/s) is speed-independent, like the LL's."""
+        one-side-stopped turns' settled orbits: the drained part is a
+        fractional polynomial fitted to the LL's oar-back run's
+        instantaneous 2V/|omega| samples (the degree and powers chosen
+        by the AIC — hl/curvesel.py), the fresh plateau anchored to the
+        half-circle gate cell (103.5 m = d_oar(0)) above 3.0 kt. The
+        drained orbit is ~linear in V, so the settled yaw rate is
+        roughly speed-independent, like the LL's."""
         return self._dov_impl(v)
 
     def d_mixed_hold(self, v):
@@ -441,6 +448,11 @@ class Calibration:
 
     def _dov_impl(self, v):
         vk = v / KT
+        if self._dov_fp:
+            from hl.curvesel import fp_eval
+            if vk >= self._dov_vp:
+                return self._dov_dp
+            return fp_eval(vk, self._dov_fp)
         if vk >= self._dov_kt[-1]:
             return self._dov_d[-1]
         if vk <= self._dov_kt[0]:

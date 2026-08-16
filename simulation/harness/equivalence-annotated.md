@@ -190,6 +190,7 @@ Annotation (all rows per §3 map; the script-specific notes):
 
 
 
+
 ### 4.2 sprint + turns (25 min) — `examples/sprint_turn.txt`
 
 | metric | LL | HL | diff | tolerance | verdict |
@@ -227,6 +228,7 @@ Annotation:
 - `heading` +0.087 deg (info) — the fishtail's tail on the end heading.
 - `fatigue_consumed_delta` −0.005 pts — the typical nets residual
   (§9.3.6).
+
 
 
 
@@ -284,6 +286,7 @@ Annotation:
 
 
 
+
 ### 4.4 sample cruise_turn.txt — `examples/cruise_turn.txt`
 
 | metric | LL | HL | diff | tolerance | verdict |
@@ -331,6 +334,7 @@ Annotation:
 
 
 
+
 ### 4.5 3-NM cruise (35 min) — `examples/three_nm_cruise.txt`
 
 | metric | LL | HL | diff | tolerance | verdict |
@@ -367,6 +371,7 @@ Annotation:
   over the longest straight run; inside L2-6.
 - `mean_speed_pct` +0.0 % at 28.8 spm — inside `pressure_rows_std_kt`
   (0.045 kt steady std).
+
 
 
 
@@ -422,6 +427,7 @@ Annotation:
 
 
 
+
 ### 4.7 zig-zag (out-of-sample) — `examples/zigzag.txt`
 
 | metric | LL | HL | diff | tolerance | verdict |
@@ -453,10 +459,17 @@ Annotation: the out-of-sample stress test (task T10) — the reversal-mix compos
 
 
 
+
 ## 5. The turn scenarios — the 5 equivalence rows, annotated
 
 | scenario | rate | D LL m | D HL m | diff | t180 LL s | t180 HL s | verdict |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| g1        |   19.9 |    90.1 |    90.6 |  +0.5 % |  55.0 |  52.0 | PASS |
+| f1        |   19.9 |   118.3 |   118.0 |  -0.2 % |  71.0 |  67.0 | PASS |
+| tightest  |   31.5 |    62.5 |    62.8 |  +0.5 % |  52.0 |  46.0 | PASS |
+| oar-hold  |   31.5 |   102.7 |   101.7 |  -0.9 % |  87.0 |  79.0 | PASS |
+| oar-back  |   31.5 |   102.7 |   101.7 |  -0.9 % |  87.0 |  79.0 | PASS |
+
 | g1        |   19.9 |    90.1 |    90.6 |  +0.5 % |  55.0 |  52.0 | PASS |
 | f1        |   19.9 |   118.3 |   118.0 |  -0.2 % |  71.0 |  67.0 | PASS |
 | tightest  |   31.5 |    62.5 |    62.8 |  +0.5 % |  52.0 |  46.0 | PASS |

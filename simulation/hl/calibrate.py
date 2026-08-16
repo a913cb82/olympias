@@ -24,7 +24,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from commands.parser import Command
+from commands.parser import Command, parse_file
 from common.chain import KT
 from hl.curves import Calibration, _scalars, _tables
 from ll.hull import equilibrium_speed
@@ -623,85 +623,122 @@ def measure_turn_drag(tables):
 
 def measure_yaw_build():
     """The yaw build-up (task T3): the LL's omega's approach to its
-    turn rate. The fit: the delayed two-timescale exponential
-    omega(t) = ss*(1 - A*exp(-(t-td)/tf) - (1-A)*exp(-(t-td)/ts))
-    (the S-shape's delay td) per family, measured at the family's
-    usage: the helm turns PER HELM FRACTION from the settled steady
-    straight (the 28.8 steady cruise — the sprint/zig-zag turns'
-    context) vs the oar-only turns (midship helm, one side holds).
-    The fits are near single exponentials, so the grid includes
-    A = 1.0 and tf up to 12."""
-    import math
+    turn rate, chosen by the general selection (hl/curvesel.py): the
+    nested families from the single-tau rise through the delayed
+    two-timescale (the S-shape's delay — the yaw inertia leaves the
+    omega flat ~1 s before the rise) are fitted by CONTINUOUS least
+    squares, the AIC picks per cell (the deterministic oracle's
+    parsimony), and the window LOOCV reports the parameter stability
+    across the fit-window lengths. Measured at the family's usage:
+    the helm turns PER HELM FRACTION from the settled steady straight
+    (the 28.8 steady cruise — the sprint/zig-zag turns' context) vs
+    the oar-only turns (midship helm, one side holds). The acceptance
+    gates are the arbiter: the AIC-combined candidate's HL response
+    (the sprint + zig-zag position rows) is checked against the
+    two-timescale baseline, and the baseline wins if the candidate
+    degrades the positions."""
+    from hl.curvesel import select_yaw_family
     builds = {}
 
-    def fit(rec, ss, with_delay=False):
-        """The delayed two-timescale exponential: the LL's
-        yaw rise is a DELAYED exponential — the yaw inertia leaves the
-        omega flat for ~1 s before the rise (the helm family's measured
-        td 1.0 s at all fractions); the tightest/oar families (the
-        rudder's/back's instant force) fit td 0."""
-        tds = (0.0, 0.5, 1.0, 1.5, 2.0, 3.0) if with_delay else (0.0,)
-        best = None
-        for A in (0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 1.0):
-            for tf in (1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 8.0, 10.0, 12.0):
-                for ts in (10.0, 12.0, 15.0, 18.0, 22.0, 26.0, 31.6, 40.0):
-                    for td in tds:
-                        err = 0.0
-                        for i, w in enumerate(rec):
-                            t = (i + 1) * DT
-                            if t < td:
-                                pred = 0.0
-                            else:
-                                tt = t - td
-                                pred = ss * (1 - A * math.exp(-tt / tf)
-                                             - (1 - A) * math.exp(-tt / ts))
-                            err += (w - pred) ** 2
-                        if best is None or err < best[0]:
-                            best = (err, A, tf, ts, td)
-        return best
+    def cells(force=None):
+        out = {}
+        rate = rate_for_speed("Olympias", 28.8)
+        fracs, As, tfs, tss, tds, fams = [], [], [], [], [], []
+        for frac in (1.0, 2.0 / 3.0, 1.0 / 3.0):
+            ship = LLShip(rate=rate, pressure=("steady", "steady"))
+            ship.V = 0.0
+            while ship.t < 600.0:          # the steady straight
+                ship.step(DT)
+            ship.helm_dir, ship.helm_frac = "port", frac
+            rec = []
+            while ship.t < 720.0:
+                ship.step(DT)
+                rec.append(abs(ship.omega))
+            sel = select_yaw_family(rec, DT, f"helm {frac:.3f}",
+                                    force=force)
+            fracs.append(frac); As.append(sel["A"]); tfs.append(sel["tf"])
+            tss.append(sel["ts"]); tds.append(sel["td"])
+            fams.append(sel["family"])
+        out["helm"] = dict(fracs=fracs, A=As, tf=tfs, ts=tss, td=tds,
+                           family=fams)
+        rate = rate_for_speed("Olympias", 6.5, n_oars=85)
+        for key, helm, state in (("tightest", ("starboard", 1.0), "hold"),
+                                 ("oar", ("midship", 0.0), "hold")):
+            ship = LLShip(rate=rate, helm=helm, oar_state=("row", state))
+            ship.V = 6.5 * KT
+            rec = []
+            while ship.t < 120.0:
+                ship.step(DT)
+                rec.append(abs(ship.omega))
+            sel = select_yaw_family(rec, DT, key, force=force)
+            out[key] = dict(A=sel["A"], tf=sel["tf"], ts=sel["ts"],
+                            td=sel["td"], family=sel["family"])
+        return out
 
-    # the helm family: per fraction, from the settled steady straight
-    rate = rate_for_speed("Olympias", 28.8)
-    fracs, As, tfs, tss, tds = [], [], [], [], []
-    for frac in (1.0, 2.0 / 3.0, 1.0 / 3.0):
-        ship = LLShip(rate=rate, pressure=("steady", "steady"))
-        ship.V = 0.0
-        while ship.t < 600.0:              # the steady straight
-            ship.step(DT)
-        ship.helm_dir, ship.helm_frac = "port", frac
-        rec = []
-        while ship.t < 720.0:
-            ship.step(DT)
-            rec.append(abs(ship.omega))
-        e, A, tf, ts, td = fit(rec, rec[-1], with_delay=True)
-        fracs.append(frac); As.append(A); tfs.append(tf); tss.append(ts)
-        tds.append(td)
-        log(f"  yaw build helm {frac:.3f}: A={A:.2f} tf={tf:.1f} "
-            f"ts={ts:.0f} td={td:.1f}")
-    builds["helm"] = dict(fracs=fracs, A=As, tf=tfs, ts=tss, td=tds)
-    # the tightest (helm 1.0 + one side holds) and the oar family
-    rate = rate_for_speed("Olympias", 6.5, n_oars=85)
-    ship = LLShip(rate=rate, helm=("starboard", 1.0),
-                  oar_state=("row", "hold"))
-    ship.V = 6.5 * KT
-    rec = []
-    while ship.t < 120.0:
-        ship.step(DT)
-        rec.append(abs(ship.omega))
-    e, A, tf, ts, td = fit(rec, rec[-1], with_delay=True)
-    builds["tightest"] = dict(A=A, tf=tf, ts=ts, td=td)
-    log(f"  yaw build tightest: A={A:.2f} tf={tf:.1f} ts={ts:.0f} "
-        f"td={td:.1f}")
-    ship = LLShip(rate=rate, helm=("midship", 0.0), oar_state=("row", "hold"))
-    ship.V = 6.5 * KT
-    rec = []
-    while ship.t < 120.0:
-        ship.step(DT)
-        rec.append(abs(ship.omega))
-    e, A, tf, ts, td = fit(rec, rec[-1], with_delay=True)
-    builds["oar"] = dict(A=A, tf=tf, ts=ts, td=td)
-    log(f"  yaw build oar: A={A:.2f} tf={tf:.1f} ts={ts:.0f} td={td:.1f}")
-    return builds
+    aic_table = cells()
+    base_table = cells(force="two")
+    # the gate-arbiter: the candidate's HL response vs the baseline's on
+    # the sprint + zig-zag position rows (the LL's rows are cached — the
+    # deterministic oracle)
+    cand_err = _yaw_gate_err(aic_table)
+    base_err = _yaw_gate_err(base_table)
+    log(f"  yaw-build gate check: AIC-combined {cand_err:.3f} NM vs "
+        f"two-baseline {base_err:.3f} NM")
+    if cand_err <= base_err + 0.05:
+        log("  -> the AIC-combined candidate accepted")
+        return aic_table
+    log("  -> the gate arbiter picks the two-timescale baseline "
+        "(the delayed build phases the turn positions)")
+    return base_table
+
+
+# the LL's cached sprint/zig-zag rows for the yaw-build gate check
+_LL_CACHE = {}
+
+
+def _yaw_gate_err(yaw_build_table):
+    """The HL's sprint + zig-zag position sum with the candidate
+    yaw_build (the LL's rows are cached — the deterministic oracle).
+    The base is the PREVIOUS calibration's full tables (the proper
+    d-scaled cells — the raw module defaults would distort the turns'
+    sizes and the decision with them)."""
+    global _LL_CACHE
+    import json as _json
+    from hl.curves import Calibration
+    from hl.ship import Ship as HLShip
+    prev = _json.load(open(Path(__file__).resolve().parent
+                           / "calibration" / "latest.json"))
+    tables = dict(prev["tables"])
+    tables["yaw_build"] = yaw_build_table
+    cal = Calibration(prev["meta"], tables, prev.get("scalars"))
+    total = 0.0
+    for path in ("examples/sprint_turn.txt", "examples/zigzag.txt"):
+        if path not in _LL_CACHE:
+            cmds = parse_file(Path(__file__).resolve().parents[1] / path)
+            ll = LLShip()
+            ll.V = 0.0
+            events, idx, rows = list(cmds), 0, []
+            while ll.t <= events[-1].time + 1e-6:
+                while idx < len(events) and events[idx].time <= ll.t + 1e-6:
+                    ll.apply(events[idx]); idx += 1
+                ll.step(DT)
+                if abs(ll.t - round(ll.t)) < DT / 2:
+                    rows.append(ll.snap())
+            _LL_CACHE[path] = (cmds, rows)
+        cmds, ll_rows = _LL_CACHE[path]
+        hl = HLShip(rate=28.8, curves=cal)
+        hl.V = 0.0
+        events, idx, hl_rows = list(cmds), 0, []
+        while hl.t <= events[-1].time + 1e-6:
+            while idx < len(events) and events[idx].time <= hl.t + 1e-6:
+                hl.apply(events[idx]); idx += 1
+            hl.step(0.5)
+            if abs(hl.t - round(hl.t)) < 0.25:
+                hl_rows.append(hl.snap())
+        from harness.comparator import metrics
+        m = metrics(ll_rows, hl_rows)
+        total += m["position_sep"]["hl"]
+    return total
 
 
 def hl_step(hl):
@@ -1113,33 +1150,37 @@ def measure_turn_beta():
 
 def measure_d_oar_v():
     """The oar-family orbit diameter vs the ship's speed, m: the
-    LL's one-side-back turn's settled orbits. Drained cells: the
-    oar-back 600-s run's instantaneous 2V/|omega| binned by V (the
-    multi-stable band's means); the fresh plateau = the d_oar(0) gate
-    cell (103.5 m) above 3.0 kt (the half-circle anchor — the gate
-    measures the fresh orbit); the transition interpolated (the LL's
-    collapse transient — no settled states exist there)."""
+    LL's one-side-back turn's settled orbits, fitted by the general
+    selection (hl/curvesel.py — the fractional polynomial over the
+    drained samples' instantaneous 2V/|omega|, the degree and powers
+    chosen by the AIC; the multi-stable band's scatter is the fit's
+    data). The fresh plateau = the d_oar(0) gate cell (103.5 m) above
+    3.0 kt (the half-circle anchor — the gate measures the fresh
+    orbit)."""
     from harness.script import turn_stream
+    from hl.curvesel import fit_fp
     from ll.ship import rate_for_speed
     rate = rate_for_speed("Olympias", 6.5, n_oars=85)
     ship = LLShip(rate=rate, oar_state=("row", "back"))
     ship.V = 6.5 * KT
     cmds = turn_stream(rate, ("midship", 0.0), ("row", "back"))
     events, idx = list(cmds), 0
-    samples = []
+    vs, ds = [], []
     while ship.t <= 600.0:
         while idx < len(events) and events[idx].time <= ship.t + 1e-6:
             ship.apply(events[idx]); idx += 1
         ship.step(DT)
-        if ship.t >= 110.0:                  # the drained phase only
-            samples.append((ship.V / KT, 2.0 * ship.V
-                            / max(abs(ship.omega), 1e-9)))
-    cells = []
-    for v in (1.0, 1.5, 2.0, 2.5):
-        b = [d for vk, d in samples if abs(vk - v) < 0.25]
-        cells.append(round(sum(b) / len(b), 1) if b else None)
-    out = dict(v_kt=[1.0, 1.5, 2.0, 2.5, 3.0], d=cells + [103.5])
-    log(f"  d_oar_v: {out['d']}")
+        if ship.t >= 110.0 and ship.V > 0.4 * KT:   # the drained phase
+            vs.append(ship.V / KT)
+            ds.append(2.0 * ship.V / max(abs(ship.omega), 1e-9))
+    fp = fit_fp(vs, ds)
+    out = dict(fp=dict(deg=fp["deg"], p1=fp["p1"], p2=fp["p2"],
+                       coeffs=fp["coeffs"]),
+               v_plateau=3.0, plateau_d=103.5,
+               fp_rss=fp["rss"], fp_loo=fp["loo"])
+    log(f"  d_oar_v FP{int(fp['deg'])}: p1={fp['p1']} p2={fp['p2']} "
+        f"coeffs={[round(c, 2) for c in fp['coeffs']]} "
+        f"(AIC {fp['aic']:.0f}, LOO {fp['loo']:.1f})")
     return out
 
 

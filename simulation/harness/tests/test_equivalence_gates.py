@@ -30,10 +30,10 @@ SCRIPTS = [
               position_sep=0.1, position_path=0.1, position_max=0.15,
           bin_max=5.0, bin_rms=3.0)),
     ("sprint_turn", "examples/sprint_turn.txt", 0.0, (),
-     dict(position_sep=0.30, position_max=0.30),  # annotated: the
+     dict(position_sep=0.20, position_max=0.25),  # annotated: the
      # turn-phase composition at the d-scaled turn cells + the
-     # fishtail's tau_exit pair (the K29 re-scan closed the zig-zag's
-     # out-of-sample row at the cost of the sprint's, 0.162 -> 0.280)
+     # fishtail's tau_exit pair (the curve-selection calibration's
+     # re-scan, 0.280 -> 0.148)
      dict(mean_speed_pct=0.01, t_3nm_pct=0.01,
           fatigue_consumed_delta=0.05, rate_eff_delta=1.0,
           position_path=0.1, bin_max=5.0, bin_rms=3.0)),
@@ -63,9 +63,10 @@ SCRIPTS = [
               position_sep=0.1, position_path=0.1, position_max=0.15,
           bin_max=5.0, bin_rms=3.0)),
     ("zigzag", "examples/zigzag.txt", 0.0, (),
-     dict(mean_speed_pct=0.025, position_sep=0.45, position_max=0.5),
+     dict(mean_speed_pct=0.025, position_sep=0.20, position_max=0.25),
      # annotated: the reversal-mix composition (the fishtail-reversal
-     # mix + the d-scaled turn cells, K26); the mean +1.3 % residual
+     # mix + the d-scaled turn cells); the mean +1.3 % residual; the
+     # position re-measured at the curve-selection calibration (0.136)
      dict(fatigue_consumed_delta=0.05, rate_eff_delta=1.0,
           position_path=0.1, bin_max=5.0, bin_rms=3.0)),
 ]
