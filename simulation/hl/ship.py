@@ -159,7 +159,16 @@ class Ship:
             # shrinks ~linearly with V); the helm-frac oar turns keep
             # the fixed d_oar cell (the rudder-dominated tightest)
             d = c.d_oar_v(self.V) if frac <= 0.0 else c.d_oar(frac)
-            wss = sign * 2.0 * self.V / d
+            # the pressure scaling (the K27): the LL's oar-turn orbit
+            # grows as the rowing side's effort falls (the measured
+            # ~1/p_row — the weaker drive, the slower V, the larger
+            # orbit — 1.36-1.38x at the steady rows vs 1/0.7); the
+            # spoude-measured d_oar_v would run the cruise's
+            # steady-rowed legs ~1.4x too tight
+            if frac <= 0.0:
+                wss = sign * 2.0 * self.V * max(p_eff, 0.1) / d
+            else:
+                wss = sign * 2.0 * self.V / d
         elif self.helm_dir != "midship" and self.helm_frac > 0.0:
             sign = -1.0 if self.helm_dir == "star" else 1.0
             wss = sign * 2.0 * self.V / c.d_rudder(self.helm_frac)

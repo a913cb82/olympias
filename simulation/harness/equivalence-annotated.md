@@ -188,6 +188,7 @@ Annotation (all rows per §3 map; the script-specific notes):
 
 
 
+
 ### 4.2 sprint + turns (25 min) — `examples/sprint_turn.txt`
 
 | metric | LL | HL | diff | tolerance | verdict |
@@ -225,6 +226,7 @@ Annotation:
 - `heading` +0.087 deg (info) — the fishtail's tail on the end heading.
 - `fatigue_consumed_delta` −0.005 pts — the typical nets residual
   (§9.3.6).
+
 
 
 
@@ -278,6 +280,7 @@ Annotation:
 
 
 
+
 ### 4.4 sample cruise_turn.txt — `examples/cruise_turn.txt`
 
 | metric | LL | HL | diff | tolerance | verdict |
@@ -292,10 +295,10 @@ Annotation:
 | fatigue_consumed_delta | 0.000 | -0.142 | -0.142 | 0.05 | VIOLATION |
 | rate_eff | 32.998 | 33.298 | +0.300 | 1.0 | — |
 | rate_eff_delta | 0.000 | 0.300 | +0.300 | 1.0 | PASS |
-| position_sep | 0.000 | 0.181 | +0.181 | 0.1 | VIOLATION |
-| position_path | 0.000 | 0.088 | +0.088 | 0.1 | PASS |
-| position_max | 0.000 | 0.201 | +0.201 | 0.2 | VIOLATION |
-| heading | -5.361 | -16.650 | -11.289 | 5.0 | — |
+| position_sep | 0.000 | 0.194 | +0.194 | 0.1 | VIOLATION |
+| position_path | 0.000 | 0.091 | +0.091 | 0.1 | PASS |
+| position_max | 0.000 | 0.213 | +0.213 | 0.2 | VIOLATION |
+| heading | -5.361 | -10.318 | -4.956 | 5.0 | — |
 | distance | 2.400 | 2.353 | -0.047 | 0.05 | — |
 | bin_max | 0.000 | -52.303 | -52.303 | 5.0 | — |
 | bin_rms | 0.000 | 22.010 | +22.010 | 3.0 | — |
@@ -316,6 +319,7 @@ Annotation:
   interplay with the drift table.
 - `heading` +0.646 deg (info) — the turn's end-heading residual; the
   fishtail tau_exit row.
+
 
 
 
@@ -359,6 +363,7 @@ Annotation:
   over the longest straight run; inside L2-6.
 - `mean_speed_pct` +0.0 % at 28.8 spm — inside `pressure_rows_std_kt`
   (0.045 kt steady std).
+
 
 
 
@@ -410,6 +415,7 @@ Annotation:
 
 
 
+
 ### 4.7 zig-zag (out-of-sample) — `examples/zigzag.txt`
 
 | metric | LL | HL | diff | tolerance | verdict |
@@ -439,10 +445,17 @@ Annotation: the out-of-sample stress test (task T10) — the reversal-mix compos
 
 
 
+
 ## 5. The turn scenarios — the 5 equivalence rows, annotated
 
 | scenario | rate | D LL m | D HL m | diff | t180 LL s | t180 HL s | verdict |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| g1        |   19.9 |    90.1 |    90.6 |  +0.5 % |  55.0 |  52.0 | PASS |
+| f1        |   19.9 |   118.3 |   118.0 |  -0.2 % |  71.0 |  67.0 | PASS |
+| tightest  |   31.5 |    62.5 |    62.8 |  +0.5 % |  52.0 |  46.0 | PASS |
+| oar-hold  |   31.5 |   102.7 |   101.7 |  -0.9 % |  87.0 |  79.0 | PASS |
+| oar-back  |   31.5 |   102.7 |   101.7 |  -0.9 % |  87.0 |  79.0 | PASS |
+
 | g1        |   19.9 |    90.1 |    90.6 |  +0.5 % |  55.0 |  52.0 | PASS |
 | f1        |   19.9 |   118.3 |   118.0 |  -0.2 % |  71.0 |  67.0 | PASS |
 | tightest  |   31.5 |    62.5 |    62.8 |  +0.5 % |  52.0 |  46.0 | PASS |

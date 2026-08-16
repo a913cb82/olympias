@@ -203,7 +203,7 @@ boundaries with named causes — §11.2.)
 | long_cruise (20 min, steady) | +0.0 % | −0.021 pts | — | 0.018 NM | PASS |
 | sprint_turn (25 min, 2 turns + bursts) | +0.7 % | −0.005 pts | — | 0.162 NM | **annotated** — the turn-phase composition at the d-scaled turn cells (K26; §11.2) |
 | wprime_burst (30 min, 2 bursts + recovery) | −0.1 % | −0.005 pts | — | 0.043 NM | PASS — the sway-transient closure holds |
-| cruise_turn.txt (the sample script) | −1.7 % | −0.137 pts | — | 0.086 NM | **annotated** — the back-tail boundary (the multi-stable low-speed state; §11.2) |
+| cruise_turn.txt (the sample script) | −1.9 % | −0.142 pts | — | 0.194 NM | **annotated** — the back-tail boundary (the multi-stable low-speed state + the K27 pressure-scaled orbit; §11.2) |
 | three_nm_cruise (35 min, the 3-NM gate) | +0.0 % | −0.005 pts | −0.0 % | 0.037 NM | PASS — the t_3nm gate's first number |
 | tempo_loss (exhausted sprint) | −0.1 % | −0.013 pts | — | 0.007 NM | PASS |
 | zig-zag (out-of-sample, task T10) | +1.3 % | −0.000 pts | — | 0.186 NM | **annotated** — the reversal-mix composition at the d-scaled turn cells (K26) + the mean +1.3 % (§11.2) |
@@ -340,8 +340,8 @@ current phase (Phase 4/5) or HL-loose by design with a named trigger.
 | Turn diameters, all 5 scenarios | validated (±1.3 % max vs the 5 % gate); the turn *time* (t180) is informational — the HL is systematically fast (oar-hold 98 vs 85 s, −13 %) — the yaw build-up fix + the t180 gate: §11.2. The settled orbit after the turn tracks within 1.09× on all five turns (the oar-back's drained spiral reproduced, §9.3 item 7) | §9.2 | — |
 | Cruise means (long_cruise, wprime_burst) | validated (+0.0 % / +0.5 %) | §9.1 | — |
 | Fatigue consumption, all 6 scripts | validated (−0.005 pts) | §9.1 | — |
-| Mean speed, turn-heavy scripts (cruise_turn, sprint_turn) | sprint_turn **validated** (+0.7 % — the T4 turn-drag curve); cruise_turn **annotated** (−1.7 % — the back-tail boundary: the multi-stable low-speed state, §11.2; the named trigger: a brake-aware decay) | §9.1 + §11.2 | — |
-| Position after course changes | clean on six of seven scripts (long 0.026, wprime 0.041, three_nm 0.050, tempo 0.013, cruise_turn 0.071 ✓, zig-zag 0.026 ✓ — the zig-zag's row CLOSED by the K23 tau_exit re-measurement); **annotated** on the sprint_turn (0.153 — the turn-phase composition residual at the drained-state turns, §11.2). The drift cells are dt-sensitive (the validation dt pinned — T7) | §9.3.4 + §11.2 | — |
+| Mean speed, turn-heavy scripts (cruise_turn, sprint_turn) | sprint_turn **validated** (+0.7 % — the T4 turn-drag curve); cruise_turn **annotated** (−1.9 % — the back-tail boundary: the multi-stable low-speed state, §11.2; the named trigger: a brake-aware decay) | §9.1 + §11.2 | — |
+| Position after course changes | clean on four of seven scripts (long 0.018, wprime 0.043, three_nm 0.037, tempo 0.007); **annotated** on three — the turn-mixed scripts' composition at the d-scaled turn cells: cruise_turn 0.194 (the back-tail boundary), sprint_turn 0.162, zig-zag 0.186 (K26/K27, §11.2). The drift cells are dt-sensitive (the validation dt pinned — T7) | §9.3.4 + §11.2 | — |
 | Time to 3 NM | validated — the first number: −0.0 % (three_nm_cruise, 35 min) | §6 | — |
 | Settled stroke rate within 1 spm | identity at the anchors — the rate_eff row on all 6 scripts is ±0.0 spm by construction (the HL's achieved rate = the commanded rate; the LL shows NO tempo loss at 25.5–50 spm, measured incl. rate 50 — the loss region is rate 50 + exhausted as a start transient) | §6 + §11.2 | — |
 | Numeric pressures / helm fractions between the anchors | interpolated, not gated — the sweep grid closed this: the interpolation midpoints measured + gated at the standard tolerances (the LL's steady curve is non-monotone — the 30-spm dip) | AGENTS (the HL) + §11.2 | the gates are defined at the schema anchors; the interpolation residuals are recorded, not gated (a scope decision) |
@@ -385,7 +385,7 @@ Every exit criterion included its regression lock; the suite is green
 | --- | --- |
 | T1 — the ch.7 triple | open-with-locked-test — the cause named: the LL's rate→power shape (per-man gross 110/129/152 W vs the chain's 115/145/180, the gap growing with rate; E_g flat 51.5–52.3 % vs the 53–55 % band — the blade/kinematics chain, not the hull factor; the speed-dependent uplift moves the reference the wrong way). Lock: `ll/tests/test_triple_lock.py` |
 | T2 — the tightest turn + t_360 | part-closed — the hold_frac re-measurement (0.05 → 0.08) closes the tightest D (62.6 m, +1.0 %, was +9.2 %) and lands the drained floor (3.22 kt ≈ the halved 3.25); the t_360 stays open with the cause quantified: the turn-time = π·D/V̄ is the surge problem (the LL's turn-mean 3.8 kt vs the trial's 2.91; every mechanism measured and excluded — the W′ drain, the rudder drag, the hold brake, the linear yaw damping) |
-| T3 — the turn timing | the t180 row is gated at ±20 % (the measured timing-loose band: the HL systematically fast in the D-matched turns, the worst row −11 % after the K23 yaw-build re-measurement at the families' true usage) |
+| T3 — the turn timing | the t180 row is gated at ±20 % (the measured timing-loose band: the HL systematically fast in the D-matched turns, the worst row −12 % after the K23 yaw-build re-measurement at the families' true usage; the K27: the oar-only d_oar_v is scaled by the rowing side's pressure — the LL's oar orbit grows as the effort falls (measured ~1/p_row), so the cruise's steady-rowed back leg no longer runs ~2× fast in yaw) |
 | T4 — the turn-state drag | landed — the per-helm × per-pressure × per-rate curve (the k falls with rate) + the settled-orbit asym nets; the sprint_turn mean +1.0 % → +0.7 % |
 | T5 — the bin gate | landed — `bin_max` 5 % / `bin_rms` 3 % in the comparator + the violation set; the cruise_turn's back-tail bin scoped |
 | T6 — the sweep gate | landed — the PRESSURE_RATES extended to the midpoints (the LL's steady curve is non-monotone — the 30-spm dip) + the locked 6-cell sweep test |
@@ -399,14 +399,13 @@ named cause: the turn-speed floor — the trial's implied ~2.9 vs the
 LL's ~3.2), the drift angle (1.4° vs 7.8–15°, the quantified gap), the
 ch.7 triple (−2.5/−4.6/−6.1 %, the rate→power shape), and the Level-2
 annotated boundaries (measured, named, locked): the cruise_turn back-tail
-(mean −1.7 %, fatigue −0.137 — the multi-stable low-speed state: the
+(mean −1.9 %, fatigue −0.142 — the multi-stable low-speed state: the
 orbits 0.83–1.38 kt, the ±40 % per-stroke ripple, the V-dependent
-refill cycles), the sprint_turn's position 0.153 (annotated — the
-fishtail's remaining tail). The zig-zag's position row CLOSED by the
-K23 tau_exit re-measurement (0.300 → 0.026 clean; the reversal-mix
-mean +1.3 % stays annotated). All five turns PASS (±3.9 %; the
-tightest 62.7/61.7 — the +9.2 % row closed); the t180's inside the
-±20 % band.
+refill cycles), the turn-mixed scripts' positions (cruise 0.194,
+sprint 0.162, zig-zag 0.186 — the composition at the d-scaled turn
+cells + the K27 pressure-scaled orbit). All five turns PASS (±0.9 %;
+the tightest 62.5/62.8 — the +9.2 % row closed); the t180's inside the
+±20 % band (the worst row −12 %).
 
 The K20/K21/K22 follow-up (the replay UI's oar-back view) is CLOSED:
 the oar-back's drained spiral and the per-side tank sequence are now
