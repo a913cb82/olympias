@@ -212,6 +212,11 @@ class Calibration:
         self._tau_back_tau = list(tb.get("tau", TAU_BACK_TAU))
         self.d_rudder_pts = [tuple(p) for p in t["d_rudder"]]
         self.d_oar_pts = [tuple(p) for p in t["d_oar"]]
+        dv = t.get("d_oar_v") or {}
+        self._dov_kt = list(dv.get("v_kt", [1.0, 1.5, 2.0, 2.5, 3.0]))
+        self._dov_d = list(dv.get("d", [18.3, 25.7, 41.4, 55.2, 103.5]))
+        self.v_flow = (scalars or {}).get("v_flow", 3.0)
+        self.v_collapse = (scalars or {}).get("v_collapse", 1.5)
         na = t.get("net_hold") or {}
         nb = t.get("net_back") or {}
         self._asym_rates = list(na.get("rates", [24.0, 30.0, 36.0]))
@@ -297,8 +302,15 @@ class Calibration:
     def vasym(self, rate, pressure, state="hold", empty=False):
         """Chase target with one side stopped, m/s. state: the stopped
         side's oar state (hold or back — measured separately: the reversed
-        oar collapses at low rates, the harness caught it)."""
-        if state == "back":
+        oar collapses at low rates, the harness caught it).
+
+        The back state's FRESH target is the hold row (the fresh-phase
+        identity, measured: the oar-hold and oar-back V/W traces are
+        identical while the tank lasts — the back degenerates to the
+        hold-brake at speed, so the ship decays exactly like the hold
+        toward its ~3.36 kt settle); only the DRAINED back state uses
+        the back rows (the collapsed multi-stable orbit, mean ~2.03)."""
+        if state == "back" and empty:
             v = self._asym_row(self._vback_rates, self._vback_kt,
                                self._vback_steady, rate, pressure)
         else:
@@ -341,6 +353,23 @@ class Calibration:
 
     def d_oar(self, helm_frac):
         return _d_inv_lin(self.d_oar_pts, helm_frac)
+
+    def d_oar_v(self, v):
+        """The oar-family orbit diameter vs the ship's speed, m (the K22
+        measurement — the one-side-stopped turns' settled orbits): the
+        drained cells measured from the LL's oar-back run (the
+        instantaneous 2V/|omega| binned by V: 18.3 @ 1.0 kt … 55.2 @
+        2.5 kt), the fresh plateau anchored to the half-circle gate cell
+        (103.5 m = d_oar(0)) above 3.0 kt, the transition interpolated
+        (the LL's collapse transient — no settled states exist there).
+        The drained orbit is ~linear in V, so the settled yaw rate
+        (~2.9-3.2 deg/s) is speed-independent, like the LL's."""
+        vk = v / KT
+        if vk >= self._dov_kt[-1]:
+            return self._dov_d[-1]
+        if vk <= self._dov_kt[0]:
+            return self._dov_d[0]
+        return _pwl(self._dov_kt, self._dov_d, vk)
 
     # -- crew tank -----------------------------------------------------
     def net(self, rate, pressure):

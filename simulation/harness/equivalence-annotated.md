@@ -6,8 +6,8 @@ This is the task A deliverable: "the equivalence tables annotated with
 per-row tolerance sources and the calibration id".
 
 Provenance: the numbers below are copied as printed from
-`/tmp/validation_k21.log` (the latest full run, 2026-08-16 — the K21
-acceptance: the fresh-phase tank nets for the one-side-stopped turns),
+`/tmp/validation_k22.log` (the latest full run, 2026-08-16 — the K22
+acceptance: the per-side tanks + the speed-dependent oar orbit),
 one `harness/run_validation.py`
 invocation — the 7 scripts (incl. the T10 zig-zag) + the 5 turn
 scenarios. Nothing has been re-computed or smoothed; the table cells
@@ -25,10 +25,10 @@ Reproduction (one command, from `simulation/`):
 
 | item | value |
 | --- | --- |
-| calibration id | `calib-2026-08-16-f006dc5` (the pinned calibration; `meta.id`) |
-| LL commit | `f006dc5` (HEAD; the calibration's `meta.ll_commit`) |
-| date | 2026-08-16 (calibration date; the log run Aug 16 — the K21
-  acceptance: the fresh-phase tank nets) |
+| calibration id | `calib-2026-08-16-6da11f0` (the pinned calibration; `meta.id`) |
+| LL commit | `6da11f0` (HEAD; the calibration's `meta.ll_commit`) |
+| date | 2026-08-16 (calibration date; the log run Aug 16 — the K22
+  acceptance: the per-side tanks + the speed-dependent oar orbit) |
 | dt config | LL dt = 0.05 s · HL dt = 0.5 s · 1 Hz telemetry samples (as printed in every table) |
 | rig / fleet config | Olympias · spruce · hull ×1.0 · 170 oars (`meta.config`) |
 | run tool | `harness/run_validation.py` (one command stream on both simulators, same seeded state; the pair contract — simulation/AGENTS.md) |
@@ -37,8 +37,9 @@ The calibration's protocols (`meta.protocols`, 14 entries): `vstar`
 (ll.hull.equilibrium_speed), `pressure_rows` (LL ship 420-s settle, 60-s
 tail mean), `empty` (tiers' W preset 0), `asym` (row,hold / row,back,
 spoude + steady), `nets` (LL tank slope at the settled speed; refills:
-low preset, short window), `net_fresh` (LL tank slope over the first
-70 s from the 6.5-kt entry — the turns' full-tank context, K21),
+low preset, short window), `net_fresh` (LL full-drain means — tier W / time to empty, the turns'
+full-tank context, K21/K22), `d_oar_v` + `v_flow` + `v_collapse` (the
+speed-dependent oar orbit + the backing blades' flow-limit gate, K22),
 `d_tables` (ll.ship.run_turn, |y| at 180 deg),
 `tau_surge` (LSQ of the chase to the 28.8 spm rest start), `tau_turn`
 (scan so the HL's |y| at 180 deg matches the LL's), `drift` (LL
@@ -117,7 +118,7 @@ Every HL result carries the tolerance source (the calibration run id) —
 the pair contract: "Every HL result carries the tolerance source (calibration run
 id)". Supporting refs: the gates are implemented in comparator.py
 (§6/§20), the fatigue gate as the depletion integral (§20, §9.3.6), the
-calibration residuals live in the pinned JSON (`calib-2026-08-16-f006dc5
+calibration residuals live in the pinned JSON (`calib-2026-08-16-6da11f0
 .json` → `residuals`), and the named decision points (the definition of done — simulation/AGENTS.md)
 (DAG tasks B–F measured the curves the gates judge).
 
@@ -147,8 +148,6 @@ exercises differently.
 ## 4. The script set — the 7 equivalence tables, annotated
 
 ### 4.1 long_cruise (20 min, steady) — `examples/long_cruise.txt`
-
-calibration: calib-2026-08-16-f006dc5 · LL dt=0.05 s · HL dt=0.5 s · 1 Hz samples · V0=0.0 kt
 
 | metric | LL | HL | diff | tolerance | verdict |
 | --- | --- | --- | --- | --- | --- |
@@ -182,9 +181,8 @@ Annotation (all rows per §3 map; the script-specific notes):
   `pressure_rows_std_kt` (0.045 kt std at 28.8 spm steady).
 
 
-### 4.2 sprint + turns (25 min) — `examples/sprint_turn.txt`
 
-calibration: calib-2026-08-16-f006dc5 · LL dt=0.05 s · HL dt=0.5 s · 1 Hz samples · V0=0.0 kt
+### 4.2 sprint + turns (25 min) — `examples/sprint_turn.txt`
 
 | metric | LL | HL | diff | tolerance | verdict |
 | --- | --- | --- | --- | --- | --- |
@@ -221,9 +219,8 @@ Annotation:
   (§9.3.6).
 
 
-### 4.3 W' burst + recovery (30 min) — `examples/wprime_burst.txt`
 
-calibration: calib-2026-08-16-f006dc5 · LL dt=0.05 s · HL dt=0.5 s · 1 Hz samples · V0=0.0 kt
+### 4.3 W' burst + recovery (30 min) — `examples/wprime_burst.txt`
 
 | metric | LL | HL | diff | tolerance | verdict |
 | --- | --- | --- | --- | --- | --- |
@@ -262,14 +259,13 @@ Annotation:
 - `t_3nm` None — the script covers 2.74 NM; the L2-3 gate needs §4.5.
 
 
-### 4.4 sample cruise_turn.txt — `examples/cruise_turn.txt`
 
-calibration: calib-2026-08-16-f006dc5 · LL dt=0.05 s · HL dt=0.5 s · 1 Hz samples · V0=5.0 kt
+### 4.4 sample cruise_turn.txt — `examples/cruise_turn.txt`
 
 | metric | LL | HL | diff | tolerance | verdict |
 | --- | --- | --- | --- | --- | --- |
-| mean_speed | 4.798 | 4.715 | -0.083 | 0.01 | — |
-| mean_speed_pct | 0.000 | -0.017 | -1.7 % | 0.01 | VIOLATION |
+| mean_speed | 4.798 | 4.726 | -0.072 | 0.01 | — |
+| mean_speed_pct | 0.000 | -0.015 | -1.5 % | 0.01 | VIOLATION |
 | t_3nm | None | n/a | n/a | ±0.01 | — |
 | t_3nm_pct | 0.0 | n/a | n/a | ±0.01 | — |
 | fatigue | 1.000 | 0.000 | -1.000 | 0.05 | — |
@@ -278,11 +274,11 @@ calibration: calib-2026-08-16-f006dc5 · LL dt=0.05 s · HL dt=0.5 s · 1 Hz sam
 | fatigue_consumed_delta | 0.000 | -0.137 | -0.137 | 0.05 | VIOLATION |
 | rate_eff | 32.998 | 33.298 | +0.300 | 1.0 | — |
 | rate_eff_delta | 0.000 | 0.300 | +0.300 | 1.0 | PASS |
-| position_sep | 0.000 | 0.086 | +0.086 | 0.1 | PASS |
-| heading | 4.429 | -2.669 | -7.098 | 5.0 | — |
-| distance | 2.401 | 2.359 | -0.042 | 0.05 | — |
-| bin_max | 0.000 | -41.857 | -41.857 | 5.0 | — |
-| bin_rms | 0.000 | 15.713 | +15.713 | 3.0 | — |
+| position_sep | 0.000 | 0.071 | +0.071 | 0.1 | PASS |
+| heading | 4.429 | 17.223 | +12.795 | 5.0 | — |
+| distance | 2.401 | 2.364 | -0.037 | 0.05 | — |
+| bin_max | 0.000 | -42.918 | -42.918 | 5.0 | — |
+| bin_rms | 0.000 | 14.378 | +14.378 | 3.0 | — |
 
 Annotation:
 
@@ -302,9 +298,8 @@ Annotation:
   fishtail tau_exit row.
 
 
-### 4.5 3-NM cruise (35 min) — `examples/three_nm_cruise.txt`
 
-calibration: calib-2026-08-16-f006dc5 · LL dt=0.05 s · HL dt=0.5 s · 1 Hz samples · V0=0.0 kt
+### 4.5 3-NM cruise (35 min) — `examples/three_nm_cruise.txt`
 
 | metric | LL | HL | diff | tolerance | verdict |
 | --- | --- | --- | --- | --- | --- |
@@ -340,9 +335,8 @@ Annotation:
   (0.045 kt steady std).
 
 
-### 4.6 tempo loss (exhausted sprint) — `examples/tempo_loss.txt`
 
-calibration: calib-2026-08-16-f006dc5 · LL dt=0.05 s · HL dt=0.5 s · 1 Hz samples · V0=0.0 kt
+### 4.6 tempo loss (exhausted sprint) — `examples/tempo_loss.txt`
 
 | metric | LL | HL | diff | tolerance | verdict |
 | --- | --- | --- | --- | --- | --- |
@@ -379,9 +373,8 @@ Annotation:
   (brittle endpoint, §9.3.6).
 
 
-### 4.7 zig-zag (out-of-sample) — `examples/zigzag.txt`
 
-calibration: calib-2026-08-16-f006dc5 · LL dt=0.05 s · HL dt=0.5 s · 1 Hz samples · V0=0.0 kt
+### 4.7 zig-zag (out-of-sample) — `examples/zigzag.txt`
 
 | metric | LL | HL | diff | tolerance | verdict |
 | --- | --- | --- | --- | --- | --- |
@@ -403,10 +396,18 @@ calibration: calib-2026-08-16-f006dc5 · LL dt=0.05 s · HL dt=0.5 s · 1 Hz sam
 
 Annotation: the out-of-sample stress test (task T10) — the reversal-mix composition residual (+1.3 % mean, 0.318 NM position — §6, VALIDATION §11.2).
 
+
 ## 5. The turn scenarios — the 5 equivalence rows, annotated
 
+
+| scenario | rate | D LL m | D HL m | diff | t180 LL s | t180 HL s | verdict |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | g1        |   19.9 |    89.5 |    92.9 |  +3.9 % |  54.0 |  52.0 | PASS |
+| f1        |   19.9 |   116.8 |   118.8 |  +1.7 % |  70.0 |  66.0 | PASS |
+| tightest  |   31.5 |    62.7 |    61.7 |  -1.6 % |  52.0 |  44.0 | PASS |
+| oar-hold  |   31.5 |   103.5 |   100.1 |  -3.3 % |  87.0 |  72.0 | PASS |
+| oar-back  |   31.5 |   103.5 |   100.1 |  -3.3 % |  87.0 |  72.0 | PASS |
+        |   19.9 |    89.5 |    92.9 |  +3.9 % |  54.0 |  52.0 | PASS |
 | f1        |   19.9 |   116.8 |   118.8 |  +1.7 % |  70.0 |  66.0 | PASS |
 | tightest  |   31.5 |    62.7 |    61.7 |  -1.6 % |  52.0 |  44.0 | PASS |
 | oar-hold  |   31.5 |   103.5 |   100.1 |  -3.3 % |  87.0 |  72.0 | PASS |
@@ -424,19 +425,19 @@ Annotation per scenario:
   `tau_hold_settles_kt` 3.343); t180 52.0 vs 44.0 s.
 - **oar-hold** (no rudder): −3.3 % — the `d_oar` 0-helm cell (103.5 m);
   t180 87.0 vs 72.0 s carries the hold-entry transient (tau_hold).
-- **oar-back** (no rudder): −3.5 % on D (the back ≡ hold degeneration
-  at speed, VALIDATION §3) — the `tau_back` collapse fit (the 44 → 24
-  collapse window: mean diff 0.0565 m/s over a 1.31 kt window mean);
-  its t180 (101.0 s) carries the collapse-window fit. The *settled
-  orbit after the turn* does not degenerate to the hold row: the LL's
-  back turn drains into a tight spiral (D 103.5 → 17–45 m on the W′
-  cycles) while the HL parks on its calibrated 103.5 m orbit — 2.56×
-  over t ∈ [250, 350], growing to 5.9× (VALIDATION §9.3 item 7 — the
-  annotated boundary, locked in test_equivalence_gates). The *crew
-  fatigue* through the turn is closed (K21): the HL's one-side-stopped
-  legs drain at the measured fresh nets while the tank is full — the
-  depletion delta −0.005 across the turn scenarios (the 0.05 gate,
-  locked in test_equivalence_gates).
+- **oar-back** (no rudder): −3.3 % on D (the back ≡ hold degeneration
+  at speed, VALIDATION §3) — the `tau_back` collapse fit; its t180
+  (72.0 s) sits inside the ±20 % band. The *settled orbit after the
+  turn* is CLOSED (K22): the HL's per-side tanks + the v_flow-gated
+  backing drain + the speed-dependent d_oar_v orbit reproduce the
+  LL's drained spiral (settled D 40.4/43.0 m — 1.06×, was 2.56×) and
+  the per-side tank sequence (port empty by ~80 s, star by ~180 s);
+  the depletion delta −0.006. The remaining residual: the LL's
+  low-speed W′ refill oscillation is mean-tracked, not reproduced
+  (VALIDATION §9.3 item 7 — locked in test_equivalence_gates). The *crew fatigue* and the tank sequence are closed with it (K21/K22):
+the per-side tanks drain at the measured fresh nets while full, the
+backing side V-gated at v_flow — the depletion delta −0.006 across the
+turn scenarios (the 0.05 gate, locked in test_equivalence_gates).
 
 The D verdicts here are HL-vs-LL (the L2-4 gate); the LL's own anchors
 vs the W5 trials are the Level-1 record (VALIDATION §3: G1 +0.3 %,
@@ -487,14 +488,15 @@ F1 +4.9 %, tightest +1.0 %).
 
 ## 7. Verdict summary
 
-On this log (the K21 acceptance, calibration `calib-2026-08-16-f006dc5`),
+On this log (the K22 acceptance, calibration `calib-2026-08-16-6da11f0`),
 every L2-4 turn row passes (max |diff| 3.9 % vs the 5 % gate, inside
 the 3.6 % tau_turn residual); the script set carries only the three
 documented annotated violations (sprint_turn's position 0.201 NM, the
 cruise_turn back-tail mean/fatigue/bins, the zig-zag mean/position —
-each with its named cause, §6); the one-side-stopped turns' crew
-fatigue is closed (the fresh-phase nets, K21 — the depletion delta
-−0.005 across the turn scenarios, locked in
+each with its named cause, §6); the oar-back follow-up (K20-K22) is
+closed: the per-side tank sequence and the drained spiral are
+reproduced (settled orbit 1.06×, depletion −0.006, all five turns'
+settled orbits within 1.09× — locked in
 `harness/tests/test_equivalence_gates.py`). The definition of done
 (simulation/AGENTS.md) is met — no unexplained or silent mismatches —
 and the gate rows are locked as regression tests

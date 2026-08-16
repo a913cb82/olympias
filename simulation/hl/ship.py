@@ -62,7 +62,7 @@ class Ship:
         self.x = 0.0
         self.y = 0.0
         self.t = 0.0
-        self.W = self.curves.w_max
+        self.W = {"port": self.curves.w_max, "star": self.curves.w_max}
         self.W_max = self.curves.w_max
         self.W_frac = 1.0
         self.rate_eff = rate
@@ -82,7 +82,7 @@ class Ship:
         p_eff = min(c.resolve_pressure(self.pressure[s]) for s in rowing) \
             if rowing else 0.0
         if rowing:
-            empty = self.W <= 0.0
+            empty = self.W[rowing[0]] <= 0.0
             # the achieved rate: the exhausted crew loses tempo at high
             # rates (the LL's rower.py tempo branch — measured curve);
             # the chase and the tank net evaluate at the achieved rate,
@@ -96,9 +96,23 @@ class Ship:
                 stopped = OTHER[rowing[0]]
                 # the per-state lag (task E): the one-side-stopped decays
                 # measured separately — the back collapse at low rate
-                # (cruise_turn 1440 s bin) is much slower than the chase
-                tau = c.tau_back(self.rate) \
-                    if self.oar_state[stopped] == "back" else c.tau_hold
+                # (cruise_turn 1440 s bin) is much slower than the chase.
+                # The back's FRESH phase decays like the hold (the
+                # degeneration — the identical V/W traces, K22); the slow
+                # tau_back applies only in the drained state (the K13
+                # low-speed context)
+                if self.oar_state[stopped] == "back" and empty:
+                    # the drained decay: the power-limited COLLAPSE is
+                    # fast above v_collapse (the oar-back's ~12-s drop
+                    # after the tank empties); the low-speed drift below
+                    # is the slow measured tau_back (the cruise_turn's
+                    # 1440-s bin context, K13)
+                    if self.V > c.v_collapse * KT:
+                        tau = c.tau_hold
+                    else:
+                        tau = c.tau_back(self.rate)
+                else:
+                    tau = c.tau_hold
                 vstar = c.vasym(r_eff, p_eff, self.oar_state[stopped],
                                 empty)
             self.V += (vstar - self.V) / tau * dt
@@ -139,7 +153,12 @@ class Ship:
             side = asym[0]
             sign = 1.0 if side == "star" else -1.0     # turn toward the held side
             frac = self.helm_frac if self.helm_dir == side else 0.0
-            wss = sign * 2.0 * self.V / c.d_oar(frac)
+            # the oar-only turns (no helm) chase the measured speed-
+            # dependent orbit (K22: the drained spiral — the LL's orbit
+            # shrinks ~linearly with V); the helm-frac oar turns keep
+            # the fixed d_oar cell (the rudder-dominated tightest)
+            d = c.d_oar_v(self.V) if frac <= 0.0 else c.d_oar(frac)
+            wss = sign * 2.0 * self.V / d
         elif self.helm_dir != "midship" and self.helm_frac > 0.0:
             sign = 1.0 if self.helm_dir == "star" else -1.0
             wss = sign * 2.0 * self.V / c.d_rudder(self.helm_frac)
@@ -209,30 +228,49 @@ class Ship:
         # symmetric ~68) — the symmetric net would drain the tank ~2.4x
         # too fast and drop the chase target early (the cruise_turn
         # fatigue/mean regressions, K13)
+        # -- crew tank (per side, K22) --------------------------------
+        # The LL's tanks are per side: the rowing side drains first (the
+        # fresh nets), the backing side only after the V collapse unlocks
+        # its blades (the flow limit at v_flow — the back stroke degener-
+        # ates to a hold-brake at speed); the holding side never drains
+        # (the passive brake). The symmetric state keeps both in lockstep.
+        def drain(side, net, dt):
+            if net > 0.0:
+                return max(0.0, self.W[side] - net * dt)
+            return min(self.W_max, self.W[side] + min(-net,
+                                                      self.W_max / c.tau_w) * dt)
         if rowing:
             stopped = [s for s in ("port", "star")
                        if self.oar_state[s] in ("hold", "back")]
             if len(rowing) == 1 and stopped:
+                row_side, stop_side = rowing[0], stopped[0]
                 # the FRESH-phase drain is the commanded pull (the
-                # measured net_fresh — the turns' full-tank entry, ~the
-                # symmetric net at the low rates); the drained nets
-                # (net_asym ~ 0) apply only after the tank empties — the
-                # legs entered drained (the K13 cruise_turn context)
-                # keep the ~0 nets, exactly as before
-                net = c.net_asym(r_eff, p_eff,
-                                 self.oar_state[stopped[0]]) \
+                # measured net_fresh — the turns' full-tank entry); the
+                # drained nets (net_asym ~ 0) apply only after the tank
+                # empties (the K13 cruise_turn context, unchanged)
+                row_net = c.net_asym(r_eff, p_eff,
+                                     self.oar_state[stop_side]) \
                     if empty else c.net_fresh(r_eff, p_eff)
+                self.W[row_side] = drain(row_side, row_net, dt)
+                if self.oar_state[stop_side] == "back":
+                    # the flow-limit gate: locked (net ~ 0) while the
+                    # ship is fast; the unlocked drain (the fresh net)
+                    # below v_flow; the drained net after its own empty
+                    stop_net = c.net_asym(r_eff, p_eff, "back") \
+                        if self.W[stop_side] <= 0.0 \
+                        else (0.0 if self.V > c.v_flow * KT
+                              else c.net_fresh(r_eff, p_eff))
+                    self.W[stop_side] = drain(stop_side, stop_net, dt)
+                else:
+                    self.W[stop_side] = drain(stop_side, 0.0, dt)
             else:
-                net = c.net(r_eff, p_eff)
-            if net > 0.0:
-                self.W = max(0.0, self.W - net * dt)
-            else:
-                self.W = min(self.W_max, self.W + min(-net,
-                                                      self.W_max / c.tau_w) * dt)
+                for side in rowing:
+                    self.W[side] = drain(side, c.net(r_eff, p_eff), dt)
         else:
-            self.W = min(self.W_max, self.W + min(c.p_crit,
-                                                  self.W_max / c.tau_w) * dt)
-        self.W_frac = self.W / self.curves.w_max
+            for side in ("port", "star"):
+                self.W[side] = drain(side, -c.p_crit, dt)  # refill at the cap
+        self.W_frac = self.W[rowing[0]] / self.curves.w_max \
+            if rowing else self.W["port"] / self.curves.w_max
 
         # -- position ----------------------------------------------------
         self.psi += self.omega * dt
@@ -284,7 +322,8 @@ class Ship:
         for side in ("port", "star"):
             crew[side] = dict(state=self.oar_state[side],
                               pressure=self.pressure[side],
-                              rate_eff=self.rate_eff, W_frac=self.W_frac,
+                              rate_eff=self.rate_eff,
+                              W_frac=self.W[side] / self.curves.w_max,
                               limited="none")
         return dict(t=self.t, V=self.V, omega=self.omega, psi=self.psi,
                     x=self.x, y=self.y, rate=self.rate, crew=crew,

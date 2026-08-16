@@ -86,15 +86,14 @@ TURNS = [
 ]
 
 # The settled orbit after the turn (the K20 finding, from the replay
-# UI's oar-back view): four turns track the LL's settled orbit within
-# ~1.1x (mean D = 2V/|omega| over t in [250, 350] — g1 84.8/88.0 m, f1
-# 111.2/114.2 m, tightest 58.6/62.7 m, oar-hold 95.3/103.5 m); oar-back
-# is the annotated exception (2.56x — the LL's one-side-back turn drains
-# into a tight spiral on the W' cycles, D 103.5 -> 17-45 m, while the
-# HL's fixed-diameter d_oar model parks on its calibrated orbit; the
-# ratio grows to ~5.9x by t = 600 — VALIDATION §9.3 item 7 / §11.3).
+# UI's oar-back view, closed by K22): all five turns now track the
+# LL's settled orbit within ~1.1x — the oar-back's drained spiral is
+# reproduced by the measured speed-dependent orbit (d_oar_v) plus the
+# per-side tank sequence (mean D over t in [250, 350]: g1 84.8/88.0, f1
+# 111.2/114.2, tightest 58.6/62.7, oar-hold 95.3/103.5, oar-back
+# 40.4/43.0 — VALIDATION §9.3 item 7).
 SETTLED_D_RATIO = {"g1": 1.30, "f1": 1.30, "tightest": 1.30,
-                   "oar-hold": 1.30, "oar-back": 4.00}
+                   "oar-hold": 1.30, "oar-back": 1.30}
 
 
 def _settled_d_ratio(rows_ll, rows_hl, t0=250.0, t1=350.0) -> float:

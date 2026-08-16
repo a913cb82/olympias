@@ -709,6 +709,7 @@ def main() -> None:
     tables["net_back"] = asym_nets["back"]
     fresh_nets = measure_fresh_nets(NET_RATES)
     tables["net_fresh"] = fresh_nets["hold"]  # back == hold (the degeneration)
+    tables["d_oar_v"] = measure_d_oar_v()
     d_tables = measure_d_tables()
     tables["d_rudder"] = [[f, None] if f == 0.0 else [f, d]
                           for f, d in d_tables["rudder"]]
@@ -739,7 +740,8 @@ def main() -> None:
     scalars = dict(_scalars(), tau_surge=tau_surge, tau_turn=tau_turn,
                    tau_hold=tau_hold["entry"], turn_drag_extra=turn_k,
                    tau_exit=tau_exit,
-                   drift_tau_exp=measure_drift_tau(tau_exit))
+                   drift_tau_exp=measure_drift_tau(tau_exit),
+                   v_flow=measure_v_flow())
     residuals = dict(
         vstar="exact at the grid points (mean-force bisection)",
         pressure_rows_std_kt=dict(
@@ -772,8 +774,13 @@ def main() -> None:
             asym="LL ship (row, hold / row, back), spoude + steady, settle",
             nets="LL tank slope at the settled speed (refills: low preset, "
                  "short window)",
-            net_fresh="LL tank slope over the first 70 s from the 6.5-kt "
-                      "entry (the turns' full-tank context)",
+            net_fresh="LL full-drain mean (tier W / time to empty) from "
+                      "the 6.5-kt entry (the turns' full-tank context)",
+            d_oar_v="LL oar-back 600-s run: the instantaneous 2V/|omega| "
+                    "binned by V (the drained means; the fresh plateau "
+                    "anchored to the d_oar(0) gate cell)",
+            v_flow="the LL oar-back run's star-side W' slope vs V (the "
+                   "back blades' flow-limit unlock ~3.0 kt)",
             d_tables="ll.ship.run_turn protocol (|y| at 180 deg)",
             tau_surge="LSQ of the chase to the 28.8 spm rest start",
             tau_turn="scan so the HL's |y| at 180 deg matches the LL's",
@@ -834,12 +841,16 @@ def measure_fresh_nets(rates):
     state, W/man (the turns' context — the legs start from the 6.5-kt
     entry with a full tank and drain at the commanded pull; the
     settled-orbit nets (measure_asym_nets) are the drained-state
-    values). Window: the first 70 s from the entry, the tank far from
-    empty at every rate (the 44.5 cell ends at ~15 %). The hold and
-    back states share the fresh phase — the measured V/W traces are
-    identical (the back degenerates to the hold at speed, VALIDATION
-    §3), so one table serves both; the drain peaks at 36 spm and
-    falls at 44.5 (the ship collapses faster, less blade work)."""
+    values). Cell = the FULL-DRAIN mean (the tier's W / the time to
+    empty, K22): the LL's drain rate decays as V falls, so the HL's
+    linear drain must empty the tank in the LL's time (the sequence —
+    the rowing side's empty before the 180° crossing — depends on it).
+    The empty is detected on the side's W_frac (the min across the
+    tiers — the snap's tank, the depletion metric's basis; the tier
+    MEAN would dilute the drain with the slowest tier, ~2.9x at 44.5).
+    The hold and back states share the fresh phase — the measured V/W
+    traces are identical (the back degenerates to the hold at speed,
+    VALIDATION §3), so one table serves both."""
     out = {}
     for state in ("hold", "back"):
         spoude, steady = [], []
@@ -848,17 +859,95 @@ def measure_fresh_nets(rates):
                 ship = LLShip(rate=rate, pressure=(preset, preset),
                               oar_state=("row", state))
                 ship.V = 6.5 * KT
-                for _ in range(int(5.0 / DT)):
+                for _ in range(int(1.0 / DT)):
                     ship.step(DT)
-                w0 = [t.W for t in ship.crew["port"].tiers.values()]
-                for _ in range(int(65.0 / DT)):
+                w0 = sum(t.W for t in ship.crew["port"].tiers.values()) / 3.0
+                t0 = ship.t
+                t_empty = None
+                while ship.t - t0 < 400.0:
                     ship.step(DT)
-                w1 = [t.W for t in ship.crew["port"].tiers.values()]
-                outk.append(round(sum(a - b for a, b in zip(w0, w1))
-                                  / 3.0 / 65.0, 1))
+                    if t_empty is None and ship.crew["port"].W_frac <= 0.0:
+                        t_empty = ship.t - t0
+                if t_empty:
+                    outk.append(round(w0 / t_empty, 1))
+                else:
+                    outk.append(0.0)
         out[state] = dict(rates=list(rates),
                           spoude=spoude, steady=steady)
         log(f"  fresh nets {state}: spoude {spoude} steady {steady}")
+    return out
+
+
+def measure_d_oar_v():
+    """The oar-family orbit diameter vs the ship's speed, m (K22): the
+    LL's one-side-back turn's settled orbits. Drained cells: the
+    oar-back 600-s run's instantaneous 2V/|omega| binned by V (the
+    multi-stable band's means); the fresh plateau = the d_oar(0) gate
+    cell (103.5 m) above 3.0 kt (the half-circle anchor — the gate
+    measures the fresh orbit); the transition interpolated (the LL's
+    collapse transient — no settled states exist there)."""
+    from harness.script import turn_stream
+    from ll.ship import rate_for_speed
+    rate = rate_for_speed("Olympias", 6.5, n_oars=85)
+    ship = LLShip(rate=rate, oar_state=("row", "back"))
+    ship.V = 6.5 * KT
+    cmds = turn_stream(rate, ("midship", 0.0), ("row", "back"))
+    events, idx = list(cmds), 0
+    samples = []
+    while ship.t <= 600.0:
+        while idx < len(events) and events[idx].time <= ship.t + 1e-6:
+            ship.apply(events[idx]); idx += 1
+        ship.step(DT)
+        if ship.t >= 110.0:                  # the drained phase only
+            samples.append((ship.V / KT, 2.0 * ship.V
+                            / max(abs(ship.omega), 1e-9)))
+    cells = []
+    for v in (1.0, 1.5, 2.0, 2.5):
+        b = [d for vk, d in samples if abs(vk - v) < 0.25]
+        cells.append(round(sum(b) / len(b), 1) if b else None)
+    out = dict(v_kt=[1.0, 1.5, 2.0, 2.5, 3.0], d=cells + [103.5])
+    log(f"  d_oar_v: {out['d']}")
+    return out
+
+
+def measure_v_flow():
+    """The backing side's flow-limit threshold, kt (K22): the V below
+    which the back stroke unlocks (the peak-force cap stops degenerating
+    it to the hold-brake) and its W' starts draining. From the oar-back
+    run: the star's W' slope vs V — locked (slope ~ 0) at 3.37 kt,
+    draining at the full rate by 2.6 kt; the threshold is the slope's
+    half-power point (~3.0)."""
+    from harness.script import turn_stream
+    from ll.ship import rate_for_speed
+    rate = rate_for_speed("Olympias", 6.5, n_oars=85)
+    ship = LLShip(rate=rate, oar_state=("row", "back"))
+    ship.V = 6.5 * KT
+    cmds = turn_stream(rate, ("midship", 0.0), ("row", "back"))
+    events, idx = list(cmds), 0
+    slopes = []
+    prev = None
+    while ship.t <= 600.0:
+        while idx < len(events) and events[idx].time <= ship.t + 1e-6:
+            ship.apply(events[idx]); idx += 1
+        ship.step(DT)
+        if ship.t >= 40.0 and int(ship.t * 2) != int((ship.t - DT) * 2):
+            s = ship.crew["star"].W_frac
+            if prev:
+                slopes.append((ship.V / KT, (prev[1] - s) / (ship.t - prev[0])))
+            prev = (ship.t, s)
+    full = max(s for _, s in slopes)
+    # the half-power threshold: the V where the star's drain rate crosses
+    # half the full rate (the peak-cap ramp — the unlock is gradual)
+    active = [(v, s) for v, s in slopes if s > 0.02 * full]
+    half = full / 2.0
+    v_flow = None
+    for (v0, s0), (v1, s1) in zip(active, active[1:]):
+        if s0 <= half <= s1 or s1 <= half <= s0:
+            f = (half - s0) / (s1 - s0)
+            v_flow = v0 + f * (v1 - v0)
+            break
+    out = round(v_flow, 2) if v_flow else 3.0
+    log(f"  v_flow: {out} kt (slopes {len(slopes)}, full rate {full*1000:.1f}/ks)")
     return out
 
 
