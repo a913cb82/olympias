@@ -19,7 +19,8 @@
   #clock { font-variant-numeric:tabular-nums; color:var(--mut); }
   #meta { margin-left:auto; color:var(--mut); font-size:12px; max-width:46%; }
   main { flex:1; display:flex; min-height:0; }
-  #mapwrap { flex:1; position:relative; min-width:0; }
+  #mapwrap { flex:1; position:relative; min-width:0; cursor:grab; }
+  #mapwrap.panning { cursor:grabbing; }
   svg#map { position:absolute; inset:0; width:100%; height:100%; }
   svg text { font:11px system-ui, sans-serif; fill:var(--mut); }
   .gridline { stroke:#e8e4da; stroke-width:1; }
@@ -78,6 +79,8 @@
     <option value="50">50×</option><option value="100">100×</option>
   </select>
   <span id="clock">0:00 / 0:00</span>
+  <span id="zoom">1.0×</span>
+  <button id="fit" title="fit the run in view (wheel: zoom, drag: pan)">⤢</button>
   <span id="meta"></span>
 </header>
 <main>
@@ -143,7 +146,11 @@ async function loadRun(id) {
 }
 
 /* ---------- layout ---------- */
-function rebuild() {
+/* The view: the run is fitted into the window, then the user can zoom
+   (wheel, around the cursor) and pan (drag). The ship is drawn at TRUE
+   world scale (37 m), clamped to [26, 200] px so it never vanishes on
+   long tracks nor dominates the turn runs. */
+function fitView() {
   const logs = S.logs;
   S.tEnd = Math.max(...Object.values(logs).filter(Boolean).map(l => l.rows.at(-1).t));
   const pts = Object.values(logs).filter(Boolean).flatMap(l => l.rows);
@@ -153,27 +160,37 @@ function rebuild() {
   const dx = Math.max(x1 - x0, 1), dy = Math.max(y1 - y0, 1);
   x0 -= dx * .06; x1 += dx * .06; y0 -= dy * .06; y1 += dy * .06;
   const w = $("map").clientWidth || 800, h = $("map").clientHeight || 500;
-  const k = Math.min(w / (x1 - x0), h / (y1 - y0));
-  const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
-  S.view = { w, h, k, cx, cy, step: niceStep(Math.max(x1 - x0, y1 - y0) / 8) };
+  S.view = { w, h, cx: (x0 + x1) / 2, cy: (y0 + y1) / 2,
+             k: Math.min(w / (x1 - x0), h / (y1 - y0)),
+             zoom: 1, panX: 0, panY: 0 };
+}
 
+function redraw() {
   const svg = $("map");
-  svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
+  const v = S.view;
+  svg.setAttribute("viewBox", `0 0 ${v.w} ${v.h}`);
   svg.replaceChildren();
   drawGrid(svg);
-  for (const sim of ["ll", "hl"]) if (logs[sim]) {
+  for (const sim of ["ll", "hl"]) if (S.logs[sim]) {
     drawTrace(svg, sim);
     drawShip(svg, sim);
   }
   buildCommands();
   paintMeta();
   S.iDone = { ll: -1, hl: -1 };
-  seek(0, true);
+  $("zoom").textContent = S.view.zoom.toFixed(1) + "×";
+  seek(S.t, true);
   paintReadoutsBox();
 }
 
-function sx(x) { const v = S.view; return v.w / 2 + (x - v.cx) * v.k; }
-function sy(y) { const v = S.view; return v.h / 2 - (y - v.cy) * v.k; }
+function rebuild() {   // a (new) run: fit, then draw
+  fitView();
+  redraw();
+  buildScrub();
+}
+
+function sx(x) { const v = S.view; return v.w / 2 + (x - v.cx) * v.k * v.zoom + v.panX; }
+function sy(y) { const v = S.view; return v.h / 2 - (y - v.cy) * v.k * v.zoom + v.panY; }
 const pt = p => `${sx(p.x).toFixed(1)},${sy(p.y).toFixed(1)}`;
 
 function niceStep(raw) {
@@ -183,18 +200,18 @@ function niceStep(raw) {
 }
 
 function drawGrid(svg) {
-  const { step } = S.view;
+  const v = S.view;
+  const hw = v.w / (2 * v.k * v.zoom), hh = v.h / (2 * v.k * v.zoom);  // visible half-spans
+  const step = niceStep(Math.max(hw, hh) / 4);
   const g = document.createElementNS(NS, "g");
-  for (let x = Math.floor((S.view.cx - S.view.w / 2 / S.view.k) / step) * step;
-       x <= S.view.cx + S.view.w / 2 / S.view.k; x += step) {
-    line(g, x, S.view.cx - S.view.w / 2 / S.view.k, x, S.view.cx + S.view.w / 2 / S.view.k, "gridline");
-    label(g, sx(x) + 4, sy(S.view.cy + S.view.h / 2 / S.view.k) - 4,
+  for (let x = Math.floor((v.cx - hw) / step) * step; x <= v.cx + hw; x += step) {
+    line(g, x, v.cx - hw, x, v.cx + hw, "gridline");
+    label(g, sx(x) + 4, sy(v.cy + hh) - 4,
           step >= 1000 ? `${(x / 1000).toFixed(1)} km` : `${Math.round(x)} m`);
   }
-  for (let y = Math.floor((S.view.cy - S.view.h / 2 / S.view.k) / step) * step;
-       y <= S.view.cy + S.view.h / 2 / S.view.k; y += step) {
-    line(g, S.view.cx - S.view.w / 2 / S.view.k, y, S.view.cx + S.view.w / 2 / S.view.k, y, "gridline");
-    label(g, sx(S.view.cx - S.view.w / 2 / S.view.k) + 4, sy(y) - 4,
+  for (let y = Math.floor((v.cy - hh) / step) * step; y <= v.cy + hh; y += step) {
+    line(g, v.cx - hw, y, v.cx + hw, y, "gridline");
+    label(g, sx(v.cx - hw) + 4, sy(y) - 4,
           step >= 1000 ? `${(y / 1000).toFixed(1)} km` : `${Math.round(y)} m`);
   }
   svg.appendChild(g);
@@ -242,6 +259,7 @@ function drawShip(svg, sim) {
   const poly = document.createElementNS(NS, "polygon");
   poly.setAttribute("class", "hull");
   poly.setAttribute("points", hullPts().map(p => p.join(",")).join(" "));
+  poly.setAttribute("vector-effect", "non-scaling-stroke");
   g.appendChild(poly);
   svg._oars = svg._oars || {}; svg._steer = svg._steer || {};
   svg._oars[sim] = [];
@@ -256,11 +274,13 @@ function drawShip(svg, sim) {
         cs.setAttribute("class", "oar-casing");           // the colour line, so
         cs.setAttribute("x1", 0); cs.setAttribute("y1", 0);  // the oars read on
         cs.setAttribute("x2", 0); cs.setAttribute("y2", side * 4.8);  // any ground
+        cs.setAttribute("vector-effect", "non-scaling-stroke");
         og.appendChild(cs);
         const ln = document.createElementNS(NS, "line");
         ln.setAttribute("class", "oar-line");
         ln.setAttribute("x1", 0); ln.setAttribute("y1", 0);
         ln.setAttribute("x2", 0); ln.setAttribute("y2", side * 4.8);
+        ln.setAttribute("vector-effect", "non-scaling-stroke");
         og.appendChild(ln);
         g.appendChild(og);
         svg._oars[sim].push({ el: og, line: ln, side, x, y0, color: null });
@@ -272,6 +292,7 @@ function drawShip(svg, sim) {
   st.setAttribute("class", "steer-line");
   st.setAttribute("x1", 0); st.setAttribute("y1", 0);
   st.setAttribute("x2", -11); st.setAttribute("y2", 3);
+  st.setAttribute("vector-effect", "non-scaling-stroke");
   stg.appendChild(st);
   g.appendChild(stg);
   svg._steer[sim] = stg;
@@ -369,8 +390,11 @@ function render() {
     if (!l) continue;
     const p = pose(l.rows, S.t);
     const ship = svg._ships[sim];
+    // true world scale: 37 m long, clamped so the icon stays usable
+    const v = S.view;
+    const shipPx = Math.max(26, Math.min(200, 37 * v.k * v.zoom));
     ship.setAttribute("transform",
-      `translate(${sx(p.x).toFixed(1)} ${sy(p.y).toFixed(1)}) rotate(${(-p.psi * 180 / Math.PI).toFixed(1)}) scale(1.05)`);
+      `translate(${sx(p.x).toFixed(1)} ${sy(p.y).toFixed(1)}) rotate(${(-p.psi * 180 / Math.PI).toFixed(1)}) scale(${(shipPx / 52.5).toFixed(3)})`);
     updateShipOrders(sim, p.crew, p.helm, S.t, p.rate);
     const i = Math.min(l.rows.length - 1, Math.max(0, Math.floor(S.t)));
     if (i !== S.iDone[sim]) {           // redraw the laid path once per second
@@ -487,12 +511,42 @@ function frame(ts) {
 
 $("play").onclick = () => S.playing ? pause() : play();
 $("speed").onchange = e => S.speed = parseFloat(e.target.value);
+$("fit").onclick = () => { fitView(); redraw(); };
 $("compare").onchange = () => { paintReadoutsBox(); };
 document.addEventListener("keydown", e => {
   if (e.code === "Space" && !/INPUT|SELECT|BUTTON/.test(e.target.tagName)) {
     e.preventDefault(); S.playing ? pause() : play();
   }
 });
+
+/* zoom (wheel, around the cursor) and pan (drag) */
+const wrap = $("mapwrap");
+wrap.addEventListener("wheel", e => {
+  e.preventDefault();
+  const rect = wrap.getBoundingClientRect();
+  const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+  const v = S.view, kz = v.k * v.zoom;
+  const xw = v.cx + (mx - v.w / 2 - v.panX) / kz;
+  const yw = v.cy - (my - v.h / 2 - v.panY) / kz;
+  v.zoom = Math.max(0.5, Math.min(400, v.zoom * Math.exp(-e.deltaY * 0.0012)));
+  v.panX = mx - v.w / 2 - (xw - v.cx) * v.k * v.zoom;
+  v.panY = my - v.h / 2 + (yw - v.cy) * v.k * v.zoom;
+  redraw();
+}, { passive: false });
+let drag = null;
+wrap.addEventListener("mousedown", e => {
+  drag = [e.clientX, e.clientY];
+  wrap.classList.add("panning");
+});
+window.addEventListener("mousemove", e => {
+  if (!drag) return;
+  S.view.panX += e.clientX - drag[0];
+  S.view.panY += e.clientY - drag[1];
+  drag = [e.clientX, e.clientY];
+  redraw();
+});
+window.addEventListener("mouseup", () => { drag = null; wrap.classList.remove("panning"); });
+
 let rszTimer;
 window.addEventListener("resize", () => { clearTimeout(rszTimer); rszTimer = setTimeout(rebuild, 200); });
 
@@ -507,10 +561,6 @@ function buildScrub() {
   $("cmdstrip").insertAdjacentElement("beforebegin", s);
   $("cmdbar").title = "";
 }
-
-/* hook: rebuild the scrubber alongside the command strip */
-const _rebuild = rebuild;
-rebuild = function () { _rebuild(); buildScrub(); };
 
 loadIndex();
 </script>

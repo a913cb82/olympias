@@ -199,7 +199,11 @@ same `harness/run_both` telemetry the validation uses — LL solid, HL
 outline, toggle the comparison). Play/pause (space), 0.5–100× speed, a
 scrubber, clickable command markers on the timeline (jump to the command
 and its state), readouts (speed, rate, heading, yaw, helm, per-side
-state/pressure and the W′ meter). The ships carry their orders: oar
+state/pressure and the W′ meter). The map zooms with the wheel (around
+the cursor) and pans by dragging (⤢ refits); the ship is drawn at its
+TRUE world scale (37 m, clamped to 26–200 px) — the turning circles are
+the trial's measured diameters, and zooming into a turn shows the ship
+in honest proportion to its circle. The ships carry their orders: oar
 angle = state (row sweeps at the stroke rate, hold perpendicular, back
 blades forward, bank raised), oar colour = pressure (rest grey → steady
 green → fast amber → spoude red), the stern oar = helm deflection.
