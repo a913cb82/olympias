@@ -407,7 +407,12 @@ Annotation per scenario:
   at speed, VALIDATION §3) — the `tau_back` collapse fit (the 44 → 24
   collapse window: mean diff 0.0565 m/s over a 1.31 kt window mean);
   its t180 (94.0 s) is closer to the LL's 98.0 s than the hold row's —
-  the collapse-window fit at work.
+  the collapse-window fit at work. The *settled orbit after the turn*
+  does not degenerate to the hold row: the LL's back turn drains into
+  a tight spiral (D 103.5 → 17–45 m on the W′ cycles) while the HL
+  parks on its calibrated 103.5 m orbit — 2.56× over t ∈ [250, 350],
+  growing to 5.9× (VALIDATION §9.3 item 7 — the annotated boundary,
+  locked in test_equivalence_gates).
 
 The D verdicts here are HL-vs-LL (the L2-4 gate); the LL's own anchors
 vs the W5 trials are the Level-1 record (VALIDATION §3: G1 +0.3 %,

@@ -40,6 +40,14 @@ TURN_LABELS = {
     "oar-back": "turn oar-back — one side backs, midship helm",
 }
 
+# Shown by the viewer as a caveat next to the run's meta line (the
+# honest-layers rule made visible: known HL-loose regions are flagged
+# where they appear, with the doc pointer).
+NOTES = {
+    "oar-back": "known HL-loose after the turn (the drained spiral vs the "
+                "fixed orbit) — VALIDATION §11.3 item 5",
+}
+
 
 def write_log(id_: str, sim: str, label: str, meta: dict,
               commands: list, rows: list) -> None:
@@ -98,7 +106,10 @@ def dump_turn(name: str, v0_kt: float, n_oars: int, helm: tuple,
                             n_commands=out["meta"]["n_commands"]),
                   commands=cmds, rows=out[sim])
         sims.append(sim)
-    index.append(dict(id=name, label=TURN_LABELS[name], sims=sims))
+    entry = dict(id=name, label=TURN_LABELS[name], sims=sims)
+    if name in NOTES:
+        entry["note"] = NOTES[name]
+    index.append(entry)
     print(f"  {name:16s} {time.time()-t0:5.0f} s wall (turn @ {rate:.1f} spm)")
 
 

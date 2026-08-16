@@ -85,6 +85,26 @@ TURNS = [
     ("oar-back", 6.5, 85, ("midship", 0.0), ("row", "back"), 0.05),
 ]
 
+# The settled orbit after the turn (the K20 finding, from the replay
+# UI's oar-back view): four turns track the LL's settled orbit within
+# ~1.1x (mean D = 2V/|omega| over t in [250, 350] — g1 84.8/88.0 m, f1
+# 111.2/114.2 m, tightest 58.6/62.7 m, oar-hold 95.3/103.5 m); oar-back
+# is the annotated exception (2.56x — the LL's one-side-back turn drains
+# into a tight spiral on the W' cycles, D 103.5 -> 17-45 m, while the
+# HL's fixed-diameter d_oar model parks on its calibrated orbit; the
+# ratio grows to ~5.9x by t = 600 — VALIDATION §9.3 item 7 / §11.3).
+SETTLED_D_RATIO = {"g1": 1.30, "f1": 1.30, "tightest": 1.30,
+                   "oar-hold": 1.30, "oar-back": 4.00}
+
+
+def _settled_d_ratio(rows_ll, rows_hl, t0=250.0, t1=350.0) -> float:
+    """Mean orbit diameter (2V/|omega|) over the settled window, HL/LL."""
+    def mean_d(rows):
+        ds = [2 * r["V"] / max(abs(r["omega"]), 1e-9)
+              for r in rows if t0 <= r["t"] <= t1]
+        return sum(ds) / len(ds)
+    return mean_d(rows_hl) / mean_d(rows_ll)
+
 
 @pytest.mark.parametrize("name,v0_kt,n_oars,helm,oar_state,tol", TURNS,
                          ids=[t[0] for t in TURNS])
@@ -106,6 +126,15 @@ def test_turn_gate(name, v0_kt, n_oars, helm, oar_state, tol):
     assert abs(t_hl / t_ll - 1.0) < 0.20, \
         f"{name}: t180 {t_hl:.0f} vs LL {t_ll:.0f} " \
         f"({(t_hl / t_ll - 1.0) * 100:+.0f} % vs the 20 % band)"
+    # the settled orbit after the turn: the clean turns track the LL's
+    # orbit within the 1.30x bound; oar-back is the annotated row at
+    # 4.00x (the drained spiral — the documented HL-loose boundary,
+    # VALIDATION §9.3 item 7 / §11.3 item 5)
+    ratio = _settled_d_ratio(out["ll"], out["hl"])
+    bound = SETTLED_D_RATIO[name]
+    assert ratio < bound, \
+        f"{name}: settled-orbit D ratio {ratio:.2f}x vs the " \
+        f"{bound:.2f}x bound"
 
 
 def _t180(rows):

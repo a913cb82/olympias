@@ -221,6 +221,14 @@ The turn timing (t180) is gated at ±20 % (task T3 — the measured
 timing-loose band: the HL is systematically fast in the D-matched turns;
 the worst rows are the oar-hold −17 % and the oar-back +16 %).
 
+The *settled orbit* after the turn (the K20 finding, from the replay
+UI's oar-back view): four turns track the LL's settled orbit within
+1.03–1.09× (mean D = 2V/|omega| over t ∈ [250, 350] — g1 84.8/88.0 m,
+f1 111.2/114.2 m, tightest 58.6/62.7 m, oar-hold 95.3/103.5 m); oar-back
+is the annotated exception at 2.56× (40.4/103.5 m — §9.3 item 7): the
+LL's one-side-back turn drains into a tight spiral while the HL parks
+on its calibrated orbit.
+
 ### 9.3 The measured divergences — and why each stays (the HL-loose list)
 
 The calibration loop (calibrate → validate → adjust) ran three rounds and
@@ -271,6 +279,27 @@ measured, bounded and documented.
    −0.005 pts across all scripts (long_cruise −0.021 — the net's ±6 %
    phase-spread, within the measured residual).
 
+7. **The oar-back settled orbit** `[x]` — the one-side-back turn's D at
+   the half-circle matches (−3.5 %, §9.2), but the settled orbit does
+   not: 2.56× over t ∈ [250, 350] (40.4 vs 103.5 m), growing to 5.9× by
+   t = 600. The cause, measured: the LL's one-side-back turn is a
+   *drained spiral* — while W′ lasts the LL holds V ≈ 3.5–4 kt and
+   D ≈ 90–103 m (matching the HL), then both tanks empty (the rowing
+   side at ~68 W/man by t ≈ 90 s, the backing side by t ≈ 180 s) and V
+   collapses into the multi-stable low-speed band (1.1–2.6 kt,
+   oscillating on the refill cycles — the same family as the cruise_turn
+   back-tail, §11.2); the back side's yaw moment keeps turning the ship
+   as the speed falls, so D shrinks to 17–45 m. The HL models the oar
+   turn as a fixed-diameter orbit (d_oar, measured at the half-circle)
+   at its settled speed — by design it cannot follow a speed-dependent
+   spiral, and a D(V) alternative would break the half-circle gate (the
+   HL's V at the half-circle is 2.1 kt, not the LL's 3.7 — its back-mode
+   drag lands on the drained equilibrium). The hold mode settles
+   cleanly in the LL (oar-hold: 1.09×). Named trigger: a scenario that
+   demands the drained-orbit fidelity (then the back mode needs a
+   W′/V-dependent orbit, not a table cell). Locked: `SETTLED_D_RATIO` in
+   harness/tests/test_equivalence_gates.py.
+
 ## 10. Coverage map — what is validated, what is open, what is not
 
 The complete inventory of validation scenarios and their status, with the
@@ -304,7 +333,7 @@ current phase (Phase 4/5) or HL-loose by design with a named trigger.
 
 | Scenario | Status | Ref | Path to full validation |
 | --- | --- | --- | --- |
-| Turn diameters, all 5 scenarios | validated (±1.3 % max vs the 5 % gate); the turn *time* (t180) is informational — the HL is systematically fast (oar-hold 98 vs 85 s, −13 %) — the yaw build-up fix + the t180 gate: §11.2 | §9.2 | — |
+| Turn diameters, all 5 scenarios | validated (±1.3 % max vs the 5 % gate); the turn *time* (t180) is informational — the HL is systematically fast (oar-hold 98 vs 85 s, −13 %) — the yaw build-up fix + the t180 gate: §11.2. The settled orbit after the turn tracks within 1.09× on four turns; **oar-back annotated** (2.56× — the drained spiral vs the fixed-D orbit, §9.3 item 7) | §9.2 | — |
 | Cruise means (long_cruise, wprime_burst) | validated (+0.0 % / +0.5 %) | §9.1 | — |
 | Fatigue consumption, all 6 scripts | validated (−0.005 pts) | §9.1 | — |
 | Mean speed, turn-heavy scripts (cruise_turn, sprint_turn) | sprint_turn **validated** (+0.7 % — the T4 turn-drag curve); cruise_turn **annotated** (−1.7 % — the back-tail boundary: the multi-stable low-speed state, §11.2; the named trigger: a brake-aware decay) | §9.1 + §11.2 | — |
@@ -373,6 +402,15 @@ yaw-build/drift/fishtail interplay). All five turns PASS (±3.9 %; the
 tightest 62.7/61.7 — the +9.2 % row closed); the t180's inside the
 ±20 % band.
 
+The K20 follow-up (the replay UI's oar-back view): the settled orbit
+after the turn — four turns track within 1.03–1.09× (mean D over
+t ∈ [250, 350]); oar-back is annotated at 2.56× — the LL's one-side-back
+turn drains into a tight spiral (D 103.5 → 17–45 m on the W′ cycles,
+V 1.1–2.6 kt oscillating — the multi-stable low-speed family) while the
+HL's fixed-diameter d_oar model parks on its calibrated 103.5 m orbit
+(§9.3 item 7); locked in `test_equivalence_gates` (SETTLED_D_RATIO:
+1.30 clean / 4.00 annotated).
+
 ### 11.3 The open items, in plain language
 
 The short version of §11.2 for a reader who wants the story, not the
@@ -412,6 +450,20 @@ depending on how the state is entered), so no single-value model can
 match it. The fast sim's fatigue tank also behaves differently there
 (the rowers' demand drops below the refill threshold — the tank
 refills and re-drains, which the fast sim doesn't track).
+
+**5. The one-side-back turn's long tail (oar-back; the fast sim's orbit
+is 2.6× wider and never tightens).**
+The turn itself matches (−3.5 %), but after it the two sims part ways.
+In the LL both crews' short-term energy runs out within ~90–180 s of
+backing at full effort; the ship slows to ~1–2.5 kt (oscillating, same
+family as item 4), and because the backing side keeps pushing while the
+ship is slow, the turning never stops — the circle shrinks from ~100 m
+to ~20–45 m. The fast sim's rowers never tire in this state (their
+measured demand falls below the refill threshold), so it holds its one
+calibrated ~100 m circle forever — its oar-turn model is a single fixed
+diameter, and following a spiral would need W′/V machinery the gates
+don't demand. Documented and locked (the settled-window ratio: 2.56×
+measured vs a 4.0× bound; the other four turns sit at 1.03–1.09×).
 
 **5. The sprint_turn script's final position is 0.2 NM off.**
 Small turn-timing differences (the heading drifts ~0.4 rad through the

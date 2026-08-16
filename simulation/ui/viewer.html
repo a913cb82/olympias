@@ -128,6 +128,7 @@ async function loadIndex() {
 
 async function loadRun(id) {
   const entry = S.runs.find(r => r.id === id);
+  S.note = entry.note || "";
   S.logs = { ll: null, hl: null };
   await Promise.all(entry.sims.map(async sim => {
     const r = await fetch(`logs/${id}.${sim}.json`);
@@ -436,7 +437,8 @@ function paintMeta() {
   const l = S.logs.ll || S.logs.hl;
   $("meta").textContent =
     `${l.meta.label} · ${Object.values(S.logs).filter(Boolean).map(x => x.meta.sim_label).join(" + ")}` +
-    ` · calibration ${l.meta.calibration} · dt ${l.meta.dt} s · ${fmt(S.tEnd)}`;
+    ` · calibration ${l.meta.calibration} · dt ${l.meta.dt} s · ${fmt(S.tEnd)}` +
+    (S.note ? ` · ⚠ ${S.note}` : "");
 }
 
 function showSim(sim, on) {
