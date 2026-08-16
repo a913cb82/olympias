@@ -291,8 +291,8 @@ function drawShip(svg, sim) {
   const st = document.createElementNS(NS, "line");
   st.setAttribute("class", "steer-line");
   st.setAttribute("x1", 0); st.setAttribute("y1", 0);
-  st.setAttribute("x2", -11); st.setAttribute("y2", 3);
-  st.setAttribute("vector-effect", "non-scaling-stroke");
+  st.setAttribute("x2", -11); st.setAttribute("y2", 0);   // lies on the hull
+  st.setAttribute("vector-effect", "non-scaling-stroke");  // centreline at midship
   stg.appendChild(st);
   g.appendChild(stg);
   svg._steer[sim] = stg;
