@@ -284,8 +284,12 @@ measured, bounded and documented.
    not: 2.56× over t ∈ [250, 350] (40.4 vs 103.5 m), growing to 5.9× by
    t = 600. The cause, measured: the LL's one-side-back turn is a
    *drained spiral* — while W′ lasts the LL holds V ≈ 3.5–4 kt and
-   D ≈ 90–103 m (matching the HL), then both tanks empty (the rowing
-   side at ~68 W/man by t ≈ 90 s, the backing side by t ≈ 180 s) and V
+   D ≈ 90–103 m (matching the HL), then the tanks empty in sequence
+   (the rowing side at ~68 W/man by t ≈ 90 s; the backing side only
+   AFTER the rowing side — its back stroke is flow-limited while the
+   ship is fast (the peak-force cap degenerates it toward a hold-brake,
+   p_ext ≈ 0, so it does not drain at speed), and only the V collapse
+   unlocks its pull — empty by t ≈ 180 s) and V
    collapses into the multi-stable low-speed band (1.1–2.6 kt,
    oscillating on the refill cycles — the same family as the cruise_turn
    back-tail, §11.2); the back side's yaw moment keeps turning the ship
@@ -455,15 +459,23 @@ refills and re-drains, which the fast sim doesn't track).
 is 2.6× wider and never tightens).**
 The turn itself matches (−3.5 %), but after it the two sims part ways.
 In the LL both crews' short-term energy runs out within ~90–180 s of
-backing at full effort; the ship slows to ~1–2.5 kt (oscillating, same
+backing at full effort; the divergence onset is the rowing side's tank
+hitting zero at ~90 s (V collapses 3.5 → 1.5 kt and the yaw rate jumps
+2.3 → 3.8°/s within the next 15 s); the backing side's tank starts
+draining only then — its back stroke is flow-limited at speed (the
+peak-force cap degenerates it toward a hold-brake, so it barely works
+and does not drain while the ship is fast) — and is empty by ~180 s; the ship slows to ~1–2.5 kt (oscillating, same
 family as item 4), and because the backing side keeps pushing while the
 ship is slow, the turning never stops — the circle shrinks from ~100 m
-to ~20–45 m. The fast sim's rowers never tire in this state (their
-measured demand falls below the refill threshold), so it holds its one
-calibrated ~100 m circle forever — its oar-turn model is a single fixed
-diameter, and following a spiral would need W′/V machinery the gates
-don't demand. Documented and locked (the settled-window ratio: 2.56×
-measured vs a 4.0× bound; the other four turns sit at 1.03–1.09×).
+to ~20–45 m. The fast sim's rowers never tire in this state (the
+measured one-side-back net is ≈ 0 W/man — the net_back table — so the
+tank is inert and stays full), and its power is already the low-speed
+value, so even a draining tank would not move its orbit: it holds its
+one calibrated ~100 m circle forever — its oar-turn model is a single
+fixed diameter, and following the spiral would need the W′/V-dependent
+power the gates don't demand. Documented and locked (the settled-window
+ratio: 2.56× measured vs a 4.0× bound; the other four turns sit at
+1.03–1.09×).
 
 **5. The sprint_turn script's final position is 0.2 NM off.**
 Small turn-timing differences (the heading drifts ~0.4 rad through the
