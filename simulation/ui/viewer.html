@@ -338,7 +338,8 @@ function updateShipOrders(sim, crew, helm, t, rate) {
     if (col !== o.color) { o.line.setAttribute("stroke", col); o.color = col; }
   }
   const [dir, frac] = helm;
-  const sign = dir === "port" ? 1 : dir === "starboard" ? -1 : 0;
+  const sign = dir === "port" ? 1
+    : (dir === "starboard" || dir === "star") ? -1 : 0;
   svg._steer[sim].setAttribute("transform",
     `translate(-23 0) rotate(${(sign * frac * 32).toFixed(1)})`);
 }
@@ -463,7 +464,8 @@ function compassHeading(l, i) {        // compass bearing, north = 0° — match
 
 function helmText(helm) {
   const [dir, frac] = helm;
-  return dir === "midship" ? "midship" : `${dir} ${(100 * frac) | 0}%`;
+  const d = dir === "star" ? "starboard" : dir;   // the HL's internal key
+  return d === "midship" ? "midship" : `${d} ${(100 * frac) | 0}%`;
 }
 
 const h = html => { const d = document.createElement("div"); d.innerHTML = html; return d; };
