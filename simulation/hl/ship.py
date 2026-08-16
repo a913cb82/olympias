@@ -109,11 +109,11 @@ class Ship:
                     # is the slow measured tau_back (the cruise_turn's
                     # 1440-s bin context, K13)
                     if self.V > c.v_collapse * KT:
-                        tau = c.tau_hold
+                        tau = c.tau_hold(self.rate)
                     else:
                         tau = c.tau_back(self.rate)
                 else:
-                    tau = c.tau_hold
+                    tau = c.tau_hold(self.rate)
                 vstar = c.vasym(r_eff, p_eff, self.oar_state[stopped],
                                 empty)
             self.V += (vstar - self.V) / tau * dt
@@ -166,7 +166,17 @@ class Ship:
             # spoude-measured d_oar_v would run the cruise's
             # steady-rowed legs ~1.4x too tight
             if frac <= 0.0:
-                wss = sign * 2.0 * self.V * max(p_eff, 0.1) / d
+                if (self.helm_frac > 0.0 and self.helm_dir != "midship"
+                        and self.oar_state[side] == "hold"):
+                    # the mixed hold (the K28): the helm + the OPPOSITE-
+                    # side hold — the LL's turn is the HELM's (the rudder
+                    # dominates at speed, the hold's brake only widens
+                    # the orbit — the measured d_mixed_hold family); the
+                    # oar-only family would turn the wrong way
+                    hs = -1.0 if self.helm_dir == "star" else 1.0
+                    wss = hs * 2.0 * self.V / c.d_mixed_hold(self.V)
+                else:
+                    wss = sign * 2.0 * self.V * max(p_eff, 0.1) / d
             else:
                 wss = sign * 2.0 * self.V / d
         elif self.helm_dir != "midship" and self.helm_frac > 0.0:

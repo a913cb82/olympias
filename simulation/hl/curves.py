@@ -215,6 +215,9 @@ class Calibration:
         dv = t.get("d_oar_v") or {}
         self._dov_kt = list(dv.get("v_kt", [1.0, 1.5, 2.0, 2.5, 3.0]))
         self._dov_d = list(dv.get("d", [18.3, 25.7, 41.4, 55.2, 103.5]))
+        mh = t.get("d_mixed_hold") or {}
+        self._dmh_kt = list(mh.get("v_kt", [3.0, 3.3, 3.4, 3.5, 4.2, 5.65]))
+        self._dmh_d = list(mh.get("d", [305.7, 206.8, 156.3, 129.3, 90.3, 85.1]))
         self.v_flow = (scalars or {}).get("v_flow", 3.0)
         self.v_collapse = (scalars or {}).get("v_collapse", 1.5)
         tb = t.get("turn_beta") or {}
@@ -242,7 +245,11 @@ class Calibration:
         self.p_crit = s.get("p_crit", P_CRIT)
         self.tau_w = s.get("tau_w", TAU)
         self.net_rest = s.get("net_rest", NET_REST)
-        self.tau_hold = s.get("tau_hold", TAU_SURGE)
+        th = s.get("tau_hold") or {}
+        if isinstance(th, (int, float)):       # the legacy scalar: the
+            th = {"rates": [31.5, 44.0], "tau": [16.0, th]}   # 44-spm anchor
+        self._tau_hold_rates = list(th.get("rates", [31.5, 44.0]))
+        self._tau_hold_tau = list(th.get("tau", [16.0, 28.0]))
         self.turn_drag_extra = s.get("turn_drag_extra", 0.0)
         td = t.get("turn_drag") or {}
         self._td_fracs = list(td.get("fracs", [1.0]))
@@ -411,6 +418,27 @@ class Calibration:
         (the LL's collapse transient — no settled states exist there).
         The drained orbit is ~linear in V, so the settled yaw rate
         (~2.9-3.2 deg/s) is speed-independent, like the LL's."""
+        return self._dov_impl(v)
+
+    def d_mixed_hold(self, v):
+        """The mixed hold's orbit diameter vs the ship's speed, m (the
+        K28 measurement — the helm + the OPPOSITE-side hold, the LL's
+        cruise_turn hold leg): the turn is the HELM's throughout (the
+        rudder dominates at speed — the D at 5.65 kt is the full-helm's
+        85 m; the hold's brake only widens the orbit as V falls — 206.8
+        m at 3.3 kt, the settled 305.7 m at the 3.0-kt cap the brake
+        imposes). The cells are the leg's instantaneous 2V/omega (the
+        same protocol as d_oar_v); the flat extensions below 3.0 kt
+        (the hold never lets V below the cap) and above 5.65 kt (the
+        full-helm plateau)."""
+        vk = v / KT
+        if vk >= self._dmh_kt[-1]:
+            return self._dmh_d[-1]
+        if vk <= self._dmh_kt[0]:
+            return self._dmh_d[0]
+        return _pwl(self._dmh_kt, self._dmh_d, vk)
+
+    def _dov_impl(self, v):
         vk = v / KT
         if vk >= self._dov_kt[-1]:
             return self._dov_d[-1]
@@ -523,6 +551,18 @@ class Calibration:
         entry regime at high rate vs the low-rate collapse — measured
         anchors, linear between."""
         return _pwl(self._tau_back_rates, self._tau_back_tau, rate)
+
+    def tau_hold(self, rate):
+        """The hold-state surge lag, s at rate (the K29 re-measurement):
+        the entry decay measured at its true usages — the tightest's
+        31.5 spm helm+hold V-collapse fit (16.0 s) vs the tempo-loss's
+        44 spm (28.0 s, the old single scalar's anchor). Linear
+        between; flat outside."""
+        if rate >= self._tau_hold_rates[-1]:
+            return self._tau_hold_tau[-1]
+        if rate <= self._tau_hold_rates[0]:
+            return self._tau_hold_tau[0]
+        return _pwl(self._tau_hold_rates, self._tau_hold_tau, rate)
 
     def resolve_pressure(self, value):
         """Schema pressure value (enum name or number) -> numeric level."""

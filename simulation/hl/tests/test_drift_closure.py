@@ -36,8 +36,8 @@ KICK_V = [0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0]
 KICK_W = [-0.000184, -0.000469, -0.000698, -0.000928,
           -0.001105, -0.000787, -0.000941, -0.001324]
 
-TAU_EXIT = 8.0
-DRIFT_TAU_EXP = 0.552
+TAU_EXIT = 14.0
+DRIFT_TAU_EXP = 0.418
 
 
 # ---------------------------------------------------------------------------
@@ -75,8 +75,8 @@ def test_slow_decay_scalars():
     assert abs(C.tau_exit - TAU_EXIT) < 1.0
     assert abs(C.drift_tau_exp - DRIFT_TAU_EXP) < 0.02, \
         f"drift_tau_exp moved: {C.drift_tau_exp}"
-    # the power-law bridge: 19 s at the turn scale, ~80-100 s at the
-    # drift scale (the burst-path fit)
+    # the power-law bridge: the turn-scale ~ the exit tau, the
+    # drift-scale ~80-100 s (the burst-path fit)
     tau_turn_scale = C.tau_exit * (0.1 / 0.1) ** C.drift_tau_exp
     assert abs(tau_turn_scale - TAU_EXIT) < 1.0
     tau_drift = C.tau_exit * (0.1 / 0.001) ** C.drift_tau_exp

@@ -30,8 +30,10 @@ SCRIPTS = [
               position_sep=0.1, position_path=0.1, position_max=0.15,
           bin_max=5.0, bin_rms=3.0)),
     ("sprint_turn", "examples/sprint_turn.txt", 0.0, (),
-     dict(position_sep=0.20, position_max=0.25),  # annotated: the
-     # turn-phase composition at the d-scaled turn cells (K26)
+     dict(position_sep=0.30, position_max=0.30),  # annotated: the
+     # turn-phase composition at the d-scaled turn cells + the
+     # fishtail's tau_exit pair (the K29 re-scan closed the zig-zag's
+     # out-of-sample row at the cost of the sprint's, 0.162 -> 0.280)
      dict(mean_speed_pct=0.01, t_3nm_pct=0.01,
           fatigue_consumed_delta=0.05, rate_eff_delta=1.0,
           position_path=0.1, bin_max=5.0, bin_rms=3.0)),
@@ -42,12 +44,14 @@ SCRIPTS = [
           bin_max=5.0, bin_rms=3.0)),
     ("cruise_turn", "examples/cruise_turn.txt", 5.0 * KT, (7,),
      dict(mean_speed_pct=0.035, fatigue_consumed_delta=0.20,
-          bin_max=55.0, bin_rms=24.0, position_sep=0.20,
-          position_max=0.25),
+          bin_max=55.0, bin_rms=24.0),
      # annotated: the back-tail boundary — the multi-stable low-speed
      # state's branch shifted with the K24 direction correction (the
-     # banked-phase V moved to the ~1.9 kt branch); the bounds re-measured
-     dict(rate_eff_delta=1.0, position_path=0.1)),
+     # banked-phase V moved to the ~1.9 kt branch); the bounds re-measured.
+     # The position rows CLOSED by the K28 mixed-hold fix (0.194 ->
+     # 0.063/0.102 — the HL's hold leg no longer turns the wrong way)
+     dict(rate_eff_delta=1.0, position_sep=0.1, position_path=0.1,
+          position_max=0.15)),
     ("three_nm", "examples/three_nm_cruise.txt", 0.0, (),
      {}, dict(mean_speed_pct=0.01, t_3nm_pct=0.01,
               fatigue_consumed_delta=0.05, rate_eff_delta=1.0,

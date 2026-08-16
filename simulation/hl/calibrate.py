@@ -429,6 +429,53 @@ def _entry_decay(state, rate, pressure="fast", v0_kt=6.0, t_end=330.0):
     return tau, rms, v_asym / KT
 
 
+def measure_tau_hold_at(rate, v0_kt=6.5, helm=("starboard", 1.0)):
+    """The hold-state entry lag at its true usage (the K29): the
+    tightest's context — the helm + the same-side hold at 31.5 spm.
+    The LL's V-collapse is drag-driven (fast-early — the hold's brake
+    at ~V^2); the HL's single-tau chase + the rudder-drag term is
+    scanned so the HL's V(t) matches the LL's at the 5/10/15/30 s
+    points (the window the turn's yaw reads — the wss = 2V/d runs on
+    the V). The old 44-spm anchor stays as the table's second cell."""
+    from hl.ship import Ship as HLShip
+    from commands.parser import Command
+    ll = LLShip(rate=rate, oar_state=("row", "hold"))
+    ll.V = v0_kt * KT
+    cmds = [Command(0.0, "rate", [rate], 1),
+            Command(0.0, "helm", [helm[0], float(helm[1])], 2),
+            Command(0.0, "oars", ["hold", "starboard"], 3)]
+    llV = {}
+    evs, ix = list(cmds), 0
+    while ll.t <= 40.0:
+        while ix < len(evs) and evs[ix].time <= ll.t + 1e-6:
+            ll.apply(evs[ix]); ix += 1
+        ll.step(DT)
+        t = round(ll.t)
+        if abs(ll.t - t) < 0.03 and 3 <= t <= 30:
+            llV[t] = ll.V
+    pts = [5, 10, 15, 30]
+    best, best_rms = None, None
+    for tau in (28.0, 24.0, 20.0, 18.0, 16.0, 14.0, 12.0, 10.0):
+        hl = HLShip(rate=rate)
+        hl.V = v0_kt * KT
+        hl.curves._tau_hold_tau = [tau, 28.0]
+        evs, ix = list(cmds), 0
+        hv = {}
+        while hl.t <= 40.0:
+            while ix < len(evs) and evs[ix].time <= hl.t + 1e-6:
+                hl.apply(evs[ix]); ix += 1
+            hl.step(0.5)
+            t = round(hl.t)
+            if abs(hl.t - t) < 0.03 and 3 <= t <= 30:
+                hv[t] = hl.V
+        rms = math.sqrt(sum((hv[t] - llV[t]) ** 2 for t in pts) / len(pts))
+        if best is None or rms < best_rms:
+            best, best_rms = tau, rms
+    log(f"  tau_hold@{rate}: {best:.1f} s (the HL-V-shape rms "
+        f"{best_rms*KT:.3f} kt over the 5-30 s window)")
+    return best
+
+
 def _collapse_window(state, rate_before, rate_after, entry_tau,
                      pressure="fast", settle=90.0, window=180.0):
     """The low-rate collapse transition (task E): the cruise_turn 1440 s
@@ -870,8 +917,15 @@ def main() -> None:
     log(f"  tau_turn fit: {tau_turn:.1f} s "
         f"(max |D diff| {max_d*100:.1f} % across the families)")
 
+    # the K29: the hold's entry decay re-measured at its true usages —
+    # the tightest's 31.5 spm helm+hold V-collapse fit (16.0 s, scanned
+    # on the HL's V-shape vs the LL's) + the old 44-spm anchor (28.0,
+    # the tempo-loss context) — a rate table, like the back's
+    tau_hold_31 = measure_tau_hold_at(31.5)
     scalars = dict(_scalars(), tau_surge=tau_surge, tau_turn=tau_turn,
-                   tau_hold=tau_hold["entry"], turn_drag_extra=turn_k,
+                   tau_hold=dict(rates=[31.5, 44.0],
+                                 tau=[tau_hold_31, tau_hold["entry"]]),
+                   turn_drag_extra=turn_k,
                    tau_exit=tau_exit,
                    drift_tau_exp=measure_drift_tau(tau_exit),
                    v_flow=measure_v_flow())
