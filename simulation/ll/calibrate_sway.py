@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Plan 15.3: calibrate the sway parameters (Omega, CLR offset).
+"""Plan 15.3: calibrate the sway parameters (CLR offset; Omega now
+computed — Plan 2, crossflow.py: the cross-flow pure-rotation moment
+½ρ·0.3·J, the audit's closure at 1.6 % — this tool's Omega grid is kept
+for the record and for the pre-computation reference).
 
 The acceptance: ONE parameter set satisfying BOTH the turn diameters
 (G1 89.4 / F1 111.9 / tightest 62 m, within the gate bands) AND the

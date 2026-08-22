@@ -22,7 +22,7 @@ from __future__ import annotations
 
 import math
 
-from common.chain import KT, RHO, RIGS, VESSELS
+from common.chain import KT, RHO, RIGS, VESSELS, OMEGA_CROSSFLOW
 from ll.hull import t_drive_for
 from ll.oar import simulate
 from ll.rig import LEVER_OAR
@@ -65,7 +65,8 @@ class Ship:
                  oar_state: tuple = ("row", "row"), helm: tuple = ("midship", 0.0),
                  fleet: str = "spruce", hold_frac: float | None = None,
                  stations: bool = False, drag_law: str = "chain",
-                 mass_matrix: bool = False):
+                 mass_matrix: bool = False,
+                 sway: str = "fitted", cd: float = 0.3):
         # hold_frac default: the calibrated value (ll/rower.HOLD_FRAC)
         """fleet: 'spruce' (all tiers, MIT 9.7 — the 1994 setup) or
         'old-fir' (thranites 13.1, zygians 18.0, thalmians 13.1 approx —
@@ -79,7 +80,13 @@ class Ship:
         # CLR restoring moment in (register C1). The vessel's own Omega
         # (5e6) and LEVER_OAR (4.8) stay for the steady research model.
         self.lever = 1.8
-        self.Omega = 3.2e6
+        # Omega: the computed cross-flow pure-rotation moment (Plan 2 —
+        # common.chain.OMEGA_CROSSFLOW = ½·rho·0.3·J, the drag-crisis C_D
+        # and the parametric hull + the ram; the audit's closure: the
+        # trial-fitted 3.2e6 equals it at 1.6 % — register C1 resolved).
+        # The pre-computation reference (the fitted 3.2e6) lives in the
+        # register; the lever 1.8 and the clr_offset 0.8 stay fitted.
+        self.Omega = OMEGA_CROSSFLOW
         # the mass-matrix option (the Rev F B1 item): the report's
         # derivative-based sway-yaw coupling — the lateral added mass
         # and the yaw added inertia with the off-diagonal Y_r_dot,
@@ -149,6 +156,21 @@ class Ship:
         # the centre of lateral resistance, forward of the CG (m) — the
         # sway-calibrated value (plan 15.3); Coates plans would pin it [?]
         self.clr_offset = 0.8
+        # Plan 2 (the cross-flow sway, labelled): the consistent
+        # cross-flow model replaces the fitted (f_hull, q_hull, Omega)
+        # trio with ONE computed distribution — the hull strips from the
+        # parametric form + the ram (crossflow.py), the lateral force and
+        # the yaw moment from w(x) = v + omega·(x − x_cg) at each strip.
+        # C_D is the literature post-drag-crisis band input (0.3–0.6), not
+        # a fit (the audit: the fitted trio ≡ this distribution at 0.3).
+        # Default OFF: the validated fitted set stays the default until
+        # the promotion gate (the turn tests + the HL re-calibration).
+        self.sway = sway
+        self.cd = cd
+        if sway == "crossflow":
+            from common.chain import CROSSFLOW_STRIPS, CROSSFLOW_XCG
+            self._cf_strips = list(zip(*CROSSFLOW_STRIPS))
+            self._cf_xcg = CROSSFLOW_XCG
 
 
     # ------------------------------------------------------------------
@@ -204,8 +226,26 @@ class Ship:
         centripetal couplings:"""
         u = self.V
         v = self.v
-        f_hull = RHO * self.vessel.A_lat * abs(u) * v      # Taylor: rho A_lat u^2 sin(beta)
-        q_hull = f_hull * self.clr_offset                  # restoring (+ = port)
+        if self.sway == "crossflow":
+            # the consistent cross-flow model: the lateral force and the
+            # yaw moment from one distribution. dF is drawn in the +w
+            # sense (the resistance the v_dot equation subtracts); the
+            # moment's restoring sign enters as −M_cf (the drawn-convention
+            # moment of the distribution opposes the yaw — the audit's
+            # reading of the fitted (q_hull + Omega·omega²) pair).
+            f_hull = 0.0
+            m_cf = 0.0
+            for x, d, dx in self._cf_strips:
+                w = v + self.omega * (x - self._cf_xcg)
+                df = 0.5 * RHO * self.cd * d * w * abs(w) * dx
+                f_hull += df
+                m_cf += df * (x - self._cf_xcg)
+            q_hull = -m_cf
+            omega_drag = 0.0          # the distribution replaces Omega·ω|ω|
+        else:
+            f_hull = RHO * self.vessel.A_lat * abs(u) * v  # Taylor: rho A_lat u^2 sin(beta)
+            q_hull = f_hull * self.clr_offset              # restoring (+ = port)
+            omega_drag = self.Omega * self.omega * abs(self.omega)
         if self.mass_matrix:
             # the 2x2 sway-yaw solve (the report's eq. 3.6-family): the
             # added masses on the diagonal, the couplings off it
@@ -216,12 +256,12 @@ class Ship:
             n_v = self.add_c * self.m_app * L
             det = m_yy * i_rr - y_r * n_v
             fy_net = (Fy_oars + f_rud - f_hull - self.m_app * u * self.omega)
-            q_net = (Q + q_hull - self.Omega * self.omega * abs(self.omega))
+            q_net = (Q + q_hull - omega_drag)
             v_dot = (i_rr * fy_net + y_r * q_net) / det
             omega_dot = (n_v * fy_net + m_yy * q_net) / det
         else:
             v_dot = (Fy_oars + f_rud - f_hull) / self.m_app - u * self.omega
-            omega_dot = (Q + q_hull - self.Omega * self.omega * abs(self.omega)
+            omega_dot = (Q + q_hull - omega_drag
                          - YAW_LIN_DAMP * self.omega) / self.I   # linear damper (C1 hypothesis)
         vkt = abs(u) / KT
         if self.drag_law == "chain":

@@ -16,6 +16,7 @@ for _sub in ("lane-4-oars", "lane-5-manoeuvre"):
 import rigid_oar_model as _rom  # noqa: E402
 import lane4_propulsion as _lp  # noqa: E402
 import manoeuvre_model as _mm  # noqa: E402
+import crossflow as _cf  # noqa: E402  (Plan 2: the cross-flow yaw audit)
 
 # --- units / blade law ---
 KT = _rom.KT                 # 0.5148 m/s per knot
@@ -39,6 +40,20 @@ oar_absorbed = _lp.oar_absorbed           # non-propulsive oar losses, W
 
 # --- Taylor ch.31 manoeuvring vessels (turn-validated parameters) ---
 VESSELS = {"Olympias": _mm.olympias(), "MarkIIb": _mm.mark_iib()}
+
+# --- Plan 2: the cross-flow hull strips (the Omega audit) ---
+CROSSFLOW_STRIPS = _cf.strips()   # (xs, ds, dxs) from the parametric hull
+CROSSFLOW_XCG = _cf.X_CG          # m from the stern post (ch.25)
+CROSSFLOW_RHO = _cf.RHO
+CROSSFLOW_CD_BAND = (0.3, 0.6)    # the post-drag-crisis band (the audit)
+
+# The yaw damper, computed (Plan 2, crossflow.py): Omega = ½·rho·C_D·J with
+# C_D = 0.3 (the drag-crisis value for the smooth circular-arc sections at
+# Re ~ 1e6) and J = ∫d·|x − x_cg|³dx over the parametric hull + the ram —
+# the audit's closure: the trial-fitted 3.2e6 equals this at 1.6 % (the
+# register C1 units caveat resolves: Omega IS the pure-rotation cross-flow
+# moment). The fitted 3.2e6 stays the documented reference in the register.
+OMEGA_CROSSFLOW = _cf.omega_crossflow(0.3)
 
 # --- Table 3.1 oar inertia families (shared asset; research/data CSV) ---
 def _load_table31():

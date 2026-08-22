@@ -38,8 +38,11 @@ KICK_V = [0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0]
 KICK_W = [-0.000181, -0.000468, -0.000698, -0.000935,
           -0.001081, -0.000721, -0.001138, -0.001457]
 
-TAU_EXIT = 19.0
-DRIFT_TAU_EXP = 0.164
+TAU_EXIT = 8.0
+DRIFT_TAU_EXP = 0.37
+# (the Plan-2 calibration 2026-08: the computed Omega (the cross-flow
+# audit, 3.2e6 -> 3.25e6) re-fitted the fishtail's tau_exit scan — 19 ->
+# 8 s, the exponent 0.164 -> 0.37; the drift-scale bridge stays ~44 s)
 
 
 # ---------------------------------------------------------------------------

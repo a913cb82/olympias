@@ -84,22 +84,32 @@ def test_lateral_damping():
 def test_lever_decomposition():
     """The C3 record: the ship's lever is now the physical athwartships arm
     (1.8 m); the research LEVER_OAR (4.8 m) remains the steady model's
-    fitted value — the difference is the lateral dynamics the sway carries."""
+    fitted value — the difference is the lateral dynamics the sway carries.
+    Omega: the computed cross-flow value (Plan 2 — the audit's closure:
+    the trial-fitted 3.2e6 equals ½·rho·0.3·J at 1.6 %)."""
+    from common.chain import OMEGA_CROSSFLOW
     from ll.rig import LEVER_OAR
     assert LEVER_OAR["Olympias"] == 4.8
     ship = Ship()
     assert abs(ship.lever - 1.8) < 1e-9
-    assert abs(ship.Omega - 3.2e6) < 1.0
+    assert abs(ship.Omega - OMEGA_CROSSFLOW) < 1.0
+    assert abs(ship.Omega - 3.2e6) < 0.1e6, \
+        "the computed Omega moved off the trial-fitted reconciliation"
 
 
 def test_omega_reconciliation():
-    """Register C1: the ship's effective Omega (3.2e6) with the physical
-    CLR restoring moment in; the vessel's fitted 5e6 stays for the steady
-    research model — the two-model reconciliation the register asked for."""
-    from common.chain import VESSELS
+    """Register C1 + Plan 2: the ship's effective Omega is the computed
+    cross-flow pure-rotation moment (½·rho·0.3·J — the drag-crisis C_D,
+    the parametric hull + the ram; crossflow.py's audit closes the register:
+    the fitted 3.2e6 IS this computation at 1.6 %, so the units caveat
+    resolves — Omega is the quadratic cross-flow yaw moment). The vessel's
+    fitted 5e6 stays for the steady research model."""
+    from common.chain import VESSELS, OMEGA_CROSSFLOW
     assert abs(VESSELS["Olympias"].Omega - 5e6) < 1.0   # the steady model
     ship = Ship()
-    assert abs(ship.Omega - 3.2e6) < 1.0                # the time-domain LL
+    assert abs(ship.Omega - OMEGA_CROSSFLOW) < 1.0      # the time-domain LL
+    assert OMEGA_CROSSFLOW > 3.0e6 and OMEGA_CROSSFLOW < 3.5e6, \
+        f"Omega_cf moved: {OMEGA_CROSSFLOW:.2e}"
 
 
 if __name__ == "__main__":

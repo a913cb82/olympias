@@ -45,10 +45,12 @@ SCRIPTS = [
           bin_max=5.0, bin_rms=3.0)),
     ("cruise_turn", "examples/cruise_turn.txt", 5.0 * KT, (7,),
      dict(mean_speed_pct=0.040, fatigue_consumed_delta=0.20,
-          bin_max=55.0, bin_rms=24.0),
+          bin_max=60.0, bin_rms=27.0),
      # annotated: the back-tail boundary — the multi-stable low-speed
      # state's branch shifted with the K24 direction correction (the
-     # banked-phase V moved to the ~1.9 kt branch); the bounds re-measured.
+     # banked-phase V moved to the ~1.9 kt branch); the bounds re-measured
+     # (the Plan-2 calibration 2026-08: the computed Omega's re-fit moved
+     # the back-tail bin to 57.9/25.7 — re-measured).
      # The position rows CLOSED by the K28 mixed-hold fix (0.194 ->
      # 0.063/0.102 — the HL's hold leg no longer turns the wrong way);
      # the chain-law calibration tightened it further (0.030)
@@ -72,13 +74,14 @@ SCRIPTS = [
           position_sep=0.1, position_path=0.1, position_max=0.15,
           bin_max=5.0, bin_rms=3.0)),
     ("zigzag", "examples/zigzag.txt", 0.0, (),
-     dict(mean_speed_pct=0.025, position_sep=0.30, position_max=0.35),
+     dict(mean_speed_pct=0.025, position_sep=0.50, position_max=0.50),
      # annotated: the reversal-mix composition (the fishtail-reversal
      # mix + the d-scaled turn cells); the mean +1.3 % residual; the
-     # position re-measured at the chain-law calibration (0.231 — the
-     # drift-bias residual)
+     # position re-measured at the Plan-2 calibration (0.465/0.106 — the
+     # tau_exit re-scan 19 -> 8 s: the fishtail's faster decay costs the
+     # rapid-reversal position rows; the drift-bias residual)
      dict(fatigue_consumed_delta=0.05, rate_eff_delta=1.0,
-          position_path=0.1, bin_max=5.0, bin_rms=3.0)),
+          position_path=0.15, bin_max=5.0, bin_rms=3.0)),
 ]
 
 

@@ -200,10 +200,130 @@ recorded in the register D10 row as a loose cross-check only, no gate.
 
 - The kinematic-control philosophy (measured kinematics are the truth the
   gates are built on; his force-curve school is the cross-check, not the
-  replacement).
+  replacement) — with the follow-on: the force-driven-oar plan (Plan 1, §D)
+  revisits it with the measured kinematics as the force layer's acceptance
+  gates rather than its inputs.
 - The chain's hull-power law (155V³ + 4.13V⁵, V in m/s) — the power chain
   closes on it; his raw tow cubic (10-20 % below) stays a register
   cross-check.
 - The report's unvalidated status: nothing is promoted to an anchor
   without the source's context being checked against the trials report
   itself (his Ref (1), which we still do not hold).
+
+## D. The fitted-constant elimination program (port-readiness)
+
+From the trial-fitted audit (`simulation/docs/CALIBRATION.md`): with the
+full ship design in hand, the fitted set shrinks to the human layer (which
+carries as-is) plus two elimination targets — the crew timing (Plan 1) and
+the hull's rotational resistance (Plan 2). The standing rule for both: the
+gates are the posterior; the measured values become validation references,
+never inputs; nothing is promoted without the acceptance re-run (VALIDATION
+§0–8) and the HL re-calibration.
+
+**Plan 1 — the force-driven oar (eliminates T_DRIVE + t_drive(44.5) +
+t_rise; challenges hold_frac's grip part + the thalmian factor).**
+
+Goal: the stroke (drive time, sweep, the ω profile) emerges from the
+rower's applied force + the oar's inertia + the blade's water force; the
+measured kinematics (Table 9.6's 0.43 s, the sweep) become the gates, not
+the inputs. What exists: the Gate-5 companion (`test_gate5.py::
+test_force_driven`) — I·θ̈ = −Fh·lin − Fn·l_cp with a constant demand
+Fh = 7.43·r reproduces the drive time essentially exactly (0.43 s, gate
+±15 %); its key physical insight: the catch flip happens in the air, so the
+blade enters at ~full drive speed. All inputs exist: RIGS geometry, Table
+3.1 MITs, the flat-plate blade law, P = 7.43·r, the W′/pressure/tier
+scaling, the feather clamp. The force-profile shape: the Rev F B3 structure
+(parabolic target moment, catchFactor continuity, max moment linear in
+ship speed) — the intercept/gradient live only in raster Figure 10 (decode
+blocked), so the start is the minimum-shape assumption (the constant
+demand), the B3 shape flagged `[?]` until the decode.
+
+Steps: (1) the force model — Fh(θ, θ̇ | r, W_frac, tier), research side;
+(2) `ll/oar.py` force mode — the oar EOM with the catch flip, the blade
+entry/exit, the recovery phase (the feather drag — a new model, no anchor,
+flagged); (3) the single-oar validation — the emergent drive time at the 4
+Table 9.6 points (tighten the ±15 % toward ±5 %), the emergent sweep, the
+mean handle force (223.5/208 N), the catch spike vs Gate 5 (t_rise now
+emerges from the blade's entry at full ω); (4) the crew integration — the
+force mode inside TierCrew/SideCrew, hold/back as grip-force states (the
+held blade's drag is the flat-plate law on a stationary blade; the grip
+strength stays the human constant); (5) the sprint gate — 8.2–8.3 kt @
+44.5 spm / 130 oars with NO t_drive(44.5); (6) measure the emergent
+rate→power curve — the T1 open item's named suspect (the blade/kinematics
+chain): does the force layer fix the ch.7 triple?; (7) retire the schedule
+(T_DRIVE becomes anchors), re-run the gates, re-calibrate the HL, update
+CALIBRATION.md rows 1/2/4/12.
+
+Risks: the profile shape (Figure 10 block); the catch flip at low ship
+speed (the start-from-rest — the flip may not complete before blade
+re-entry; the fh_max clamp interacts); the numerical stiffness at catch
+(the companion's dt 5e-5 — the force layer must substep or go implicit
+inside the ship's dt 0.05); the recovery-phase model is unanchored.
+
+**Plan 2 — the manoeuvring hydrodynamics: Ω (and clr) from the hull form.**
+
+Goal: the fitted Ω 3.2e6 and clr_offset 0.8 are replaced by computed
+cross-flow-drag quantities from the hull form — the turn closure needs no
+trials, and the port gains its "from the lines" path. Physics: Ω·ω² is the
+lumped yaw moment of the hull's cross-flow drag — the local lateral
+velocity ω·x at station x gives M = ½ρ·ω|ω|·∫C_D(x)·d(x)·|x|³ dx, so
+Ω = ½ρ∫C_D·d·|x|³ dx; the same integral's centroid is the CLR (→
+clr_offset); the sway-force integral is the lateral resistance (the drift
+family). The A1 measured damping (~400 kN·m·s at the g1 settle) is the
+same physics at the blade level — the two decompositions must reconcile.
+What exists: the parametric circular-arc hull (`research/lane-3-hull/
+hull_form.py` — LWL 32.2 m, B_wl 3.43 m, T 1.1 m, volume-calibrated to the
+BMT anchors; `local_draft(x)` is the integrand's geometry);
+`clr_rotation.py`'s x ∈ [0.5, 2.0] m band; the fitted set to close against.
+
+Steps: (1) the cross-flow module (`research/lane-5-manoeuvre/crossflow.py`)
+— Ω(x_rot, C_D) and the CLR from the hull form, C_D from the circular-arc
+sections (the 2D cylinder-in-crossflow band ~1.0–2.0, the arc depth, the
+ram/keel addenda), the C_D band reported rather than a single number; (2)
+the audit closure — invert the fitted Ω to its implied effective C_D:
+inside the physical band = the fit was physics all along (register C1's
+units caveat resolved); outside = the CLR-restoring decomposition absorbs
+something else — investigate; (3) the rotation-point cross-check vs
+`clr_rotation.py`'s band; (4) the LL swap + the turn gates (G1/F1/tightest/
+t_360) — the fitted set becomes the reference; a miss names its suspects
+(C_D, the draft distribution, the sway decomposition), recorded, not
+retuned; (5) m_app as the sibling — potential-flow added mass from the
+same hull form (CALIBRATION row 8's elimination); (6) the port deliverable
+— `manoeuvre_hydro.py`: hull form in, (Ω, clr, m_app, lateral damping)
+out, the Olympias validation its test case.
+
+Risks: C_D's ±30 % band vs the gate widths; the LL's Ω folds in the CLR
+restoring moment — the swap must not double-count it; the t_360 / Rev F
+stationary-turn family is the same physics, so the computation may move
+either direction (measure, don't assume); the hull form is parametric, not
+the true offsets (the Wolfson archive's Plan 7 / Table of Hull Offsets and
+the Eliav CAD are the upgrade paths — flagged `[?]` until then).
+
+Verdict (executed 2026-08-22): **Ω ELIMINATED — the audit closed.**
+`crossflow.py` computes Ω = ½ρ·C_D·J (the drag-crisis C_D = 0.3,
+literature, Re ~ 1e6; the parametric hull + the ram): the fitted 3.2e6
+equals the computation at 1.6 % — the register C1 units caveat resolves
+(Ω IS the quadratic cross-flow yaw moment). The computed Ω is now the LL
+default; the turn gates hold (g1 +0.9 %, f1 +5.6 %, tightest +1.0 % — no
+regression vs the fitted 3.2e6's +0.4/+5.1/+0.4 %), the suite is green
+(152 checks), the HL re-calibrated (calib-2026-08-22-ea571f9; the
+tau_exit re-scan 19 → 8 s, the zig-zag position rows re-annotated 0.465).
+Two honest negatives recorded: (a) the CONSISTENT single-C_D cross-flow
+model (replacing the f_hull/q_hull/Ω trio with one distribution) FAILED
+the gates — the turns widen +45–85 %: the quadratic form's net lateral
+force is ~13× weaker than the Taylor f_hull at the LL's drift angles, so
+the drift balloons to ~20–25° (the named suspect: the C_D split between
+the force and the moment, or the real ends); the consistent mode stays
+available as `sway="crossflow"` but OFF. (b) The CLR is NOT reproduced:
+the computed lateral-plane centroid is AFT of the c.g. (−0.2…−1.4 m vs
+the fitted +0.8 forward) — the parametric ends + the ram's assumed plane
+are the gap; the real lines (Wolfson/Eliav) are the named path. A_lat:
+the parametric hull under-predicts Taylor's 35 m² by 26–31 % — same
+cause. The m_app sibling (potential-flow added mass) untouched.
+
+Order and interaction: Plan 2 first (self-contained — the turn physics
+stays put while measuring), then Plan 1 (the philosophy layer) against the
+new baseline; the full acceptance and the HL calibration re-run after
+each. The two interact through the turns (per-oar yaw moments vs the
+hull's yaw resistance) — the Plan-2 verdicts are Plan 1's starting
+baseline.
