@@ -135,24 +135,22 @@ A larger scope; the kick-off is a decision.
 
 No physics: speed of the simulators and the suite. Behaviour-neutral by
 construction — every step re-verifies the trajectories byte-identical to
-HEAD before it ships (the probes and the 159-check suite). The first pass
+HEAD before it ships (the probes and the 159-check suite). Two passes
 landed 2026-08-24 (completed-work §6: the per-rig blade constants, the
-slotted OarStep, the per-crew oar pairs, the phase-aware force substeps;
-stations −27 %, force −38 %, aggregated −6 %, suite 318 → 266 s). The
-remaining levers, in measured-priority order:
+slotted OarStep, the per-crew oar pairs, the phase-aware force substeps,
+and the vectorized kinematic-stations pass — the tier's oars are
+phase-locked, so one numpy pass replaces the 170-oar loop; the force mode
+and the aggregated default stay scalar by design). Suite 318 → 237 s;
+the stations layer's tests −53 %. The remaining levers, in measured-
+priority order:
 
 - **E1. The suite's time step (the biggest remaining lever).** The gates
   are kt/%-tolerances; the long settle tests (300–900 s sims at dt = 0.01,
-  some already at 0.02) dominate the suite's 266 s. Doubling dt for the
+  some already at 0.02) dominate the suite's 237 s. Doubling dt for the
   long runs halves their cost; the LL has a dt-convergence gate
   (test_dt_convergence) — measure each scenario family's deviation at
   0.02 against the gate widths BEFORE switching any. The fixed-step rule
   is about replayability (determinism), not the value.
-- **E2. The stations loop → numpy (the labelled layer's cost).** The
-  170-oar per-step Python loop (TierCrew.step + the ship's station sums)
-  is the stations mode's whole cost; a vectorized twin (per-tier arrays,
-  ufuncs) should give another 2–3×. The layer is experimental and
-  swappable — a twin is acceptable; the aggregated scalar path stays.
 - **E3. hl/calibrate.py's LL cells.** The `_LL_CACHE` is per-process —
   every ~12-min run re-derives the yaw-gate and pressure-cell rows.
   Persist the cached rows keyed by the LL commit (a JSON beside the
@@ -162,7 +160,7 @@ remaining levers, in measured-priority order:
   across cores (a dev convenience; determinism is per-test).
 - **E5. The bisection helpers** (`rate_for_speed`, `run_hull`): 50
   iterations × 4-cycle sims per call — warm-start from the previous
-  rate's root (the curves are smooth). Minor; only if E1–E4 land.
+  rate's root (the curves are smooth). Minor; only if E1/E3/E4 land.
 
 ## Kick-off (what is parallelizable now)
 

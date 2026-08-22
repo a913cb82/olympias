@@ -24,6 +24,8 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass
 
+import numpy as np
+
 from common.chain import CN, OAR_TIER_MIT, RHO, RIGS
 from ll.oar import Oar
 from ll.stations import blade_pos, short_rig as stations_short_rig
@@ -143,6 +145,24 @@ class TierCrew:
         # zipping or branch-of-station checks; station is None in the
         # aggregated mode
         self._pairs = self._make_pairs()
+        # the vectorized kinematic-stations pass (the 170-oar layer's hot
+        # path): the per-station geometry arrays + the shared blade-law
+        # scalars. The tier's oars are PHASE-LOCKED (identical C/omega at
+        # every step — the kinematics are per-tier, the flow is the only
+        # per-station input), so the phase machine stays scalar on the
+        # first oar and one numpy pass computes the per-station forces and
+        # positions. The force mode is NOT phase-locked (each drive
+        # integrates its own EOM) — it keeps the scalar loop.
+        self._vgeo = None
+        if stations:
+            xs = np.array([st[0] for st in stations])
+            ys = np.array([st[1] for st in stations])
+            lout = np.array([rg["lout"] for rg in self._rigs])
+            lin = np.array([rg["lin"] for rg in self._rigs])
+            l_cp = lout - (rig["blade"] - 0.260)   # short oars keep the blade
+            self._vgeo = (xs, ys, lout, lin, l_cp,
+                          math.cos(math.radians(rig.get("cant", 0.0))),
+                          rig.get("slip", 1.0))
         self.plan: StrokePlan | None = None
         self.rate_eff = rate
         self.W_frac = 1.0
@@ -200,12 +220,15 @@ class TierCrew:
         """The per-station tuples for the held/back-hold state: the brake
         at each held blade's position (the oar parked at its current C —
         the blade's reach y_b = y_t + lout·cos(C_eff) is the brake's
-        yaw arm, r_blade x F)."""
+        yaw arm, r_blade x F). The tier's oars are phase-locked, so the
+        first oar's C is every oar's C (the vectorized pass does not step
+        the others)."""
         out = []
+        C = self.oar.C
         for o, rg, st in self._pairs:
             if st is not None:
                 x_b, y_b = blade_pos(st[0], st[1], self._side, rg["lout"],
-                                     self._side * o.C)
+                                     self._side * C)
             else:
                 x_b = y_b = 0.0
             out.append((0.0, 0.0, brake, x_b, y_b))
@@ -448,25 +471,69 @@ class TierCrew:
             return 0.0, 0.0, 0.0, 0.0
         n = len(self.oars)
         scale = 1.0 if self.force else self.power_factor
-        fx = fy = fh = 0.0
-        out = []
-        for o, rg, st in self._pairs:
-            s = o.step(dt, V, ship_state)
-            if st is not None:
-                x_b, y_b = blade_pos(st[0], st[1], self._side, rg["lout"],
-                                     self._side * o.C)
-            else:
-                x_b = y_b = 0.0
-            out.append((s.Fx * scale, s.Fy * scale, 0.0, x_b, y_b))
-            fx += s.Fx * scale
-            fy += s.Fy * scale
-            fh += s.Fh
-        self._stations = out
+        if self._vgeo is not None and not self.force \
+                and ship_state is not None:
+            fx, fy, fh = self._stations_step(dt, V, ship_state, scale)
+        else:
+            fx = fy = fh = 0.0
+            out = []
+            for o, rg, st in self._pairs:
+                s = o.step(dt, V, ship_state)
+                if st is not None:
+                    x_b, y_b = blade_pos(st[0], st[1], self._side, rg["lout"],
+                                         self._side * o.C)
+                else:
+                    x_b = y_b = 0.0
+                out.append((s.Fx * scale, s.Fy * scale, 0.0, x_b, y_b))
+                fx += s.Fx * scale
+                fy += s.Fy * scale
+                fh += s.Fh
+            self._stations = out
         self.p_gross_current = (self.plan.p_ext * scale
                                 + self.oar.flip_power(self.plan.rate_eff)
                                 + oar_absorbed(self.plan.rate_eff))
         self.last_fh = fh / n * self.power_factor
         return (fx / n, fh / n * self.power_factor, 0.0, fy / n)
+
+    def _stations_step(self, dt: float, V: float, ship_state: tuple,
+                       scale: float) -> tuple[float, float, float]:
+        """The vectorized kinematic-stations step: one numpy pass over the
+        tier's stations, the phase machine scalar on the first oar (the
+        oars are phase-locked — identical C and omega at every step, the
+        per-station flow is the only difference). Returns the tier's sums
+        (fx, fy, fh). Conventions match the scalar loop exactly: the
+        blade FORCES sit at the pre-advance C (the step's start), the
+        blade POSITIONS at the post-advance C (one dt later — the scalar
+        loop reads o.C after o.step)."""
+        xs, ys, lout, lin, l_cp, cf, slip = self._vgeo
+        o0 = self.oar
+        C0 = o0.C
+        immersed = o0.in_drive
+        pulse = o0.inertia_fh()            # the pre-state pulse (phase-locked)
+        o0.step(dt, V, ship_state)         # the phase advance (scalar)
+        v, r = ship_state
+        side = self._side
+        C_eff = side * C0
+        nx = math.cos(C_eff) * cf
+        ny = -math.sin(C_eff) * cf
+        if immersed:
+            omega = -o0.dir * o0.omega_drive
+            vn = ((V - r * ys) * nx + (v + r * xs) * ny + l_cp * omega) * slip
+            Fn = self.k * np.abs(vn) * vn
+        else:
+            Fn = np.zeros(len(xs))
+        Fx = -Fn * nx
+        Fy = -Fn * ny
+        Fh = np.abs(Fn) * l_cp / lin + pulse
+        C_adv = side * o0.C                # the post-advance position arm
+        x_b = xs + lout * math.sin(C_adv)
+        y_b = ys + lout * math.cos(C_adv)
+        self._stations = list(zip((Fx * scale).tolist(),
+                                  (Fy * scale).tolist(),
+                                  [0.0] * len(xs),
+                                  x_b.tolist(), y_b.tolist()))
+        return (float((Fx * scale).sum()), float((Fy * scale).sum()),
+                float(Fh.sum()))
 
     def end_of_step(self, dt: float) -> None:
         """W' tank update (drain on gross excess, refill at rest)."""

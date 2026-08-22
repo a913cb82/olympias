@@ -273,16 +273,28 @@ analytically — the phase boundaries stay exact).
   ~50 s⁻¹) and the flip substep at 1e-3 as before; the kinematic recovery
   runs one step with the catch crossing split analytically — same physics,
   substeps confined to the phases that carry force.
+- **The vectorized kinematic-stations pass** (`TierCrew._stations_step`):
+  the tier's oars are PHASE-LOCKED (identical C/omega at every step — the
+  kinematics are per-tier, the local flow is the only per-station input),
+  so the phase machine stays scalar on the first oar and one numpy pass
+  computes the 170 per-station blade forces/positions and the yaw/lateral
+  sums. Conventions match the scalar loop exactly (forces at the
+  pre-advance C, positions at the post-advance C, the inertia pulse
+  scalar). The force mode is NOT phase-locked (each drive integrates its
+  own EOM) — it keeps the scalar loop; the aggregated default was left
+  scalar (6 oars — numpy overhead would dominate).
 
 Measured (same machine, same venv, vs the HEAD worktree):
 
 | mode | before | after | |
 |---|---|---|---|
 | stations (170 oars), 60 s sim | 5.44 s | 3.98 s | −27 % |
+| stations lever-test scenario (500 s) | 36.4 s | 12.8 s | −65 % |
+| test_revf_layers.py (the layer's suite) | 69.8 s | 32.5 s | −53 % |
 | force mode, 60 s sim | 1.81 s | 1.12 s | −38 % |
 | aggregated (6 oars), 300 s sim | 1.42 s | 1.33 s | −6 % |
-| full suite | 318 s | 266 s | −16 % |
+| full suite | 318 s | 237 s | −25 % |
 
 Suite: 159 checks green, unchanged locks. The remaining levers (the suite
-dt, the stations loop vectorization, the calibrate cache/parallelism,
-pytest-xdist) are next-steps Stream E.
+dt, the calibrate cache/parallelism, pytest-xdist, the bisection
+warm-starts) are next-steps Stream E.
