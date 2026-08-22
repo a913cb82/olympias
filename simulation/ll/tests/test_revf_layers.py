@@ -8,15 +8,7 @@ behaviour of the labelled layers.
   folds in, direction confirmed) but the turn D's shift out of the gate
   bands with the [?] station layout (tightest -25 %, the oar-only
   +15 %), so the aggregated sway-calibrated default stays (the negative
-  result, next-steps.md A1).
-- A2: the trapezoidal drive profile (ll/oar.py profile="trap") — the
-  phase-based stroke with the report's in-water fraction. The measured
-  verdict: with the same sweep the longer in-water forces a lower mean
-  omega and the blade cannot outrun the water during the ramps (the
-  mean thrust -35.5 N vs the chain's +17.5 N at 7.2 kt/28.8 spm); the
-  effective-pull (the chain) and the kinematic in-water (the report)
-  jointly imply a peaked mid-stroke omega the trapezoid cannot hold —
-  the constant-omega stays (the negative result, next-steps.md A2).
+  result, next-steps.md Stream B2).
 """
 
 import math
@@ -114,49 +106,3 @@ def test_polar_variant_thrust():
     assert 1.25 < pol["mean_thrust"] / ref["mean_thrust"] < 1.55
 
 
-def test_drag_law_noop():
-    """B4: the turn model's drag law is a measured no-op for the turn
-    gates — the turns run below 6.7 kt where the taylor/trials laws
-    agree on 40.2v^2, and the chain law shifts the D's by <= 1.1 % (the
-    turn's drag is rudder-dominated). The t_360 is unchanged too."""
-    from ll.ship import rate_for_speed
-    rate = rate_for_speed("Olympias", 6.5, n_oars=85)
-    ds = []
-    for law in ("taylor", "trials", "chain"):
-        s = Ship(rate=rate, n_oars=85, helm=("starboard", 1.0),
-                 oar_state=("row", "hold"), pressure=("spoude", "spoude"),
-                 drag_law=law)
-        s.V = 6.5 * KT
-        r = run_turn(s, dt=0.02, target_psi=math.pi)
-        ds.append(r["D"])
-    assert max(ds) - min(ds) < 1.5, ds
-
-
-def test_mass_matrix_noop():
-    """B1: the sway-yaw coupling matrix (the [?] semi-empirical added
-    masses) shifts the g1 by < 3 % and the drift by < 0.3 deg — the
-    couplings act on the transients, the drift is a steady-state
-    balance; the trial-measured scalar m_app stays."""
-    from ll.ship import rate_for_speed
-    rate = rate_for_speed("Olympias", 6.0)
-    ds = []
-    for mm in (False, True):
-        s = Ship(rate=rate, helm=("port", 1.0), oar_state=("row", "row"),
-                 pressure=("spoude", "spoude"), mass_matrix=mm)
-        s.V = 6.0 * KT
-        r = run_turn(s, dt=0.02, target_psi=math.pi)
-        ds.append(r["D"])
-    assert abs(ds[1] - ds[0]) / ds[0] < 0.03, ds
-
-
-def test_trap_profile_thrust():
-    """A2: the trapezoidal drive with the report's in-water fraction at
-    7.2 kt/28.8 spm — the measured NEGATIVE mean thrust (the negative
-    result): the same sweep over a longer in-water time forces a lower
-    mean omega; the blade cannot outrun the water during the ramps."""
-    rig = RIGS["Olympias"]
-    ref = simulate(Oar(rig, 28.8, 0.43), 7.2 * KT, 0.43 / 600, 6)
-    trap = simulate(Oar(rig, 28.8, 0.39 * 60.0 / 28.8, profile="trap",
-                        t_ramp=0.15), 7.2 * KT, 0.0005, 6)
-    assert ref["mean_thrust"] > 10.0
-    assert trap["mean_thrust"] < -20.0, trap["mean_thrust"]

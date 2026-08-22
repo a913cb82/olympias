@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Mismatch #2: calibrate the 44.5-spm effective-pull time.
+"""Calibrate the 44.5-spm effective-pull time (T_DRIVE at the sprint rate).
 
 Table 9.6 has no 44.5-spm entry (register A8), so the sprint prediction
 spanned 7.9-8.8 kt. Single-point calibration: choose t_drive(44.5) so the LL

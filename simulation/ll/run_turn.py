@@ -7,7 +7,7 @@ Usage (from simulation/):
 
 Protocols: full-crew turns run at the speed-holding rate for the entry speed;
 the one-side-stops turn at the one-side balance rate (85 oars). Anchors from
-the W5 validation (fg-turns-rerun.md): G1 89.4 m, F1 111.9 m, tightest 62 m.
+the W5 validation (research/lane-5-manoeuvre/manoeuvre.md Part 3): G1 89.4 m, F1 111.9 m, tightest 62 m.
 """
 
 import argparse

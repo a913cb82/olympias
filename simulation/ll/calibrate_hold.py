@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Mismatch #1: calibrate the hold-water fraction against BOTH trial anchors.
+"""Calibrate the hold-water brake fraction (HOLD_FRAC) against both trial
+anchors.
 
 The tightest Olympias turn (Morrison 1988): D = 62 m AND 360 deg in 128 s —
 mean speed 2.9 kt, i.e. the speed HALVES from the 6.5-kt entry. The trial was

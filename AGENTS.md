@@ -20,8 +20,7 @@ research/                        the validated evidence base (see research/AGENT
   data/                            decoded source tables (CSV, # comments allowed)
   sources/                         source PDFs (Rankov 2012, Carter, …) + build
                                    logs + the recovered archived build log (recovery/)
-  tools/                           decode/OCR helpers + fonts + renders (scratch/ for
-                                   one-off iteration scripts)
+  tools/                           decode/OCR helpers + fonts + renders
   tasks/                           repeatable extraction/decoding playbooks
 simulation/                      the simulators (see simulation/AGENTS.md)
   commands/  schema + script parser (the frozen command language)

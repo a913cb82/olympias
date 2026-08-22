@@ -43,7 +43,7 @@ INT = 0.888            # m — interscalmium (the chain)
 # point is that the fitted lever disappears):
 #   thranite 2.7 m  — the outrigger's centre: the register B6 beam
 #                    5.45-5.6 m, the tholes drilled through the upper
-#                    + lower outrigger rails (build log, rig-geometry
+#                    + lower outrigger rails (build log, rig-and-oars
 #                    §2) — GROUNDED
 #   zygian   ~2.0 m — between the top timbers, lining up with the
 #                    outrigger brackets [?] (the B6 decode would pin it)

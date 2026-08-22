@@ -35,9 +35,10 @@ blade's flow from the ship's (u, v, r). Measured verdicts:
 Detail: the register C3 row; `ll/tests/test_revf_layers.py`; VALIDATION.
 
 **A2 — the stroke phase structure: DONE (the negative result).**
-The trapezoidal drive profile (`ll/oar.py profile="trap"`) measured at the
-cruise point: with the report's in-water fraction 0.39 (0.72 s) the mean
-thrust is −35.5 N vs the chain's +17.5 N — the effective-pull (0.43 s) and
+The trapezoidal drive profile (the removed `profile="trap"` variant)
+measured at the cruise point: with the report's in-water fraction 0.39
+(0.72 s) the mean thrust is −35.5 N vs the chain's +17.5 N — the
+effective-pull (0.43 s) and
 the kinematic in-water (0.7 s) are jointly incompatible with ANY trapezoid;
 they imply a PEAKED mid-stroke ω(t) whose shape the available data does not
 determine. The constant-ω + the effective-pull stays the validated
@@ -53,7 +54,8 @@ stays gate-passing; closed unless the rudder plans surface.
 `Ship(mass_matrix=True)` (2×2 sway-yaw solve, add_v 0.9 / add_r 0.2 /
 add_c 0.1 `[?]`): the g1's D shifts +2.3 %, the drift −1.5° → −1.4° — the
 couplings act on the TRANSIENTS; the trial-measured scalar m_app (1.10×)
-stays. Locked: `test_mass_matrix_noop`.
+stays. The variant and its lock test were removed with the 2026-08
+cleanup (the verdict above is the record).
 
 **B2 — flat-plate vs the lift+drag polars: DONE (the lift is NOT
 negligible — the labelled polar variant's built).** The report's polars
@@ -80,8 +82,9 @@ cross-check is blocked on that decode `[?]`. Our anchors are trial-derived
 cells: the D's shift ≤ 1.1 %; the tightest's t_360 unchanged (101 s either
 way) — the turns run BELOW 6.7 kt where the laws agree on 40.2v², and the
 chain law's drag is a small share of the turn's balance (the rudder's drag
-dominates). The t_360's −23 % is NOT the drag law's. Locked:
-`test_drag_law_noop`.
+dominates). The t_360's −23 % is NOT the drag law's. The variants and their
+lock test were removed with the 2026-08 cleanup (the chain law is the only
+law; the verdict above is the record).
 
 **B5 — the rower's moving mass: DONE (documented).** The report's own
 equations confirm the handle/footplate forces are internal to the hull+crew
@@ -197,7 +200,8 @@ replacing the f_hull/q_hull/Ω trio with one distribution) FAILED the gates
 — the turns widen +45–85 %: the quadratic form's net lateral force is ~13×
 weaker than the Taylor f_hull at the LL's drift angles, so the drift
 balloons to ~20–25° (the named suspect: the C_D split between the force and
-the moment, or the real ends); the mode stays available but OFF.
+the moment, or the real ends). The mode and its code were removed with the
+2026-08 cleanup; the verdict above is the record.
 (b) the CLR is NOT reproduced: the computed lateral-plane centroid is AFT
 of the c.g. (−0.2…−1.4 m vs the fitted +0.8 forward) — the parametric ends
 + the ram's assumed plane are the gap; the real lines are the named path
@@ -205,15 +209,15 @@ of the c.g. (−0.2…−1.4 m vs the fitted +0.8 forward) — the parametric en
 under-predicts Taylor's 35 m² by 26–31 % — same cause.
 
 Detail: `crossflow.py`; VALIDATION §7.2/§9/§10.2/§11.1; CALIBRATION row 5;
-the experiment `research/tools/scratch/plan2_sway_experiment.py`; the
-commit efe1319.
+the commit efe1319.
 
 ## 4. The Braithwaite sources — what the new data settled (2026-08-22)
 
-The design tool (`sources/galley-sizing-xlsm/`) and the RINA draft paper
-(`sources/warship-evolution-6th-bc/`) — both fully decoded (DECODE.md in
-each directory; the lane notes `lane-3/braithwaite-workbook.md`,
-`lane-4/braithwaite-workbook.md`, `lane-5/braithwaite-workbook.md`).
+The design tool (`research/sources/galley-sizing-xlsm/`) and the RINA draft paper
+(`research/sources/warship-evolution-6th-bc/`) — both fully decoded (DECODE.md in
+each directory; the lane notes `research/lane-3-hull/braithwaite-workbook.md`,
+`research/lane-4-oars/braithwaite-workbook.md`,
+`research/lane-5-manoeuvre/braithwaite-workbook.md`).
 Validation wins recorded:
 - **Zero-speed thrust**: the trials' 81 N/oarsman vs the LL's equilibrium
   ~82 N/oar at 38.75 spm, V = 0 — two independent derivations agree.
@@ -224,7 +228,7 @@ Validation wins recorded:
   p82") corroborated source-side (register B2); the rudder parasitic-drag
   law 137V²+0.65V corroborated in the workbook's VBA (register C3).
 - **The real lines**: the "no numerical offsets" caveat (register B6,
-  offsets-eliav.md) is retired — the offset table is in hand
+  lane-3-hull `hull-form.md` Part 2) is retired — the offset table is in hand
   (`basis_hull_offsets.tsv`, 21 stations, LWL 32.35 m), and the Plan-2
   verdict's named gap is now concrete.
 - New register rows from the source: A10 (the 9.95 kt no-head-room bound),

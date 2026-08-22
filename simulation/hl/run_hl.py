@@ -71,7 +71,8 @@ def main() -> None:
     args = ap.parse_args()
 
     ship = Ship(dt=args.dt)
-    print(f"calibration: {ship.curves.meta['id']} — {ship.curves.meta['source']}")
+    m = ship.curves.meta
+    print(f"calibration: {m['id']} (ll {m.get('ll_commit', '?')})")
 
     if args.turn:
         names = list(SCENARIOS) if args.turn == "table" else [args.turn]

@@ -12,7 +12,7 @@ Baudouin & Hawkins (2002) 2nd-class-lever decomposition:
     with C_N ~ 1.8 for a flat plate fully immersed (matches the Macon measured
     C_D max ~1.85 at 90 deg attack, Caplan & Gardner 2007b / Coppel 2009)
   - handle force from torque balance about the thole: Fh*lin = Fb*l_cp
-  - rig geometry from W3 (rig-geometry.md), blade CP 260 mm from tip
+  - rig geometry from W3 (rig-and-oars.md Part 1), blade CP 260 mm from tip
 
 Frame: x = along keel, bow = +x; y = athwartships. Oar axis u = (sin C, cos C),
 C = oar angle from athwartships (+ = blade swept toward bow). During the drive

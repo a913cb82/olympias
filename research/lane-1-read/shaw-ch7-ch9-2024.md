@@ -1,6 +1,6 @@
 # Lane 1 read note — Shaw, ch.7 "From the Golden Horn to Heraclea" & ch.9 "Towards a Revised Design of a Greek Trireme... a Long Stroke" (Rankov 2012)
 
-Read from `../sources/rankov2012.txt` (book pp.63–67 = ch.7, pp.68–75 = ch.8 Wind & Waves, pp.76–81 = ch.9). These papers are the numerical core of the oar-propulsion lane: they contain the speed–power law, the human-power model, and the oar-efficiency/geometry data used in all Mark II design tables. (Ch.8's wave tables were decoded separately — see S7 and `lane-2-waves/carter-equations.md`.)
+Read from `../sources/rankov2012.txt` (book pp.63–67 = ch.7, pp.68–75 = ch.8 Wind & Waves, pp.76–81 = ch.9). These papers are the numerical core of the oar-propulsion lane: they contain the speed–power law, the human-power model, and the oar-efficiency/geometry data used in all Mark II design tables. (Ch.8's wave tables were decoded separately — see S7 and `lane-2-waves/waves.md` Part 1.)
 
 **Conventions**: cubit values (0.444 m Olympias, 0.49 m Mark II); "in plan" = horizontal projection = actual × cos 30° (oars inclined 30° to horizontal); page numbers are book pages. **Page-mapping**: txt PAGE line number = book page + 13.
 

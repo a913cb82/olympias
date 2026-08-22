@@ -25,7 +25,10 @@ common/     chain.py — shared access to the research chain (single source of
             truth; no duplicated constants)
 docs/       VALIDATION.md — the acceptance record (the LL gates §1–§8,
             the HL-vs-LL equivalence §9, the coverage map §10, the open
-            items with their quantified causes §11)
+            items with their quantified causes §11); CALIBRATION.md — the
+            tuning ledger; next-steps.md — the open work (orthogonal
+            streams); completed-work.md — the verdict ledger (everything
+            done, with pointers)
 ll/         the LL — per-oar reality-grade sim
   blade.py      the flat-plate blade-force law
   oar.py        time-stepped one-oar kinematics + cycle averages

@@ -41,18 +41,13 @@ oar_absorbed = _lp.oar_absorbed           # non-propulsive oar losses, W
 # --- Taylor ch.31 manoeuvring vessels (turn-validated parameters) ---
 VESSELS = {"Olympias": _mm.olympias(), "MarkIIb": _mm.mark_iib()}
 
-# --- Plan 2: the cross-flow hull strips (the Omega audit) ---
-CROSSFLOW_STRIPS = _cf.strips()   # (xs, ds, dxs) from the parametric hull
-CROSSFLOW_XCG = _cf.X_CG          # m from the stern post (ch.25)
-CROSSFLOW_RHO = _cf.RHO
-CROSSFLOW_CD_BAND = (0.3, 0.6)    # the post-drag-crisis band (the audit)
-
-# The yaw damper, computed (Plan 2, crossflow.py): Omega = ½·rho·C_D·J with
-# C_D = 0.3 (the drag-crisis value for the smooth circular-arc sections at
-# Re ~ 1e6) and J = ∫d·|x − x_cg|³dx over the parametric hull + the ram —
-# the audit's closure: the trial-fitted 3.2e6 equals this at 1.6 % (the
-# register C1 units caveat resolves: Omega IS the pure-rotation cross-flow
-# moment). The fitted 3.2e6 stays the documented reference in the register.
+# --- the computed cross-flow yaw damper (the Omega audit) ---
+# Omega = ½·rho·C_D·J with C_D = 0.3 (the drag-crisis value for the smooth
+# circular-arc sections at Re ~ 1e6) and J = ∫d·|x − x_cg|³dx over the
+# parametric hull + the ram (crossflow.py) — the audit's closure: the
+# trial-fitted 3.2e6 equals this at 1.6 % (the register C1 units caveat
+# resolves: Omega IS the pure-rotation cross-flow moment). The fitted
+# 3.2e6 stays the documented reference in the register.
 OMEGA_CROSSFLOW = _cf.omega_crossflow(0.3)
 
 # --- Table 3.1 oar inertia families (shared asset; research/data CSV) ---
@@ -93,7 +88,7 @@ OAR_TABLE31_LIN = 1.092    # Table 3.1 measurement inboard (m) — the reference
 
 # --- documented open items the sims must inherit honestly ---
 OQ18 = (
-    "oQ-18, resolved as physics (plan 15.2, task I): the ch.9 (q/p)^2 "
+    "oQ-18, resolved as physics: the ch.9 (q/p)^2 "
     "turning-point law at the ACTUAL turning point (p = V.cosC/omega) IS the "
     "flat-plate law (algebraic identity, locked); the geometric-deadpoint "
     "variant (appendix d-formula) contradicts the measured Table 9.6 "

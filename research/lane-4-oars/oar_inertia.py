@@ -22,8 +22,8 @@ which is what makes an oar "handy". This layer:
 
 Inputs: research/data/shaw-table-3.1-oar-inertia.csv (comment lines + plain
 header, as per repo convention).
-Outputs: console report only; the doc numbers are copied into oar-data.md §6 /
-rigid-oar-refinement.md by hand.
+Outputs: console report only; the doc numbers are copied into rig-and-oars.md
+(Part 2 §2.3 / Part 3) by hand.
 """
 
 import csv

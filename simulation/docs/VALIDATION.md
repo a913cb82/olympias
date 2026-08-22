@@ -111,7 +111,7 @@ never a stall: the measured stroke IS the force-balanced stroke, the G5-7
 companion's physics promoted to a layer). The catch flip (pinned at the
 catch, the spike force over t_rise) delivers the blade entry at the
 equilibrium speed; the recovery stays kinematic `[?]` (the force recovery
-is unanchored — next-steps.md P1.2); the first stroke starts from rest
+is unanchored — next-steps.md Stream A1); the first stroke starts from rest
 (the catch deadspot is gone — a parked blade would demand ~2 kN).
 
 | Quantity | Force mode | Anchor | Match |
@@ -172,9 +172,10 @@ default is untouched (the full suite green).
    t_360 (98.2 → 128 s) grows every turn diameter out of its gate band
    (G1 111.5 m +24 %, F1 153.7 m +31 %, tightest 84.6 m +25 %) — the
    mechanism is forced (linear damping lowers ω everywhere, D = V/ω
-   grows); the term `YAW_LIN_DAMP` sits OFF (0.0) with the negative
-   result in its docstring. The discrepancy stays open with the tested
-   hypothesis recorded — the one remaining Level-1 open physics item.
+   grows); the `YAW_LIN_DAMP` term was removed after the failed test
+   (the verdict above; the record is in git history). The discrepancy
+   stays open with the tested hypothesis recorded — the one remaining
+   Level-1 open physics item.
    The drift
    emerges (−2.2°) and the lateral velocity damps.
 3. **Sprint t_drive gap** — **closed**: t_drive(44.5) = 0.371 s calibrated
@@ -357,7 +358,7 @@ current phase (Phase 4/5) or HL-loose by design with a named trigger.
 | Sprint 44.5 spm (130 oars) | validated (trial 8.2–8.4 inside the 7.9–8.8 bracket; t_drive pinned, A8) | §2 | — |
 | Rudder turns G1 / F1 | validated (+0.3 % / +4.9 %) | §3 | — |
 | Tightest turn (one side stops) | **validated** — the hold_frac re-measurement (0.05 → 0.08, task T2): D 62.6 m vs the 62 m anchor (+1.0 %, was +9.2 %) AND the drained floor 3.22 kt ≈ the trial's halved 3.25 (was 3.54); the oar-hold/back rows re-measured (103.5 m, no anchor) | §3 + §11.2 | — |
-| 360° turn time | open (locked test) — 98.2 vs 128 s; the linear yaw-damping hypothesis tested and FAILED (task H): any closing k blows G1/F1/tightest out of their bands (+24/+31/+25 %); `YAW_LIN_DAMP` OFF with the negative result recorded. The 128 s is trial-derived ('halves speed' → mean 2.91 kt → 2.81°/s) — the LL's turn-speed loss (−32 %) is the remaining target (T2); the turn build-up (~2 s) and the yaw/oar differential (~1 s) are ruled out (the verdicts: §7.2) | §7.2 + §11.2 | open — the cause quantified (the turn-speed floor: the LL's ~3.2 vs the trial's implied ~2.9 kt); a measured mechanism, or stays open |
+| 360° turn time | open (locked test) — 98.2 vs 128 s; the linear yaw-damping hypothesis tested and FAILED (task H): any closing k blows G1/F1/tightest out of their bands (+24/+31/+25 %); `YAW_LIN_DAMP` removed after the failed test (the negative result above). The 128 s is trial-derived ('halves speed' → mean 2.91 kt → 2.81°/s) — the LL's turn-speed loss (−32 %) is the remaining target (T2); the turn build-up (~2 s) and the yaw/oar differential (~1 s) are ruled out (the verdicts: §7.2) | §7.2 + §11.2 | open — the cause quantified (the turn-speed floor: the LL's ~3.2 vs the trial's implied ~2.9 kt); a measured mechanism, or stays open |
 | Oar-only turns, backing, asymmetric fatigue | no anchor (oQ-3 — the 1990 report is print-only) | §3/§4 | physical consistency + the LL↔HL agreement are the acceptance; the anchors cannot exist |
 | Lateral drift angle during full-rudder turns (G1/G2) | open-with-locked-test — the LL's time-domain β measured (the corrected direction convention, K24): −1.50° (G1) / −1.18° (F1) / +2.24° (tightest) vs the reported 15°±2° / Taylor's 7.8° — the ~10× gap confirmed; the A_lat/clr adjustment options must hold the turns AND the wprime closure — no change made (the gap quantified, the row open) | register C5 + §11.2 | a measured A_lat/clr adjustment that holds all gates, or the row stays open |
 | Start from rest (0→7 kt) | context, locked by test (M4) — the physiology-limited LL: 5.81 kt @ 30 s, 6.93 @ 60 s, 7.0 kt at 62.2 s — SLOWER than both references (the Taylor trained model ~14 s, the 1988 less-trained trial 32 s, register D5): a documented context gap (the force-ceiling/t_rise provisionality, D10), not a gate | §4 + §11.2 | the envelope is locked by `ll/tests/test_start_context.py` |

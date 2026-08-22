@@ -114,7 +114,7 @@ is their oracle.
 | --- | --- | --- |
 | `t_rise` | the catch's force-rise time | provisional (register D10) — instrumented force traces would pin it |
 | `Fh_MAX` | the peak handle-force ceiling (a demo-only clamp) | provisional, model-implied (oQ-13 clamp, demos only) |
-| `YAW_LIN_DAMP` | the linear yaw-damping coefficient (the tested t_360 hypothesis) | OFF — tested and FAILED (breaks every diameter); the negative result recorded in `ll/ship.py` |
+| `YAW_LIN_DAMP` | the linear yaw-damping coefficient (the tested t_360 hypothesis) | REMOVED — tested and FAILED (breaks every diameter); the negative result: VALIDATION §7.2 + this table |
 
 ## 5. The honest bottom line
 

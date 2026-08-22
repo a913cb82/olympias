@@ -30,7 +30,7 @@ M_APP_FACTOR = 1.10        # apparent-mass factor (2)
 N_OARS = 170               # Olympias oar count
 
 
-# Calibrated entries beyond Table 9.6 (mismatch #2, register A8):
+# Calibrated entries beyond Table 9.6 (register A8):
 # t_drive(44.5) = 0.371 s chosen so the LL reproduces the ch.9 four-run
 # sprint (8.2-8.3 kt at 44.5 spm, ~130 effective rowers) — the value the
 # Gate-2 bracket analysis already pointed to, now pinned (calibrate_tdrive.py).

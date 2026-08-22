@@ -69,7 +69,8 @@ that Stream A's turns depend on. Each step: if the values move → the LL
 turn gates re-run + the HL re-calibration (the Plan-2 loop).
 
 - **B1. The real-lines cross-flow audit (E1).** The lateral plane, A_lat,
-  the CLR and the cross-flow J from `basis_hull_offsets.tsv` (the
+  the CLR and the cross-flow J from
+  `research/sources/galley-sizing-xlsm/basis_hull_offsets.tsv` (the
   parametric hull + the assumed ram were the named gap). Targets: the
   fitted clr_offset +0.8 m (the parametric hull computed AFT), Taylor's
   A_lat 35 m² (the parametric hull was 26–31 % light), and the CN split —

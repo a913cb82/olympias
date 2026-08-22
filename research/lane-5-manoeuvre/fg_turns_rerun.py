@@ -23,7 +23,7 @@ published in the book and the trial reports:
     - 1990 trials video / CS Monitor 1988: ~2.6-3 deg/s for fast tight turns
 
 The model reproduces all three DIAMETER anchors to within 7% (this is the
-headline W5 validation, already in manoeuvre-model.md).  The yaw-rate /
+headline W5 validation, already in manoeuvre.md Part 3).  The yaw-rate /
 360-deg-time anchors are NOT reproduced by the steady-state constant-speed
 turn: the model's omega is set by torque balance at a FIXED speed, whereas
 the observed turns decelerate (the chapter says the tightest turn "halves

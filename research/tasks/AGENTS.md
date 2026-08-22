@@ -13,7 +13,7 @@ session doesn't re-learn them the hard way.
 
 Working notes (persistent across sessions):
 - Sources: `../sources/rankov2012.pdf` (+ `rankov2012.txt` full text dump), Carter 1982 PDF in
-  `../sources/carter/`. Promoted deliverables live in this repo; scratch stays in repo too.
+  `../sources/carter/`. Promoted deliverables live in this repo.
 - **Venv: `.venv` at the repo root** (Python 3.10.12) has pymupdf + numpy + PIL + scipy +
   matplotlib — everything except OCR. Render/extract with `.venv/bin/python3`.
 - **OCR (easyocr + torch) is on-demand only** — heavy; not installed into `.venv`. Recipe:

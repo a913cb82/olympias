@@ -8,7 +8,7 @@ cell-by-cell. A mismatch flags either an OCR error or a mis-read assumption.
 
 ### 1. Identify the generating equations from the primary source
 Read the surrounding prose (via `decode_shaw.py` / text dump) for the formulas. For Shaw's wave
-tables these are Carter 1982 + deep-water dispersion — see `../lane-2-waves/carter-equations.md`
+tables these are Carter 1982 + deep-water dispersion — see `../lane-2-waves/waves.md` §1
 for the full recipe. Note the *exact* inputs and their definitions from the caption (e.g. W is wind
 **relative to the water**, C measured relative to water moving at 0.5 m/s).
 
@@ -43,14 +43,14 @@ E.g. Table 8.4 H/L/C = Table 8.3 × 1.8/1.2/1.1 (Shaw states these factors). Com
 cells and confirm they lie in the stated range. This catches whole-table mis-decodes.
 
 ### 5. Record the result in the notes
-- Mark the open question resolved with `[x]` (e.g. "Shaw used T_z not T_m" — see `carter-equations.md`
+- Mark the open question resolved with `[x]` (e.g. "Shaw used T_z not T_m" — see `waves.md`
   §3, §9).
 - Add the reconstruction formula and verdict to the lane note's §10-style section so the derivation
   is replayable.
 
 ## Working reference values for Shaw's wave tables
 - Duration-limited (always applies for Table 8.3 inputs; fetch-limited branch and caps in
-  `carter-equations.md` §2): H_s = 0.0146·D^(5/7)·W^(9/7); T_z = 0.419·D^(3/7)·W^(4/7);
+  `waves.md` §1.2): H_s = 0.0146·D^(5/7)·W^(9/7); T_z = 0.419·D^(3/7)·W^(4/7);
   fully-developed cap H_s = 0.0240·W², T_z = 0.566·W; L = 1.56·T_z²; C = 1.56·T_z.
 - Verified spot checks (X, D, W → H, L, C): (50, 3.2, 4.5) → 0.23, 4.1, 2.5;
   (200, 12.6, 5.5) → 0.73, 15.1, 4.9 (capped).

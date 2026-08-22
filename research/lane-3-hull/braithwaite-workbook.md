@@ -62,7 +62,7 @@ block, rows 218–260, Simpson's-rule integrals)
   the LL's ship mass must be reconciled against 45.5 t (it drives m_app and
   the turn physics).
 - Oars **17 kg each** (62×17 = 1054 kg) — matches the build log's "17 kg once
-  the lead counterweight was added" (oar-data.md §3). ✓
+  the lead counterweight was added" (`rig-and-oars.md` §2.3). ✓
 - "Adjustment to match inclined wt" 670 kg — the inclining-experiment
   reconciliation is inside the breakdown. `[x]`
 - The weights scale with 24³ — the 1:24 model weighing the paper describes. `[x]`

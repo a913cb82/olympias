@@ -62,7 +62,6 @@ class Oar:
     def __init__(self, rig: dict, r_spm: float, t_drive: float | None = None,
                  direction: int = 1, mit: float = 0.0, t_rise: float = 0.15,
                  sweep_factor: float = 1.0, station: tuple | None = None,
-                 profile: str = "const", t_ramp: float = 0.15,
                  force: bool = False):
         """direction = +1 forward stroke; -1 backing water (drive sweeps the
         other way — the blade force law then gives negative thrust naturally).
@@ -80,21 +79,11 @@ class Oar:
         G5 layer's impulse convention, now a motion); the recovery stays
         kinematic. The crew configures the demand/flip/entry/recovery per
         stroke (configure_force); the emerging drive time is telemetry
-        (t_drive_last). The profile option is kinematic-only.
+        (t_drive_last). Kinematic mode: the validated constant-omega drive.
 
         station: (x, y, side) — the per-station layer (ll/stations.py):
         the blade's flow includes the ship's (u, v, r) at the station
-        and the starboard oar's sweep mirrors (C_eff = -C).
-
-        profile: "const" (the validated constant-omega drive) or "trap"
-        (the Rev F A2 variant — the phase-based stroke: the drive omega
-        ramps up over t_ramp at the catch and down before the finish, so
-        the blade spends longer in the water at a higher peak rate — the
-        trials' stroke-time budget: in the water ~0.7 s of a 1.8 s stroke
-        at 33 spm vs the chain's effective-pull 0.43 s at 28.8). The
-        sweep is conserved: omega_peak = sweep/(t_drive - t_ramp)."""
-        self.profile = profile
-        self.t_ramp = t_ramp
+        and the starboard oar's sweep mirrors (C_eff = -C)."""
         self.station = station
         self.rig = rig
         self.dir = direction
@@ -155,11 +144,7 @@ class Oar:
         return 0.5 * self.mit * w * w * rate_eff / 60.0
 
     def reset(self) -> None:
-        # the trap profile's peak conserves the sweep over the ramps
-        if self.profile == "trap" and self.t_drive > self.t_ramp:
-            self.omega_drive = self.sweep / (self.t_drive - self.t_ramp)
-        else:
-            self.omega_drive = self.omega_cmd
+        self.omega_drive = self.omega_cmd
         self.omega_recover = self.omega_rec_cmd
         self.sweep_eff = self.sweep
         self.C = self.dir * self.sweep / 2.0
@@ -174,13 +159,8 @@ class Oar:
     def configure_stroke(self, omega_drive: float, omega_recover: float,
                          sweep_eff: float) -> None:
         """Set the effective kinematics for the next drive (called at the
-        catch by the crew model — ll/rower.py). The trap profile's drive
-        time is the in-water duration: the peak omega conserves the
-        sweep (omega_peak = sweep/(t_drive - t_ramp))."""
-        if self.profile == "trap" and self.t_drive > self.t_ramp:
-            self.omega_drive = sweep_eff / (self.t_drive - self.t_ramp)
-        else:
-            self.omega_drive = omega_drive
+        catch by the crew model — ll/rower.py)."""
+        self.omega_drive = omega_drive
         self.omega_recover = omega_recover
         self.sweep_eff = sweep_eff
 
@@ -307,24 +287,12 @@ class Oar:
                        immersed=s.immersed, vn=vn / dt, Fn=fn / dt,
                        Fx=fx / dt, Fy=fy / dt, Fh=fh / dt)
 
-    def _drive_omega_now(self) -> float:
-        """The instantaneous drive omega: the constant (validated) or the
-        trapezoidal profile's ramp at the catch/finish."""
-        if self.profile != "trap":
-            return self.omega_drive
-        t = self.t_since_catch
-        if t < self.t_ramp:
-            return self.omega_drive * t / self.t_ramp
-        if t > self.t_drive - self.t_ramp:
-            return self.omega_drive * (self.t_drive - t) / self.t_ramp
-        return self.omega_drive
-
     def step(self, dt: float, V: float, ship_state: tuple | None = None) -> OarStep:
         if self.force:
             return self._step_force(dt, V, ship_state)
         C = self.C
         immersed = self.in_drive
-        omega = (-self.dir * self._drive_omega_now() if immersed
+        omega = (-self.dir * self.omega_drive if immersed
                  else self.dir * self.omega_recover)
         flow = None
         if self.station is not None and ship_state is not None:
@@ -339,7 +307,7 @@ class Oar:
         f["Fh"] = f["Fh"] + self.inertia_fh()
         # advance
         if self.in_drive:
-            self.C -= self.dir * self._drive_omega_now() * dt
+            self.C -= self.dir * self.omega_drive * dt
             if self.dir * self.C <= -self.sweep_eff / 2:   # finish
                 self.C = -self.dir * self.sweep_eff / 2
                 self.in_drive = False
