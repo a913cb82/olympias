@@ -238,27 +238,50 @@ ship speed) — the intercept/gradient live only in raster Figure 10 (decode
 blocked), so the start is the minimum-shape assumption (the constant
 demand), the B3 shape flagged `[?]` until the decode.
 
-Steps: (1) the force model — Fh(θ, θ̇ | r, W_frac, tier), research side;
-(2) `ll/oar.py` force mode — the oar EOM with the catch flip, the blade
-entry/exit, the recovery phase (the feather drag — a new model, no anchor,
-flagged); (3) the single-oar validation — the emergent drive time at the 4
-Table 9.6 points (tighten the ±15 % toward ±5 %), the emergent sweep, the
-mean handle force (223.5/208 N), the catch spike vs Gate 5 (t_rise now
-emerges from the blade's entry at full ω); (4) the crew integration — the
-force mode inside TierCrew/SideCrew, hold/back as grip-force states (the
-held blade's drag is the flat-plate law on a stationary blade; the grip
-strength stays the human constant); (5) the sprint gate — 8.2–8.3 kt @
-44.5 spm / 130 oars with NO t_drive(44.5); (6) measure the emergent
-rate→power curve — the T1 open item's named suspect (the blade/kinematics
-chain): does the force layer fix the ch.7 triple?; (7) retire the schedule
-(T_DRIVE becomes anchors), re-run the gates, re-calibrate the HL, update
-CALIBRATION.md rows 1/2/4/12.
+Steps (phases; each ends at a gate, the full acceptance re-runs at P1.6):
 
-Risks: the profile shape (Figure 10 block); the catch flip at low ship
-speed (the start-from-rest — the flip may not complete before blade
-re-entry; the fh_max clamp interacts); the numerical stiffness at catch
-(the companion's dt 5e-5 — the force layer must substep or go implicit
-inside the ship's dt 0.05); the recovery-phase model is unanchored.
+- **P1.1 the force model** (research side): Fh(θ, θ̇ | r, W_frac, tier) —
+  the profile's work per stroke must equal the chain's (the mean pull
+  7.43·r), so the emergent cycle-mean power reproduces P = 7.43·r by
+  construction; the W′/pressure scaling from rower.py; the tier factors
+  become force ceilings (the thalmian head-room EMERGES from the short-oar
+  kinematics — measure, don't apply).
+- **P1.2 the oar EOM layer** (`ll/oar.py` force mode): the drive with the
+  catch flip, the blade entry/exit conditions, the recovery phase (the
+  feather clamp + the water exit — a new model, no anchor, flagged `[?]`;
+  the kinematic recovery stays until the force recovery is measured);
+  numerical: the catch's stiffness (the companion's dt 5e-5) — substep or
+  implicit inside the ship's dt 0.05.
+- **P1.3 the single-oar validation** (the Gate-5 upgrade): the emergent
+  drive time at the 4 Table 9.6 points (tighten the ±15 % toward ±5 %),
+  the emergent sweep (the rig's sweep), the mean handle force
+  (223.5/208 N), the catch spikes (t_rise emerges — check vs Gate 5's
+  116/215/156 N, ±2 %).
+- **P1.4 the crew integration** (TierCrew/SideCrew): the force mode per
+  tier, the pipe keeps the crew in phase; hold/back as grip-force states
+  (the held blade's drag is the flat-plate law on a stationary blade; the
+  grip strength stays the human constant); the start-from-rest — the
+  catch flip at low V (the flip may not complete before blade re-entry;
+  the fh_max clamp interacts) — measured.
+- **P1.5 the ship gates**: the sprint — 8.2–8.3 kt @ 44.5 spm / 130 oars
+  with NO t_drive(44.5); the cruise pair (the hull=1.0 points); the T1
+  measurement — the emergent rate→power curve vs the ch.7 triple (the
+  named suspect: does the force layer fix the flatness? test_triple_lock
+  moves or stays — no silent re-lock).
+- **P1.6 the promotion**: T_DRIVE/CALIBRATED_T_DRIVE become anchors
+  (validation-only), the force mode becomes the default (labelled — the
+  kinematic mode stays as the reference); the full acceptance — the LL
+  gates, the HL re-calibration (calibrate.py), the harness, the annotated
+  rows re-measured.
+- **P1.7 the docs**: CALIBRATION.md rows 1/2/4/12 statuses (t_drive
+  eliminated; hold_frac/thalmian challenged), VALIDATION.md §2/§4/§5,
+  next-steps.
+
+Risks: the profile shape (Figure 10 block — the minimum-shape start);
+the catch flip at low ship speed (the start-from-rest); the numerical
+stiffness at catch; the recovery-phase model is unanchored; the T1
+interaction — the emergent rate→power may move the ch.7 triple either
+way (the gate decides, the lock follows the measurement).
 
 **Plan 2 — the manoeuvring hydrodynamics: Ω (and clr) from the hull form.**
 

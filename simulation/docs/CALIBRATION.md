@@ -20,6 +20,36 @@ has no trials to fit against. The distinction that matters:
 The acceptance record with the per-gate status of every fitted constant is
 `docs/VALIDATION.md` §11.1; this document is the *elimination* view.
 
+## 0. The tuning rule (portability acceptance)
+
+The audit's acceptance criterion: a tuned value is acceptable iff it
+corresponds to something the ship's plans would determine — "you can't
+read the plan" is the only licence to tune. A tuned value that could not
+theoretically be derived trivially from a plan is NOT acceptable and must
+be eliminated. Four classes:
+
+- **A — plan-trivial**: the value is geometry/area/hydrodynamics the plans
+  determine directly (a dimension, an area, a centroid, a foil, an added
+  mass, a resistance). Tuning is a legitimate placeholder for the unread
+  drawing (the Coates plans sit in the Wolfson College archive); when the
+  plans are readable, the value is computed, not tuned.
+- **B — universal human**: physiology/behaviour, in no plan and needed by
+  none — the same for every crew on every ship. Carried as-is, never
+  re-tuned per ship; the rule governs ship-specific tuning only.
+- **C — human-mixed**: the ship part is plan-derivable only through the
+  universal human law (the stroke timing via forces + inertia — Gate 5's
+  identity). Acceptable while the human law is universal; the timing row
+  is the elimination target (Plan 1's force-driven oar).
+- **D — violators**: ship-specific AND not plan-derivable — the audit's
+  job is to find and eliminate these. The sole violator found: the fitted
+  Ω (no drawing determines a lumped yaw-damper constant — its mysterious
+  units were the symptom) — eliminated by Plan 2 (computed from the hull
+  form at the drag-crisis C_D, crossflow.py).
+
+Current status: no remaining tuned value violates the rule. For a new ship
+whose plans ARE held, class A is computed from day one — the tuning burden
+is an Olympias-specific accident (the archive drawings).
+
 ## 1. The LL constants fitted from trials data `[x]`
 
 | # | Constant | What it does | Fitted to (the trial anchor) | Stands in for (the physics gap) | What would eliminate it | Generalizes from the full design? |
@@ -95,7 +125,9 @@ provide is **verification, not parameterization**. That is the direction
 the "good physics-based sim" should push: fewer fitted constants, more
 computed physics, trials as the gate. Until then, the porting reality:
 a new hull with line plans only can be built from §2 + §3 + computed
-versions of §1's hull rows (#5–#9), with the rig rows (#1, #2, #12)
-from the ship's rig evidence and the human rows (#3, #4, #11) carried
-as-is — and its Level-1 status honestly `[?]` where the anchors cannot
-exist.
+versions of §1's hull rows (#5's Ω done — Plan 2; #6–#9 pending), with
+the rig rows (#1, #2, #12) from the ship's rig evidence and the human rows
+(#3, #4, #11) carried as-is — and its Level-1 status honestly `[?]` where
+the anchors cannot exist. The acceptance rule is §0: tuned values are
+placeholders for unread plans (class A) or carried humans (class B) —
+never ship-specific empiricism (class D).
