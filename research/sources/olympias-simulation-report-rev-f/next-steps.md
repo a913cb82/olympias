@@ -427,3 +427,108 @@ new baseline; the full acceptance and the HL calibration re-run after
 each. The two interact through the turns (per-oar yaw moments vs the
 hull's yaw resistance) — the Plan-2 verdicts are Plan 1's starting
 baseline.
+
+## E. New sources — the Braithwaite design tool + the RINA paper (2026-08-22)
+
+Two new primary-side resources arrived and were fully decoded:
+- **`sources/galley-sizing-xlsm/`** — the author's oared-warship concept-design
+  tool (every sheet to TSV, all 17 VBA routines to text, the raw offset table
+  to `basis_hull_offsets.tsv`; `DECODE.md` in the directory). Contents: the
+  **real Olympias offsets** (21 stations, LWL 32.35 m, from the Lines Plan),
+  the hydrostatics (44.26 m³ @ Z 1.15, LCB 15.67 m from AP, WSA 130.5 m²,
+  Cb 0.321, Cw 0.768), the **weight breakdown** (lightship 25.748 t @ VCG
+  1.905 m, full load 45.5 t, oars 17 kg), the trials powering (the piecewise
+  resistance fit, the 81 N→0 @ 18 kt thrust law, top speed 9.95 kt rudders
+  up, the 830 J ram-failure energy), the **independent 3-DOF manoeuvring
+  model** (Clarke–Gedling–Hine derivatives, the cross-flow yaw damper
+  −ρ·CN·T·L⁴/64, Iz = m(L/3)², the Hoerner rudder + the trials parasitic
+  drag, the 67°-rudder turn scenarios with trajectories), and the transformed
+  designs (the pentaconter bireme).
+- **`sources/warship-evolution-6th-bc/`** — the draft RINA IJME 2016 paper
+  the tool serves (the study's write-up; text extracted; `DECODE.md`).
+
+### What the new data already settled (validation wins)
+
+- **Zero-speed thrust**: the trials' 81 N/oarsman vs the LL's equilibrium
+  ~82 N/oar at 38.75 spm, V = 0 — two independent derivations agree. ✓
+- **Lightship**: 25.748 t (scantlings + 1:24 model + inclining) confirms the
+  chain's 25.798 t anchor to 50 kg; the full load 45.5 t sits in the 43–47 t
+  family (register B1). ✓
+- **The piecewise trials resistance fit** (40.2/75.2/88.6·V² — "cf ref 1
+  p82") corroborated source-side (register B2); the rudder parasitic-drag
+  law 137V²+0.65V corroborated in the workbook's VBA (register C3). ✓
+- **The real lines**: the "no numerical offsets" caveat (register B6,
+  offsets-eliav.md) is retired — the offset table is in hand, and the
+  Plan-2 verdict's named gap ("the real lines are the path") is now
+  concrete.
+
+### The available next steps (ordered by impact)
+
+**E1. The real-lines cross-flow audit — Plan 2's completion.**
+Run the lane-5 audit on `basis_hull_offsets.tsv` (the parametric hull +
+the assumed ram were the named gap): the lateral plane, A_lat, the CLR
+and the cross-flow J from the actual sections. Targets: the fitted
+clr_offset +0.8 m (the parametric hull computed AFT — the open item),
+Taylor's A_lat 35 m² (the parametric hull was 26–31 % light), and the CN
+split — the workbook's rectangular projection with CN 0.4 vs 0.8 vs our
+tapered-plane C_D 0.30 should collapse to one value on the real plane.
+If the values move: the LL turn gates re-run + the HL re-calibration
+(the Plan-2 loop). The real plane also bears on the drift-angle open item
+(the model's 1.4° vs the trials' 8–15° — the lateral force's distribution).
+
+**E2. The mass reconciliation.** The LL's ship mass vs the workbook's
+45.5 t full load / 25.75 t light — m_app and the turn physics follow.
+(Register B1 already carries the numbers.)
+
+**E3. The no-head-room sprint test — T1's decisive cheap measurement.**
+The workbook's 9.95 kt is all-170 at the trials thrust law with NO
+thalmian shortfall; our LL's sprint (7.45 kinematic / 7.72 force) uses the
+fitted head-room 0.6 at 44.5 spm. Run the LL with the thalmian factor 1.0:
+if the equilibrium approaches ~9.9, the whole sprint deficit is the
+head-room shape (the class-C row), not the blade law; if it stays ~8, the
+E/A5 family is the suspect. Either way the T1 ledger gets a verdict and
+the P1.6 sprint blocker (blocker 2) a named direction.
+
+**E4. The independent-model cross-check.** The VBA is fully decoded:
+transcribe ManAcceleration / OarForces / RudderForces (CGH derivatives,
+the CN yaw damper, the Hoerner rudder + the 137V²+0.65V parasitic drag,
+the 81 N linear law) into a Python script and run the G1/F1/tightest
+scenarios + the top-speed curve — compare trajectories, diameters and the
+speed decay through the turns against the LL. A second trial-tuned model
+of the same ship is the strongest available cross-check of the turn
+physics (the W5 family — P1.6 blocker 1).
+
+**E5. The resistance-fit reconciliation.** The trials piecewise runs
+12–15 % below the chain law at 8–10 kt — same trials data, two fits.
+Document the cause (loading condition, rudder contribution, the fit
+families); analysis only — the chain law is trial-speed-validated and
+stays unless a gate says otherwise.
+
+**E6. The Iz reconciliation.** The workbook's Iz = m(L/3)² = 5.28e6
+(Rg from the 1:24-model pendulum tests) vs the LL's Iz (register C10).
+
+**E7. The portability milestone — the tuning rule's test.**
+The workbook's pentaconter designs (monoreme: 25/side, LOA 31 m, 21 t,
+GMT 0.643 m; bireme: LWL 17.2 m, B 2.8, T 0.759, 14.4 t — with the
+Transform sheet's offsets and the author's powering/turn predictions)
+are a NEW ship whose "plans" ARE held. Running our class-A machinery
+from the pentaconter's offsets and comparing with the workbook's numbers
+is the tuning rule's "for a new ship whose plans ARE held, class A
+computes from day one" — made testable. Scope decision needed:
+a research-side portability study vs a full LL scenario.
+
+**E8. The remaining decode (low priority).** The paper's figures
+(Figures 2/3/5, Tables 1/2 — image reading) and the workbook's 15
+charts' plotted series.
+
+### Interactions with the standing programs
+
+- The Plan-2 verdict's honest negative (b) — the CLR/A_lat gap — is E1's
+  direct target.
+- The P1.6 blockers: the turns (blocker 1) gain E1 + E4; the sprint
+  (blocker 2) gains E3 (the head-room test) — both land before the
+  force-mode promotion.
+- The MarkIIb (blocker 4) is unchanged: the workbook's linear thrust law
+  is a different model family and does not resolve the P-law vs the
+  0.472 s drive inconsistency (the same A5 tension, force-side-quantified).
+- E2/E6 touch the turn physics (m_app, Iz) — run them with the gates.
