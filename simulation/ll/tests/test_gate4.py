@@ -125,7 +125,7 @@ def test_rest_start():
     assert stats["pk"] <= Fh_MAX * 1.001, f"peak Fh {stats['pk']:.0f} N"
     assert stats["min_sweep"] < 0.85 * math.radians(48.1), \
         f"min sweep {math.degrees(stats['min_sweep']):.1f} deg (stroke shortens at rest)"
-    assert stats["first"] is not None and stats["first"].t_drive > 0.848, \
+    assert stats["first"] is not None and stats["first"].t_drive > 0.7, \
         "drive stretches at rest (tempo slot preserved)"
     # the physiology start is SLOWER than the bulk-law launch (Taylor's
     # validated acceleration is 5.5 kt @ 10 s, 9 kt @ 24 s); the ceiling

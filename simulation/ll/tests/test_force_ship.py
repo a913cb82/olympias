@@ -1,20 +1,24 @@
-"""Plan 1 — the force-driven oar layer, ship-level gates (P1.4/P1.5).
-
-The force mode is a labelled layer (Ship(force=True), default OFF — the
-kinematic validated set stays the default until the promotion gate, P1.6).
-These tests lock the force-mode's emergent SHIP behaviour so a physics
-change that silently shifts it fails:
+"""Plan 1 — the force-driven oar, ship-level gates (P1.4/P1.5), the
+PROMOTED default (Stream A, P1.6): the force mode IS the ship (the
+kinematic commanded-kinematics mode stays as the labelled reference
+layer). These tests lock the force-mode's emergent SHIP behaviour so a
+physics change that silently shifts it fails:
 
   F2-1 the sprint: spoude at 44.5 spm from 8.5 kt — the 30-s burst holds
-        >= 7.5 kt (the force mode's emergent 7.72 vs the kinematic's 7.45 —
-        the trials' 8.2-8.3 remain the T1-family deficit, reduced), then
-        the W' fades (V(900) < 0.9·V(30)).
-  F2-2 the cruise triple (the T1 measurement): the force-mode equilibrium
-        at 25.5/28.8/32.3 spm (hull=1.08, the chain demand 7.43·r) locks at
-        6.55/7.03/7.50 kt — a FLAT ~-6.3 % vs the ch.7 triple (the
-        kinematic's tension GROWS with rate, -2.5/-4.6/-6.1 %): the force
-        layer removes the rate-dependence of the deficit (the tension's
-        shape changed, its size ~unchanged — the named T1 suspects stand).
+        >= 7.5 kt (the force mode's measured 7.65 vs the trials' 8.2-8.4
+        — the sprint stays open with the named causes: the midship's
+        straight-rudder drag + the demand geometry, VALIDATION §11),
+        then the W' fades (V(900) < 0.9·V(30)).
+  F2-2 the cruise triple (the T1 measurement, re-based to the OLYMPIAS's
+        own chain): the force-mode equilibrium at 25.5/28.8/32.3 spm
+        (hull=1.0 — the run_hull acceptance basis; the demand 7.43·r
+        with the pull-length geometry cosC_mean) locks at
+        6.65/7.13/7.62 kt — within ~1 % of the Olympias chain's
+        (L=0.78, E=0.756: 6.57/7.15/7.69). The ch.7 triple itself is
+        Shaw's MARK II table (his appendix: L=0.99, E=0.78, hull 1.08)
+        — the Olympias's stroke is too short for it (ch.9's own claim);
+        the force mode's flat -4.1 % at hull 1.0 / -6.3 % at 1.08 is
+        that L basis, VALIDATION §11.
   F2-3 the rest start: from V=0 the first drives are slow (the equilibrium
         at low V — the catch deadspot is gone: the peak handle force stays
         at the demand), the launch is slower than the bulk-law envelope
@@ -88,7 +92,7 @@ def force_mean_thrust(rate, vkt):
     return fx / crew.oar.cycle
 
 
-def force_equilibrium(rate, hull=1.08, n_oars=170):
+def force_equilibrium(rate, hull=1.0, n_oars=170):
     def g(V):
         return n_oars * force_mean_thrust(rate, V / KT) \
             - hull_power(V, hull) / max(V, 1e-6)
@@ -102,7 +106,7 @@ def force_equilibrium(rate, hull=1.08, n_oars=170):
     return 0.5 * (lo + hi) / KT
 
 
-TRIPLE = {25.5: 6.55, 28.8: 7.03, 32.3: 7.50}   # kt, hull=1.08 (measured)
+TRIPLE = {25.5: 6.65, 28.8: 7.13, 32.3: 7.62}   # kt, hull=1.0 (measured)
 
 
 def test_cruise_triple():
@@ -110,13 +114,15 @@ def test_cruise_triple():
         v = force_equilibrium(rate)
         assert abs(v - ref) < 0.10, \
             f"{rate} spm: {v:.2f} kt vs the locked {ref:.2f}"
-    # the T1 shape: the deficit is FLAT (the kinematic's grows with rate)
-    gaps = [8.0 - force_equilibrium(32.3), 7.0 - force_equilibrium(25.5)]
+    # the T1 shape: the deficit is FLAT vs the ch.7 (the Mark II table)
+    gaps = [8.0 - force_equilibrium(32.3, hull=1.08),
+            7.0 - force_equilibrium(25.5, hull=1.08)]
     assert abs(gaps[0] - gaps[1]) < 0.5, \
         f"the deficit's rate-dependence changed: {gaps[0]:.2f} vs {gaps[1]:.2f} kt"
-    print(f"       force-mode triple: "
+    print(f"       force-mode triple (hull=1.0): "
           f"{ {r: round(force_equilibrium(r), 2) for r in (25.5, 28.8, 32.3)} } kt "
-          f"(ch.7: 7.0/7.5/8.0 — flat ~-6.3 %; kinematic: 6.83/7.15/7.51)")
+          f"(the Olympias chain: 6.57/7.15/7.69 — within ~1 %; the ch.7's "
+          f"7/7.5/8 is the Mark II table, the flat -4.1 % is the L basis)")
 
 
 # --- F2-3 the rest start ---

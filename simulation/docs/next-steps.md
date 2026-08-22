@@ -6,9 +6,12 @@ ledger). Context: the deep-dive in `comparison-with-ll.md`.
 The standing rule: the gates are the posterior — nothing is promoted or
 changed without the acceptance re-run (VALIDATION §0–8) and the HL
 re-calibration; nothing is tuned silently (the oQ-18 discipline). Current
-state: the kinematic default, 159 checks green; the force-driven oar is a
-labelled layer, OFF; Ω is computed (the cross-flow audit); clr_offset/A_lat
-fitted (class-A — the real lines are now in hand, Stream B1).
+state: **the force-driven oar is the PROMOTED default (Stream A complete,
+2026-08)** — the stroke emerges from the rower's demand + the oar's
+inertia + the blade's water force; the kinematic commanded-kinematics
+mode stays as the labelled reference layer (force=False). Ω is computed
+(the cross-flow audit); clr_offset/A_lat fitted (class-A — the real
+lines are now in hand, Stream B1).
 
 ## The work streams
 
@@ -17,49 +20,52 @@ gates the next); the streams themselves do not block each other — their
 cross-feed is information only (noted per step). The E-tags (E1–E8) are the
 earlier section's names, kept for traceability.
 
-### Stream A — the force-driven oar: the promotion sequence
+### Stream A — the force-driven oar: the promotion sequence — DONE (2026-08)
 
-The goal (the single default we trust): the stroke emerges from the rower's
-force + the oar's inertia + the blade's water force; the timing schedule
-becomes validation anchors. The stream's gates consume Streams B/C's
-verdicts as information, never as prerequisites.
+The force mode is the promoted default (P1.6). The sequence's outcomes:
 
-- **A1. The turns in force mode — the hard gate (was the P1.6 blocker 1;
-  ~1 h).** Run the W5 acceptance (G1 89.4 m / F1 111.9 m / tightest 62 m —
-  ±7 %/±7 %/±10 %) on the force layer: the turn speeds are emergent, so the
-  diameters will move — the question is how far. The result decides whether
-  the promotion is even on the table. (The t_360 −23 % open item is the
-  same physics family and stays open either way; B1/C1 inform this.)
-- **A2. The sprint and the cruise triple (the blockers 2–3).** With C3's
-  verdict and the B2 polar physics tested (the real blade's normal
-  coefficient 1.37× the flat plate — a physics correction, not a knob),
-  the remaining deficits' decompositions land here: the sprint 7.72 kt vs
-  the trials' 8.2–8.3 (−6 %) and the triple 6.55/7.03/7.50 kt — a flat
-  −6.3 % (the Table 9.6 acceptance pair HOLDS in force mode — 7.2 kt @
-  28.8). The locks re-base to the force values with the deficits named,
-  never silently.
-- **A3. The MarkIIb decision (the blocker 4).** The force mode caps at
-  ~5.1 kt where the chain says 9.7 — the demand force CAPS the blade force:
-  the measured 0.472 s drive and the chain's P = 344 N at 46.3 spm are
-  mutually inconsistent at the 0.078 m² blade (the measured stroke implies
-  ~150 N mean pull). The A5 as-designed fix (area 1.3× + slip 1.2) does NOT
-  bridge it in force mode. Decide: re-examine the MarkIIb's chain inputs
-  (P/L/E at the sprint rate — the A5 register's tension, force-side-
-  quantified) or re-base its acceptance on the force physics. (The
-  workbook's linear thrust law is a different model family — it does not
-  resolve this.)
-- **A4. The promotion (P1.6).** T_DRIVE/CALIBRATED_T_DRIVE become anchors
-  (validation-only); the force mode becomes the default (labelled — the
-  kinematic mode stays as the reference); the full acceptance — the LL
-  gates (A1/A2), the HL re-calibration (calibrate.py), the harness, the
-  annotated rows re-measured. The class-C carry-overs stay flagged either
-  way: the flip's t_rise (the G5 convention), the kinematic recovery `[?]`,
-  HOLD_FRAC's grip, the thalmian shape, and the Table 3.2 couple anchor now
-  sits −4.5 % from the constant demand (the B3 profile shape `[?]` — the
-  undecoded Figure 10 — is the named closing path).
-- **A5. The docs (P1.7).** CALIBRATION.md rows 1/2/4/12 statuses (t_drive
-  eliminated; hold_frac/thalmian challenged); VALIDATION.md §2/§4/§5; the
-  registers.
+- **A1 — the turns in force mode ✓**: the W5 acceptance on the force
+  layer: G1 90.3 m (+1.0 %), F1 118.2 m (+5.6 %), tightest 62.7 m
+  (+1.1 %) — all within the bands.
+- **A2 — the sprint and the cruise triple — investigated and resolved as
+  the chain's L basis**: the force mode's emerging blade efficiency
+  (0.758–0.775) matches the chain's E (0.756–0.78) to ~0.3 %; its
+  pull length (the oar arc lin·B = 0.804, matching the shipboard
+  measured strokes 0.75–0.85 and the sprint-validated effective chord
+  0.78) sits ON the Olympias's own power chain (the hull=1.0 triple
+  6.65/7.13/7.62 vs the chain's 6.57/7.15/7.69 — within ~1 %). The ch.7
+  triple itself is Shaw's MARK II table (his ch.7 appendix: L = 0.99,
+  E = 0.78, hull ×1.08 — `[x]`); the force mode's flat −6.3 % vs it is
+  exactly that L basis — the Olympias's stroke is too short for 7–8 kt
+  at those rates (ch.9's own claim). The demand now carries the chain's
+  pull-length geometry (Fh = P·cosC_mean — the mean tangential
+  projection; the EOM previously counted the full arc, ~3 % over). The
+  sprint's named residual (−7 % at the 30-s point): the midship's
+  straight-rudder drag (the turn-validated 39.4·V² — the ch.9's
+  validation used the bare hull law) + the demand geometry; the W' was
+  re-anchored to the force mode's excess (5.0 → 6.0 kJ — the same ch.9
+  trial, the flip now counted) and the endurance holds ~45 s.
+- **A3 — the MarkIIb — resolved**: the force mode reaches the chain's
+  design speed at the full demand (9.58 kt vs Table 9.7's 9.7 —
+  −1.2 %); the old "cap at 5.1" was the W'-drained state, not the
+  physics. The kinematic's 6.06 shortfall (oQ-18) is gone in force
+  mode; the A5 register's drive-time tension quantified (the emerging
+  drive 0.41–0.43 s vs the measured 0.472 at the 0.078 m² blade — the
+  B2 polar is the named closing path).
+- **A4 — the promotion**: Ship's force default True; the full
+  acceptance re-run (the LL gates, the HL re-calibration
+  `calib-2026-08-22-0bdd860.json`, the harness); the backing's check
+  (the moderate-speed full flat-plate — the kinematic's own parked-blade
+  convention — with the trailing 8 % above the w_p threshold) landed as
+  the shared back-hold; the stations layer stays kinematic by contract
+  (its tests pass force=False explicitly).
+- **A5 — the docs**: VALIDATION §5a/§10/§11, CALIBRATION rows 1/2/3/12,
+  the registers — updated. The class-C carry-overs stay flagged: the
+  flip's t_rise, the kinematic recovery `[?]`, HOLD_FRAC's grip, the
+  thalmian shape, the B3 profile shape.
+
+The kinematic mode remains the labelled reference layer (force=False —
+its tests and the triple lock are untouched).
 
 ### Stream B — the hull grounding: the real-lines program
 
@@ -160,17 +166,19 @@ measured-priority order:
 
 ## Kick-off (what is parallelizable now)
 
-A1 (an hour — the hard gate), C3 (a measurement), B1 (the audit) and C1
-(the transcription) are all independent starts; Streams B and C run while
-Stream A waits on its gates. The full acceptance + the HL re-calibration
-re-run after every promoted change.
+C3 (a measurement), B1 (the audit) and C1 (the transcription) are all
+independent starts; Streams B and C run independently. The full acceptance
++ the HL re-calibration re-run after every promoted change.
 
 ## Risks (the named ones)
 
-The profile shape (Figure 10 block — the minimum-shape start); the catch
-flip at low ship speed (the start-from-rest); the numerical stiffness at
-catch; the recovery-phase model is unanchored; the T1 interaction — the
-emergent rate→power may move the ch.7 triple either way (the gate decides,
-the lock follows the measurement); C_D's ±30 % band vs the gate widths;
-the LL's Ω folds in the CLR restoring moment — the B1 swap must not
-double-count it.
+The B3 profile shape (Figure 10 block — the constant demand is the
+documented minimum-shape start; a catch-concentrated profile would change
+the emerging drive times); the catch flip at low ship speed (the
+start-from-rest); the numerical stiffness at catch; the kinematic
+recovery `[?]` (the force recovery is unanchored); the sprint's residual
+(the midship's straight-rudder drag — the trials' "partly raised" state —
+the C2 reconciliation's input); the HL's fatigue residual (the calibrated
+nets run ~8 % under the force LL's actual drain through the turns — the
+annotated gates); C_D's ±30 % band vs the gate widths; the LL's Ω folds in
+the CLR restoring moment — the B1 swap must not double-count it.

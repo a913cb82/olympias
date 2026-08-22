@@ -99,35 +99,41 @@ caveat mechanism, now integrated).
 | Couple anchor | 224 N @ anchored point | Table 3.2 (0.6 % chain check) | ± 3 % |
 | **Force-driven companion** | drive time **0.43 s** | Table 9.6 0.43 s | essentially exact — kinematics ≡ forces + inertia |
 
-## 5a. Plan 1 — the force-driven oar layer `[x]` (labelled, OFF — 10 checks)
+## 5a. Plan 1 — the force-driven oar layer `[x]` (PROMOTED — the default, 10 checks)
 
-The force-driven oar (`ll/oar.py` force mode; `Ship(force=True)`, default
-OFF — the validated kinematic set stays the default until the promotion
-gate): the drive's kinematics EMERGE from the torque-balance EOM
-I·θ̈ = −dir·Fh·lin − Fn·l_cp under the constant demand Fh (the chain's mean
-pull at the `"chain"` pressure level). The oar settles where the blade
-drag absorbs the demand (the drive equilibrium vn = −√(Fh·lin/(k·l_cp)) —
-never a stall: the measured stroke IS the force-balanced stroke, the G5-7
-companion's physics promoted to a layer). The catch flip (pinned at the
-catch, the spike force over t_rise) delivers the blade entry at the
-equilibrium speed; the recovery stays kinematic `[?]` (the force recovery
-is unanchored — next-steps.md Stream A1); the first stroke starts from rest
-(the catch deadspot is gone — a parked blade would demand ~2 kN).
+The force-driven oar (`ll/oar.py` force mode; `Ship(force=True)`, the
+PROMOTED default — Stream A, P1.6: the stroke EMERGES from the
+torque-balance EOM I·θ̈ = −dir·Fh·lin − Fn·l_cp under the constant demand
+Fh; the kinematic commanded-kinematics mode stays as the labelled
+reference layer, `force=False`). The oar settles where the blade drag
+absorbs the demand (the drive equilibrium vn = −√(Fh·lin/(k·l_cp)) — never
+a stall: the measured stroke IS the force-balanced stroke). The demand
+carries the chain's pull-length geometry: P = 7.43·r is the mean pull at
+the BUTT; the EOM's constant force is its mean tangential projection
+cosC_mean = sin(B/2)/(B/2) — the chain's own L = lin·B·cosC_mean (the A2
+audit: the explicit EOM previously counted the full arc, ~3 % over). The
+catch flip (pinned at the catch, the spike force over t_rise) delivers the
+blade entry at the equilibrium speed; the recovery stays kinematic `[?]`;
+the first stroke starts from rest (the catch deadspot is gone).
 
 | Quantity | Force mode | Anchor | Match |
 | --- | --- | --- | --- |
 | Emerging drive time, the 4 Table 9.6 points | 0.432 / 0.381 / 0.566 / 0.440 s | 0.430 / 0.392 / 0.612 / 0.472 s | 1.005 / 0.972 / 0.925 / 0.932 (the ±15 % companion gate; the Olympias pair ±5 %) |
-| Cycle-mean thrust @ 7.2 kt | 17.05 N/oar | kinematic 17.46 | 0.976 |
-| Sprint 30 s @ 44.5 spm | 7.72 kt | kinematic 7.45 (trials 8.2–8.3) | +0.27 kt — the deficit reduced, not closed (the T1 family) |
-| Cruise triple (hull=1.08) | 6.55 / 7.03 / 7.50 kt | ch.7 7.0 / 7.5 / 8.0 | flat −6.3 % (the kinematic's deficit GROWS with rate: −2.5 / −4.6 / −6.1) — the T1 tension's shape changed, its size not |
-| Rest start, V(10 s) | 4.06 kt | bulk-law envelope 5.5 | slower — the physical start (peak Fh = the demand 330 N, no deadspot spike) |
+| Cycle-mean thrust @ 7.2 kt | ~11.5 N/oar | kinematic 17.46 | the demand geometry −3 % (the 7.2 point's cycle-mean is the tension-free comparison) |
+| Cruise triple (hull=1.0 — the OLYMPIAS's own chain basis) | 6.65 / 7.13 / 7.62 kt | the Olympias chain (L=0.78, E=0.756): 6.57 / 7.15 / 7.69 | **+1.2 / −0.2 / −1.0 %** — the force mode IS the Olympias's sprint-validated chain; the ch.7 triple itself (7.0/7.5/8.0) is Shaw's MARK II table (his appendix: L=0.99, E=0.78, hull 1.08) — the Olympias's stroke is too short for it (ch.9's own claim); the flat −4.1 % at hull 1.0 / −6.3 % at 1.08 is that L basis (§11.2) |
+| Table 9.6 anchor 7.2 @ 28.8 spm (hull=1.0) | 7.13 kt | 7.2 | −1 % ✓ (the acceptance pair) |
+| Sprint 30 s @ 44.5 spm | 7.65 kt | trials 8.2–8.4 | −7 % — the named causes: the midship's straight-rudder drag (the 39.4·V² — the turn-validated set; the ch.9's validation used the bare hull law) + the demand geometry; the W' = 6.0 kJ re-anchor (the force mode's excess includes the flip — the same ch.9 trial: 133.4 W/man × 45 s) keeps the endurance ~45 s ✓ (§11.2) |
+| MarkIIb @ 46.3 spm, full W' | 9.58 kt | Table 9.7: 9.7 | **−1.2 %** — the force mode reaches the design speed (the kinematic's 6.06 was the oQ-18 shortfall); the old “cap at 5.1” was the W'-drained state (A3 resolved) |
+| Rest start, V(10 s) | ~4.1 kt | bulk-law envelope 5.5 | slower — the physical start (peak Fh = the demand, no deadspot spike) |
 | The catch flip | 263–390 N ≤ Fh_max | the G5 spike convention | the entry at the equilibrium ✓ |
+| The turns (the W5 acceptance) | G1 90.3 / F1 118.2 / tightest 62.7 m | 89.4 / 111.9 / 62.0 m | **+1.0 / +5.6 / +1.1 %** ✓ (A1) |
+| The backing's check | the moderate-speed check (the full flat-plate at the held angle below the w_p threshold; the trailing 8 % above) | the kinematic's parked blade | the back's D ~= the hold at 6.5, < the hold at 2.0 (the check) — re-based (the gate3's test_back_water) |
 
 Locks: `ll/tests/test_force_drive.py` (F1-1..F1-7 — the single-oar gates:
 drive times, thrust, the flip, the cycle timing, the work conservation,
 the ceiling, the start from rest) and `ll/tests/test_force_ship.py`
 (F2-1..F2-3 — the sprint, the triple, the rest start). The kinematic
-default is untouched (the full suite green).
+reference layer stays green (the full suite).
 
 ## 6. Cross-cutting consistency (research-side anchors the LL inherits)
 
@@ -216,7 +222,7 @@ default is untouched (the full suite green).
 The fast ship is validated *sideways* against the LL (the pair contract, Level 2 — simulation/AGENTS.md): one
 command stream, both simulators, same starting state and event semantics
 (`harness/run_validation.py` — the whole record reproduces with one
-command). Calibration: `calib-2026-08-22-ea571f9` (generated by
+command). Calibration: `calib-2026-08-22-0bdd860` (generated by
 `hl/calibrate.py`, the LL protocols, LL commit ea571f9 — the Plan-2
 computed-Ω baseline; the residuals live
 in the calibration file; the loop calibrate → validate → adjust ran six
@@ -226,7 +232,7 @@ annotated.md`).
 
 ### 9.1 The script set — Level-2 first tolerances
 
-(calibration `calib-2026-08-22-ea571f9`; the 2026-08 review wave: the
+(calibration `calib-2026-08-22-0bdd860`; the 2026-08 review wave: the
 hold_frac re-measurement, the per-helm x per-pressure x per-rate
 `turn_drag` curve, the settled-orbit asym nets, the two-timescale
 yaw-build. Rows marked **annotated** are the measured HL-loose
@@ -354,7 +360,7 @@ current phase (Phase 4/5) or HL-loose by design with a named trigger.
 | --- | --- | --- | --- |
 | One-oar physics at the 4 Table 9.6 points | validated (< 0.5 %, forces 224/208 N) | §1 | — |
 | Cruise anchors, hull = 1.0 (28.8 → 7.2, 36 → 8.2 kt) | validated (+0.3 % / −2.7 %) | §2 | — |
-| ch.7 cruise triple 25.5/32.3 (Mark II hull refs) | **open-with-locked-test** — the LL's rate curve is flatter than the ch.7 triple: @hull=1.08 → −2.5 / −4.6 / −6.1 % vs 7.0/7.5/8.0 (the gap grows with rate); @hull=1.0 the 32.3 point is −5.3 %. The Table 9.6 hull=1.0 pair remains the acceptance. The cause is named (the LL's rate→power shape — per-man gross 110/129/152 W vs the chain's 115/145/180, the blade/kinematics chain, not the hull factor; the uplift correction moves the reference the wrong way) | §2 + §11.2 | open — the rate→power shape quantified and locked (`test_triple_lock.py`) |
+| ch.7 cruise triple 25.5/32.3 (Mark II hull refs) | **resolved as the chain's L basis** (Stream A2 — the force-mode promotion 2026-08): the ch.7 triple is Shaw's MARK II table (his ch.7 appendix: L=0.99, E=0.78, hull 1.08 — `[x]` the lane-1 read note; the Olympias's own quoted L = 0.78, the sprint-validated effective chord). The force mode at hull=1.0 sits ON the Olympias's own chain (6.65/7.13/7.62 vs 6.57/7.15/7.69 — within ~1 %); its flat −6.3 % vs the ch.7 table (hull=1.08) is exactly the pull-length difference (0.804 arc vs 0.99 Mark IIb) — the Olympias's stroke is too short for 7–8 kt at those rates (ch.9's own claim). The acceptance pair (the Table 9.6 hull=1.0: 7.2 @ 28.8) is met at −1 %. The kinematic lock (`test_triple_lock.py`) stays for the reference layer | §2 + §11.2 | **resolved** — the cause fully named and quantified (the L basis); the residual −1 % vs the Olympias chain is the emerging E/geometry |
 | Sprint 44.5 spm (130 oars) | validated (trial 8.2–8.4 inside the 7.9–8.8 bracket; t_drive pinned, A8) | §2 | — |
 | Rudder turns G1 / F1 | validated (+0.3 % / +4.9 %) | §3 | — |
 | Tightest turn (one side stops) | **validated** — the hold_frac re-measurement (0.05 → 0.08, task T2): D 62.6 m vs the 62 m anchor (+1.0 %, was +9.2 %) AND the drained floor 3.22 kt ≈ the trial's halved 3.25 (was 3.54); the oar-hold/back rows re-measured (103.5 m, no anchor) | §3 + §11.2 | — |
@@ -367,7 +373,7 @@ current phase (Phase 4/5) or HL-loose by design with a named trigger.
 | Mark IIb equivalence, cant, sway (Gates 6–8) | validated — oQ-18 resolved as physics (task I): the (q/p)² law at the actual turning point is an algebraic identity with the flat-plate law (locked by test_blade_law.py); the geometric variant tested and ruled out; the residual is the A5 area gap + slip | §6/§7.1 | — |
 | Cross-cutting chain checks (couple, P = 7.43·r origin, R&W, F/G ≤ 7 %) | validated | §6 | — |
 
-### 10.2 Level 2 — the LL vs the HL (calibration `calib-2026-08-22-ea571f9`)
+### 10.2 Level 2 — the LL vs the HL (calibration `calib-2026-08-22-0bdd860`)
 
 | Scenario | Status | Ref | Path to full validation |
 | --- | --- | --- | --- |

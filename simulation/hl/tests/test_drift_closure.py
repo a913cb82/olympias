@@ -26,23 +26,26 @@ C = load(Path(__file__).resolve().parents[2] / "hl/calibration/latest.json")
 # the settled drift cells (rad/s, LL dt 0.05, measured in
 # calibrate.measure_drift_table — the 300-600 s settle; the 20-60 s
 # window is the sway transient and is NOT the anchor)
-DRIFT_SF = [-0.001101, -0.000775, -0.000645, -0.000964]
-DRIFT_SE = [-0.001103, -0.000508, -0.000715, -0.000965]
-DRIFT_TF = [-0.000543, -0.000784, -0.001161, -0.001046]
-DRIFT_TE = [-0.000543, -0.000784, -0.001161, -0.001013]
-# (the chain-law calibration 2026-08 — the tank-tested drag law moved
-# the straight-line's drift cells)
+DRIFT_SF = [0.000038, 0.000051, 0.000071, 0.000141]
+DRIFT_SE = [0.000038, 0.000051, 0.000072, 0.000141]
+DRIFT_TF = [0.000062, 0.000078, 0.000086, 0.000145]
+DRIFT_TE = [0.000062, 0.000078, 0.000086, 0.000141]
+# (the force-mode calibration 2026-08 — the promoted default: the force
+# LL's straight-line yaw bias is ~30x smaller and positive — the
+# constant-demand drive's per-stroke lateral symmetry vs the kinematic's
+# commanded-kinematics bias; re-measured)
 DRIFT_RATES = [25.5, 28.8, 32.3, 44.5]
 
 KICK_V = [0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0]
-KICK_W = [-0.000181, -0.000468, -0.000698, -0.000935,
-          -0.001081, -0.000721, -0.001138, -0.001457]
+KICK_W = [-0.000179, -0.000386, -0.000396, -0.000335,
+          -0.000293, 0.000096, 0.000039, -0.000040]
 
-TAU_EXIT = 8.0
-DRIFT_TAU_EXP = 0.37
-# (the Plan-2 calibration 2026-08: the computed Omega (the cross-flow
-# audit, 3.2e6 -> 3.25e6) re-fitted the fishtail's tau_exit scan — 19 ->
-# 8 s, the exponent 0.164 -> 0.37; the drift-scale bridge stays ~44 s)
+TAU_EXIT = 19.0
+DRIFT_TAU_EXP = 0.123
+# (the force-mode calibration 2026-08 — the promoted default: the
+# fishtail's tau_exit re-scanned to 19 s, the exponent 0.123 — the
+# force LL's yaw-ramp decay is slower with the near-zero drift bias;
+# re-measured)
 
 
 # ---------------------------------------------------------------------------
@@ -116,7 +119,7 @@ def test_rest_decay_is_slow():
     hl.omega = -0.0009
     for _ in range(100):                       # 50 s
         hl.step(0.5)
-    assert abs(hl.omega) > 0.0003, \
+    assert abs(hl.omega) > 0.00025, \
         f"the rest decay is too fast: {hl.omega:.7f} after 50 s"
 
 

@@ -21,8 +21,11 @@ from ll.ship import Ship, run_turn
 
 
 def _one_turn(mode, rate, helm, state, v0_kt):
+    # the per-station layer is the KINEMATIC layer (its contract — the
+    # force mode's per-oar EOM is not phase-locked and keeps the scalar
+    # loop) — the layer's tests stay kinematic explicitly
     s = Ship(rate=rate, helm=helm, oar_state=state,
-             pressure=("spoude", "spoude"), stations=mode)
+             pressure=("spoude", "spoude"), stations=mode, force=False)
     s.V = v0_kt * KT
     r = run_turn(s, dt=0.02, target_psi=math.pi)
     return r["D"]
@@ -56,7 +59,7 @@ def test_stations_turn_diameters(stations_turns):
     while the oar turns' 23% tighter) — the layer's net turn pattern
     does not match reality yet (the over-damping, next-steps A1)."""
     expected = dict(g1=132.9, f1=261.2, tightest=57.6,
-                    oar_hold=81.9, oar_back=78.4)
+                    oar_hold=81.9, oar_back=77.7)
     for name, d in stations_turns.items():
         key = name.replace("-", "_")
         assert abs(d - expected[key]) < 3.0, f"{name}: {d:.1f}"
@@ -69,7 +72,7 @@ def test_stations_effective_lever():
     ~400 kN m s. The fitted 1.8 is the NET (blade arm minus the
     damping), which the register C3 now records."""
     s = Ship(rate=28.8, helm=("port", 22.5 / 67.5), oar_state=("row", "row"),
-             pressure=("spoude", "spoude"), stations=True)
+             pressure=("spoude", "spoude"), stations=True, force=False)
     s.V = 6.5 * KT
     Q = Fd = om = 0.0
     n = 0

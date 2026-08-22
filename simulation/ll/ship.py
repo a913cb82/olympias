@@ -44,11 +44,19 @@ class Ship:
                  oar_state: tuple = ("row", "row"), helm: tuple = ("midship", 0.0),
                  fleet: str = "spruce", hold_frac: float | None = None,
                  stations: bool = False,
-                 force: bool = False):
+                 force: bool = True):
         # hold_frac default: the calibrated value (ll/rower.HOLD_FRAC)
         """fleet: 'spruce' (all tiers, MIT 9.7 — the 1994 setup) or
         'old-fir' (thranites 13.1, zygians 18.0, thalmians 13.1 approx —
-        Table 3.1 tier labels). None: massless oars (pre-Gate-5)."""
+        Table 3.1 tier labels). None: massless oars (pre-Gate-5).
+
+        force: the PROMOTED default (Stream A, P1.6 — the force-driven
+        oar): the stroke emerges from the rower's demand + the oar's
+        inertia + the blade's water force; the timing schedule becomes
+        validation anchors. The kinematic commanded-kinematics mode
+        (force=False) stays as the labelled reference layer (the
+        per-station layer ll/stations.py is kinematic-only — its tests
+        pass force=False explicitly)."""
         self.rig_name = rig_name
         self.vessel = VESSELS[rig_name]        # Taylor ch.31 parameters
         # The sway-calibrated values (calibrate_sway.py): the physical

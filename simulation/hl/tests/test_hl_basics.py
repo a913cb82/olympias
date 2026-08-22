@@ -28,9 +28,10 @@ from ll.hull import equilibrium_speed
 
 LL_TURN_D = {"g1": 89.7, "f1": 117.4, "tightest": 67.7, "oar-hold": 126.6}
 
-STEADY_ANCHORS = {25.5: 4.85, 28.8: 5.30, 32.3: 5.66}   # LL settled, kt
-# (the chain-law baseline 2026-08 — the tank-tested drag law exposes
-# the LL's cruise deficit, the T1 family)
+STEADY_ANCHORS = {25.5: 4.92, 28.8: 5.38, 32.3: 5.72}   # LL settled, kt
+# (the force-mode baseline 2026-08 — the promoted default: the force
+# LL's steady levels sit +1.4-1.7 % above the kinematic's — the demand
+# geometry's cosC_mean correction vs the emerging drive; re-measured)
 
 
 def _ll_anchor(r):

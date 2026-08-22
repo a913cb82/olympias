@@ -69,10 +69,13 @@ def _kempf_overshoots(n_flips=8, t_end=3600.0):
 
 def test_stationary_turn_in_place():
     """Rev F C7: one side's Z+T ahead vs the other's Z+T back at 27 spm —
-    the in-place reading. Locked at the measured 2.32 deg/s (the trial's
-    anchor 3.5 — the mismatch row, VALIDATION §11.2)."""
+    the in-place reading. Locked at the FORCE mode's measured 1.75 deg/s
+    (the promoted default; the kinematic's was 2.32, the trial's anchor
+    3.5 — the mismatch row, VALIDATION §11.2, re-measured with the
+    force mode: the force layer's drives are tempo-limited at V ~ 0 —
+    the same family as its documented slow launch)."""
     om, v = _settled_turn(27.0, ("row", True), ("back", True))
-    assert abs(om - 2.32) < 0.15, f"in-place stationary turn {om:.2f} deg/s"
+    assert abs(om - 1.75) < 0.15, f"in-place stationary turn {om:.2f} deg/s"
     assert 1.0 < v < 3.0
 
 
@@ -83,12 +86,14 @@ def test_stationary_turn_one_side():
 
 
 def test_kempf_overshoots():
-    """Rev F C8: the LL's Kempf zig-zag overshoots — 11.0 then ~12.8-13.0
-    vs the trials' 8/7 (the mismatch row, VALIDATION §11.2)."""
+    """Rev F C8: the force mode's Kempf zig-zag overshoots — 8.8 then
+    ~12.7-12.8 vs the trials' 8/7 (the mismatch row, VALIDATION §11.2 —
+    the first overshoot now closes, +10 % vs the kinematic's +38 %; the
+    later overshoots stay ~+80 %)."""
     overs = _kempf_overshoots(n_flips=6)
     assert len(overs) >= 4
-    assert abs(overs[0] - 11.0) < 1.0, f"first overshoot {overs[0]:.1f}"
-    assert all(abs(o - 12.9) < 1.0 for o in overs[1:]), overs
+    assert abs(overs[0] - 8.8) < 1.0, f"first overshoot {overs[0]:.1f}"
+    assert all(abs(o - 12.8) < 1.0 for o in overs[1:]), overs
 
 
 def test_thranite_only_equilibrium():

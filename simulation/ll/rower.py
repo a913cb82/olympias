@@ -35,11 +35,14 @@ Fh_MAX = 700.0          # N peak handle force per rower
 Fh_BURST = 330.0        # N max mean handle force (chain sprint pull at 44.5 spm;
                         # the W'-limited burst level, any rate)
 P_CRIT = 80.0           # W/man external sustainable power (R&W ch.23, primary)
-W_MAX = 5_000.0         # J/man anaerobic capacity — anchored to the ch.9 four-run
-                        # sprint (8.2-8.3 kt sustained ~45 s at 44.5 spm:
-                        # excess 116.6 W/man x 45 s ~= 5.2 kJ); the 3/4-NM 6.5-min
-                        # run implies up to ~9.5 kJ — 2-parameter CP tension,
-                        # uncertainties register D6
+W_MAX = 6_000.0         # J/man anaerobic capacity — re-anchored to the ch.9 four-
+                        # run sprint with the FORCE MODE's excess (the same trial:
+                        # 8.2-8.4 kt sustained ~45 s at 44.5 spm; the chain's
+                        # excess 116.6 W/man x 45 s ~= 5.2 kJ counted no oar
+                        # inertia — the force mode's drive includes the flip's
+                        # 16.8 W/man, so its excess is 133.4 W/man x 45 s ~=
+                        # 6.0 kJ; the 3/4-NM 6.5-min run implies up to ~9.5 kJ —
+                        # the register D6 tension unchanged)
 TAU = 120.0             # s W' refill time constant
 T_REC_MIN = 0.5         # s recovery floor (body mechanics)
 B_FLOOR_FRAC = 0.4      # usable-stroke floor as a fraction of the sweep
@@ -171,12 +174,21 @@ class TierCrew:
 
     # ------------------------------------------------------------------
     def fh_demanded(self) -> float:
-        """Commanded mean handle force per oar. steady/fast: the chain's
-        P = 7.43 r law at that pressure (sustainable). spoude: the burst
-        level (max mean pull, W'-limited, any rate — the ch.9 sprint)."""
+        """Commanded mean TANGENTIAL handle force per oar. The chain's
+        P = 7.43 r is the mean pull at the BUTT (the keel-direction pull);
+        the oar's torque comes from its tangential component, so the EOM's
+        constant force is the pull's mean tangential projection —
+        cosC_mean = sin(B/2)/(B/2) — exactly the chain's own geometry
+        (L = lin·B·cosC_mean, the effective pull length; the Stream A2
+        audit: the explicit EOM counted the full arc, ~3 % over the
+        chain). steady/fast: the chain's P = 7.43 r law at that pressure
+        (sustainable). spoude: the burst level (max mean pull, W'-limited,
+        any rate — the ch.9 sprint)."""
+        a = self.sweep_cmd / 2.0
+        cos_c = math.sin(a) / a
         if self.pressure == "spoude":
-            return Fh_BURST
-        return 7.43 * self.rate_cmd * PRESSURE[self.pressure]
+            return Fh_BURST * cos_c
+        return 7.43 * self.rate_cmd * PRESSURE[self.pressure] * cos_c
 
     def _fh_moments(self, V: float, omega: float, sweep: float,
                     backing: bool = False) -> tuple[float, float]:
@@ -455,11 +467,23 @@ class TierCrew:
                                        self.plan.sweep)
             self.rate_eff = self.plan.rate_eff
         if self.plan.limited_by == "back-hold":
-            # backing at speed degenerates: the crew can only check the
-            # blade (the brake); the oar must not be stepped (a parked blade
-            # would compute the full flow drag, not the held brake)
+            # backing at speed degenerates: the flow outruns the blade at
+            # the demand — the crew can only CHECK the blade (the oar held
+            # against the flow). While the drive could still advance at the
+            # rowers' ceiling (the kinematic mode's w_p threshold — the
+            # same band as its parked blade) the blades hold the FULL
+            # flat-plate drag at the held angle (the plan's fh_mean is
+            # this check's handle force); above it the blades trail (the
+            # hold state's 8 % brake — the tightest-turn calibration, the
+            # trailing blades at ~19-20 deg).
             self.p_gross_current = 0.0
-            brake = -self.hold_k * V * abs(V)
+            v_check = math.sqrt(self.Fh_max * self.lin
+                                / (self.k * self.l_cp)) - 0.05 * self.l_cp
+            if V < v_check:
+                ca = math.cos(self.sweep_cmd / 2.0)
+                brake = -self.k * V * V * ca * ca * ca
+            else:
+                brake = -self.hold_k * V * abs(V)
             self._stations = self._held_stations(brake)
             return 0.0, 0.0, brake, 0.0
         if self.plan.limited_by == "feathered":
@@ -595,7 +619,11 @@ def thalmian_power_factor(rate: float) -> float:
     scales the POWER, not the kinematics): the manikin reaches 720 mm of the
     800 mm design stroke (0.9 — the rig's design stroke); 'the thalmian tier's power
     contribution fell sharply at higher speeds' (ch.9 p.77) — linear decline
-    to 0.6 at 44.5 spm. Flag [?]: the exact rate-shape is unmeasured."""
+    to 0.6 at 44.5 spm. Flag [?]: the exact rate-shape is unmeasured (the
+    C3 measurement: the no-head-room sprint equilibrium 9.2 kt vs the
+    workbook's 9.95 — the head-room explains part of the sprint deficit;
+    the residual is the blade-law/demand family — Stream A2's named
+    causes)."""
     if rate <= 32.0:
         return 0.9
     return max(0.6, 0.9 - 0.3 * (rate - 32.0) / 12.5)

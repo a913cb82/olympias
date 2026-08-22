@@ -298,3 +298,51 @@ Measured (same machine, same venv, vs the HEAD worktree):
 Suite: 159 checks green, unchanged locks. The remaining levers (the suite
 dt, the calibrate cache/parallelism, pytest-xdist, the bisection
 warm-starts) are next-steps Stream E.
+
+## 7. Stream A — the force-driven oar PROMOTED (2026-08-24)
+
+The promotion sequence (P1.6) executed — the force mode is the Ship's
+default; the kinematic commanded-kinematics mode stays as the labelled
+reference layer (`force=False`). The full acceptance re-run: the LL gates
+159 green, the HL re-calibrated (`calib-2026-08-22-0bdd860.json`), the
+harness green.
+
+**A1 — the turns ✓** (the W5 acceptance on the force layer): G1 90.3 m
+(+1.0 %), F1 118.2 m (+5.6 %), tightest 62.7 m (+1.1 %).
+
+**A2 — the sprint + the triple — the L-basis resolution.** The force
+mode's emerging blade efficiency matches the chain's E (0.758–0.775 vs
+0.756–0.78); its pull length (the arc lin·B = 0.804) matches the
+shipboard measured strokes (0.75–0.85) and the sprint-validated effective
+chord (0.78). At hull=1.0 (the Olympias's own chain basis) the force
+triple 6.65/7.13/7.62 sits within ~1 % of the chain's 6.57/7.15/7.69 —
+the ch.7 triple (7/7.5/8 at 25.5/28.8/32.3) is Shaw's MARK II table (his
+ch.7 appendix: L=0.99, E=0.78, hull 1.08, `[x]`), and the Olympias's
+stroke is too short for it (ch.9's own claim) — the flat −6.3 % vs it is
+exactly that L basis. The demand now carries the chain's pull-length
+geometry (Fh = P·cosC_mean — the mean tangential projection of the mean
+pull; the EOM previously counted the full arc, ~3 % over the chain).
+W_MAX re-anchored 5.0 → 6.0 kJ (the same ch.9 trial, the force mode's
+excess — the flip now counted); the sprint's named residual (−7 % at the
+30-s point): the midship's straight-rudder drag (the turn-validated
+39.4·V²) + the demand geometry — the C2 reconciliation's input.
+
+**A3 — the MarkIIb resolved**: the force mode reaches the chain's design
+speed at the full demand (9.58 kt vs 9.7, −1.2 %); the old "cap at 5.1"
+was the W'-drained state. The kinematic's 6.06 shortfall (oQ-18) is gone
+in force mode.
+
+**The backing's check** (shared, both modes): the back-hold now checks
+with the full flat-plate drag at the held angle below the w_p threshold
+(the kinematic's own parked-blade convention) and trails (the 8 %) above
+it — the gate3/gate4/revf-layers locks re-measured.
+
+**The HL**: re-calibrated on the force LL (799 s run); the equivalence
+gates re-annotated where the force LL's physics moved the residuals
+(the fatigue — the calibrated nets run ~8–17 % under the force LL's
+actual drain through the turns; the cruise_turn mean-speed +17.7 % — the
+force LL's longer drained tail; the zigzag position rows; the sweep's
+32.3 spoude +4.9 %; the 3-NM time 1779.7 s; the drift cells ~30× smaller
+and positive — the force LL's straight-line yaw bias nearly vanishes;
+tau_exit re-scanned 19 s). The stations layer stays kinematic by contract
+(its tests pass force=False explicitly).
