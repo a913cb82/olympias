@@ -1,5 +1,13 @@
 # Lane 3 — Hull & Hydrostatics: Coates' offsets availability + Eliav & Helfman (2022)
 
+> **UPDATE 2026-08-22 — the numerical offsets are now in hand.** The
+> Braithwaite design workbook (`sources/galley-sizing-xlsm/`) contains the
+> Olympias offset table from the Lines Plan (21 stations × 27 Z/Y pairs,
+> LWL 32.35 m) — extracted to `sources/galley-sizing-xlsm/basis_hull_offsets.tsv`,
+> analysed in `braithwaite-workbook.md` (this lane). The Wolfson-archive route
+> below remains the path for the full drawing pack (Plan 7 etc.), but the
+> offset TABLE itself is no longer missing.
+
 Research notes, web-only. Confidence flags: `[x]` = confirmed directly from a cited source; `[?]` = inferred / unverified / conflicting. All web access 2026-08-08.
 
 ---
