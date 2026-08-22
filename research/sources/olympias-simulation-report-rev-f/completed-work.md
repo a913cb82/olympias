@@ -13,7 +13,7 @@ re-calibration.
 ## 1. The A/B/C investigations (all DONE)
 
 **A1 — the per-station oar layer: BUILT, the decomposition CORRECTED, the
-verdicts measured; the follow-ups remain open (see next-steps #7).**
+verdicts measured; the follow-ups remain open (see next-steps Stream B2).**
 `ll/stations.py` + `Ship(stations=True)` — 170 oars at their stations, each
 blade's flow from the ship's (u, v, r). Measured verdicts:
 - the yaw moment's arm is the BLADE's position: the mean blade arm 4.82 m —
@@ -201,7 +201,7 @@ the moment, or the real ends); the mode stays available but OFF.
 (b) the CLR is NOT reproduced: the computed lateral-plane centroid is AFT
 of the c.g. (−0.2…−1.4 m vs the fitted +0.8 forward) — the parametric ends
 + the ram's assumed plane are the gap; the real lines are the named path
-(now in hand — see §4 and next-steps #2). A_lat: the parametric hull
+(now in hand — see §4 and next-steps Stream B1). A_lat: the parametric hull
 under-predicts Taylor's 35 m² by 26–31 % — same cause.
 
 Detail: `crossflow.py`; VALIDATION §7.2/§9/§10.2/§11.1; CALIBRATION row 5;
@@ -236,10 +236,10 @@ Validation wins recorded:
 - The kinematic-control philosophy (the measured kinematics are the truth
   the gates are built on; the force-curve school is the cross-check, not
   the replacement) — until the force-driven oar (Plan 1) passes its
-  promotion gates (next-steps #10).
+  promotion gates (next-steps Stream A4).
 - The chain's hull-power law (155V³ + 4.13V⁵, V in m/s) — the power chain
   closes on it; the trials' raw piecewise (10–20 % below) stays a register
-  cross-check (next-steps #6).
+  cross-check (next-steps Stream C2).
 - The report's unvalidated status: nothing is promoted to an anchor without
   the source's context being checked against the trials report itself (his
   Ref (1), which we still do not hold).
