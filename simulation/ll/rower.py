@@ -52,8 +52,11 @@ HOLD_FRAC = 0.08       # hold-water brake fraction — re-measured 2026-08 (the
                         # held blades at ~19-20 deg to the flow.
 
 # pressure levels: anchors relative to the validated chain (spoude = 1.0);
-# steady = sustainable envelope (<= P_crit), spoude = W'-limited burst
-PRESSURE = {"rest": 0.0, "steady": 0.7, "fast": 0.85, "spoude": 1.0}
+# steady = sustainable envelope (<= P_crit), spoude = W'-limited burst;
+# "chain" = the reference level itself (the demand = 7.43·r exactly — the
+# force-driven layer's apples-to-apples comparison with the chain law)
+PRESSURE = {"rest": 0.0, "steady": 0.7, "fast": 0.85, "chain": 1.0,
+            "spoude": 1.0}
 
 
 def oar_absorbed(r: float) -> float:
@@ -73,6 +76,8 @@ class StrokePlan:
     fh_mean: float        # N mean over the drive
     p_ext: float          # W/man external (cycle-averaged)
     limited_by: str       # none | peak | mean | tempo | back-hold
+    fh_flip: float = 0.0        # N — the catch-flip force (force mode)
+    omega_entry: float = 0.0    # rad/s — blade-entry |omega| (force mode)
 
 
 class TierCrew:
@@ -84,7 +89,8 @@ class TierCrew:
                  pressure: str = "spoude", state: str = "row",
                  direction: int = 1, mit: float = 0.0, t_rise: float = 0.15,
                  hold_frac: float = HOLD_FRAC, power_factor: float = 1.0,
-                 stations: list | None = None, side: int = 1):
+                 stations: list | None = None, side: int = 1,
+                 force: bool = False):
         rig = RIGS[rig_name]
         self.rig_name = rig_name
         self.rig = rig
@@ -119,17 +125,18 @@ class TierCrew:
         self.state = state
         self.mit = mit
         self.t_rise = t_rise
+        self.force = force      # Plan 1: the force-driven oar (ll/oar.py)
         self.hold_frac = hold_frac
         self.hold_k = hold_frac * self.k
         if stations:
             self.oars = [Oar(rg, rate, t_drive, direction=direction,
-                             mit=mit, t_rise=t_rise,
+                             mit=mit, t_rise=t_rise, force=force,
                              station=(st[0], st[1], side))
                          for rg, st in zip(self._rigs, stations)]
             self.oar = self.oars[0]
         else:
             self.oars = [Oar(rig, rate, t_drive, direction=direction,
-                             mit=mit, t_rise=t_rise)]
+                             mit=mit, t_rise=t_rise, force=force)]
             self.oar = self.oars[0]
         self.omega_cmd = self.oar.omega_cmd
         self._stations = []
@@ -197,12 +204,108 @@ class TierCrew:
         return out
 
     # ------------------------------------------------------------------
+    def _plan_force(self, V: float, B: float, lin: float, l_cp: float,
+                    k: float) -> StrokePlan:
+        """Plan 1 (the force-driven oar): the drive's kinematics EMERGE —
+        the plan predicts the in-water time from the drive equilibrium (the
+        oar settles where the blade drag absorbs the demand:
+        vn = -sqrt(Fh·lin/(k·l_cp)) — the self-balancing drive), sizes the
+        catch flip (the spike force over t_rise, pinned at the catch), and
+        fits the recovery into the rest of the cycle. The minimum-shape
+        hypothesis: the constant demand (the chain's mean pull at the
+        pressure/W' state); the B3 profile shape [?] (the undecoded Rev F
+        Figure 10) would concentrate the force at the catch — the constant
+        demand is the documented start (plan 1, next-steps.md)."""
+        fh = self.fh_demanded() * self.power_factor
+        if self.W <= 0.0:
+            fh = min(fh, self.P_crit * self.power_factor * 60.0
+                     / (B * lin * self.rate_cmd))
+        cf = math.cos(math.radians(self.rig.get("cant", 0.0)))
+        backing = self.state == "back"
+        slot = 60.0 / self.rate_cmd - self.t_rec_min
+        vn_eq = math.sqrt(fh * lin / (k * l_cp))      # |vn| at the balance
+        a = B / 2.0
+        cos_a = math.cos(a) * cf
+        # the blade-entry speed (the equilibrium at the catch)
+        w_entry = (V * cos_a + vn_eq) / l_cp
+        if backing:
+            w_entry = (vn_eq - V * cos_a) / l_cp
+            if w_entry <= 0.05:
+                # the flow drag exceeds the grip: backing degenerates to a
+                # hold-brake (the rowers can only check the blade)
+                fh_mean = self.k * l_cp / lin * V * V
+                return StrokePlan(omega=0.0, sweep=B, t_drive=slot,
+                                  omega_recover=B / self.t_rec_min,
+                                  rate_eff=self.rate_cmd,
+                                  fh_peak=fh_mean, fh_mean=fh_mean,
+                                  p_ext=0.0, limited_by="back-hold")
+        # the equilibrium drive time (closed form):
+        #   t = 2·l_cp·∫_0^{B/2} dC / (V·cosC·cf + vn_eq)   (Simpson; the
+        # backing integrand is the mirror 1/(vn_eq - V·cosC·cf), capped at
+        # the entry value — the oar crosses the stall region at the demand)
+        def t_eq(sweep: float) -> float:
+            a2 = sweep / 2.0
+            n = 40
+            h = a2 / n
+
+            def inv(c: float) -> float:
+                den = V * math.cos(c) * cf + vn_eq
+                if backing:
+                    den = vn_eq - V * math.cos(c) * cf
+                    if den <= 0.0:
+                        # the stall region: the oar crosses it at the demand
+                        return 5.0 / (vn_eq - V * cos_a)
+                return 1.0 / max(den, 1e-9)
+
+            s = inv(0.0) + inv(a2)
+            for i in range(1, n):
+                s += (4.0 if i % 2 else 2.0) * inv(a2 * i / n)
+            return 2.0 * l_cp * s * h / 3.0
+        t_drive = t_eq(B)
+        t_flip = self.t_rise
+        B_eff = B
+        rate_eff = self.rate_cmd
+        limited = "none"
+        if t_flip + t_drive > slot:
+            B_eff = B * (slot - t_flip) / t_drive
+            if B_eff < self.B_floor:
+                B_eff = self.B_floor
+                t_drive = t_eq(B_eff)
+                rate_eff = 60.0 / (t_flip + t_drive + self.t_rec_min)
+                w_rec = B_eff / self.t_rec_min
+                limited = "tempo"
+            else:
+                t_drive = t_eq(B_eff)
+                w_rec = B_eff / (60.0 / self.rate_cmd - t_flip - t_drive)
+        else:
+            w_rec = B / (60.0 / self.rate_cmd - t_flip - t_drive)
+        # the catch flip: the spike force delivering the reversal over t_rise
+        # (the G5 convention, now a motion); capped at Fh_max — the entry
+        # then follows the cap (the drive converges to the equilibrium)
+        fh_flip = 0.0
+        if self.mit > 0.0:
+            fh_flip = self.mit * (w_rec + w_entry) / (self.t_rise * lin)
+            if fh_flip > self.Fh_max:
+                fh_flip = self.Fh_max
+                w_entry = max(0.01, fh_flip * lin * self.t_rise / self.mit
+                              - w_rec)
+        fh_peak = max(fh, fh_flip)
+        p_ext = fh * B_eff * lin * rate_eff / 60.0
+        return StrokePlan(omega=w_entry, sweep=B_eff, t_drive=t_drive,
+                          omega_recover=w_rec, rate_eff=rate_eff,
+                          fh_peak=fh_peak, fh_mean=fh, p_ext=p_ext,
+                          limited_by=limited,
+                          fh_flip=fh_flip, omega_entry=w_entry)
+
     def plan_stroke(self, V: float) -> StrokePlan:
         """Plan the next drive at the catch, given current V and W' state."""
         B = self.sweep_cmd
         lin, l_cp, k = self.lin, self.l_cp, self.k
         slot = 60.0 / self.rate_cmd - self.t_rec_min
         backing = self.state == "back"
+
+        if self.force:
+            return self._plan_force(V, B, lin, l_cp, k)
 
         if backing:
             # vn = V cosC + l_cp w; the peak limit binds hard at speed
@@ -306,12 +409,19 @@ class TierCrew:
             self._stations = [(0.0, 0.0, 0.0, 0.0, 0.0) for _ in self.oars]
             return 0.0, 0.0, 0.0, 0.0
         # plan at the catch (first stroke, or the step after a catch crossing)
-        if self.plan is None or (self.oar.in_drive
+        if self.plan is None or ((self.oar.in_drive or self.oar.in_flip)
                                  and self.oar.t_since_catch <= dt + 1e-12):
             self.plan = self.plan_stroke(V)
-            for o in self.oars:
-                o.configure_stroke(self.plan.omega, self.plan.omega_recover,
-                                   self.plan.sweep)
+            if self.force:
+                for o in self.oars:
+                    o.configure_force(self.plan.fh_mean, self.plan.fh_flip,
+                                      self.plan.omega_entry,
+                                      self.plan.omega_recover,
+                                      self.plan.sweep)
+            else:
+                for o in self.oars:
+                    o.configure_stroke(self.plan.omega, self.plan.omega_recover,
+                                       self.plan.sweep)
             self.rate_eff = self.plan.rate_eff
         if self.plan.limited_by == "back-hold":
             # backing at speed degenerates: the crew can only check the
@@ -340,16 +450,18 @@ class TierCrew:
                                      self._side * o.C)
             else:
                 x_b = y_b = 0.0
-            out.append((s.Fx * self.power_factor, s.Fy * self.power_factor,
+            out.append((s.Fx * (1.0 if self.force else self.power_factor),
+                        s.Fy * (1.0 if self.force else self.power_factor),
                         0.0, x_b, y_b))
-            fx += s.Fx * self.power_factor
-            fy += s.Fy * self.power_factor
+            fx += s.Fx * (1.0 if self.force else self.power_factor)
+            fy += s.Fy * (1.0 if self.force else self.power_factor)
             fh += s.Fh
         self._stations = out
-        self.p_gross_current = (self.plan.p_ext * self.power_factor
-                               + self.oar.flip_power(self.plan.rate_eff)
-                               + oar_absorbed(self.plan.rate_eff))
-        self.last_fh = fh / n * self.power_factor
+        self.p_gross_current = (self.plan.p_ext
+                                * (1.0 if self.force else self.power_factor)
+                                + self.oar.flip_power(self.plan.rate_eff)
+                                + oar_absorbed(self.plan.rate_eff))
+        self.last_fh = fh / n * (1.0 if self.force else self.power_factor)
         return (fx / n, fh / n * self.power_factor, 0.0, fy / n)
 
     def end_of_step(self, dt: float) -> None:
@@ -371,7 +483,7 @@ class TierCrew:
         if need_dir != self.oar.dir:
             self.oars = [
                 Oar(rg, self.rate_cmd, self.oar.t_drive, direction=need_dir,
-                    mit=self.mit, t_rise=self.t_rise,
+                    mit=self.mit, t_rise=self.t_rise, force=self.force,
                     station=((st[0], st[1], self._side)
                              if self._stations_geom else None))
                 for rg, st in zip(self._rigs or (self.rig,), self._stations_geom or (None,))]
@@ -391,7 +503,7 @@ class TierCrew:
         self.rate_cmd = rate
         self.oars = [
             Oar(rg, rate, t_drive, direction=self.oar.dir,
-                mit=self.mit, t_rise=self.t_rise,
+                mit=self.mit, t_rise=self.t_rise, force=self.force,
                 station=((st[0], st[1], self._side)
                          if self._stations_geom else None))
             for rg, st in zip(self._rigs or (self.rig,), self._stations_geom or (None,))]
@@ -426,12 +538,14 @@ class SideCrew:
                  pressure: str = "spoude", state: str = "row",
                  direction: int = 1, fleet: str = "spruce",
                  t_rise: float = 0.15, hold_frac: float = HOLD_FRAC,
-                 stations: dict | None = None, side: int = 1):
+                 stations: dict | None = None, side: int = 1,
+                 force: bool = False):
         self.rig_name = rig_name
         self.n = n_side
         self.state = state
         self.pressure = pressure
         self.rate_cmd = rate
+        self.force = force      # Plan 1: the force-driven oars
         if fleet == "spruce":
             mit = {t: OAR_TIER_MIT["spruce"] for t in TIER_SPLIT}
         elif fleet == "old-fir":
@@ -446,20 +560,20 @@ class SideCrew:
                                  mit=mit["thranite"], t_rise=t_rise,
                                  hold_frac=hold_frac, power_factor=1.0,
                                  stations=stations and stations["thranite"],
-                                 side=side),
+                                 side=side, force=force),
             "zygian": TierCrew(rig_name, TIER_SPLIT["zygian"], rate,
                                t_drive, pressure, state, direction,
                                mit=mit["zygian"], t_rise=t_rise,
                                hold_frac=hold_frac, power_factor=1.0,
                                stations=stations and stations["zygian"],
-                               side=side),
+                               side=side, force=force),
             "thalmian": TierCrew(rig_name, TIER_SPLIT["thalmian"], rate,
                                  t_drive, pressure, state, direction,
                                  mit=mit["thalmian"], t_rise=t_rise,
                                  hold_frac=hold_frac,
                                  power_factor=thalmian_power_factor(rate),
                                  stations=stations and stations["thalmian"],
-                                 side=side),
+                                 side=side, force=force),
         }
         self.rate_eff = rate
         self.W_frac = 1.0

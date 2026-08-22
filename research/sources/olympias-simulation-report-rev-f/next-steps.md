@@ -236,44 +236,62 @@ scaling, the feather clamp. The force-profile shape: the Rev F B3 structure
 (parabolic target moment, catchFactor continuity, max moment linear in
 ship speed) — the intercept/gradient live only in raster Figure 10 (decode
 blocked), so the start is the minimum-shape assumption (the constant
-demand), the B3 shape flagged `[?]` until the decode.
+
+**STATUS (2026-08): P1.1–P1.5 landed as a labelled layer** — `ll/oar.py`
+force mode + `Ship(force=True)`, default OFF. The results: the emerging
+drive times at the four Table 9.6 points 1.005/0.972/0.925/0.932 (the
+Olympias pair ±5 %; the MarkIIb −7 %/−7 % — the A5 family); the emerging
+thrust at 7.2 kt 0.976 × the kinematic; the sprint 7.72 kt vs the
+kinematic's 7.45 (the trials 8.2–8.3 — the deficit reduced, not closed);
+the cruise triple 6.55/7.03/7.50 kt — a FLAT −6.3 % (the kinematic's
+deficit grows with rate — the T1 tension's shape changed, its size not —
+the named suspects stand); the rest start 4.06 kt @ 10 s with the peak
+handle force at the demand (the catch deadspot is gone — the oQ-13
+ceiling's physical fix). The drive's key discovery: it SELF-BALANCES — the
+oar settles where the blade drag absorbs the demand
+(vn = −√(Fh·lin/(k·l_cp))), so the emerging stroke is the measured stroke
+without a fitted timing schedule. P1.6 (the promotion — the full
+acceptance, the turns, the HL re-calibration) and P1.7 (the docs) pending;
+the MarkIIb force-mode equilibrium ~5 kt at 46.3 spm is the A5 gap
+quantified from the force side (the demand caps the blade force — the
+area fix alone can't bridge it).
 
 Steps (phases; each ends at a gate, the full acceptance re-runs at P1.6):
 
-- **P1.1 the force model** (research side): Fh(θ, θ̇ | r, W_frac, tier) —
+- **P1.1 the force model** (research side): ✅ DONE — the minimum-shape constant demand (the B3 shape stays `[?]` — Figure 10).  Fh(θ, θ̇ | r, W_frac, tier) —
   the profile's work per stroke must equal the chain's (the mean pull
   7.43·r), so the emergent cycle-mean power reproduces P = 7.43·r by
   construction; the W′/pressure scaling from rower.py; the tier factors
   become force ceilings (the thalmian head-room EMERGES from the short-oar
   kinematics — measure, don't apply).
-- **P1.2 the oar EOM layer** (`ll/oar.py` force mode): the drive with the
+- **P1.2 the oar EOM layer** (`ll/oar.py` force mode): ✅ DONE — `ll/oar.py` force mode: the flip (pinned, the spike over t_rise), the drive (substeps at 1e-3), the recovery kinematic `[?]`.  the drive with the
   catch flip, the blade entry/exit conditions, the recovery phase (the
   feather clamp + the water exit — a new model, no anchor, flagged `[?]`;
   the kinematic recovery stays until the force recovery is measured);
   numerical: the catch's stiffness (the companion's dt 5e-5) — substep or
   implicit inside the ship's dt 0.05.
-- **P1.3 the single-oar validation** (the Gate-5 upgrade): the emergent
+- **P1.3 the single-oar validation** (the Gate-5 upgrade): ✅ DONE — `ll/tests/test_force_drive.py` (F1-1..F1-7): the emerging drive times 1.005/0.972/0.925/0.932 × Table 9.6 (the Olympias pair ±5 %), the thrust 0.976, the work conservation, the deadspot-free start.  the emergent
   drive time at the 4 Table 9.6 points (tighten the ±15 % toward ±5 %),
   the emergent sweep (the rig's sweep), the mean handle force
   (223.5/208 N), the catch spikes (t_rise emerges — check vs Gate 5's
   116/215/156 N, ±2 %).
-- **P1.4 the crew integration** (TierCrew/SideCrew): the force mode per
+- **P1.4 the crew integration** (TierCrew/SideCrew): ✅ DONE — TierCrew/SideCrew/Ship force plumbing; hold/back states work (the backing force branch has the back-hold degeneracy); the thalmian factor scales the DEMAND at the source.  the force mode per
   tier, the pipe keeps the crew in phase; hold/back as grip-force states
   (the held blade's drag is the flat-plate law on a stationary blade; the
   grip strength stays the human constant); the start-from-rest — the
   catch flip at low V (the flip may not complete before blade re-entry;
   the fh_max clamp interacts) — measured.
-- **P1.5 the ship gates**: the sprint — 8.2–8.3 kt @ 44.5 spm / 130 oars
+- **P1.5 the ship gates**: 🟡 MEASURED, NOT YET GATED vs the trials — the sprint 7.72 kt (30 s) vs the trials 8.2–8.3 (the deficit reduced, not closed — the T1 family); the triple 6.55/7.03/7.50 (flat −6.3 %); the start 4.06 kt @ 10 s. Locked in `ll/tests/test_force_ship.py` (F2-1..F2-3) as the layer's own gates; the trials' acceptance at P1.6.  the sprint — 8.2–8.3 kt @ 44.5 spm / 130 oars
   with NO t_drive(44.5); the cruise pair (the hull=1.0 points); the T1
   measurement — the emergent rate→power curve vs the ch.7 triple (the
   named suspect: does the force layer fix the flatness? test_triple_lock
   moves or stays — no silent re-lock).
-- **P1.6 the promotion**: T_DRIVE/CALIBRATED_T_DRIVE become anchors
+- **P1.6 the promotion**: ⬜ PENDING — the default flip, the turns (W5), the full acceptance, the HL re-calibration.  T_DRIVE/CALIBRATED_T_DRIVE become anchors
   (validation-only), the force mode becomes the default (labelled — the
   kinematic mode stays as the reference); the full acceptance — the LL
   gates, the HL re-calibration (calibrate.py), the harness, the annotated
   rows re-measured.
-- **P1.7 the docs**: CALIBRATION.md rows 1/2/4/12 statuses (t_drive
+- **P1.7 the docs**: 🟡 PARTLY DONE — VALIDATION §5a/§8/§11-T1, CALIBRATION rows 1–2, this status block; the rest with P1.6.  CALIBRATION.md rows 1/2/4/12 statuses (t_drive
   eliminated; hold_frac/thalmian challenged), VALIDATION.md §2/§4/§5,
   next-steps.
 

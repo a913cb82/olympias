@@ -99,6 +99,36 @@ caveat mechanism, now integrated).
 | Couple anchor | 224 N @ anchored point | Table 3.2 (0.6 % chain check) | ± 3 % |
 | **Force-driven companion** | drive time **0.43 s** | Table 9.6 0.43 s | essentially exact — kinematics ≡ forces + inertia |
 
+## 5a. Plan 1 — the force-driven oar layer `[x]` (labelled, OFF — 10 checks)
+
+The force-driven oar (`ll/oar.py` force mode; `Ship(force=True)`, default
+OFF — the validated kinematic set stays the default until the promotion
+gate): the drive's kinematics EMERGE from the torque-balance EOM
+I·θ̈ = −dir·Fh·lin − Fn·l_cp under the constant demand Fh (the chain's mean
+pull at the `"chain"` pressure level). The oar settles where the blade
+drag absorbs the demand (the drive equilibrium vn = −√(Fh·lin/(k·l_cp)) —
+never a stall: the measured stroke IS the force-balanced stroke, the G5-7
+companion's physics promoted to a layer). The catch flip (pinned at the
+catch, the spike force over t_rise) delivers the blade entry at the
+equilibrium speed; the recovery stays kinematic `[?]` (the force recovery
+is unanchored — next-steps.md P1.2); the first stroke starts from rest
+(the catch deadspot is gone — a parked blade would demand ~2 kN).
+
+| Quantity | Force mode | Anchor | Match |
+| --- | --- | --- | --- |
+| Emerging drive time, the 4 Table 9.6 points | 0.432 / 0.381 / 0.566 / 0.440 s | 0.430 / 0.392 / 0.612 / 0.472 s | 1.005 / 0.972 / 0.925 / 0.932 (the ±15 % companion gate; the Olympias pair ±5 %) |
+| Cycle-mean thrust @ 7.2 kt | 17.05 N/oar | kinematic 17.46 | 0.976 |
+| Sprint 30 s @ 44.5 spm | 7.72 kt | kinematic 7.45 (trials 8.2–8.3) | +0.27 kt — the deficit reduced, not closed (the T1 family) |
+| Cruise triple (hull=1.08) | 6.55 / 7.03 / 7.50 kt | ch.7 7.0 / 7.5 / 8.0 | flat −6.3 % (the kinematic's deficit GROWS with rate: −2.5 / −4.6 / −6.1) — the T1 tension's shape changed, its size not |
+| Rest start, V(10 s) | 4.06 kt | bulk-law envelope 5.5 | slower — the physical start (peak Fh = the demand 330 N, no deadspot spike) |
+| The catch flip | 263–390 N ≤ Fh_max | the G5 spike convention | the entry at the equilibrium ✓ |
+
+Locks: `ll/tests/test_force_drive.py` (F1-1..F1-7 — the single-oar gates:
+drive times, thrust, the flip, the cycle timing, the work conservation,
+the ceiling, the start from rest) and `ll/tests/test_force_ship.py`
+(F2-1..F2-3 — the sprint, the triple, the rest start). The kinematic
+default is untouched (the full suite green).
+
 ## 6. Cross-cutting consistency (research-side anchors the LL inherits)
 
 | Check | Result |
@@ -166,8 +196,9 @@ caveat mechanism, now integrated).
 
 ## 8. Status
 
-- 103 checks green: the command language (19), the LL gates 1–8 (56), the
-  research chain locks (12), the HL basics (9), the harness machinery (6).
+- 162 checks green: the command language (19), the LL gates 1–8 (79),
+  the Plan-1 force-driven layer (10), the research chain locks (12), the
+  HL basics (16), the harness machinery (26).
 - Every validated anchor the LL touches lands within 1–5 %, with outliers
   explained by documented physics or locked as open items.
 - The LL is realistic *to the limit of the research chain* — and it knows
@@ -386,7 +417,7 @@ Every exit criterion included its regression lock; the suite is green
 
 | Task | Verdict |
 | --- | --- |
-| T1 — the ch.7 triple | open-with-locked-test — the cause named: the LL's rate→power shape (per-man gross 110/129/152 W vs the chain's 115/145/180, the gap growing with rate; E_g flat 51.5–52.3 % vs the 53–55 % band — the blade/kinematics chain, not the hull factor; the speed-dependent uplift moves the reference the wrong way). Lock: `ll/tests/test_triple_lock.py` |
+| T1 — the ch.7 triple | open-with-locked-test — the cause named: the LL's rate→power shape (per-man gross 110/129/152 W vs the chain's 115/145/180, the gap growing with rate; E_g flat 51.5–52.3 % vs the 53–55 % band — the blade/kinematics chain, not the hull factor; the speed-dependent uplift moves the reference the wrong way). Lock: `ll/tests/test_triple_lock.py`. **Plan 1 measured (the force layer, labelled): the emerging triple 6.55/7.03/7.50 kt — a FLAT −6.3 % — the deficit's rate-dependence is gone (the force-driven drive's equilibrium self-balances the demand), its size ~unchanged — the named suspects stand; locked in `ll/tests/test_force_ship.py` (F2-2)** |
 | T2 — the tightest turn + t_360 | part-closed — the hold_frac re-measurement (0.05 → 0.08) closes the tightest D (62.6 m, +1.0 %, was +9.2 %) and lands the drained floor (3.22 kt ≈ the halved 3.25); the t_360 stays open with the cause quantified: the turn-time = π·D/V̄ is the surge problem (the LL's turn-mean 3.8 kt vs the trial's 2.91; every mechanism measured and excluded — the W′ drain, the rudder drag, the hold brake, the linear yaw damping). The Rev F stationary-turn anchor adds the SECOND direction (register C7): the trials' partial-crew turn from rest at 27 spm = 3.5°/s vs the LL's 2.32°/s in-place (−34 %) / 1.06°/s one-side (−70 %) — the model is now too SLOW at low-speed partial crew (the t_360 is too FAST at full crew); the turn-speed family's envelope is measured, the mechanisms still open (the yaw build's reversal + the sway damping at low V) |
 | T3 — the turn timing | the t180 row is gated at ±20 % (the measured timing-loose band: the HL systematically fast in the D-matched turns, the worst row −6 % after the K29 hold-decay re-measurement at the tightest's true usage (the HL's hold-state V collapsed too slowly — the wss = 2V/d ran 1.4× high in the first 10 s; the τ_hold is now a rate table 18.0 s @ 31.5 / 28.0 s @ 44); the K27: the oar-only d_oar_v is scaled by the rowing side's pressure — the LL's oar orbit grows as the effort falls (measured ~1/p_row), so the cruise's steady-rowed back leg no longer runs ~2× fast in yaw) |
 | T4 — the turn-state drag | landed — the per-helm × per-pressure × per-rate curve (the k falls with rate) + the settled-orbit asym nets; the sprint_turn mean +1.0 % → +0.7 % |

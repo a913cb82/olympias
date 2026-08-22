@@ -66,7 +66,8 @@ class Ship:
                  fleet: str = "spruce", hold_frac: float | None = None,
                  stations: bool = False, drag_law: str = "chain",
                  mass_matrix: bool = False,
-                 sway: str = "fitted", cd: float = 0.3):
+                 sway: str = "fitted", cd: float = 0.3,
+                 force: bool = False):
         # hold_frac default: the calibrated value (ll/rower.HOLD_FRAC)
         """fleet: 'spruce' (all tiers, MIT 9.7 — the 1994 setup) or
         'old-fir' (thranites 13.1, zygians 18.0, thalmians 13.1 approx —
@@ -128,13 +129,13 @@ class Ship:
                              fleet=fleet,
                              hold_frac=hold_frac if hold_frac is not None else HOLD_FRAC_DEFAULT,
                              stations=side_layout and side_layout["port"],
-                             side=1),
+                             side=1, force=force),
             "star": SideCrew(rig_name, self.n_side, rate, td,
                              pressure=pressure[1], state=oar_state[1],
                              fleet=fleet,
                              hold_frac=hold_frac if hold_frac is not None else HOLD_FRAC_DEFAULT,
                              stations=side_layout and side_layout["star"],
-                             side=-1),
+                             side=-1, force=force),
         }
         self.helm_dir, self.helm_frac = helm
         # the hull's drag law (the Rev F B4 item, now THE default): the
