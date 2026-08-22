@@ -1,0 +1,512 @@
+The Transactions of the royal institution of naval architects
+
+Part A – International Journal of Maritime Engineering
+		
+This document is formatted in the convention required for all papers/technical notes. This document is formatted in the convention required for all papers/technical notes. 
+This document is formatted in the convention required for all papers/technical notes. 
+This document is formatted in the convention required for all papers/technical notes. 
+
+
+
+Modelling Oared Warship Performance During the Evolution of the Athenian Trireme
+(DOI No: 10.3940/rina.ijme.2016.a2.???)
+
+
+R C Braithwaite, Babcock International (Retired), UK* Corresponding author. R Braithwaite (Email) conradbraithwaite@hotmail.co.uk
+
+
+SUMMARY
+
+The development of ramming as the primary tactic for ship to ship combat in the 5th Century BC required the optimisation of the naval platform as a high speed guided missile culminating with the appearance of Athenian Trireme which was probably the fastest oared warship in history. This study uses design and trials data from the Olympias reconstruction of a trireme as a basis for developing designs of pentaconter monoremes and biremes, and models their performance so that the significance of these key stepping stones in the evolution of the trireme oar system arrangement can be better understood.
+  
+
+KEYWORDS
+
+Trireme, Pentaconter, Manoeuvring, Design Reconstruction
+
+
+
+NOMENCLATURE
+
+
+[Symbol] 	[Definition] [(unit)]
+		Kinematic viscosity (N s m-2 )
+		Density of water (kg m-3)
+Rg		Radius of Gyration (m)
+LWL		Waterline Length (m)
+B		Breadth (m)
+D		Depth (m)
+LCG		Longitudinal Center of Gravity (m)
+
+
+1.	INTRODUCTION
+
+In Bronze Age military campaigns (such as the siege of Troy described by Homer’s Iliad) 30 or 50 oared ships (known as Triaconters and Pentaconters) were commonly used to transport soldiers and their equipment and  to provide logistic support to them when deployed, but were not generally designed, or used, for combat at sea. That all started to change with the development of ramming tactics in the fifth century BC. The outcome were specialist ships designed specifically for ship to ship combat where the ship was increasingly optimised as a weapon system in its own right.
+The first iteration probably involved simply fitting bronze sheathed rams to existing vessels, but it quickly became apparent that more than this was required to optimise effectiveness. PLACEHOLDER describe development from monoreme through bireme to trireme…
+
+Trireme as peak of oared warship design, later roman and venetian oared ships were simply platforms for other weapon systems such as troops, catapult’s and cannon.
+
+2.	TRIREME OLYMPIAS
+
+2.1	SUB-HEADING
+
+In the 1980’s John Coates (Chief Naval Architect at the Admiralty) John Morrison (Cambridge Classics Professor) and Boris Rankov (Oxford Rowing Coach) teamed up to design and build a reconstruction of an Athenian Trireme that agreed with the available archaeological evidence. The resulting ship (Olympias) clearly demonstrated that it was possible to pack 170 oarsmen (each operating their own oar) into a vessel with a length of 37m and a beam of 5.4m (dimensions constrained by the ship shed excavations at Pireus).(1)
+
+
+Figure 1: Trireme Reconstruction Olympias Figure 1: Trireme Reconstruction Olympias Trials conducted over the following years demonstrated that it was possible to achieve speeds implied by contemporary historians such as Thucydides and also provided extensive data on other aspects of performance for a vessel of this type (acceleration and manoeuvring under oar, sailing performance etc.), all of which has been extensively published in the literature. (REFS?)
+Figure 1: Trireme Reconstruction Olympias 
+Figure 1: Trireme Reconstruction Olympias 
+
+2.2	SUB-HEADING
+
+2.2 (a)	Further Subsidiary Heading
+
+Sub-sections may be further divided up as above.  Subsidiary headings should use mixed upper/lower case as above (but not in bold).
+
+3.	DESIGN PROCESS 
+
+3.1	DESIGN PROCESS
+
+An integrated tool for rapid concept design development and assessment was developed for this study (i.e. specifically for oared warships). The structure of this tool (shown in Figure 2) is similar to a tool developed by the Author for requirements development for the Royal Navy while working as ship design lead in the Naval Design Partnering Team Ref (2).
+
+Figure 2: Design and Modelling Process Figure 2: Design and Modelling Process 
+Figure 2: Design and Modelling Process 
+Figure 2: Design and Modelling Process 
+
+3.2	INPUTS
+All inputs and results summary controlled on a single screen view, so that the design can be easily iterated with the implications of changes immediately apparent.
+Inputs are adjusted until the weight calculated by the Weight Module is balanced with the displacement calculated by the Hull Geometry Module.
+
+3.3	HULLFORM 
+
+The Hull Geometry Module contains the design offsets for Olympias taken from the Lines Plan (4). 
+These lines can be scaled and transformed to generate a hullform for the design and calculate a range of hydrostatic properties so that displacement can be balanced with the weight estimate, provide surface areas for weight and propulsion estimates and calculating initial stability (GMT) in conjunction with the VCG calculated by the weight module.
+
+Initial transformation of the  basis hullform is based on ratios of Length, breadth and depth, but alterations can also be made using Lackenby type transformations.(7) to adjust CM and CP to (for example) enable displacement to be adjusted independently of draught.
+
+
+3.4	WEIGHT ESTIMATE
+
+Weights and vertical centroid (VCG) are estimated for the design based on Olympias Weight Data which was first calculated (at a 2/3 digit breakdown level) from the Olympias scantlings list and drawing pack (3,4).  These weights were also confirmed by carefully weighing components of a detailed model (at 1:24 scale) built to the Olympias drawings using a fine grained wood of comparable density to the full size ship. 
+The calculated lightship weight and centroid was then verified against an inclining experiment report for Olympias (REF)
+
+These weights were then scaled for the design using algorithms based on the design inputs (e.g. LWL, B, D rower and crew numbers etc.) and parameters calculated by the Hull Geometry module (e.g. overall hull surface area, deck areas, etc.). Unfortunately The Author did not have access to plentiful basic ship weight data, relevant to ancient Mediterranean warships, so most of these algorithms had to be based on first principal scaling from a single point. Examples of assumptions used as follows:
+
+Interscallium of 888mm constant for all design, hence frame spacing constant and skin thickness the same as Olympias. So hull shell weight is assumed proportional to hull surface area (calculated by the Hulform module)
+As the frame spacing is assumed to be unchanged the total length of deck beams will be proportional to the deck area (approximated as ∞ LxB). The cross section area of a rectangular section will scale with span 1/3 for stress (for the same load). So deck beam weight was taken to be proportional to LxB4/3 
+
+In addition to the Olympias Design, John Coates worked up a design for a Roman Liburnian. The Arrangement and Lines of this design are shown in Ref (6). The displacement of this design is stated at 15.5 tonnes and this information was used to provide an overall datapoint to check scaling of algorithms.
+
+2.2 (a)	Mass Moment of Inertia
+
+The 1:24 scale model was used to derive the radius of gyration of the ship using a method previously used by the Author to derive the radius of gyration of the Tamar Class Lifeboat for the RNLI (albeit on a smaller scale which did not require the full height of the Frigate Refit Complex at Devonport Dockyard).  
+This method involved suspending the model from lines attached to the model xmm either side of the LCG and timing oscillations following a small rotational disturbance. The calculated radius of gyration was:
+ 
+Rg=XX%LWL   (1)
+
+For the purposes of the designs discussed below Rg is assumed to scale with LWL.
+
+
+3.5	SPACE AND LAYOUT
+
+In conjunction with the spreadsheet tool described above a basic general arrangement was worked up for the new design, primarily to confirm that the oarsmen could fit inside the hull lines (as derived by the Hull Geometry Module)
+
+
+3.6	PHYSICS SIMULATION
+
+A time step 3 degree of freedom (surge,sway,yaw) simulation of the ship manoeuvring in the horizontal plane was developed to assess performance of the designs. 
+
+Figure 3: Physics Model Figure 3: Physics Model 
+Figure 3: Physics Model 
+Figure 3: Physics Model 
+At each time step the model calculates accelerations (u̇, v̇, ṙ) from current velocities (u,v,r) and external forces, (Xoar,Yoar,Noar) and (Xrudder,Yrudder,Nrudder), by solving the following equations of motion in the body fixed axis system shown in Figure 2:
+
+(m − Xu̇) u̇ = − R(u) + m v r + Xoar + Xrudder
+(m − Yv̇) v̇ − Yṙ ṙ = Yv v + Yr r − m u r + Yoar + Yrudder
+− Nv̇ v̇ + (Iz − Nṙ) ṙ = Nṙ)v + Nr r + Nr|r| r|r| + Noar + Nrudder
+
+Clarke-Gedling-Hine regressions (REF) were used for the hull’s hydrodynamic derivatives (Yv̇ , Yṙ, ,Yv ,Yr, Nv̇, Nṙ, Nṙ, and Nr). The Author added the nonlinear yaw damping term (Nr|r| ) to account for the low speeds and tight turns important to this vessel type, where:
+
+Nr|r| = − (1/64) ρ CN T L⁴
+
+This is the closed-form result of integrating the sectional cross-flow drag (½ ρ Cdc(rx)|rx|T) along a rectangular lateral projection from −L/2 to +L/2:
+
+Nr|r| r|r| = − ½ ρ T CN r|r| ∫−L/2L/2 x|x| dx 
+=− (ρ T CN L⁴ / 64) r|r|
+
+CN was set at 0.4 to tune the model to the turning circles achieved by Olympias in her sea trials (REF).
+
+The mass of the design (m) was estimated as described in the previous section with added mass to account for entrained water (Xu̇) estimated as follows:
+
+Xu̇=0.04 + 0.06 CB (REF?)
+
+The resistance of Olympias was measured during sea trials in 1988 (REF) with both the rudders up and down. The following curves were fitted to the resistance with the rudders raised:
+
+RT=
+
+It was found that the Holtrop and Menen method for destroyer hullforms with no immersed transom (REF) was a close match for Olympias and so this method was used to estimate resistance for the designs developed for this study (R(u) ).
+
+Mean Oar thrust (over a full stroke cycle) was calculated for Olympias at different speeds using acceleration trial data (REF). This equated to a maximum of 81N/oarsman (assuming all oarsmen were as efficient as the top level – Thranite- oarsmen in the trials) at zero speed. This thrust was found to linearly decreases to a zero at an extrapolated speed of 18 kts. The simulation applies this as a constant force at two points (port and starboard) with x= LWL/2 and y=+/-distance to average centter of the oar race (See Firure XXX). The magnitude of the force was calculated based on the local water velocity of the water at these points (i.e. accounting for ship speed and rotation).
+
+The two steering oars (rudders) fitted to Olympias were essentially flat plates fitted to circular wooden shafts.
+
+For this study they have been modelled as shown in Figure 3.
+
+
+Figure 4: Rudder Model Figure 4: Rudder Model 
+Figure 4: Rudder Model 
+Figure 4: Rudder Model 
+
+A rudder angle relative to the ships centerline (α) is set for each rudder and (at each timestep) the local flow is calculated at the rudder stock based on the ship speed and yaw rate. Lift and Drag are then calculated based on the rudder angle of attack relative to this local water velocity (αrel). 
+
+Rudder lift (Loars) and drag (Doars) forces were calculated as follows:
+Loars=1/2ρV2ACLi
+Doars=1/2ρV2A(CD0+CDi)
+
+
+Where A is the immersed rudder blade area and V is the local water speed calculated at the center of the rudder stock.
+
+The induced lift and drag coefficients (CLi and CDi) are calculated after Hoener (REF) for flat plates as follows:
+CLi=sin(2αrel)
+CDi=2.0sin2(αrel)
+
+Where αrel is the rudder angle relative to the local water flow direction at the center of the rudder stock.
+
+Olympias rudders were found to have very high drag at zero rudder angle equal to approximately half of total ship drag at x knots (REF). The coefficient (CD0) was added to account for this parasitic/residual drag.
+
+This physics model was tuned/validated against the sea trial results for Olympias
+
+5.	DESIGNS
+
+5.1	DESIGN ASSUMPTIONS
+
+The aim of this study was to assess the performance implications of the two major developments in oar system arrangements that led up to the Trireme. Accordingly all other aspects of the design were kept as close to that of Olympias as possible.
+Key design assumption included:
+Minimum GMT of 0.5m to enable sufficient sail to be carried (Olympias Design Constraint (1))
+cubit of 444mm (as Olympias) rather than the XXXmm concluded to be more representative (and proposed for a Mk 2 Trireme (1)). This equates to a spacing between files of oarsmen (interscallium) of 2 cubits or 888mm.
+minimum depth. Olympias has a much higher Length/Depth ratio (L/D=15) than would be allowed by Lloyds Rules for wooden ships built in the conventional 19th Century manner. This is enabled by the construction method used by the Ancient Greeks (morticing of planks together to resist shear) and the fitting of a tensioned rope (Hypozomata) above the neutral axis. Despite this, however, Olympias did start to show evidence of hogging. So the L/D limit was set to 15.
+Oar length set at 4.2m (9.5 cubits) with a gearing of XXX (as Olympias)
+
+
+Figure 5: Design Arrangements Figure 5: Design Arrangements 
+Figure 5: Design Arrangements 
+Figure 5: Design Arrangements 
+
+
+
+Table 1: Design Particulars
+Section 1
+Section 2
+Section 3
+Section 4
+a
+b
+c
+d
+e
+f
+g
+h
+…
+…
+…
+…
+
+
+
+5.2	PENTACONTER MONOREME
+
+25 oarsmen per side as a spacing of 888mm together with an allowance for narrowing the hull at the bow and stern resulted in an overall length of 31m. Providing a central walkway of 1.5m (?) together with clearance for an oarsman on each side resulted in a beam of 4.0m (which agrees with evidence for contemporary pentaconter monoremes).
+The longitudinal strength requirement means that the depth can be no less than 2.05m
+
+LOA                                                    31.0m
+BOA                                                      4.0m
+Depth                                                   2.05m
+Draught (full load)                             0.980m                
+Displacement (full load)                      21.0 tonnes
+GMT (full load)                                   0.643m
+
+5.2	PENTACONTER BIREME
+
+All main headings should be in bold capitals, each Section may then have sub-headings.  Sub-headings should be numbered and typed in capitals (but not in bold).
+
+5.3 Trireme
+
+Represented by Olympias – note controversial reconstruction 2 evolving design
+
+5.4 Trireme +
+Although the details of Trireme design seem to have been evolving during the golden age of Athens the number of oarsmen seems to have been fixed at 170. This (purely fictitious) design is intended to look at the implications of changing this by adding one triad of oarmen (Port and starboard) .
+
+Each oarsman is assumed to weigh 75 kg. Their oar, seat, foot stretcher and other deadweight items (e.g. water) is assumed to weigh XX kg meaning that 6 additional oarsmen adds YY kg to the loaded weight of the vessel. The length of the vessel increases by 888mm (the interscallium distance referred to in section XX).
+
+Maintaining all other aspects of the design constant as much as possible to isolate implications of adding oarsmen,,,
+
+
+6.	DISCUSSION
+
+Note actual performance highly dependent on 
+Conditions
+Condition of vessels
+Training and condition of crew
+Fast trieres vs slow trieres
+Capability discusion (ref paper and tactics
+Figure 6: Design Performance Figure 6: Design Performance 
+Figure 6: Design Performance 
+Figure 6: Design Performance 
+
+
+
+
+Table 2: Design Performance
+Capability
+Pentaconter Monoreme
+Pentaconter Bireme
+Trireme
+Trireme +
+Acceleration
+b
+
+c
+d
+Top Speed
+f
+
+g
+h
+Turning Circle
+…
+
+…
+…
+
+Importance of cost/capability particularly in a long war of attrition such as the Peloponesian war between Athens and Sparta.
+
+Capability jump from Monoreme to Bireme
+
+Capability jump from bireme to Trireme
+
+Powering and Manoevering comparison
+
+Trireme vs Bireme examples
+
+Cost vs capability discussion
+
+
+7.	CONCLUSIONS
+
+The main body of the text must end with the conclusions of the paper.
+
+Further work?
+
+8.	ACKNOWLEDGEMENTS
+
+Brief acknowledgements may be added.  The source of any figures taken from other works should be acknowledged.
+
+9.	REFERENCES
+
+The Harvard system of referencing should be used. References be formatted in alphabetical order. In applying this:
+Please ensure that every reference cited in the text is also present in the reference list (and vice versa).
+
+In the text of the paper the reference should be in the following way: 
+Single author: the author's name (without initials, unless there is ambiguity) and the year of publication;
+Two authors: both authors' names and the year of publication;
+Three or more authors: first author's name followed by 'et al.' and the year of publication.
+Examples: (Smith, 1999), (Smith & Jones, 2014), (Smith et al., 2000), (Smith, 2000; Jones et al., 1998)
+
+MORRISON, J et al.(2000), The Athenian Trireme 2nd Ed, Cambridge University Press.
+BRAITHWAITE, R (2013), A Goup System Approach To Naval Warfare – The UXV Mothership Concept, RINA Warship 2013 - Minor Warships, 12-13 June.
+COATES, J Olympias scantlings
+COATES, J et al., Olympias Build Drawings
+Olympias Inclining Experiment
+COATES, J. Article name (Liburnian) pages and Age of Galley
+LACKENBY, H (1950). On the systematic Geometrical Variation of Ship Forms, Transactions of the Institution of Naval Architects (TINA), Vol. 92, pp. 289-315
+In the list of references the title of a paper, proceeding, thesis, and book should be in italics, 
+SMITH, J. and JONES, M. (2012). Naval architecture of ships. International Journal of Maritime Engineering. 154: A000-A012. Together with the DOI number if appropriate [Journal publication]
+SMITH, J. (2012). Naval architecture of ships. 4th International Conference on Ships, London, UK, June 26-28: 000-000. 
+[Conference proceeding]
+SMITH, J. (2021). Naval architecture of ships, Ph.D. Thesis, University College London, UK.
+[Thesis]
+SMITH, J. and JONES, M. (2012). Naval Architecture. 3rd Ed. University of Buckingham Press Ship Press, London. Together with ISBN number
+     [book]
+RINA (2021). Naval architecture of ships reports for the UK. www.rina.org/ (Accessed 22nd April 2021). Where electronic sources are quoted the web site reference should be given together with the date on which the source was last accessed. 
+[Website]
+SMITH, J. and JONES, M. (2021). Naval Architecture S/W v0.01 (Version 0.01). RINA. www.rina.org [Software]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3.	MANUSCRIPT FORMAT 
+CONVENTIONS
+
+3.1	FONT
+
+The font to be used is Times New Roman.  English (UK) is to be used. The title of the paper should be in 12 point.  The remainder of the paper should be in 10 point.
+
+3.2	PAGE SETUP
+
+Portrait format is to be used. 
+
+The final manuscript should use the style used in this template on A4 paper, with margins as follows:
+
+Top			2.5 cm
+Bottom			2.5 cm
+Left			1.7 cm
+Right			1.7 cm
+Gutter			0.5 cm
+Header			1 cm
+Footer			1 cm
+
+Note that the margins have been mirrored.
+
+The double column setup is as follows:
+
+Column Width		8.15 cm
+Column Spacing		0.8 cm
+Equal width columns
+
+3.3	PAGE NUMBERS
+
+Submissions should not be page numbered.  These will be inserted before publication.
+
+
+3.4	FIGURES
+
+3.4 (a)	General Guidelines
+There should be no more than 10 graphs/tables/diagrams/ illustrations/photographs per paper.
+
+All figures should be consecutively numbered and clearly referenced in the text. Captions should be typed underneath each figure, e.g. Figure 1: [Description].
+
+Figures may be positioned in the main body of the text or after the text.  Text within figures should be of a size to allow legibility even if reduced.
+
+References to figures in the main text should be in the form “…in Figure 1……”
+
+3.4 (b)	Figure Format
+
+Figure 1: should be displayed in this format below the figure (note the centre alignment)Figure 1: should be displayed in this format below the figure (note the centre alignment)Figures should normally be produced electronically, in JPEG, GIF, Bitmap or TIFF formats, and inserted in to the text. The example of the figure is below.
+Figure 1: should be displayed in this format below the figure (note the centre alignment)
+Figure 1: should be displayed in this format below the figure (note the centre alignment)
+3.4 (c)	Colour
+
+Coloured figures will be reproduced in full colour in the CD-ROM and online versions of the Transactions only.   Figures in the printed version will be in black and white.
+
+Colour may be used in the printed proceedings where it significantly improves the understanding of the paper.  Authors will be required to cover the full costs incurred with colour printing.  Authors wishing to use colour should inform the Editor when submitting the paper/technical note, when they will be informed of the cost. In some cases the Editor may require colour to be used where it is felt essential for clarity.
+
+3.5	LISTS
+
+Bullets should be used for lists, and not numbers.
+To be referenced in the text, if necessary, in the style of “…the second bullet point….”
+
+MATHEMATICS
+
+All mathematical symbols should be in italics, with subscripts and super scripts in normal font.
+
+TABLES
+
+All tables should be displayed in the following way:
+
+Table 1: should be displayed in this format above the table (note the centre alignment)
+Section 1
+Section 2
+Section 3
+Section 4
+a
+b
+c
+d
+e
+f
+g
+h
+…
+…
+…
+…
+Table 2: should be displayed in this format above the table (note the centre alignment)
+Section 1
+Section 2
+Section 3
+Section 4
+a
+b
+c
+d
+e
+f
+g
+h
+…
+…
+…
+…
+
+EQUATIONS
+
+The equations should be displayed in the following way (note the centre alignment):
+
+fitness(p) = e-(a∙l∙(p)+b∙B)  	             (1)
+
+Please submit math equations as editable text and not as images. Present simple formulae in line with normal text where possible and use the solidus (/) instead of a horizontal line for small fractional terms, e.g., X/Y. In principle, variables are to be presented in italics. Number consecutively any equations that have to be displayed separately from the text (if referred to explicitly in the text).
+
+UNITS
+
+Follow internationally accepted rules and conventions: use the international system of units (SI). If other units are mentioned, please give their equivalent in SI.
+
+
+4.	SUBMISSION REQUIREMENTS
+
+All papers should be submitted in electronic form, in MSWord format unless agreed first with RINA Headquarters.
+
+Submissions should contain the full text, including inserted figures.  Submissions should normally be forwarded by email 
+Papers should not normally exceed 6000 words.  Longer papers where the content justifies the extra length may exceptionally be published at the Institution’s discretion.
+
+
+5.	ADDITIONAL INFORMATION
+
+5.1	LIABILITY
+
+Authors are responsible for obtaining security clearance as required.  If they so wish, authors may add a disclaimer stating that the opinions expressed are solely those of the author.
+
+In submitting papers for publication in the Transactions, authors implicitly assign copyright to the Royal Institution of Naval Architects if the paper is published.  Where copyright is held elsewhere, authors must present evidence of approval to re-publish.
+
+When submitting papers for publication, authors must state if the paper has been published before and where, or whether it is being considered for publication by some other publisher.
+
+5.2	PAPER REVIEW
+
+Reviewers are appointed from the Editorial Board and others with experience in the field of the paper subject. The Editor will take the decision on final acceptance or rejection of the paper.  Acceptance may be conditional on changes to the paper being made before publication.
+
+5.3	Discussion
+
+Comment on all papers published in the Transactions will be invited.  Authors will be requested to respond on all comment received.  Comment and authors’ response will be published. 

@@ -1,0 +1,1554 @@
+olevba 0.60.2 on Python 3.10.12 - http://decalage.info/python/oletools
+===============================================================================
+FILE: Galley sizing Y.xlsm
+Type: OpenXML
+WARNING  For now, VBA stomping cannot be detected for files in memory
+-------------------------------------------------------------------------------
+VBA MACRO ThisWorkbook.cls 
+in file: xl/vbaProject.bin - OLE stream: 'VBA/ThisWorkbook'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+(empty macro)
+-------------------------------------------------------------------------------
+VBA MACRO Sheet3.cls 
+in file: xl/vbaProject.bin - OLE stream: 'VBA/Sheet3'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+(empty macro)
+-------------------------------------------------------------------------------
+VBA MACRO Module1.bas 
+in file: xl/vbaProject.bin - OLE stream: 'VBA/Module1'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+Function Interpolate(X, Y, X1)
+
+N = 0
+i = 1
+Do
+N = i
+i = i + 1
+Loop Until X(i) < X(i - 1) Or N = X.Count
+
+a = 0
+i = 0
+Do
+i = i + 1
+Loop Until X(i) > X1 Or i > N - 1
+
+
+If i = N Then
+XP1 = X(i - 2)
+YP1 = Y(i - 2)
+XP2 = X(i - 1)
+YP2 = Y(i - 1)
+XP3 = X(i)
+YP3 = Y(i)
+ElseIf Int(i / 2) * 2 = i Then
+XP1 = X(i - 1)
+YP1 = Y(i - 1)
+XP2 = X(i)
+YP2 = Y(i)
+XP3 = X(i + 1)
+YP3 = Y(i + 1)
+Else
+XP1 = X(i - 2)
+YP1 = Y(i - 2)
+XP2 = X(i - 1)
+YP2 = Y(i - 1)
+XP3 = X(i)
+YP3 = Y(i)
+End If
+a = YP1 * ((X1 - XP2) * (X1 - XP3)) / ((XP1 - XP2) * (XP1 - XP3))
+B = YP2 * ((X1 - XP1) * (X1 - XP3)) / ((XP2 - XP1) * (XP2 - XP3))
+C = YP3 * ((X1 - XP1) * (X1 - XP2)) / ((XP3 - XP1) * (XP3 - XP2))
+If X1 > X(N) Then
+Interpolate = Y(N)
+ElseIf X1 < X(1) Then
+Interpolate = Y(1)
+Else
+Interpolate = a + B + C
+
+
+End If
+End Function
+
+-------------------------------------------------------------------------------
+VBA MACRO Module2.bas 
+in file: xl/vbaProject.bin - OLE stream: 'VBA/Module2'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+Dim y2(100)
+Dim U(100)
+
+
+Function CUBIC(X, Y, X1)
+YP1 = 1E+32
+N = 0
+i = 1
+Do
+N = i
+i = i + 1
+Loop Until X(i) < X(i - 1) Or N = X.Count
+
+YPN = 1E+32
+a = X(1)
+Call SPLINE(X, Y, N, YP1, YPN)
+Call SPLINT(X, Y, y2, N, X1, Y1)
+CUBIC = Y1
+End Function
+
+Sub SPLINE(X, Y, N, YP1, YPN)
+
+
+If YP1 > 9.9E+29 Then
+y2(1) = 0
+U(1) = 0
+Else
+    y2(1) = -0.5
+U(1) = (3 / (X(2) - X(1))) * ((Y(2) - Y(1)) / (X(2) - X(1)) - YP1)
+End If
+For i = 2 To N - 1
+    SIG = (X(i) - X(i - 1)) / (X(i + 1) - X(i - 1))
+    P = SIG * y2(i - 1) + 2
+    y2(i) = (SIG - 1) / P
+U(i) = (Y(i + 1) - Y(i)) / (X(i + 1) - X(i)) - (Y(i) - Y(i - 1)) / (X(i) - X(i - 1))
+U(i) = (6 * U(i) / (X(i + 1) - X(i - 1)) - SIG * U(i - 1)) / P
+Next i
+If YPN > 9.9E+29 Then
+    QN = 0
+    UN = 0
+Else
+    QN = 0.5
+    UN = (3 / (X(N) - X(N - 1))) * (YPN - (Y(N) - Y(N - 1)) / (X(N) - X(N - 1)))
+End If
+y2(N) = (UN - QN * U(N - 1)) / (QN * y2(N - 1) + 1#)
+For K = N - 1 To 1 Step -1
+    y2(K) = y2(K) * y2(K + 1) + U(K)
+Next K
+
+End Sub
+
+Sub SPLINT(XA, YA, Y2A, N, X, Y)
+KLO = 1
+KHI = N
+While KHI - KLO > 1
+    K = (KHI + KLO) \ 2
+    If XA(K) > X Then
+        KHI = K
+    Else
+        KLO = K
+    End If
+Wend
+H = XA(KHI) - XA(KLO)
+a = (XA(KHI) - X) / H
+B = (X - XA(KLO)) / H
+Y = a * YA(KLO) + B * YA(KHI) + ((a * a * a - a) * Y2A(KLO) + (B * B * B - B) * Y2A(KHI)) * (H * H) / 6#
+End Sub
+
+
+
+
+
+    
+
+
+
+
+
+-------------------------------------------------------------------------------
+VBA MACRO Sheet61.cls 
+in file: xl/vbaProject.bin - OLE stream: 'VBA/Sheet61'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+(empty macro)
+-------------------------------------------------------------------------------
+VBA MACRO Sheet2.cls 
+in file: xl/vbaProject.bin - OLE stream: 'VBA/Sheet2'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+(empty macro)
+-------------------------------------------------------------------------------
+VBA MACRO Module3.bas 
+in file: xl/vbaProject.bin - OLE stream: 'VBA/Module3'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Function WLS(X, Y, T, THETA, TOL)
+THETA = THETA * 3.14 / 180
+N = 0
+i = 1
+Do
+N = i
+i = i + 1
+Loop Until X(i) < X(i - 1) Or N = X.Count
+If THETA > 0 Then
+XMAX = X(N)
+Else
+XMAX = X(1)
+End If
+If THETA = 0 Then
+DIFY = 0
+Else
+DIFY = 1
+End If
+JUMP = (XMAX - T) / 2
+XP = T
+
+While Abs(DIFY) > TOL And Abs(JUMP) > 0.00001
+    If DIFY > 0 Then
+    XP = XP + JUMP
+    Else
+    XP = XP - JUMP
+    End If
+    Y1 = (XP - T) / Tan(THETA)
+    y2 = Interpolate(X, Y, XP)
+    DIFY = y2 - Y1
+    JUMP = JUMP / 2
+Wend
+    
+WLS = XP
+End Function
+
+-------------------------------------------------------------------------------
+VBA MACRO Module4.bas 
+in file: xl/vbaProject.bin - OLE stream: 'VBA/Module4'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Function Lininterp(X, Y, X1)
+
+N = 0
+i = 1
+Do
+N = i
+i = i + 1
+Loop Until X(i) < X(i - 1) Or N = X.Count
+
+a = 0
+i = 0
+Do
+i = i + 1
+Loop Until X(i) > X1 Or i > N - 1
+
+If X1 < X(N) And X1 > X(1) Then
+Lininterp = Y(i - 1) + (X1 - X(i - 1)) * (Y(i) - Y(i - 1)) / (X(i) - X(i - 1))
+ElseIf X1 > X(N) Or X1 = X(N) Then
+Lininterp = Y(N)
+Else
+Lininterp = Y(1)
+End If
+
+End Function
+
+-------------------------------------------------------------------------------
+VBA MACRO Sheet1.cls 
+in file: xl/vbaProject.bin - OLE stream: 'VBA/Sheet1'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+(empty macro)
+-------------------------------------------------------------------------------
+VBA MACRO Sheet31.cls 
+in file: xl/vbaProject.bin - OLE stream: 'VBA/Sheet31'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+(empty macro)
+-------------------------------------------------------------------------------
+VBA MACRO Module5.bas 
+in file: xl/vbaProject.bin - OLE stream: 'VBA/Module5'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Dim y2(100)
+Dim Xnew(100)
+Dim Ynew(100)
+Dim U(100)
+
+
+
+Function CUBIC2(X, Y, X1)
+NS = 0
+i = 0
+If Y(1) > 0 Then
+NS = 1
+Else
+Do
+i = i + 1
+NS = i
+Loop Until Y(i) > 0
+NS = NS - 1
+End If
+YP1 = 1E+32
+N = 0
+i = 1
+Do
+NT = i
+i = i + 1
+Loop Until X(i) < X(i - 1) Or NT = X.Count
+NT = NT + 1
+Do
+NT = NT - 1
+Loop Until Y(NT - 1) > 0
+I2 = 1
+For i = NS To NT
+Xnew(I2) = X(i)
+Ynew(I2) = Y(i)
+I2 = I2 + 1
+Next i
+N = I2 - 1
+YPN = 1E+32
+a = X(1)
+If X1 < Xnew(1) Or X1 > Xnew(NT) Then
+Y1 = 0
+Else
+Call SPLINE(Xnew, Ynew, N, YP1, YPN)
+Call SPLINT(Xnew, Ynew, y2, N, X1, Y1)
+End If
+If Y1 < 0 Then
+Y1 = 0
+End If
+CUBIC2 = Y1
+End Function
+
+Sub SPLINE(X, Y, N, YP1, YPN)
+
+
+If YP1 > 9.9E+29 Then
+y2(1) = 0
+U(1) = 0
+Else
+    y2(1) = -0.5
+U(1) = (3 / (X(2) - X(1))) * ((Y(2) - Y(1)) / (X(2) - X(1)) - YP1)
+End If
+For i = 2 To N - 1
+    SIG = (X(i) - X(i - 1)) / (X(i + 1) - X(i - 1))
+    P = SIG * y2(i - 1) + 2
+    y2(i) = (SIG - 1) / P
+U(i) = (Y(i + 1) - Y(i)) / (X(i + 1) - X(i)) - (Y(i) - Y(i - 1)) / (X(i) - X(i - 1))
+U(i) = (6 * U(i) / (X(i + 1) - X(i - 1)) - SIG * U(i - 1)) / P
+Next i
+If YPN > 9.9E+29 Then
+    QN = 0
+    UN = 0
+Else
+    QN = 0.5
+    UN = (3 / (X(N) - X(N - 1))) * (YPN - (Y(N) - Y(N - 1)) / (X(N) - X(N - 1)))
+End If
+y2(N) = (UN - QN * U(N - 1)) / (QN * y2(N - 1) + 1#)
+For K = N - 1 To 1 Step -1
+    y2(K) = y2(K) * y2(K + 1) + U(K)
+Next K
+
+End Sub
+
+Sub SPLINT(XA, YA, Y2A, N, X, Y)
+KLO = 1
+KHI = N
+While KHI - KLO > 1
+    K = (KHI + KLO) \ 2
+    If XA(K) > X Then
+        KHI = K
+    Else
+        KLO = K
+    End If
+Wend
+H = XA(KHI) - XA(KLO)
+a = (XA(KHI) - X) / H
+B = (X - XA(KLO)) / H
+Y = a * YA(KLO) + B * YA(KHI) + ((a * a * a - a) * Y2A(KLO) + (B * B * B - B) * Y2A(KHI)) * (H * H) / 6#
+End Sub
+
+
+
+
+
+    
+
+
+
+
+
+
+-------------------------------------------------------------------------------
+VBA MACRO Sheet4.cls 
+in file: xl/vbaProject.bin - OLE stream: 'VBA/Sheet4'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+(empty macro)
+-------------------------------------------------------------------------------
+VBA MACRO Module6.bas 
+in file: xl/vbaProject.bin - OLE stream: 'VBA/Module6'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Function HoltropV(LWL, BWL, T, DISP, WSA, LCB, Cp, CM, CW, CB, ABulb, HBulb, V)
+'Returns viscous resistance in KiloNewtons
+'=========================================================================
+
+KinematicViscosity = 0.000001188
+density = 1025
+
+U = V * 0.5144
+BdivL = BWL / LWL
+TdivL = T / LWL
+LcubedDivDisp = ((LWL) ^ 3) / DISP
+
+
+
+ReynoldsNumber = U * LWL / KinematicViscosity
+FroudeNumber = U / (9.81 * LWL) ^ 0.5
+Log10Rn = Math.Log(ReynoldsNumber) / Math.Log(10)
+
+Cfo = 0.075 / ((Log10Rn - 2) ^ 2)
+LRDivL = 1 - Cp + 0.06 * Cp * LCB / (4 * Cp - 1)
+OnePlusK = 0.93 + 0.4871 * ((BdivL) ^ 1.0681) * ((TdivL) ^ 0.4611) * ((1 / LRDivL) ^ 0.1216) * ((LcubedDivDisp) ^ (0.3649)) * ((1 - Cp) ^ (-0.6042))
+
+
+RV = 0.5 * density * (U) ^ 2 * WSA * Cfo * OnePlusK / 1000
+
+
+HoltropV = RV
+
+
+End Function
+
+
+Function Holtrop(LWL, BWL, T, DISP, WSA, LCB, Cp, CM, CW, CB, ABulb, HBulb, V)
+
+'Returns total resistance in KiloNewtons
+'assumes no bulb area  and no transom area
+'=========================================================================
+
+
+KinematicViscosity = 0.000001188
+density = 1025
+
+AreaTransom = 0
+U = V * 0.514
+
+BdivL = BWL / LWL
+TdivL = T / LWL
+BdivT = BWL / T
+
+LcubedDivDisp = ((LWL) ^ 3) / DISP
+
+LcubedDivDisp = (LWL) ^ 3 / DISP
+
+ReynoldsNumber = U * LWL / KinematicViscosity
+FroudeNumber = U / (9.81 * LWL) ^ 0.5
+Log10Rn = Math.Log(ReynoldsNumber) / Math.Log(10)
+
+'Viscous resistance calculation
+'================================
+
+Cfo = 0.075 / ((Log10Rn - 2) ^ 2)
+LRDivL = 1 - Cp + 0.06 * Cp * LCB / (4 * Cp - 1)
+OnePlusK = 0.93 + 0.4871 * ((BdivL) ^ 1.0681) * ((TdivL) ^ 0.4611) * ((1 / LRDivL) ^ 0.1216) * ((LcubedDivDisp) ^ (0.3649)) * ((1 - Cp) ^ (-0.6042))
+
+RV = 0.5 * density * (U) ^ 2 * WSA * Cfo * OnePlusK / 1000
+
+'Wavemaakig Resistance Calculation
+'====================================
+
+If BdivL > 0.25 Then
+C4 = 0.5 - 0.0625 * LWL / BWL
+ElseIf BdivL > 0.11 Then
+C4 = BdivL
+Else
+C4 = 0.2296 * (BdivL) ^ 0.3333
+End If
+
+C3 = 1 - 0.8 * AreaTransom / (BWL * T * CM)
+C2 = 1
+
+IE = 1 + 89 * Exp(-((1 / BdivL) ^ 0.80856) * ((1 - CW) ^ 0.3048) * ((1 - Cp - 0.0225 * LCB) ^ 0.6367) * ((LRDivL * LWL / BWL) ^ 0.34574) * ((100 / ((LWL) ^ 3 / DISP)) ^ 0.16302))
+d = -0.9
+
+C1FnLow = 2223105 * ((C4) ^ 3.7861) * ((1 / BdivT) ^ 1.0796) * ((90 - IE) ^ (-1.3757))
+
+
+C1FnHigh = 6919 * ((CM) ^ (-1.3346)) * ((DISP / ((LWL) ^ 3)) ^ 2.0098) * (((LWL / BWL) - 2) ^ 1.4069)
+
+If Cp > 0.8 Then
+C5 = 1.7301 - 0.7067 * Cp
+Else
+C5 = (8.0798 * Cp) - (13.8673 * (Cp) ^ 2) + (6.9844 * (Cp) ^ 3)
+End If
+
+m1Low = (0.01404 * (LWL / T)) - (1.7525 * (DISP) ^ 0.3333333 / LWL) - (4.79 * BdivL) - C5
+m1High = -7.2035 * (BdivL) ^ 0.3269 * (T / BWL) ^ 0.6054
+
+If LcubedDivDisp > 1727 Then
+C6 = 0
+ElseIf LcubedDivDisp > 512 Then
+C6 = 1.69385 + (L / ((DISP) ^ 0.333333) - 8) / 2.36
+Else
+C6 = -1.69385
+End If
+m2 = C6 * 0.4 * Exp(-0.034 * ((FroudeNumber) ^ (-3.29)))
+m2FnLow = C6 * 0.4 * Exp(-0.034 * ((0.4) ^ (-3.29)))
+m2FnHigh = C6 * 0.4 * Exp(-0.034 * ((0.55) ^ (-3.29)))
+
+
+
+If LWL / BWL > 12 Then
+
+Lambda = 1.446 * Cp - 0.36
+
+Else
+Lambda = 1.446 * Cp - 0.03 * LWL / BWL
+End If
+
+rbulb = 0.56 * (ABulb) ^ 0.5
+ibulb = T - HBulb - 0.4464 * rbulb
+
+C3 = 1 - 0.8 * AreaTransom / (BWL * T * CM)
+RwDivWFn04 = (C1FnLow * C2 * C3) * Exp((m1Low * ((0.4) ^ d)) + (m2FnLow * Cos(Lambda * ((0.4) ^ (-2)))))
+RwDivWFn055 = (C1FnHigh * C2 * C3) * Exp((m1High * ((0.55) ^ d)) + (m2FnHigh * Cos(Lambda * ((0.55) ^ (-2)))))
+RwDivWLow = (C1FnLow * C2 * C3) * Exp((m1Low * ((FroudeNumber) ^ d)) + (m2 * Cos(Lambda * ((FroudeNumber) ^ (-2)))))
+RwDivWHigh = (C1FnHigh * C2 * C3) * Exp((m1High * ((FroudeNumber) ^ d)) + (m2 * Cos(Lambda * ((FroudeNumber) ^ (-2)))))
+
+If FroudeNumber > 0.55 Then
+RwDivW = RwDivWHigh
+ElseIf FroudeNumber > 0.55 Then
+RwDivW = RwDivWFn04 + ((10 * FroudeNumber - 4) * (RwDivWFn055 - RwDivWFn04) / 1.5)
+Else
+RwDivW = RwDivWLow
+End If
+
+RW = DISP * density * RwDivW * 9.81 / 1000
+RT = RV + RW
+
+Holtrop = RT
+
+
+
+
+End Function
+-------------------------------------------------------------------------------
+VBA MACRO Sheet5.cls 
+in file: xl/vbaProject.bin - OLE stream: 'VBA/Sheet5'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+(empty macro)
+-------------------------------------------------------------------------------
+VBA MACRO Sheet6.cls 
+in file: xl/vbaProject.bin - OLE stream: 'VBA/Sheet6'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+(empty macro)
+-------------------------------------------------------------------------------
+VBA MACRO Module7.bas 
+in file: xl/vbaProject.bin - OLE stream: 'VBA/Module7'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+Function ManAcceleration( _
+    LWL, BWL, T, DISP, Inertia, CB, drag, _
+    ShipVelocityX, ShipVelocityY, ShipVelocityZ, _
+    OarForcesX, OarForcesY, OarForcesZ, _
+    RudderForcesX, RudderForcesY, RudderForcesZ, _
+    Output)
+    
+    '==========================================================================
+    ' ManAcceleration
+    '--------------------------------------------------------------------------
+    ' Computes 3-DOF ship maneuvering accelerations (surge, sway, yaw) using
+    ' hydrodynamic derivatives from Clarke, Gedling & Hine (1983).
+    '
+    ' Body-fixed coordinate system:
+    '   X (surge) - positive forward                   [m, m/s, m/s^2]
+    '   Y (sway)  - positive to starboard              [m, m/s, m/s^2]
+    '   Z (yaw)   - positive clockwise (viewed above)  [rad, rad/s, rad/s^2]
+    '
+    ' Equations of motion (body-fixed frame, 2D + yaw):
+    '   Surge:  (m - X_u_dot) * u_dot = X_ext + m*v*r
+    '   Sway:   (m - Y_v_dot) * v_dot - Y_r_dot * r_dot = Y_v*v + Y_r*r
+    '                                                       - m*u*r + Y_ext
+    '   Yaw:    -N_v_dot * v_dot + (Iz - N_r_dot) * r_dot = N_v*v + N_r*r
+    '                                                         + N_ext
+    '
+    ' Parameters:
+    '   LWL               Length on waterline [m]
+    '   BWL               Beam on waterline [m]
+    '   T                 Draft [m]
+    '   DISP              Ship mass (displacement mass) [kg]
+    '   Inertia           Yaw moment of inertia, Iz [kg*m^2]
+    '   CB                Block coefficient [-]
+    '   drag              Calm-water resistance (positive) [N]
+    '   ShipVelocityX     Surge velocity, u [m/s]
+    '   ShipVelocityY     Sway velocity, v [m/s]
+    '   ShipVelocityZ     Yaw rate, r [rad/s]
+    '   OarForcesX        Oar force in surge [N]
+    '   OarForcesY        Oar force in sway [N]
+    '   OarForcesZ        Oar moment in yaw [N*m]
+    '   RudderForcesX     Rudder force in surge [N]
+    '   RudderForcesY     Rudder force in sway [N]
+    '   RudderForcesZ     Rudder moment in yaw [N*m]
+    '   Output            "X" = surge, "Y" = sway, "Z" = yaw acceleration
+    '
+    ' Returns:
+    '   Acceleration [m/s^2] for surge/sway, [rad/s^2] for yaw
+    '
+    ' Reference:
+    '   Clarke, D., Gedling, P. & Hine, G. (1983). "The application of
+    '   manoeuvring criteria in hull design using linear theory."
+    '   Trans. RINA, Vol. 125, pp. 45-68.
+    '==========================================================================
+    
+    ' --- Constants ---
+    Dim Pi As Double
+    Dim rhoSW As Double
+    
+    Pi = 4 * Atn(1)            ' 3.14159265358979...
+    rhoSW = 1025               ' Seawater density [kg/m^3]
+    
+    '==========================================================================
+    ' Input Validation
+    '==========================================================================
+    If LWL <= 0 Or BWL <= 0 Or T <= 0 Then
+        ManAcceleration = 0
+        Exit Function
+    End If
+    If DISP <= 0 Or Inertia <= 0 Then
+        ManAcceleration = 0
+        Exit Function
+    End If
+    
+    '==========================================================================
+    ' Geometric Ratios
+    '==========================================================================
+    Dim TdivL As Double         ' T / L
+    Dim BdivL As Double         ' B / L
+    Dim BdivT As Double         ' B / T
+    Dim paramTL As Double       ' pi * (T/L)^2
+    
+    TdivL = T / LWL
+    BdivL = BWL / LWL
+    BdivT = BWL / T
+    paramTL = Pi * TdivL ^ 2
+    
+    ' Total speed through water [m/s]
+    Dim U As Double
+    U = Sqr(ShipVelocityX ^ 2 + ShipVelocityY ^ 2)
+    
+    '==========================================================================
+    ' Non-Dimensional Maneuvering Derivatives  (Clarke et al. 1983)
+    ' All in the "prime-I" non-dimensionalisation system.
+    '==========================================================================
+    
+    ' --- Acceleration (added-mass) derivatives ---
+    
+    ' Y'_v_dot  (sway force due to sway acceleration)
+    Dim Yvdot_nd As Double
+    Yvdot_nd = -paramTL * (1 + 0.16 * CB * BdivT - 5.1 * BdivL ^ 2)
+    
+    ' Y'_r_dot  (sway force due to yaw acceleration)
+    Dim Yrdot_nd As Double
+    Yrdot_nd = -paramTL * (0.67 * BdivL - 0.0033 * BdivT ^ 2)
+    
+    ' N'_v_dot  (yaw moment due to sway acceleration)
+    Dim Nvdot_nd As Double
+    Nvdot_nd = -paramTL * (1.1 * BdivL - 0.041 * BdivT)
+    
+    ' N'_r_dot  (yaw moment due to yaw acceleration)
+    Dim Nrdot_nd As Double
+    Nrdot_nd = -paramTL * (1# / 12# + 0.017 * CB * BdivT - 0.33 * BdivL)
+    
+    ' --- Velocity (damping) derivatives ---
+    
+    ' Y'_v  (sway force due to sway velocity)
+    Dim Yv_nd As Double
+    Yv_nd = -paramTL * (1 + 0.4 * CB * BdivT)
+    
+    ' Y'_r  (sway force due to yaw rate)
+    Dim Yr_nd As Double
+    Yr_nd = -paramTL * (-0.5 + 2.2 * BdivL - 0.08 * BdivT)
+    
+    ' N'_v  (yaw moment due to sway velocity)
+    Dim Nv_nd As Double
+    Nv_nd = -paramTL * (0.5 + 2.4 * TdivL)
+    
+    ' N'_r  (yaw moment due to yaw rate)
+    Dim Nr_nd As Double
+    Nr_nd = -paramTL * (0.25 + 0.039 * BdivT - 0.56 * BdivL)
+    
+    '==========================================================================
+    ' Dimensionalise Derivatives
+    '--------------------------------------------------------------------------
+    ' Prime-I system conversions:
+    '   Added-mass:   Y_vdot = Y'_vdot * (1/2) * rho * L^3
+    '                 Y_rdot = Y'_rdot * (1/2) * rho * L^4
+    '                 N_vdot = N'_vdot * (1/2) * rho * L^4
+    '                 N_rdot = N'_rdot * (1/2) * rho * L^5
+    '
+    '   Damping:      Y_v    = Y'_v * (1/2) * rho * U * L^2
+    '                 Y_r    = Y'_r * (1/2) * rho * U * L^3
+    '                 N_v    = N'_v * (1/2) * rho * U * L^3
+    '                 N_r    = N'_r * (1/2) * rho * U * L^4
+    '==========================================================================
+    
+    Dim Yvdot As Double, Yrdot As Double
+    Dim Nvdot As Double, Nrdot As Double
+    Dim Yv As Double, Yr As Double
+    Dim Nv As Double, Nr As Double
+    
+    ' Added-mass derivatives (speed-independent)
+    Yvdot = Yvdot_nd * 0.5 * rhoSW * LWL ^ 3
+    Yrdot = Yrdot_nd * 0.5 * rhoSW * LWL ^ 4
+    Nvdot = Nvdot_nd * 0.5 * rhoSW * LWL ^ 4
+    Nrdot = Nrdot_nd * 0.5 * rhoSW * LWL ^ 5
+    
+    ' Damping derivatives (proportional to speed U)
+    Yv = Yv_nd * 0.5 * rhoSW * U * LWL ^ 2
+    Yr = Yr_nd * 0.5 * rhoSW * U * LWL ^ 3
+    Nv = Nv_nd * 0.5 * rhoSW * U * LWL ^ 3
+    Nr = 1 * Nr_nd * 0.5 * rhoSW * U * LWL ^ 4
+    
+    ' Surge added mass: X_u_dot not provided by Clarke regression.
+    ' Empirical estimate: typically 5-10% of ship mass for conventional hulls.
+    ' A CB-dependent approximation is used here.
+    Dim surgeAddedMassFrac As Double
+    surgeAddedMassFrac = 0.04 + 0.06 * CB   ' ~0.07 for CB=0.5; ~0.10 for CB=1.0
+    
+    Dim mSurge As Double
+    mSurge = DISP * (1 + surgeAddedMassFrac)
+    
+    '==========================================================================
+    ' Coupled Sway-Yaw Mass Matrix and Determinant
+    '--------------------------------------------------------------------------
+    '   | (m - Y_vdot)    -Y_rdot       |   | v_dot |   | sum_Y |
+    '   |                                | * |       | = |       |
+    '   | -N_vdot         (Iz - N_rdot) |   | r_dot |   | sum_N |
+    '
+    '   det = (m - Y_vdot)(Iz - N_rdot) - Y_rdot * N_vdot
+    '==========================================================================
+    
+    Dim det As Double
+    det = (DISP - Yvdot) * (Inertia - Nrdot) - Yrdot * Nvdot
+    
+    If Abs(det) < 0.00001 Then
+        ManAcceleration = 0
+        Exit Function
+    End If
+    '==========================================================================
+    ' Cross-Flow Drag Yaw Damping (Nonlinear)
+    '--------------------------------------------------------------------------
+    ' Based on integration of sectional cross-flow drag along the hull.
+    ' CN combines the cross-flow drag coefficient (Cdc ~ 0.5-1.5) with a
+    ' hull form correction factor (kf ~ 0.3-0.7) for non-rectangular
+    ' lateral area.
+    '
+    ' Calibrated: CN = 0.40 reproduces Olympias sea trials turning circle.
+    ' This value is applied to other hulls via the T * L^4 scaling.
+    '==========================================================================
+    Dim CN As Double
+    Dim Nr2 As Double
+    
+    CN = 0.8                    ' Calibrated cross-flow drag coefficient
+    Nr2 = -rhoSW * CN * T * LWL ^ 4 / 64
+    
+    '==========================================================================
+    ' Hull Hydrodynamic Forces and Moments
+    '==========================================================================
+    Dim hullForcesX As Double
+    Dim hullForcesY As Double
+    Dim hullForcesZ As Double
+    
+    ' SURGE:  m(u_dot - v*r) = X_ext
+    '   =>  (m + m_x)*u_dot = X_ext + m*v*r
+    ' The +m*v*r Coriolis/centripetal term is on the RHS.
+    hullForcesX = drag + DISP * ShipVelocityY * ShipVelocityZ
+    
+    ' SWAY:  m(v_dot + u*r) = Y_ext
+    '   =>  RHS includes -m*u*r Coriolis correction
+    hullForcesY = Yv * ShipVelocityY _
+                + Yr * ShipVelocityZ _
+                - DISP * ShipVelocityX * ShipVelocityZ
+    
+   ' YAW:    Nv*v + Nr*r + Nr2*r|r|   (linear Clarke + nonlinear cross-flow)
+    hullForcesZ = Nv * ShipVelocityY _
+                + Nr * ShipVelocityZ _
+                + Nr2 * ShipVelocityZ * Abs(ShipVelocityZ)
+    
+    '==========================================================================
+    ' Total Forces = Hull + Oar + Rudder
+    '==========================================================================
+    Dim totalForceX As Double
+    Dim totalForceY As Double
+    Dim totalForceZ As Double
+    
+    totalForceX = hullForcesX + OarForcesX + RudderForcesX
+    totalForceY = hullForcesY + OarForcesY + RudderForcesY
+    totalForceZ = hullForcesZ + OarForcesZ + RudderForcesZ
+    
+    '==========================================================================
+    ' Solve for Accelerations
+    '==========================================================================
+    Dim ManX As Double
+    Dim ManY As Double
+    Dim ManZ As Double
+    
+    ' Surge (decoupled equation):
+    '   u_dot = totalForceX / (m + m_x)
+    ManX = totalForceX / mSurge
+    
+    ' Sway & Yaw (coupled, Cramer's rule):
+    '   v_dot = [(Iz - N_rdot) * sum_Y  +  Y_rdot * sum_N] / det
+    ManY = ((Inertia - Nrdot) * totalForceY + Yrdot * totalForceZ) / det
+    
+    '   r_dot = [N_vdot * sum_Y  +  (m - Y_vdot) * sum_N] / det
+    ManZ = (Nvdot * totalForceY + (DISP - Yvdot) * totalForceZ) / det
+    
+    '==========================================================================
+    ' Return Selected Output
+    '==========================================================================
+    Select Case UCase(Output)
+        Case "X"
+            ManAcceleration = ManX
+        Case "Y"
+            ManAcceleration = ManY
+        Case "Z"
+            ManAcceleration = ManZ
+        Case Else
+            ManAcceleration = 0
+    End Select
+
+End Function
+Function OarForces(oarNumber, bladeLever, portPressure, starboardPressure, maxThrust, ShipVelocityX, ShipVelocityY, ShipVelocityZ, Output)
+ '==========================================================================
+    ' OarForces
+    '--------------------------------------------------------------------------
+    ' Computes Forces applied to vessel by oars (surge, sway, yaw) using
+    ' data derived from trials of the Trireme Olympias in 1988.
+    '
+    ' Body-fixed coordinate system:
+    '   X (surge) - positive forward                   [m,N]
+    '   Y (sway)  - positive to starboard              [m, N]
+    '   Z (yaw)   - positive clockwise (viewed above)  [rad/s, Nm]
+    '
+    ' Parameters:
+    '   oarNumber            total number of oars
+    '
+    '   bladeLever             distance of the center of pressure of the oar from the centerline
+    '   portPressure         pressure being applied by port oarsmen (values between -1 and 1)
+    '   starboardPressure    pressure being applied by starboard oarsmen (values between -1 and 1)
+    '   maxThrust            max mean thrust (over a stroke cycle) of one oarsman at zero speed (N)
+    '   ShipVelocityX        Surge velocity, u [m/s]
+    '   ShipVelocityY        Sway velocity, v [m/s]
+    '   ShipVelocityZ        Yaw rate, r [rad/s]
+    '   Output               "X" = surge, "Y" = sway, "Z" = yaw force/moment
+    '
+    ' Returns:
+    '  Force [N] for surge/sway, [Nm] for yaw moment
+    
+Dim localSpeedAtPortOarBlade As Double
+Dim localSpeedAtStarboardOarBlade As Double
+Dim portThrust As Double
+Dim starboaredThrust As Double
+Dim portMoment As Double
+Dim starboaredMoment As Double
+'==========================================================================
+' calculate local speed at oar blades
+'Treats all oars blades at the same longitudinal position at the center of rotation of the ship (x=0).
+'==========================================================================
+localSpeedAtPortOarBlade = ShipVelocityX - (bladeLever) * ShipVelocityZ
+localSpeedAtStarboardOarBlade = ShipVelocityX + (bladeLever) * ShipVelocityZ
+'==========================================================================
+' calculate thrust and moment due to the port oars and starboard oars
+'==========================================================================
+portThrust = portPressure * 0.5 * oarNumber * maxThrust * (1 - localSpeedAtPortOarBlade / 9.252)
+starboardThrust = starboardPressure * 0.5 * oarNumber * maxThrust * (1 - localSpeedAtStarboardOarBlade / 9.252)
+portMoment = -portThrust * bladeLever
+starboardMoment = starboardThrust * bladeLever
+'==========================================================================
+' Return Selected Output
+'==========================================================================
+
+Select Case UCase(Output)
+        Case "X"
+            OarForces = portThrust + starboardThrust
+        Case "Y"
+            OarForces = 0
+        Case "Z"
+            OarForces = portMoment + starboardMoment
+        Case Else
+            OarForces = 0
+    End Select
+End Function
+
+Function RudderForces(rudderPositionX, rudderPositionY, rudderLength, rudderChord, rudderArea, rudderAngle, ShipVelocityX, ShipVelocityY, ShipVelocityZ, Output)
+
+
+KinematicViscosity = 0.000001188
+rhoSW = 1025
+rudderPositionMagnitude = ((rudderPositionX) ^ 2 + (rudderPositionY) ^ 2) ^ 0.5
+
+' Calculate relative blade velocity
+relativeBladeVelocityX = ShipVelocityX + rudderPositionMagnitude * Cos(rudderAngle) * ShipVelocityZ
+relativeBladeVelocityY = ShipVelocityY + rudderPositionMagnitude * Sin(rudderAngle) * ShipVelocityZ
+relativeBladeVelocityMag = ((relativeBladeVelocityX) ^ 2 + (relativeBladeVelocityY) ^ 2) ^ 0.5
+
+'Calculate drag due to skin friction
+SurfaceArea = 2 * rudderArea
+
+ReynoldsNumber = ShipVelocityX * rudderChord / KinematicViscosity
+FroudeNumber = ShipVelocityX / (9.81 * rudderChord) ^ 0.5
+Log10Rn = Math.Log(ReynoldsNumber) / Math.Log(10)
+
+Cfo = 0.075 / ((Log10Rn - 2) ^ 2)
+RV = 0.5 * rhoSW * (ShipVelocityX) ^ 2 * SurfaceArea * Cfo
+
+
+
+
+' Rudder direction
+rudderDirectionX = Cos(rudderAngle)
+rudderDirectionY = Sin(rudderAngle)
+
+' Calculate angle of attack
+If relativeBladeVelocityMag = 0 Then
+    angleOfAttack = 0
+Else
+    angleOfAttack = WorksheetFunction.Acos((relativeBladeVelocityX * rudderDirectionX + relativeBladeVelocityY * rudderDirectionY) / relativeBladeVelocityMag)
+End If
+
+' Adjust angle of attack if > p/2
+If angleOfAttack > 1.570796 Then
+    angleOfAttack = 3.141593 - angleOfAttack
+    rudderDirectionX = -rudderDirectionX
+    rudderDirectionY = -rudderDirectionY
+End If
+
+' Calculate lift and drag coefficients
+CD = 2 * (Sin(angleOfAttack)) ^ 2
+CL = Sin(2 * angleOfAttack)
+
+' Calculate lift and drag forces
+lift = 0.5 * rhoSW * rudderArea * (relativeBladeVelocityMag) ^ 2 * CL
+drag = 0.5 * rhoSW * rudderArea * (relativeBladeVelocityMag) ^ 2 * CD
+'additional drag from Olympias Trials
+'drag2 137 * (ShipVelocityX) ^ 2 + 0.65 * ShipVelocityX
+drag2 = 0.5 * (137 * (ShipVelocityX) ^ 2 + 0.65 * ShipVelocityX)
+'scaled by rudderArea
+drag2 = drag2 * SurfaceArea / 1.5
+'additional drag calulated from skin friction drag
+drag = drag + drag2
+
+' Calculate force components
+If relativeBladeVelocityMag = 0 Then
+    liftX = 0
+    liftY = 0
+    dragX = 0
+    dragY = 0
+Else
+    liftX = lift * relativeBladeVelocityY / relativeBladeVelocityMag
+    liftY = -lift * relativeBladeVelocityX / relativeBladeVelocityMag
+    dragX = -drag * relativeBladeVelocityX / relativeBladeVelocityMag
+    dragY = -drag * relativeBladeVelocityY / relativeBladeVelocityMag
+    
+    ' Check lift direction
+    Lmag = ((liftX) ^ 2 + (liftY) ^ 2) ^ 0.5
+    Theta2 = 0
+    If Lmag > 0 Then
+        Theta2 = WorksheetFunction.Acos((liftX * rudderDirectionX + liftY * rudderDirectionY) / Lmag)
+    End If
+    
+    If Theta2 > 1.570796 Then
+        liftX = -1 * liftX
+        liftY = -1 * liftY
+    End If
+End If
+RX = liftX + dragX
+RY = liftY + dragY
+RZ = RY * rudderPositionX - RX * rudderPositionY
+
+If Output = "X" Then
+RF = RX
+ElseIf Output = "Y" Then
+RF = RY
+Else
+RF = RZ
+End If
+
+
+RudderForces = RF
+
+
+End Function
+-------------------------------------------------------------------------------
+VBA MACRO Module8.bas 
+in file: xl/vbaProject.bin - OLE stream: 'VBA/Module8'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Sub transfer()
+Attribute transfer.VB_Description = "10 seconds data to sim"
+Attribute transfer.VB_ProcData.VB_Invoke_Func = "a\n14"
+'
+' transfer Macro
+' 10 seconds data to sim
+'
+' Keyboard Shortcut: Ctrl+a
+'
+    Sheets("Manoevering").Select
+    Range("B41:G51").Select
+    Selection.Copy
+    Sheets("Simulation").Select
+    Range("N5").Select
+    Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+        :=False, Transpose:=False
+    Sheets("Manoevering").Select
+    ActiveWindow.ScrollRow = 34
+    ActiveWindow.ScrollRow = 35
+    ActiveWindow.ScrollRow = 36
+    ActiveWindow.ScrollRow = 37
+    ActiveWindow.ScrollRow = 38
+    ActiveWindow.ScrollRow = 39
+    ActiveWindow.ScrollRow = 40
+    ActiveWindow.ScrollRow = 41
+    ActiveWindow.ScrollRow = 42
+    ActiveWindow.ScrollRow = 43
+    ActiveWindow.ScrollRow = 44
+    ActiveWindow.ScrollRow = 45
+    ActiveWindow.ScrollRow = 46
+    ActiveWindow.ScrollRow = 47
+    ActiveWindow.ScrollRow = 48
+    ActiveWindow.ScrollRow = 49
+    ActiveWindow.ScrollRow = 50
+    ActiveWindow.ScrollRow = 51
+    ActiveWindow.ScrollRow = 52
+    ActiveWindow.ScrollRow = 53
+    ActiveWindow.ScrollRow = 55
+    ActiveWindow.ScrollRow = 56
+    ActiveWindow.ScrollRow = 57
+    ActiveWindow.ScrollRow = 58
+    ActiveWindow.ScrollRow = 59
+    ActiveWindow.ScrollRow = 60
+    ActiveWindow.ScrollRow = 61
+    ActiveWindow.ScrollRow = 62
+    ActiveWindow.ScrollRow = 63
+    ActiveWindow.ScrollRow = 64
+    ActiveWindow.ScrollRow = 65
+    ActiveWindow.ScrollRow = 66
+    ActiveWindow.ScrollRow = 67
+    ActiveWindow.ScrollRow = 68
+    ActiveWindow.ScrollRow = 69
+    ActiveWindow.ScrollRow = 70
+    ActiveWindow.ScrollRow = 71
+    ActiveWindow.ScrollRow = 73
+    ActiveWindow.ScrollRow = 74
+    ActiveWindow.ScrollRow = 75
+    ActiveWindow.ScrollRow = 76
+    ActiveWindow.ScrollRow = 77
+    ActiveWindow.ScrollRow = 78
+    ActiveWindow.ScrollRow = 79
+    ActiveWindow.ScrollRow = 80
+    ActiveWindow.ScrollRow = 81
+    ActiveWindow.ScrollRow = 82
+    ActiveWindow.ScrollRow = 83
+    ActiveWindow.ScrollRow = 84
+    ActiveWindow.ScrollRow = 86
+    ActiveWindow.ScrollRow = 87
+    ActiveWindow.ScrollRow = 89
+    ActiveWindow.ScrollRow = 90
+    ActiveWindow.ScrollRow = 91
+    ActiveWindow.ScrollRow = 92
+    ActiveWindow.ScrollRow = 93
+    ActiveWindow.ScrollRow = 94
+    ActiveWindow.ScrollRow = 95
+    ActiveWindow.ScrollRow = 96
+    ActiveWindow.ScrollRow = 97
+    ActiveWindow.ScrollRow = 98
+    ActiveWindow.ScrollRow = 99
+    ActiveWindow.ScrollRow = 100
+    ActiveWindow.ScrollRow = 101
+    ActiveWindow.ScrollRow = 102
+    ActiveWindow.ScrollRow = 103
+    ActiveWindow.ScrollRow = 104
+    ActiveWindow.ScrollRow = 105
+    ActiveWindow.ScrollRow = 106
+    ActiveWindow.ScrollRow = 107
+    ActiveWindow.ScrollRow = 108
+    ActiveWindow.ScrollRow = 109
+    ActiveWindow.ScrollRow = 110
+    ActiveWindow.ScrollRow = 111
+    ActiveWindow.ScrollRow = 112
+    ActiveWindow.ScrollRow = 113
+    ActiveWindow.ScrollRow = 114
+    ActiveWindow.ScrollRow = 115
+    ActiveWindow.ScrollRow = 116
+    ActiveWindow.ScrollRow = 117
+    ActiveWindow.ScrollRow = 118
+    ActiveWindow.ScrollRow = 119
+    ActiveWindow.ScrollRow = 120
+    ActiveWindow.ScrollRow = 121
+    ActiveWindow.ScrollRow = 122
+    ActiveWindow.ScrollRow = 123
+    ActiveWindow.ScrollRow = 125
+    ActiveWindow.ScrollRow = 126
+    ActiveWindow.ScrollRow = 127
+    ActiveWindow.ScrollRow = 128
+    Range("B137:G147").Select
+    Application.CutCopyMode = False
+    Selection.Copy
+    Sheets("Simulation").Select
+    Range("T5").Select
+    Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+        :=False, Transpose:=False
+    Calculate
+End Sub
+Sub updata()
+Attribute updata.VB_Description = "update starting conditions"
+Attribute updata.VB_ProcData.VB_Invoke_Func = "b\n14"
+'
+' updata Macro
+' update starting conditions
+'
+' Keyboard Shortcut: Ctrl+b
+'
+    Range("N15").Select
+    Selection.Copy
+    Sheets("Manoevering").Select
+    ActiveWindow.ScrollRow = 127
+    ActiveWindow.ScrollRow = 126
+    ActiveWindow.ScrollRow = 125
+    ActiveWindow.ScrollRow = 124
+    ActiveWindow.ScrollRow = 123
+    ActiveWindow.ScrollRow = 122
+    ActiveWindow.ScrollRow = 120
+    ActiveWindow.ScrollRow = 119
+    ActiveWindow.ScrollRow = 117
+    ActiveWindow.ScrollRow = 116
+    ActiveWindow.ScrollRow = 114
+    ActiveWindow.ScrollRow = 112
+    ActiveWindow.ScrollRow = 111
+    ActiveWindow.ScrollRow = 110
+    ActiveWindow.ScrollRow = 109
+    ActiveWindow.ScrollRow = 108
+    ActiveWindow.ScrollRow = 107
+    ActiveWindow.ScrollRow = 105
+    ActiveWindow.ScrollRow = 104
+    ActiveWindow.ScrollRow = 103
+    ActiveWindow.ScrollRow = 102
+    ActiveWindow.ScrollRow = 101
+    ActiveWindow.ScrollRow = 100
+    ActiveWindow.ScrollRow = 99
+    ActiveWindow.ScrollRow = 98
+    ActiveWindow.ScrollRow = 96
+    ActiveWindow.ScrollRow = 94
+    ActiveWindow.ScrollRow = 93
+    ActiveWindow.ScrollRow = 92
+    ActiveWindow.ScrollRow = 90
+    ActiveWindow.ScrollRow = 88
+    ActiveWindow.ScrollRow = 87
+    ActiveWindow.ScrollRow = 85
+    ActiveWindow.ScrollRow = 83
+    ActiveWindow.ScrollRow = 82
+    ActiveWindow.ScrollRow = 81
+    ActiveWindow.ScrollRow = 80
+    ActiveWindow.ScrollRow = 79
+    ActiveWindow.ScrollRow = 77
+    ActiveWindow.ScrollRow = 75
+    ActiveWindow.ScrollRow = 74
+    ActiveWindow.ScrollRow = 73
+    ActiveWindow.ScrollRow = 72
+    ActiveWindow.ScrollRow = 71
+    ActiveWindow.ScrollRow = 70
+    ActiveWindow.ScrollRow = 69
+    ActiveWindow.ScrollRow = 68
+    ActiveWindow.ScrollRow = 67
+    ActiveWindow.ScrollRow = 65
+    ActiveWindow.ScrollRow = 64
+    ActiveWindow.ScrollRow = 62
+    ActiveWindow.ScrollRow = 60
+    ActiveWindow.ScrollRow = 59
+    ActiveWindow.ScrollRow = 58
+    ActiveWindow.ScrollRow = 57
+    ActiveWindow.ScrollRow = 56
+    ActiveWindow.ScrollRow = 54
+    ActiveWindow.ScrollRow = 53
+    ActiveWindow.ScrollRow = 52
+    ActiveWindow.ScrollRow = 51
+    ActiveWindow.ScrollRow = 50
+    ActiveWindow.ScrollRow = 48
+    ActiveWindow.ScrollRow = 47
+    ActiveWindow.ScrollRow = 46
+    ActiveWindow.ScrollRow = 44
+    ActiveWindow.ScrollRow = 43
+    ActiveWindow.ScrollRow = 41
+    ActiveWindow.ScrollRow = 40
+    ActiveWindow.ScrollRow = 39
+    ActiveWindow.ScrollRow = 38
+    ActiveWindow.ScrollRow = 37
+    ActiveWindow.ScrollRow = 36
+    ActiveWindow.ScrollRow = 35
+    ActiveWindow.ScrollRow = 34
+    ActiveWindow.ScrollRow = 33
+    ActiveWindow.ScrollRow = 32
+    ActiveWindow.ScrollRow = 31
+    ActiveWindow.ScrollRow = 30
+    ActiveWindow.ScrollRow = 29
+    ActiveWindow.ScrollRow = 28
+    ActiveWindow.ScrollRow = 27
+    ActiveWindow.ScrollRow = 26
+    ActiveWindow.ScrollRow = 25
+    ActiveWindow.ScrollRow = 24
+    ActiveWindow.ScrollRow = 23
+    ActiveWindow.ScrollRow = 22
+    ActiveWindow.ScrollRow = 21
+    ActiveWindow.ScrollRow = 20
+    ActiveWindow.ScrollRow = 19
+    ActiveWindow.ScrollRow = 18
+    ActiveWindow.ScrollRow = 17
+    ActiveWindow.ScrollRow = 16
+    ActiveWindow.ScrollRow = 15
+    ActiveWindow.ScrollRow = 14
+    ActiveWindow.ScrollRow = 13
+    ActiveWindow.ScrollRow = 12
+    ActiveWindow.ScrollRow = 11
+    ActiveWindow.ScrollRow = 10
+    Range("B26").Select
+    Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+        :=False, Transpose:=False
+    Sheets("Simulation").Select
+    Range("O15").Select
+    Application.CutCopyMode = False
+    Selection.Copy
+    Range("F26:F27").Select
+    Sheets("Manoevering").Select
+    Range("B27").Select
+    Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+        :=False, Transpose:=False
+    Sheets("Simulation").Select
+    Range("P15").Select
+    Application.CutCopyMode = False
+    Selection.Copy
+    Sheets("Manoevering").Select
+    Range("B28").Select
+    Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+        :=False, Transpose:=False
+    Sheets("Simulation").Select
+    Range("Q15").Select
+    Application.CutCopyMode = False
+    Selection.Copy
+    Sheets("Manoevering").Select
+    Range("B30").Select
+    Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+        :=False, Transpose:=False
+    Sheets("Simulation").Select
+    Range("R15").Select
+    Application.CutCopyMode = False
+    Selection.Copy
+    Sheets("Manoevering").Select
+    Range("B31").Select
+    Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+        :=False, Transpose:=False
+    Sheets("Simulation").Select
+    Range("S15").Select
+    Application.CutCopyMode = False
+    Selection.Copy
+    Sheets("Manoevering").Select
+    Range("B32").Select
+    Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+        :=False, Transpose:=False
+    Sheets("Simulation").Select
+    Range("T15").Select
+    Application.CutCopyMode = False
+    Selection.Copy
+    Sheets("Manoevering").Select
+    Range("C26").Select
+    Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+        :=False, Transpose:=False
+    Sheets("Simulation").Select
+    Range("U15").Select
+    Application.CutCopyMode = False
+    Selection.Copy
+    Sheets("Manoevering").Select
+    Range("C27").Select
+    Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+        :=False, Transpose:=False
+    Sheets("Simulation").Select
+    Range("V15").Select
+    Application.CutCopyMode = False
+    Selection.Copy
+    Sheets("Manoevering").Select
+    Range("C28").Select
+    Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+        :=False, Transpose:=False
+    Sheets("Simulation").Select
+    Range("W15").Select
+    Application.CutCopyMode = False
+    Selection.Copy
+    Sheets("Manoevering").Select
+    Range("C30").Select
+    Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+        :=False, Transpose:=False
+    Sheets("Simulation").Select
+    Range("X15").Select
+    Application.CutCopyMode = False
+    Selection.Copy
+    Sheets("Manoevering").Select
+    Range("C31").Select
+    Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+        :=False, Transpose:=False
+    Sheets("Simulation").Select
+    Range("Y15").Select
+    Application.CutCopyMode = False
+    Selection.Copy
+    Sheets("Manoevering").Select
+    Range("C32").Select
+    Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+        :=False, Transpose:=False
+    Sheets("Simulation").Select
+    Calculate
+End Sub
+-------------------------------------------------------------------------------
+VBA MACRO Sheet7.cls 
+in file: xl/vbaProject.bin - OLE stream: 'VBA/Sheet7'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+(empty macro)
+-------------------------------------------------------------------------------
+VBA MACRO Module9.bas 
+in file: xl/vbaProject.bin - OLE stream: 'VBA/Module9'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Function DelftResistance(LWL, Bmax, BWL, CanoeBodyDraught, Displacement, Cp, LCB, LCF, Aw, WSA, Speed)
+'====================================================
+'Returns resistance in Newtons for a bare hull (canoe body only) based on
+'Approximation of the Hydrodynamic Forces on a Sailing Yacht based on the Delft systematic yacht hull series
+'J Keuning, U Sonnenberg, HISWA 1998
+'===================================================
+'Parameters
+'LWL                Waterline length (m)
+'Bmax               Maximum beam in (m)
+'BWL                Maximum waterline beam (m)
+'CanoeBodyDraught   (m)
+'Displacement       Canoe body displacement (kg)
+'Cp                 Prismatic Coefficient
+'LCB                Distance to the longitudinal center of buoyancy from the forward perp (m)
+'LCF                Distance to the longitudinal center of flotation from the forward perp (m)
+'Aw                 Waterplane Area (m2)
+'WSA                Wetted Surface Area (zero degrees heel) (m2)
+'Speed              Speed (m/s)
+
+Dim Log10Rn As Double
+Dim i As Long
+Dim FnValues(0 To 10) As Double
+Dim SpeedArray(0 To 10) As Double
+Dim RnArray(0 To 10) As Double
+Dim HullCFArray(0 To 10) As Double
+Dim HullRFArray(0 To 10) As Double
+Dim HullResiduaryResistanceArray(0 To 10) As Double
+Dim HullTotalResistanceArray(0 To 10) As Double
+Dim ResCoeff(0 To 10, 0 To 8) As Double
+Dim KinematicViscosity As Double
+KinematicViscosity = 0.00000119
+Dim SeaWaterDensity As Double
+SeaWaterDensity = 1025.2
+Dim HullTotalResistance As Double
+
+'Residuary Resistance Parameters
+Dim CanoeBodyVolume As Double
+Dim BWLDivCanoeBodyDraught As Double
+Dim LCBDivLWL As Double
+Dim VcDivAw As Double
+Dim BWLDivLWL As Double
+Dim VcDivLWL As Double
+Dim VcDivWSA As Double
+Dim LCBDivLCF As Double
+Dim VcDivBWL As Double
+
+
+CanoeBodyVolume = Displacement / SeaWaterDensity
+BWLDivCanoeBodyDraught = BWL / CanoeBodyDraught
+LCBDivLWL = LCB / LWL
+VcDivAw = CanoeBodyVolume ^ (2 / 3) / Aw
+BWLDivLWL = BWL / LWL
+VcDivLWL = CanoeBodyVolume ^ (1 / 3) / LWL
+VcDivWSA = CanoeBodyVolume ^ (2 / 3) / WSA
+VcDivBWL = CanoeBodyVolume ^ (1 / 3) / BWL
+LCBDivLCF = LCB / LCF
+
+' Populate Froude Number array
+For i = 0 To 10
+    FnValues(i) = 0.1 + i * 0.05
+Next i
+
+' Populate speeds: V = Fn * sqrt(g * LWL)
+For i = 0 To 10
+    SpeedArray(i) = FnValues(i) * Sqr(9.81 * LWL)
+Next i
+
+'Populate ReynoldsNumberArray
+For i = 0 To 10
+    RnArray(i) = SpeedArray(i) * 0.7 * LWL / KinematicViscosity
+Next i
+
+'Populate HullCFArray
+For i = 0 To 10
+    Log10Rn = Log(RnArray(i)) / Log(10)
+    HullCFArray(i) = 0.075 / (Log10Rn - 2) ^ 2
+Next i
+
+'Populate HullRFArray
+For i = 0 To 10
+    HullRFArray(i) = HullCFArray(i) * 0.5 * SeaWaterDensity * SpeedArray(i) ^ 2 * WSA
+Next i
+
+' Residuary resistance polynomial coefficients
+' Rows 0-10 correspond to Fn = 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60
+' Columns 0-8 correspond to coefficients A0 through A8
+
+' Fn = 0.10
+    ResCoeff(0, 0) = -0.0014
+    ResCoeff(0, 1) = 0.0403
+    ResCoeff(0, 2) = 0.047
+    ResCoeff(0, 3) = -0.0227
+    ResCoeff(0, 4) = -0.0119
+    ResCoeff(0, 5) = 0.0061
+    ResCoeff(0, 6) = -0.0086
+    ResCoeff(0, 7) = -0.0307
+    ResCoeff(0, 8) = -0.0553
+
+' Fn = 0.15
+    ResCoeff(1, 0) = 0.0004
+    ResCoeff(1, 1) = -0.1808
+    ResCoeff(1, 2) = 0.1793
+    ResCoeff(1, 3) = -0.0004
+    ResCoeff(1, 4) = 0.0097
+    ResCoeff(1, 5) = 0.0118
+    ResCoeff(1, 6) = -0.0055
+    ResCoeff(1, 7) = 0.1721
+    ResCoeff(1, 8) = -0.1728
+
+' Fn = 0.20
+    ResCoeff(2, 0) = 0.0014
+    ResCoeff(2, 1) = -0.1071
+    ResCoeff(2, 2) = 0.0637
+    ResCoeff(2, 3) = 0.009
+    ResCoeff(2, 4) = 0.0153
+    ResCoeff(2, 5) = 0.0011
+    ResCoeff(2, 6) = 0.0012
+    ResCoeff(2, 7) = 0.1021
+    ResCoeff(2, 8) = -0.0648
+
+' Fn = 0.25
+    ResCoeff(3, 0) = 0.0027
+    ResCoeff(3, 1) = 0.0463
+    ResCoeff(3, 2) = -0.1263
+    ResCoeff(3, 3) = 0.015
+    ResCoeff(3, 4) = 0.0274
+    ResCoeff(3, 5) = -0.0299
+    ResCoeff(3, 6) = 0.011
+    ResCoeff(3, 7) = -0.0595
+    ResCoeff(3, 8) = 0.122
+
+' Fn = 0.30
+    ResCoeff(4, 0) = 0.0056
+    ResCoeff(4, 1) = -0.8005
+    ResCoeff(4, 2) = 0.4891
+    ResCoeff(4, 3) = 0.0269
+    ResCoeff(4, 4) = 0.0519
+    ResCoeff(4, 5) = -0.0313
+    ResCoeff(4, 6) = 0.0292
+    ResCoeff(4, 7) = 0.7314
+    ResCoeff(4, 8) = -0.3619
+
+' Fn = 0.35
+    ResCoeff(5, 0) = 0.0032
+    ResCoeff(5, 1) = -0.1011
+    ResCoeff(5, 2) = -0.0813
+    ResCoeff(5, 3) = -0.0382
+    ResCoeff(5, 4) = 0.032
+    ResCoeff(5, 5) = -0.1481
+    ResCoeff(5, 6) = 0.0837
+    ResCoeff(5, 7) = 0.0223
+    ResCoeff(5, 8) = 0.1587
+
+' Fn = 0.40
+    ResCoeff(6, 0) = -0.0064
+    ResCoeff(6, 1) = 2.3095
+    ResCoeff(6, 2) = -1.5152
+    ResCoeff(6, 3) = 0.0751
+    ResCoeff(6, 4) = -0.0858
+    ResCoeff(6, 5) = -0.5349
+    ResCoeff(6, 6) = 0.1715
+    ResCoeff(6, 7) = -2.455
+    ResCoeff(6, 8) = 1.1865
+
+' Fn = 0.45
+    ResCoeff(7, 0) = -0.0171
+    ResCoeff(7, 1) = 3.4017
+    ResCoeff(7, 2) = -1.9862
+    ResCoeff(7, 3) = 0.3242
+    ResCoeff(7, 4) = -0.145
+    ResCoeff(7, 5) = -0.8043
+    ResCoeff(7, 6) = 0.2952
+    ResCoeff(7, 7) = -3.5284
+    ResCoeff(7, 8) = 1.3575
+
+' Fn = 0.50
+    ResCoeff(8, 0) = -0.0201
+    ResCoeff(8, 1) = 7.1576
+    ResCoeff(8, 2) = -6.3304
+    ResCoeff(8, 3) = 0.5829
+    ResCoeff(8, 4) = 0.163
+    ResCoeff(8, 5) = -0.3966
+    ResCoeff(8, 6) = 0.5023
+    ResCoeff(8, 7) = -7.1579
+    ResCoeff(8, 8) = 5.2534
+
+' Fn = 0.55
+    ResCoeff(9, 0) = 0.0495
+    ResCoeff(9, 1) = 1.5618
+    ResCoeff(9, 2) = -6.0661
+    ResCoeff(9, 3) = 0.8641
+    ResCoeff(9, 4) = 1.1702
+    ResCoeff(9, 5) = 1.761
+    ResCoeff(9, 6) = 0.9176
+    ResCoeff(9, 7) = -2.1191
+    ResCoeff(9, 8) = 5.4281
+
+' Fn = 0.60
+    ResCoeff(10, 0) = 0.0808
+    ResCoeff(10, 1) = -5.3233
+    ResCoeff(10, 2) = -1.1513
+    ResCoeff(10, 3) = 0.9663
+    ResCoeff(10, 4) = 1.6084
+    ResCoeff(10, 5) = 2.7459
+    ResCoeff(10, 6) = 0.8491
+    ResCoeff(10, 7) = 4.7129
+    ResCoeff(10, 8) = 1.1089
+
+'Populate HullResiduaryResistanceArray
+For i = 0 To 10
+    HullResiduaryResistanceArray(i) = (SeaWaterDensity * 9.81 * CanoeBodyVolume) * _
+        (ResCoeff(i, 0) + _
+         (ResCoeff(i, 1) * LCBDivLWL + _
+         ResCoeff(i, 2) * Cp + _
+         ResCoeff(i, 3) * VcDivAw + _
+         ResCoeff(i, 4) * BWLDivLWL) * VcDivLWL + _
+         (ResCoeff(i, 5) * VcDivWSA + _
+         ResCoeff(i, 6) * LCBDivLCF + _
+         ResCoeff(i, 7) * LCBDivLWL ^ 2 + _
+         ResCoeff(i, 8) * Cp ^ 2) * VcDivLWL)
+Next i
+'Populate HullTotalResistanceArray
+
+For i = 0 To 10
+    HullTotalResistanceArray(i) = HullRFArray(i) + HullResiduaryResistanceArray(i)
+Next i
+
+'Linear interpolation of HullTotalResistanceArray for given Speed
+Dim j As Long
+Dim fraction As Double
+
+If Speed <= 0 Then
+    'Zero or negative speed
+    HullTotalResistance = 0
+ElseIf Speed < SpeedArray(0) Then
+    'Below minimum Froude number - interpolate between (0, 0) and first point
+    fraction = Speed / SpeedArray(0)
+    HullTotalResistance = fraction * HullTotalResistanceArray(0)
+ElseIf Speed >= SpeedArray(10) Then
+    'Above maximum speed - extrapolate from last two points
+    fraction = (Speed - SpeedArray(9)) / (SpeedArray(10) - SpeedArray(9))
+    HullTotalResistance = HullTotalResistanceArray(9) + fraction * _
+        (HullTotalResistanceArray(10) - HullTotalResistanceArray(9))
+Else
+    'Find bounding indices and interpolate
+    For j = 0 To 9
+        If Speed >= SpeedArray(j) And Speed < SpeedArray(j + 1) Then
+            fraction = (Speed - SpeedArray(j)) / (SpeedArray(j + 1) - SpeedArray(j))
+            HullTotalResistance = HullTotalResistanceArray(j) + fraction * _
+                (HullTotalResistanceArray(j + 1) - HullTotalResistanceArray(j))
+            Exit For
+        End If
+    Next j
+End If
+
+DelftResistance = HullTotalResistance
+End Function
+
+
+
+

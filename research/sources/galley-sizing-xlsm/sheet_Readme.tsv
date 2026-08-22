@@ -1,0 +1,30 @@
+A1		Author: Richard Braithwaite
+A11		HULL TRANSFORMATIONS
+A13		Transformations as follows:
+A15		Length: Linear Transormation based on LBP
+A17		Beam: Linear Transformation based on Maximum Beam
+A19		Depth and Draught: scaled separately from the design waterline
+A21		Forward and Aft Prismatic: Both are directly controlled separately by entering the required change (e.g to change the overall prismatic from 0.61 to 0.62 enter 0.01 as the increase for both fore and aft Cp.
+A23		LCB: controlled by "swinging the Section Area curve". A factor is entered (try +/- 0.1 at first). A desired LCB can be ontained by goalseeking the LCB to the desired value by changing the LCB movement factor.
+A25		Midship Section Area Coefficient: Enter a facor (try +/-10 to start). Again a desired coeficient can be obtained by using the goal seek command
+A27		The results of the tranasformations can be reviewed on the Lines sheet.
+A28		 
+A29		BASIS HULL INPUT DATA
+A3		REVISION HISTORY
+A30		
+A31		Offset data and Principal ship particulars should be entered in the Basis Hull sheet.
+A33		The Ship Axis system used by this spreadsheet is as shown below with the origin at the aft perpendicular:
+A35		
+A37		Offset data can be entered for up to 21 sections and is in the form. For each section the x coordinate should be enterd together with up to 27 pairs of Z and Y coordinates to define the section geometry. If there are any chines or slope discontinuities in the section shape it is important to ensure that these fall at odd nodes to ensure that the shape is correctly interpolated. Examination of the Body Plan sheet will confirm that the section gometry is being correctly modelled. The spreadsheet assumes that these offsets are for moulded dimensions and allows for a mean skin thickness to be entered to allow calculation of full displacement. If external offsets are used this skin thickness should be set to zero.
+A41		INTERPOLATION FUNCTIONS USED:
+A42		CUBIC(X,Y,X1)
+A43		This function fits a series of cubic splines to the data with the gradients made continuous at the nodes. The function is set up so that the end slope conditions are relaxed.
+A45		Interpolate(X,Y,X1)
+A46		This function uses Lagrange quadratic interpolation to divide the range into groups of three. Slope is discontinuous at odd nodes enabling the user to nominate points of slope discontinuity (eg chines in boat sections).
+A48		CUBIC2(X,Y,X1)
+A49		A modified version of CUBIC more suited to interpolation of lines plans.
+A5		Version 1
+A51		References 1. J.F.Coates,S.K.Platis,J.T.Shaw The Trireme Trust Trials 1988, Oxbow Books,1990 2. B Rankov, Trireme Olympias, the Final Report, Oxbow Books 1998
+A7		INTRODUCTION
+A8		Spreadsheet allows the variation of a basis vessel hull form
+A9		
