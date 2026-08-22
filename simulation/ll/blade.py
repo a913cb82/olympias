@@ -89,8 +89,23 @@ def _d_turning_point(C: float, B: float) -> float:
     return 0.953 * math.cos(120.0 * C / B)
 
 
+def blade_consts(rig: dict) -> tuple:
+    """The precomputed blade-law constants for one rig (the hot path).
+    tuple: (lin, l_cp, k = 0.5·rho·area·CN, cos(cant), slip, sweep rad).
+    `rig` is a shared research dict — never mutate it; pass the tuple to
+    blade_force(..., bc=...) to skip the per-call derivations."""
+    lin = rig["lin"]
+    return (lin,
+            rig["lout"] - (rig["blade"] - 0.260),   # blade CP from thole
+            0.5 * RHO * rig["area"] * CN,
+            math.cos(math.radians(rig.get("cant", 0.0))),
+            rig.get("slip", 1.0),
+            math.radians(rig["sweep"]))
+
+
 def blade_force(C: float, omega: float, V: float, rig: dict,
-                immersed: bool = True, flow: tuple | None = None) -> dict:
+                immersed: bool = True, flow: tuple | None = None,
+                bc: tuple | None = None) -> dict:
     """Blade force at oar angle C (rad) and angular rate omega (rad/s, + = bowward),
     hull speed V (m/s). Returns vn, Fn, Fx, Fy, Fh (N) and the law's
     turning-point geometry p, q (m; None when undefined).
@@ -101,20 +116,22 @@ def blade_force(C: float, omega: float, V: float, rig: dict,
     + (v + r·x)·ny + l_cp·omega. None keeps the base law (the hull
     speed only).
 
+    bc: the precomputed constants (blade_consts) — the per-step hot
+    path passes them to skip the per-call derivations; None computes
+    them here (the tests' path).
+
     Evaluates the (q/p)^2 turning-point law at the interpretation selected
     by TURNING_POINT (module constant, see the module docstring)."""
     if not immersed:
         return dict(vn=0.0, Fn=0.0, Fx=0.0, Fy=0.0, Fh=0.0, p=None, q=None)
-    lin = rig["lin"]
-    l_cp = rig["lout"] - (rig["blade"] - 0.260)   # blade CP from thole
-    cf = math.cos(math.radians(rig.get("cant", 0.0)))
+    if bc is None:
+        bc = blade_consts(rig)
+    lin, l_cp, k, cf, slip, B = bc
     nx, ny = math.cos(C) * cf, -math.sin(C) * cf
-    slip = rig.get("slip", 1.0)
     if TURNING_POINT == "geometric":
         # the appendix d-formula turning point + the deadpoint-stationary
         # omega: v_n = -slip·V·nx·(q/p) — the (q/p)^2 law directly
         # (diagnostic only; OFF by default)
-        B = math.radians(rig["sweep"])
         p = rig["lout"] / math.cos(math.radians(30.0)) - _d_turning_point(C, B)
         q = l_cp - p
         vn = -(V * nx * slip) * (q / p)
@@ -143,9 +160,9 @@ def blade_force(C: float, omega: float, V: float, rig: dict,
         else:
             vt = V * math.sin(C)
         vm = math.hypot(vn, vt)
-        Fn = 0.5 * RHO * rig["area"] * 2.0 * vm * vn * slip
+        Fn = k * (2.0 / CN) * vm * vn * slip
     else:
-        Fn = 0.5 * RHO * rig["area"] * CN * abs(vn) * vn
+        Fn = k * abs(vn) * vn
     Fx = -Fn * nx                                 # force on hull, along keel
     Fy = -Fn * ny
     Fh = abs(Fn) * l_cp / lin

@@ -247,3 +247,42 @@ Validation wins recorded:
 - The report's unvalidated status: nothing is promoted to an anchor without
   the source's context being checked against the trials report itself (his
   Ref (1), which we still do not hold).
+
+## 6. The performance pass (2026-08-24) — behaviour-identical, measured
+
+The LL's hot paths profiled (cProfile) and four easy wins landed. Every
+change verified against HEAD: the kinematic aggregated, the stations-mode
+trajectory, the four force-mode drive times, the force sprint 30-s burst —
+all byte-identical to the pre-change values (the exact-catch-crossing
+split was required to keep the force sprint identical; the flip's substeps
+were found to carry no hull force and the recovery's crossing is split
+analytically — the phase boundaries stay exact).
+
+- **Per-rig blade constants** (`blade.blade_consts`): lin, l_cp, k,
+  cos(cant), slip, sweep precomputed once per oar; the per-step
+  `blade_force(..., bc=)` skips the per-call derivations (1 M+ calls in
+  the stations mode). The polar branch's `0.5·rho·A·2.0` folds into the
+  precomputed k (algebraically identical).
+- **`OarStep` slots** (frozen, now `slots=True`): the per-oar per-step
+  telemetry object stops carrying a per-instance dict.
+- **Per-crew oar pairs** (`TierCrew._pairs`): the aligned
+  (oar, rig, station) triples built once (and on every oar rebuild), the
+  `blade_pos` import hoisted to module level, the force/power scale
+  hoisted out of the per-oar loop.
+- **Phase-aware force substeps** (`Oar._step_force`): the drive (stiff,
+  ~50 s⁻¹) and the flip substep at 1e-3 as before; the kinematic recovery
+  runs one step with the catch crossing split analytically — same physics,
+  substeps confined to the phases that carry force.
+
+Measured (same machine, same venv, vs the HEAD worktree):
+
+| mode | before | after | |
+|---|---|---|---|
+| stations (170 oars), 60 s sim | 5.44 s | 3.98 s | −27 % |
+| force mode, 60 s sim | 1.81 s | 1.12 s | −38 % |
+| aggregated (6 oars), 300 s sim | 1.42 s | 1.33 s | −6 % |
+| full suite | 318 s | 266 s | −16 % |
+
+Suite: 159 checks green, unchanged locks. The remaining levers (the suite
+dt, the stations loop vectorization, the calibrate cache/parallelism,
+pytest-xdist) are next-steps Stream E.

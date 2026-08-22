@@ -41,10 +41,10 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass
 
-from ll.blade import blade_force
+from ll.blade import blade_consts, blade_force
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class OarStep:
     """Per-step telemetry (deterministic, replayable)."""
     t: float             # seconds since the last catch
@@ -91,6 +91,9 @@ class Oar:
         self.t_rise = t_rise
         self.force = force
         self._l_cp = rig["lout"] - (rig["blade"] - 0.260)   # blade CP
+        # the precomputed blade-law constants (blade_consts) — the
+        # per-step hot path skips the per-call derivations
+        self._bc = blade_consts(rig)
         # the force-driven mode's per-stroke inputs (configure_force) and
         # telemetry: the emerging in-water drive time and the entry speed
         self.fh_demand = 0.0          # N — the drive's constant demand
@@ -197,7 +200,7 @@ class Oar:
                 flow = (V, v, r, x, y)
                 C_eff = side * self.C
             f = blade_force(C_eff, self.omega_now, V, self.rig, True,
-                            flow=flow)
+                            flow=flow, bc=self._bc)
             # the blade's drag opposes the blade's motion RELATIVE TO THE
             # water: the moment is -Fn·l_cp with Fn = k·|vn|·vn (the signed
             # flat-plate force — the companion's exact form). At vn > 0 (the
@@ -268,24 +271,55 @@ class Oar:
         """One ship step in force mode: substep the phase machine (the
         drive's EOM needs dt ~ 1e-3 — the blade-force stiffness ~50 s^-1)
         and return the MEAN forces over the step (the impulse-correct
-        forcing for the hull), with the state at the step's end."""
-        h = 0.001
-        n = max(1, int(round(dt / h)))
-        h = dt / n
-        fx = fy = fh = 0.0
-        vn = fn = 0.0
-        s = None
-        for _ in range(n):
-            s = self._force_substep(h, V, ship_state)
-            fx += s.Fx * h
-            fy += s.Fy * h
-            fh += s.Fh * h
-            vn += abs(s.vn) * h
-            fn += abs(s.Fn) * h
+        forcing for the hull), with the state at the step's end. The drive
+        and the flip are substeped; the recovery is kinematic (zero hull
+        forces) and its motion is linear, so its catch crossing is split
+        ANALYTICALLY — the phase boundaries stay exact, and the substeps'
+        cost is confined to the phases that carry force."""
+        if self.in_drive or self.in_flip:
+            h = 0.001
+            n = max(1, int(round(dt / h)))
+            h = dt / n
+            fx = fy = fh = 0.0
+            vn = fn = 0.0
+            s = None
+            for _ in range(n):
+                s = self._force_substep(h, V, ship_state)
+                fx += s.Fx * h
+                fy += s.Fy * h
+                fh += s.Fh * h
+                vn += abs(s.vn) * h
+                fn += abs(s.Fn) * h
+            self.t_since_catch += dt
+            return OarStep(t=self.t_since_catch - dt, C=s.C, omega=s.omega,
+                           immersed=s.immersed, vn=vn / dt, Fn=fn / dt,
+                           Fx=fx / dt, Fy=fy / dt, Fh=fh / dt)
+        # the recovery: split the step exactly at the catch crossing (the
+        # motion is linear; the flip/drive then run the remainder)
+        C_cross = self.dir * self.sweep_eff / 2
+        C_end = self.C + self.dir * self.omega_recover * dt
+        if self.dir * (C_cross - self.C) > 0.0 \
+                and self.dir * (C_end - C_cross) >= 0.0 \
+                and self.omega_recover > 0.0:
+            t1 = (C_cross - self.C) / (self.dir * self.omega_recover)
+            self.C = C_cross
+            self.cycle_no += 1
+            self.t_since_catch = 0.0
+            if self.mit > 0.0:
+                self.in_flip = True                # the flip first
+                self._flip_t = 0.0
+            else:
+                self.in_drive = True
+                self._drive_t = 0.0
+                self.omega_now = -self.dir * self.omega_entry
+            s = self._step_force(dt - t1, V, ship_state)
+            self.t_since_catch += t1
+            return s
+        s = self._force_substep(dt, V, ship_state)
         self.t_since_catch += dt
         return OarStep(t=self.t_since_catch - dt, C=s.C, omega=s.omega,
-                       immersed=s.immersed, vn=vn / dt, Fn=fn / dt,
-                       Fx=fx / dt, Fy=fy / dt, Fh=fh / dt)
+                       immersed=s.immersed, vn=s.vn, Fn=s.Fn,
+                       Fx=s.Fx, Fy=s.Fy, Fh=s.Fh)
 
     def step(self, dt: float, V: float, ship_state: tuple | None = None) -> OarStep:
         if self.force:
@@ -302,7 +336,8 @@ class Oar:
             C_eff = side * C               # the starboard sweep mirrors
         else:
             C_eff = C
-        f = blade_force(C_eff, omega, V, self.rig, immersed, flow=flow)
+        f = blade_force(C_eff, omega, V, self.rig, immersed, flow=flow,
+                        bc=self._bc)
         # the inertia pulses (blade out of the water at the stroke ends)
         f["Fh"] = f["Fh"] + self.inertia_fh()
         # advance

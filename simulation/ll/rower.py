@@ -26,7 +26,7 @@ from dataclasses import dataclass
 
 from common.chain import CN, OAR_TIER_MIT, RHO, RIGS
 from ll.oar import Oar
-from ll.stations import short_rig as stations_short_rig
+from ll.stations import blade_pos, short_rig as stations_short_rig
 
 # --- anchors (the LL gates (docs/VALIDATION.md); provisional except P_CRIT) ---
 Fh_MAX = 700.0          # N peak handle force per rower
@@ -138,6 +138,11 @@ class TierCrew:
             self.oar = self.oars[0]
         self.omega_cmd = self.oar.omega_cmd
         self._stations = []
+        # the per-oar loop's aligned (oar, rig, station) triples — built
+        # once (and on every oar rebuild) so the per-step loop has no
+        # zipping or branch-of-station checks; station is None in the
+        # aggregated mode
+        self._pairs = self._make_pairs()
         self.plan: StrokePlan | None = None
         self.rate_eff = rate
         self.W_frac = 1.0
@@ -184,16 +189,21 @@ class TierCrew:
             return (-V * cos_mean + math.sqrt(disc)) / self.l_cp
         return (V * cos_mean + math.sqrt(disc)) / self.l_cp
 
+    def _make_pairs(self) -> list:
+        """The aligned (oar, rig, station-geometry) triples for the per-step
+        loop (the aggregated tier: one triple with station None)."""
+        rigs = self._rigs or [self.rig]
+        geom = self._stations_geom or [None]
+        return list(zip(self.oars, rigs, geom))
+
     def _held_stations(self, brake: float) -> list:
         """The per-station tuples for the held/back-hold state: the brake
         at each held blade's position (the oar parked at its current C —
         the blade's reach y_b = y_t + lout·cos(C_eff) is the brake's
         yaw arm, r_blade x F)."""
-        from ll.stations import blade_pos
         out = []
-        for o, rg, st in zip(self.oars, self._rigs or (self.rig,),
-                             self._stations_geom or (None,)):
-            if o.station is not None:
+        for o, rg, st in self._pairs:
+            if st is not None:
                 x_b, y_b = blade_pos(st[0], st[1], self._side, rg["lout"],
                                      self._side * o.C)
             else:
@@ -437,29 +447,25 @@ class TierCrew:
             self._stations = [(0.0, 0.0, 0.0, 0.0, 0.0) for _ in self.oars]
             return 0.0, 0.0, 0.0, 0.0
         n = len(self.oars)
+        scale = 1.0 if self.force else self.power_factor
         fx = fy = fh = 0.0
         out = []
-        for o, rg, st in zip(self.oars, self._rigs or (self.rig,),
-                             self._stations_geom or (None,)):
+        for o, rg, st in self._pairs:
             s = o.step(dt, V, ship_state)
-            if o.station is not None:
-                from ll.stations import blade_pos
+            if st is not None:
                 x_b, y_b = blade_pos(st[0], st[1], self._side, rg["lout"],
                                      self._side * o.C)
             else:
                 x_b = y_b = 0.0
-            out.append((s.Fx * (1.0 if self.force else self.power_factor),
-                        s.Fy * (1.0 if self.force else self.power_factor),
-                        0.0, x_b, y_b))
-            fx += s.Fx * (1.0 if self.force else self.power_factor)
-            fy += s.Fy * (1.0 if self.force else self.power_factor)
+            out.append((s.Fx * scale, s.Fy * scale, 0.0, x_b, y_b))
+            fx += s.Fx * scale
+            fy += s.Fy * scale
             fh += s.Fh
         self._stations = out
-        self.p_gross_current = (self.plan.p_ext
-                                * (1.0 if self.force else self.power_factor)
+        self.p_gross_current = (self.plan.p_ext * scale
                                 + self.oar.flip_power(self.plan.rate_eff)
                                 + oar_absorbed(self.plan.rate_eff))
-        self.last_fh = fh / n * (1.0 if self.force else self.power_factor)
+        self.last_fh = fh / n * self.power_factor
         return (fx / n, fh / n * self.power_factor, 0.0, fy / n)
 
     def end_of_step(self, dt: float) -> None:
@@ -487,6 +493,7 @@ class TierCrew:
                 for rg, st in zip(self._rigs or (self.rig,), self._stations_geom or (None,))]
             self.oar = self.oars[0]
             self.omega_cmd = self.oar.omega_cmd
+            self._pairs = self._make_pairs()
         else:
             for o in self.oars:
                 o.reset()
@@ -507,6 +514,7 @@ class TierCrew:
             for rg, st in zip(self._rigs or (self.rig,), self._stations_geom or (None,))]
         self.oar = self.oars[0]
         self.omega_cmd = self.oar.omega_cmd
+        self._pairs = self._make_pairs()
         self.rate_eff = rate
         self.plan = None
 

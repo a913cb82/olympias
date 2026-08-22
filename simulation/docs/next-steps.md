@@ -6,13 +6,13 @@ ledger). Context: the deep-dive in `comparison-with-ll.md`.
 The standing rule: the gates are the posterior — nothing is promoted or
 changed without the acceptance re-run (VALIDATION §0–8) and the HL
 re-calibration; nothing is tuned silently (the oQ-18 discipline). Current
-state: the kinematic default, 162 checks green; the force-driven oar is a
+state: the kinematic default, 159 checks green; the force-driven oar is a
 labelled layer, OFF; Ω is computed (the cross-flow audit); clr_offset/A_lat
 fitted (class-A — the real lines are now in hand, Stream B1).
 
 ## The work streams
 
-Four orthogonal tracks. Within a stream the steps are a sequence (a step
+Five orthogonal tracks. Within a stream the steps are a sequence (a step
 gates the next); the streams themselves do not block each other — their
 cross-feed is information only (noted per step). The E-tags (E1–E8) are the
 earlier section's names, kept for traceability.
@@ -130,6 +130,39 @@ A larger scope; the kick-off is a decision.
 - **D2. The remaining decode (E8).** The paper's figures (Figures 2/3/5,
   Tables 1/2 — image reading) and the workbook's 15 charts' plotted series
   — feeds D1's inputs and C1's fidelity.
+
+### Stream E — the performance stream (engineering hygiene)
+
+No physics: speed of the simulators and the suite. Behaviour-neutral by
+construction — every step re-verifies the trajectories byte-identical to
+HEAD before it ships (the probes and the 159-check suite). The first pass
+landed 2026-08-24 (completed-work §6: the per-rig blade constants, the
+slotted OarStep, the per-crew oar pairs, the phase-aware force substeps;
+stations −27 %, force −38 %, aggregated −6 %, suite 318 → 266 s). The
+remaining levers, in measured-priority order:
+
+- **E1. The suite's time step (the biggest remaining lever).** The gates
+  are kt/%-tolerances; the long settle tests (300–900 s sims at dt = 0.01,
+  some already at 0.02) dominate the suite's 266 s. Doubling dt for the
+  long runs halves their cost; the LL has a dt-convergence gate
+  (test_dt_convergence) — measure each scenario family's deviation at
+  0.02 against the gate widths BEFORE switching any. The fixed-step rule
+  is about replayability (determinism), not the value.
+- **E2. The stations loop → numpy (the labelled layer's cost).** The
+  170-oar per-step Python loop (TierCrew.step + the ship's station sums)
+  is the stations mode's whole cost; a vectorized twin (per-tier arrays,
+  ufuncs) should give another 2–3×. The layer is experimental and
+  swappable — a twin is acceptable; the aggregated scalar path stays.
+- **E3. hl/calibrate.py's LL cells.** The `_LL_CACHE` is per-process —
+  every ~12-min run re-derives the yaw-gate and pressure-cell rows.
+  Persist the cached rows keyed by the LL commit (a JSON beside the
+  calibration) and/or parallelize the independent cell grid (multiprocess).
+- **E4. pytest-xdist for the suite.** The suite is ~95 % CPU-bound LL
+  runs, the tests are self-contained — `pytest -n auto` splits them
+  across cores (a dev convenience; determinism is per-test).
+- **E5. The bisection helpers** (`rate_for_speed`, `run_hull`): 50
+  iterations × 4-cycle sims per call — warm-start from the previous
+  rate's root (the curves are smooth). Minor; only if E1–E4 land.
 
 ## Kick-off (what is parallelizable now)
 

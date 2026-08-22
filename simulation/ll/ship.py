@@ -103,6 +103,9 @@ class Ship:
                              stations=side_layout and side_layout["star"],
                              side=-1, force=force),
         }
+        # cached refs — the per-step hot path (the dict stays for the
+        # command-application API)
+        self.crew_p, self.crew_s = self.crew["port"], self.crew["star"]
         self.helm_dir, self.helm_frac = helm
         # The hull's drag: the trial-validated chain law
         # W = 155V^3 + 4.13V^5 (V in m/s) — the tank-tested Grekoussis &
@@ -124,12 +127,10 @@ class Ship:
     # ------------------------------------------------------------------
     def step(self, dt: float) -> None:
         ship_state = (self.v, self.omega) if self.stations else None
-        fx_p, peak_p, br_p, fy_p = self.crew["port"].step(dt, self.V,
-                                                          ship_state)
-        fx_s, peak_s, br_s, fy_s = self.crew["star"].step(dt, self.V,
-                                                          ship_state)
-        for crew in self.crew.values():
-            crew.end_of_step(dt)
+        fx_p, peak_p, br_p, fy_p = self.crew_p.step(dt, self.V, ship_state)
+        fx_s, peak_s, br_s, fy_s = self.crew_s.step(dt, self.V, ship_state)
+        self.crew_p.end_of_step(dt)
+        self.crew_s.end_of_step(dt)
         Fx = self.n_side * (fx_p + fx_s + br_p + br_s)
         if self.stations:
             # the per-station sums: the yaw moment and the lateral force
@@ -138,7 +139,7 @@ class Ship:
             # moment is r_blade x F) with the local (u, v, r) flow
             Fy_oars = 0.0
             Q_oar = 0.0
-            for crew in self.crew.values():
+            for crew in (self.crew_p, self.crew_s):
                 for fxi, fyi, bri, x_b, y_b in crew._stations:
                     Fy_oars += fyi
                     Q_oar += x_b * fyi - y_b * fxi - y_b * bri
@@ -194,7 +195,7 @@ class Ship:
     def _keleustes(self, dt: float) -> None:
         """Weakest side governs: if one side cannot hold the tempo for more
         than a couple of cycles, the pipe calls the lower rate on both sides."""
-        c_p, c_s = self.crew["port"], self.crew["star"]
+        c_p, c_s = self.crew_p, self.crew_s
         if c_p.state != "row" or c_s.state != "row":
             self._tempo_violation = 0.0
             return
