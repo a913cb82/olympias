@@ -26,18 +26,20 @@ C = load(Path(__file__).resolve().parents[2] / "hl/calibration/latest.json")
 # the settled drift cells (rad/s, LL dt 0.05, measured in
 # calibrate.measure_drift_table — the 300-600 s settle; the 20-60 s
 # window is the sway transient and is NOT the anchor)
-DRIFT_SF = [-0.00071, -0.001044, -0.001169, -0.000381]
-DRIFT_SE = [-0.001109, -0.001044, -0.001169, -0.000380]
-DRIFT_TF = [-0.000325, -0.000273, -0.000580, -0.000528]
-DRIFT_TE = [-0.000325, -0.000273, -0.000580, -0.000565]
+DRIFT_SF = [-0.001101, -0.000775, -0.000645, -0.000964]
+DRIFT_SE = [-0.001103, -0.000508, -0.000715, -0.000965]
+DRIFT_TF = [-0.000543, -0.000784, -0.001161, -0.001046]
+DRIFT_TE = [-0.000543, -0.000784, -0.001161, -0.001013]
+# (the chain-law calibration 2026-08 — the tank-tested drag law moved
+# the straight-line's drift cells)
 DRIFT_RATES = [25.5, 28.8, 32.3, 44.5]
 
 KICK_V = [0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0]
-KICK_W = [-0.000184, -0.000469, -0.000698, -0.000928,
-          -0.001105, -0.000787, -0.000941, -0.001324]
+KICK_W = [-0.000181, -0.000468, -0.000698, -0.000935,
+          -0.001081, -0.000721, -0.001138, -0.001457]
 
-TAU_EXIT = 8.0
-DRIFT_TAU_EXP = 0.552
+TAU_EXIT = 19.0
+DRIFT_TAU_EXP = 0.164
 
 
 # ---------------------------------------------------------------------------
@@ -76,12 +78,12 @@ def test_slow_decay_scalars():
     assert abs(C.drift_tau_exp - DRIFT_TAU_EXP) < 0.02, \
         f"drift_tau_exp moved: {C.drift_tau_exp}"
     # the power-law bridge: the turn-scale ~ the exit tau, the
-    # drift-scale ~80-100 s (the burst-path fit); the pair is the
-    # curve-selection calibration's tau_exit scan verdict
+    # drift-scale ~40 s at the chain-law calibration (the re-scan's
+    # verdict 19.0/0.164 — the tank-tested drag law's drift dynamics)
     tau_turn_scale = C.tau_exit * (0.1 / 0.1) ** C.drift_tau_exp
     assert abs(tau_turn_scale - TAU_EXIT) < 1.0
     tau_drift = C.tau_exit * (0.1 / 0.001) ** C.drift_tau_exp
-    assert 70.0 < tau_drift < 130.0, f"drift-scale tau: {tau_drift:.0f} s"
+    assert 30.0 < tau_drift < 60.0, f"drift-scale tau: {tau_drift:.0f} s"
 
 
 def test_burst_path_omega_closure():
@@ -143,6 +145,11 @@ def test_drift_dt_sensitivity_is_documented():
     slope = sum((x - mx) * (y - my) for x, y in zip(xs, ys)) / \
         sum((x - mx) ** 2 for x in xs)
     cell = C.drift_bias(44.5, 1.0, 1.0)
-    assert abs(slope) > 2.0 * abs(cell), \
-        f"dt 0.1 slope {slope:.6f} must exceed the 0.05 cell " \
-        f"{cell:.6f} by > 2x (the documented sensitivity)"
+    # the chain-law baseline (2026-08): the drift's dt-sensitivity
+    # COLLAPSED (the 0.1 slope ~1.1x the 0.05 cell, was >2x) — the
+    # tank-tested drag law changed the straight-line's rectification;
+    # the lock now asserts the collapsed state (a physics change would
+    # trip it and the protocol/docs must be revisited)
+    assert abs(slope) < 2.0 * abs(cell), \
+        f"dt 0.1 slope {slope:.6f} vs the 0.05 cell {cell:.6f} — " \
+        "the sensitivity's collapsed state moved"

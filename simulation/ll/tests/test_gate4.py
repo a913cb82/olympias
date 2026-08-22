@@ -85,8 +85,11 @@ def test_sprint():
     assert s.V / KT < 0.9 * (s30.V / KT), \
         f"V(900) {s.V/KT:.2f} vs V(30) {s30.V/KT:.2f} kt"
     # the burst with the thalmian head-room (0.6 at 44.5) + the W' fade:
-    # still well above the sustainable cruise, and the fade follows
-    assert s30.V / KT > 7.8, f"burst speed {s30.V/KT:.2f} kt"
+    # still well above the sustainable cruise, and the fade follows.
+    # The chain-law baseline (2026-08): the 30-s burst's 7.45 kt (was
+    # >7.8 under the 40.2v^2 proxy — the tank-tested law exposes the
+    # LL's sprint deficit, the T1 family); the fade relationship holds
+    assert s30.V / KT > 7.2, f"burst speed {s30.V/KT:.2f} kt"
 
 
 def test_sprint_peak():

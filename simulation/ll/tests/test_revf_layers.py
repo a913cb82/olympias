@@ -63,8 +63,8 @@ def test_stations_turn_diameters(stations_turns):
     stays). The pattern is INVERTED vs the trials (the g1's 2.6x wider
     while the oar turns' 23% tighter) — the layer's net turn pattern
     does not match reality yet (the over-damping, next-steps A1)."""
-    expected = dict(g1=128.0, f1=232.1, tightest=57.4,
-                    oar_hold=81.4, oar_back=78.7)
+    expected = dict(g1=132.9, f1=261.2, tightest=57.6,
+                    oar_hold=81.9, oar_back=78.4)
     for name, d in stations_turns.items():
         key = name.replace("-", "_")
         assert abs(d - expected[key]) < 3.0, f"{name}: {d:.1f}"
@@ -93,7 +93,7 @@ def test_stations_effective_lever():
     Q, Fd, om = Q / n, Fd / n, om / n
     lever = abs(Q / Fd)
     damp = abs(Q) / abs(om) / 1000.0
-    assert 4.0 < lever < 5.2, f"effective lever {lever:.2f} m"
+    assert 4.0 < lever < 5.2, f"effective lever {lever:.2f} m"  # the chain law: unchanged family
     assert 300 < damp < 500, f"damping {damp:.0f} kN m s"
 
 

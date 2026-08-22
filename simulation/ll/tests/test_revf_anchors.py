@@ -93,8 +93,8 @@ def test_kempf_overshoots():
 
 def test_thranite_only_equilibrium():
     """Rev F D10: thranites only (62 oars) at 33.3 spm — the LL settles
-    4.31 kt vs the record's loose 3.3 kt reading [+?]; a lock on the
-    measured state, not a gate."""
+    4.19 kt (chain-law baseline) vs the record's loose 3.3 kt reading
+    [+?]; a lock on the measured state, not a gate."""
     s = Ship(rate=33.3, pressure=("spoude", "spoude"),
              oar_state=("row", "row"))
     for side in ("port", "star"):
@@ -102,7 +102,7 @@ def test_thranite_only_equilibrium():
             s.crew[side].tiers[t].set_pressure("rest")
     while s.t < 900.0:
         s.step(0.01)
-    assert abs(s.V / 0.514444 - 4.31) < 0.1
+    assert abs(s.V / 0.514444 - 4.19) < 0.1
 
 
 def test_rudder_drag_cross_check():

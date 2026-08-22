@@ -64,7 +64,7 @@ class Ship:
                  rate: float = 28.8, pressure: tuple = ("spoude", "spoude"),
                  oar_state: tuple = ("row", "row"), helm: tuple = ("midship", 0.0),
                  fleet: str = "spruce", hold_frac: float | None = None,
-                 stations: bool = False, drag_law: str = "taylor",
+                 stations: bool = False, drag_law: str = "chain",
                  mass_matrix: bool = False):
         # hold_frac default: the calibrated value (ll/rower.HOLD_FRAC)
         """fleet: 'spruce' (all tiers, MIT 9.7 — the 1994 setup) or
@@ -130,12 +130,13 @@ class Ship:
                              side=-1),
         }
         self.helm_dir, self.helm_frac = helm
-        # the turn model's drag law (the Rev F B4 item): "taylor" (the
-        # 40.2v^2 band set — the sway-calibrated default), "chain" (the
-        # trial-validated W = 155V^3 + 4.13V^5, D = W/V — the law the
-        # power chain closes on, measured 27 % above the Taylor set at
-        # 7 kt), or "trials" (the raw piecewise 40.2v^2 / 75.2v^2-1560 /
-        # 88.6v^2-2640, v in kt — the register B2 row)
+        # the hull's drag law (the Rev F B4 item, now THE default): the
+        # trial-validated chain law W = 155V^3 + 4.13V^5 (the tank-tested
+        # Grekoussis & Loukakis power law the whole chain closes on —
+        # the physics-anchored choice, consistent everywhere; the old
+        # Taylor 40.2v^2 band set was the trials' first band with the
+        # offsets collapsed, a proxy that differs 10-27 % at cruise).
+        # The alternatives remain for the record: "taylor", "trials".
         self.drag_law = drag_law
         self.V = 0.0
         self.v = 0.0            # sway (lateral velocity, + = port)
