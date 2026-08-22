@@ -25,8 +25,8 @@ Source document: `Olympias-Simulation-Report-Rev-F.docx` (the repo's original
 - `media/` — the 22 embedded images (jpeg/png/emf/wmf).
 - `comparison-with-ll.md` — the deep-dive comparison with the low-level
   simulator's methodology.
-- `next-steps.md` — the planned work from that comparison (realism
-  upgrades, the differing choices to investigate, the new anchors).
+- `next-steps.md` — the OPEN work from that comparison (realism upgrades, the differing choices to investigate, the new anchors), in priority order.
+- `completed-work.md` — the verdict ledger: everything that is DONE (the A/B/C investigations, Plan 1's landed layer, Plan 2's verdict, the Braithwaite sources' wins, the standing choices), each with where the detail lives.
 
 Conversion route (no external tools; the venv has no docx library): the docx
 is a ZIP; `word/document.xml` parsed with stdlib `xml.etree` (paragraphs,
