@@ -295,6 +295,65 @@ Steps (phases; each ends at a gate, the full acceptance re-runs at P1.6):
   eliminated; hold_frac/thalmian challenged), VALIDATION.md §2/§4/§5,
   next-steps.
 
+### The P1.6 blockers — the single-default gate
+
+The goal is ONE default we trust, not more optionality. The force layer
+stays labelled-OFF until these are resolved (each: what it is, why it
+blocks, the named suspects, the path):
+
+1. **The turns (W5) are unmeasured in force mode — the hard gate.** The
+   turn family (G1 89.4 m / F1 111.9 m / tightest 62 m — ±7 %/±7 %/±10 %)
+   has only ever run on the kinematic oar; in force mode the turn speeds
+   are emergent (the speed-holding rates shift), so the diameters will
+   move — the question is how far. Prerequisite, not judgment: run the
+   acceptance, see the numbers. (The t_360 −23 % open item is the same
+   physics family and stays open either way.)
+2. **The sprint — 7.72 kt vs the trials' 8.2–8.3 (−6 %).** The kinematic
+   default already misses this (7.45 — the documented "LL's sprint
+   deficit", the T1 family); the force layer improves it, not closes it.
+   Suspects in order: the **thalmian head-room factor's `[?]` rate-shape**
+   (the fitted 0.6 at 44.5 spm — the class-C row) and the **blade law's
+   emergent efficiency** (the A5/E family — the flat-plate C_N·A is the
+   chain's calibrated product, and the force balance exposes it). The
+   candidate test: the B2 polar physics (the real blade's normal
+   coefficient 1.37× the flat plate — a physics correction, not a knob).
+3. **The cruise triple — the rate→power curve sits flat −6.3 % below the
+   ch.7 reference.** The force-mode equilibrium 6.55/7.03/7.50 kt at
+   25.5/28.8/32.3 spm (hull=1.08) vs the chain's 7/7.5/8. Two things are
+   true at once: the **Table 9.6 acceptance pair holds** in force mode
+   (7.2 kt @ 28.8 — the actual acceptance), and the Mark-II-reference
+   triple is open either way (the kinematic's own lock is
+   −2.5/−4.6/−6.1). The force layer changes the deficit's SHAPE (flat
+   instead of growing) but not its size. The triple lock re-bases to the
+   force values with the deficit's decomposition named (the Olympias
+   rig's thrust share vs the Mark II's 55.6° sweep, plus the E family).
+4. **The MarkIIb — the force mode caps at ~5.1 kt where the chain says
+   9.7.** The demand force CAPS the blade force, so the measured 0.472 s
+   drive and the chain's P = 344 N at 46.3 spm are mutually inconsistent
+   at the 0.078 m² blade (the measured stroke implies the rowers pulled
+   only ~150 N mean). The A5 as-designed fix (area 1.3× + slip 1.2) does
+   NOT bridge it in force mode — the equilibrium stays ~5.1. The MarkIIb's
+   LL gates break. Needs a decision: re-examine the MarkIIb's chain
+   inputs (P/L/E at the sprint rate — the A5 register's tension, now
+   force-side-quantified) or re-base its acceptance on the force physics.
+5. **The mechanics of the switch** (not physics, but real): the triple
+   lock and the G4 sprint tests lock the KINEMATIC values — they re-base;
+   the HL re-calibration + the harness equivalence re-measurement (the
+   Plan-2 loop, ~15 min); the carry-overs that stay fitted either way
+   (class C, flagged): the flip's t_rise (the G5 convention), the
+   kinematic recovery `[?]`, HOLD_FRAC's grip, the thalmian shape, and
+   the Table 3.2 couple anchor now sits −4.5 % from the constant demand
+   (the B3 profile shape `[?]` — the undecoded Figure 10 — is the named
+   closing path).
+
+Order of work: **measure the turns first** (an hour — the hard gate might
+already fail, which changes everything), then **attack the sprint/triple
+suspects** (the thalmian shape test + the B2 polar — physics, not
+ tuning), then **decide the MarkIIb**, then promote. The force layer's
+reason to exist — the timing schedule eliminated (the class-C row
+retired), the physical start — does not change if the promotion waits
+for the numbers.
+
 Risks: the profile shape (Figure 10 block — the minimum-shape start);
 the catch flip at low ship speed (the start-from-rest); the numerical
 stiffness at catch; the recovery-phase model is unanchored; the T1
