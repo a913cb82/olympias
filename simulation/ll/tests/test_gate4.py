@@ -29,7 +29,7 @@ from common.chain import KT
 from ll.ship import Ship, rate_for_speed
 from ll.rower import Fh_MAX
 
-def loop(ship, t_end, dt=0.01, v0_kt=0.0, on_step=None):
+def loop(ship, t_end, dt=0.02, v0_kt=0.0, on_step=None):
     """Step the ship with a per-step callback(crews, ship) — the crews are
     stepped first so the callback sees the current plan/force telemetry."""
     ship.V = v0_kt * KT
@@ -176,7 +176,7 @@ def test_tightest_long():
     s.V = 6.5 * KT
     vmax = 0.0
     while s.t < 900:
-        s.step(0.01)
+        s.step(0.02)
         vmax = max(vmax, s.V)
     assert s.crew["port"].W_frac < 0.1, f"W_frac {s.crew['port'].W_frac:.2f}"
     assert s.V / KT < 0.85 * vmax / KT, f"V(900) {s.V/KT:.2f} vs peak {vmax/KT:.2f} kt"

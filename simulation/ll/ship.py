@@ -247,7 +247,7 @@ class Ship:
         for crew in self.crew.values():
             crew.set_rate(rate, td)
 
-    def run_script(self, commands, dt: float = 0.01, until: float | None = None,
+    def run_script(self, commands, dt: float = 0.02, until: float | None = None,
                    V0: float = 0.0) -> None:
         """Run a parsed command stream; commands apply at their timestamps."""
         self.V = V0
@@ -273,6 +273,9 @@ class Ship:
                     helm=(self.helm_dir, self.helm_frac))
 
 
+_RATE_LAST: dict[tuple, tuple[float, float]] = {}
+
+
 def rate_for_speed(rig_name: str, V_kt: float, pressure: str = "spoude",
                    n_oars: int = 170) -> float:
     """Rate whose rowing oars' mean thrust balances Taylor drag (bare hull +
@@ -289,14 +292,28 @@ def rate_for_speed(rig_name: str, V_kt: float, pressure: str = "spoude",
         res = simulate(_crew_oar(rig_name, rate, td), V, td / 600, n_cycles=4)
         return n_oars * PRESSURE[pressure] * res["mean_thrust"] - dragv(V_kt)
 
+    key = (rig_name, pressure, n_oars)
     lo, hi = 8.0, 50.0
-    for _ in range(50):
+    n_iter = 50
+    if key in _RATE_LAST:
+        prev_V, prev_rate = _RATE_LAST[key]
+        if abs(V_kt - prev_V) < 2.0:
+            lo = max(8.0, prev_rate - 6.0)
+            hi = min(50.0, prev_rate + 6.0)
+            if g(lo) < 0:
+                lo = 8.0
+            if g(hi) > 0:
+                hi = 50.0
+            n_iter = 35
+    for _ in range(n_iter):
         mid = 0.5 * (lo + hi)
         if g(mid) > 0:
             hi = mid
         else:
             lo = mid
-    return 0.5 * (lo + hi)
+    rate = 0.5 * (lo + hi)
+    _RATE_LAST[key] = (V_kt, rate)
+    return rate
 
 
 def _crew_oar(rig_name: str, rate: float, td: float):
@@ -305,7 +322,7 @@ def _crew_oar(rig_name: str, rate: float, td: float):
     return Oar(RIGS[rig_name], rate, td)
 
 
-def run_turn(ship: Ship, dt: float = 0.01, max_t: float = 900.0,
+def run_turn(ship: Ship, dt: float = 0.02, max_t: float = 900.0,
              target_psi: float = math.pi) -> dict:
     """Run until |psi| >= target_psi (default half-circle); report the turn.
 

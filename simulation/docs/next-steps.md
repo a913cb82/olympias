@@ -11,43 +11,16 @@ state: **the force-driven oar is the PROMOTED default (Stream A complete,
 inertia + the blade's water force; the kinematic commanded-kinematics
 mode stays as the labelled reference layer (force=False). Ω is computed
 (the cross-flow audit); clr_offset/A_lat fitted (class-A — the real
-lines are now in hand, Stream B1).
+lines are now in hand, Stream C B1).
 
 ## The work streams
 
-Four orthogonal tracks (Stream A — the force-driven oar — is done, see `completed-work.md §7`). Within a stream the steps are a sequence (a step
+Three orthogonal tracks (Streams A and B are done — see `completed-work.md §7` and `§8`). Within a stream the steps are a sequence (a step
 gates the next); the streams themselves do not block each other — their
 cross-feed is information only (noted per step). The E-tags (E1–E8) are the
 earlier section's names, kept for traceability.
 
-Serial priority (simplest direction, one stream at a time): **B → C → D → E** — B is behaviour-neutral hygiene that speeds every later run; C closes the last fitted class-A rows; D is the independent second opinions (D3 is a 1h decisive measurement, D1 is the heavy transcription); E is the portability scope decision. Physics-first alternative: `C → B → D → E`.
-
-### Stream B — the performance stream (engineering hygiene)
-
-No physics: speed of the simulators and the suite. Behaviour-neutral by
-construction — every step re-verifies the trajectories byte-identical to
-HEAD before it ships (the probes and the 159-check suite). The landed
-passes (2026-08-24) are recorded in completed-work §6 (suite 318 → 237 s;
-the stations layer's tests −53 %); only the open levers follow, in
-measured-priority order:
-
-- **F1. The suite's time step (the biggest remaining lever).** The gates
-  are kt/%-tolerances; the long settle tests (300–900 s sims at dt = 0.01,
-  some already at 0.02) dominate the suite's 237 s. Doubling dt for the
-  long runs halves their cost; the LL has a dt-convergence gate
-  (test_dt_convergence) — measure each scenario family's deviation at
-  0.02 against the gate widths BEFORE switching any. The fixed-step rule
-  is about replayability (determinism), not the value.
-- **F2. hl/calibrate.py's LL cells.** The `_LL_CACHE` is per-process —
-  every ~12-min run re-derives the yaw-gate and pressure-cell rows.
-  Persist the cached rows keyed by the LL commit (a JSON beside the
-  calibration) and/or parallelize the independent cell grid (multiprocess).
-- **F3. pytest-xdist for the suite.** The suite is ~95 % CPU-bound LL
-  runs, the tests are self-contained — `pytest -n auto` splits them
-  across cores (a dev convenience; determinism is per-test).
-- **F4. The bisection helpers** (`rate_for_speed`, `run_hull`): 50
-  iterations × 4-cycle sims per call — warm-start from the previous
-  rate's root (the curves are smooth). Minor; only if F1–F3 land.
+Serial priority (simplest direction, one stream at a time): **C → D → E** — C closes the last fitted class-A rows; D is the independent second opinions (D3 is a 1h decisive measurement, D1 is the heavy transcription); E is the portability scope decision.
 
 ### Stream C — the hull grounding: the real-lines program
 
@@ -122,7 +95,7 @@ A larger scope; the kick-off is a decision.
 
 ## Kick-off (what is parallelizable now)
 
-Serial priority is `B → C → D → E`; if parallel, `F1` (suite dt), `B1` (the audit), `C3` (a measurement) and `C1` (the transcription) are all independent starts; Streams C and D run independently. The full acceptance + the HL re-calibration re-run after every promoted change.
+Serial priority is `C → D → E`; if parallel, `B1` (the audit), `C3` (a measurement) and `C1` (the transcription) are all independent starts; Streams C and D run independently. The full acceptance + the HL re-calibration re-run after every promoted change.
 
 ## Risks (the named ones)
 

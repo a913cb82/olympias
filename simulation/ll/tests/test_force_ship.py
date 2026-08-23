@@ -41,7 +41,7 @@ FAM = OAR_FAMILIES["old-zygian"]
 DT = 0.005
 
 
-def loop(ship, t_end, dt=0.01, v0_kt=0.0, on_step=None):
+def loop(ship, t_end, dt=0.02, v0_kt=0.0, on_step=None):
     """Step the ship (the G4 loop convention)."""
     ship.V = v0_kt * KT
     while ship.t < t_end:

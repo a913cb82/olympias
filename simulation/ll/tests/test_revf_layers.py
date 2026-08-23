@@ -77,7 +77,7 @@ def test_stations_effective_lever():
     Q = Fd = om = 0.0
     n = 0
     while s.t < 500.0:
-        s.step(0.01)
+        s.step(0.02)
         if s.t > 400.0:
             for crew in s.crew.values():
                 for fxi, fyi, bri, x_b, y_b in crew._stations:

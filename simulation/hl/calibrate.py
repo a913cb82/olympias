@@ -59,6 +59,45 @@ def git_commit():
         return "unknown"
 
 
+CACHE_VERSION = 1
+
+
+def _cache_path(commit: str) -> Path:
+    return OUT_DIR / f"ll_cache-{commit}.json"
+
+
+def _load_cache(commit: str):
+    p = _cache_path(commit)
+    if not p.exists():
+        return None
+    try:
+        data = json.loads(p.read_text(encoding="utf-8"))
+        meta = data.get("meta", {})
+        if meta.get("dt") != DT or meta.get("cache_version") != CACHE_VERSION:
+            log(f"  cache {p.name} meta mismatch (dt/cache_version) — miss")
+            return None
+        if meta.get("ll_commit") != commit:
+            log(f"  cache {p.name} commit mismatch — miss")
+            return None
+        log(f"  cache hit {p.name} — reusing LL cells, skipping LL runs")
+        return data.get("cells")
+    except Exception as exc:
+        log(f"  cache {p.name} invalid ({exc}) — miss")
+        return None
+
+
+def _save_cache(commit: str, cells: dict) -> None:
+    p = _cache_path(commit)
+    meta = dict(ll_commit=commit, dt=DT, cache_version=CACHE_VERSION,
+                date=datetime.date.today().isoformat())
+    try:
+        p.write_text(json.dumps(dict(meta=meta, cells=cells), indent=2),
+                     encoding="utf-8")
+        log(f"  cache wrote {p.name}")
+    except Exception as exc:
+        log(f"  cache write failed ({exc})")
+
+
 # ---------------------------------------------------------------------------
 # protocols
 # ---------------------------------------------------------------------------
@@ -907,29 +946,49 @@ def main() -> None:
     cal_id = f"calib-{date}-{commit}"
     log(f"calibration run: {cal_id} (LL commit {commit})")
 
-    tables = {
-        "vstar": measure_vstar(VSTAR_GRID),
-        "steady": measure_pressure_rows(PRESSURE_RATES, "steady"),
-        "fast": measure_pressure_rows(PRESSURE_RATES, "fast"),
-        "empty": measure_empty(EMPTY_RATES),
-        "hold": measure_asym("hold", ASYM_RATES["hold"]),
-        "back": measure_asym("back", ASYM_RATES["back"]),
-        "net": measure_nets(NET_RATES),
-        "tempo_loss": measure_tempo_loss(TEMPO_RATES),
-        "drift": measure_drift_table(),
-        "drift_kick": measure_drift_kick(),
-    }
-    asym_nets = measure_asym_nets()
-    tables["net_hold"] = asym_nets["hold"]
-    tables["net_back"] = asym_nets["back"]
-    fresh_nets = measure_fresh_nets(NET_RATES)
-    tables["net_fresh"] = fresh_nets["hold"]  # back == hold (the degeneration)
-    tables["d_oar_v"] = measure_d_oar_v()
-    tables["turn_beta"] = measure_turn_beta()
-    d_tables = measure_d_tables()
-    tables["d_rudder"] = [[f, None] if f == 0.0 else [f, d]
-                          for f, d in d_tables["rudder"]]
-    tables["d_oar"] = d_tables["oar"]
+    cached = _load_cache(commit)
+    if cached is not None:
+        tables = cached["tables"]
+        d_tables = cached["d_tables"]
+        # cached tables already contain all LL cells up to d_tables;
+        # later LL-derived steps (tau_hold/back etc.) are cheap vs the
+        # drift/pressure grids, but we also cache them if present
+        if "tau_hold_raw" in cached and "tau_back_raw" in cached:
+            tau_hold = cached["tau_hold_raw"]
+            tau_back = cached["tau_back_raw"]
+            tau_exit_cached = cached.get("tau_exit_raw")
+            turn_drag_cached = cached.get("turn_drag_raw")
+            yaw_build_cached = cached.get("yaw_build_raw")
+            skip_ll_tail = True
+        else:
+            skip_ll_tail = False
+    else:
+        skip_ll_tail = False
+        tables = {
+            "vstar": measure_vstar(VSTAR_GRID),
+            "steady": measure_pressure_rows(PRESSURE_RATES, "steady"),
+            "fast": measure_pressure_rows(PRESSURE_RATES, "fast"),
+            "empty": measure_empty(EMPTY_RATES),
+            "hold": measure_asym("hold", ASYM_RATES["hold"]),
+            "back": measure_asym("back", ASYM_RATES["back"]),
+            "net": measure_nets(NET_RATES),
+            "tempo_loss": measure_tempo_loss(TEMPO_RATES),
+            "drift": measure_drift_table(),
+            "drift_kick": measure_drift_kick(),
+        }
+        asym_nets = measure_asym_nets()
+        tables["net_hold"] = asym_nets["hold"]
+        tables["net_back"] = asym_nets["back"]
+        fresh_nets = measure_fresh_nets(NET_RATES)
+        tables["net_fresh"] = fresh_nets["hold"]  # back == hold (the degeneration)
+        tables["d_oar_v"] = measure_d_oar_v()
+        tables["turn_beta"] = measure_turn_beta()
+        d_tables = measure_d_tables()
+        tables["d_rudder"] = [[f, None] if f == 0.0 else [f, d]
+                              for f, d in d_tables["rudder"]]
+        tables["d_oar"] = d_tables["oar"]
+        # persist the LL cells for future runs (keyed by commit+dt)
+        _save_cache(commit, dict(tables=tables, d_tables=d_tables))
 
     tau_hold = measure_state_tau("hold")
     tau_back = measure_state_tau("back")

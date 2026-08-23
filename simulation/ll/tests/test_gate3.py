@@ -38,11 +38,11 @@ def turn(V0_kt, **kw):
     return run_turn(ship)
 
 
-def speed_after_kt(V0_kt, t_end, **kw):
+def speed_after_kt(V0_kt, t_end, dt=0.02, **kw):
     ship = Ship(**kw)
     ship.V = V0_kt * KT
-    for _ in range(int(t_end / 0.01)):
-        ship.step(0.01)
+    for _ in range(int(t_end / dt)):
+        ship.step(dt)
     return ship.V / KT
 
 
@@ -132,7 +132,7 @@ def test_trim():
     ship = Ship(rate=R6)
     ship.V = 6.0 * KT
     while ship.t < 300:
-        ship.step(0.01)
+        ship.step(0.02)
     assert abs(ship.v) < 0.02, f"lateral velocity {ship.v:.3f} m/s (must damp)"
     assert abs(ship.psi) < 15.0 * math.pi / 180, \
         f"heading drift {ship.psi*180/math.pi:.1f} deg (physical Fy kick)"

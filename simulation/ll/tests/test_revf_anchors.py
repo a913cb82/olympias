@@ -32,7 +32,7 @@ def _settled_turn(rate, port_act, star_act, t_end=600.0):
     _two_tier(s, "port", port_act[1])
     _two_tier(s, "star", star_act[1])
     while s.t < t_end:
-        s.step(0.01)
+        s.step(0.02)
     return abs(s.omega) * 57.2958, s.V / 0.514444
 
 
@@ -42,13 +42,13 @@ def _kempf_overshoots(n_flips=8, t_end=3600.0):
     s = Ship(rate=28.8, pressure=("steady", "steady"))
     s.V = 0.0
     while s.t < 600.0:
-        s.step(0.01)
+        s.step(0.02)
     s.helm_dir, s.helm_frac = "port", 22.5 / 67.5
     TARGET = math.radians(20.0)
     flips, overs, run_max, prev_psi = 0, [], 0.0, 0.0
     start_t = s.t
     while s.t < start_t + t_end and flips < n_flips:
-        s.step(0.01)
+        s.step(0.02)
         p = s.psi
         if s.helm_dir == "port" and prev_psi < TARGET and p >= TARGET:
             flips += 1
@@ -106,7 +106,7 @@ def test_thranite_only_equilibrium():
         for t in ("zygian", "thalmian"):
             s.crew[side].tiers[t].set_pressure("rest")
     while s.t < 900.0:
-        s.step(0.01)
+        s.step(0.02)
     assert abs(s.V / 0.514444 - 4.19) < 0.1
 
 

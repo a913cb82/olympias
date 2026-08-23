@@ -67,6 +67,9 @@ def drag_force(V: float, hull: float = 1.0) -> float:
     return 0.0 if V < 0.05 else hull_power(V, hull) / V
 
 
+_EQ_LAST: dict[tuple, tuple[float, float]] = {}
+
+
 def equilibrium_speed(rig_name: str, spm: float, n_oars: int = N_OARS,
                       hull: float = 1.0, t_drive: float | None = None) -> dict:
     """Mean-force equilibrium: solve n_oars·T̄(V) = D(V) by bisection.
@@ -79,8 +82,21 @@ def equilibrium_speed(rig_name: str, spm: float, n_oars: int = N_OARS,
         res = simulate(Oar(RIGS[rig_name], spm, td), V, td / 600, n_cycles=4)
         return n_oars * res["mean_thrust"] - drag_force(V, hull)
 
+    key = (rig_name, hull, n_oars)
     lo, hi = 0.5, 6.5
-    for _ in range(60):
+    n_iter = 50
+    if key in _EQ_LAST:
+        prev_spm, prev_Ve = _EQ_LAST[key]
+        if abs(spm - prev_spm) < 6.0:
+            lo = max(0.5, prev_Ve - 0.8)
+            hi = min(6.5, prev_Ve + 0.8)
+            # ensure the bracket still holds; expand if not
+            if g(lo) <= 0:
+                lo = 0.5
+            if g(hi) >= 0:
+                hi = 6.5
+            n_iter = 40
+    for _ in range(n_iter):
         mid = 0.5 * (lo + hi)
         if g(mid) > 0:
             lo = mid
@@ -88,6 +104,7 @@ def equilibrium_speed(rig_name: str, spm: float, n_oars: int = N_OARS,
             hi = mid
     Ve = 0.5 * (lo + hi)
     res = simulate(Oar(RIGS[rig_name], spm, td), Ve, td / 600, n_cycles=4)
+    _EQ_LAST[key] = (spm, Ve)
     return dict(V=Ve, thrust_oar=res["mean_thrust"], mean_fh=res["mean_fh"],
                 t_drive=td)
 
@@ -157,7 +174,7 @@ class SurgeHull:
                     settle_time=settle_time, peak_fh=peak_fh, wmean=wmean)
 
 
-def run_cruise(rig_name: str, spm: float, t_end: float = 600.0, dt: float = 0.01,
+def run_cruise(rig_name: str, spm: float, t_end: float = 600.0, dt: float = 0.02,
                fh_max: float | None = None, n_oars: int = N_OARS,
                v0: float | None = None) -> dict:
     """Convenience: equilibrium speed, then a full coupled run from 0.9·V*."""

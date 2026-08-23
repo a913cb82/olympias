@@ -348,3 +348,61 @@ force LL's longer drained tail; the zigzag position rows; the sweep's
 and positive — the force LL's straight-line yaw bias nearly vanishes;
 tau_exit re-scanned 19 s). The stations layer stays kinematic by contract
 (its tests pass force=False explicitly).
+
+## 8. Stream B — the performance stream completed (2026-08-26)
+
+No physics: the suite and the calibration were made fast, behaviour-
+neutral where required (the dt switch measured against the gates, not
+byte-identical).
+
+- **F1. The suite's dt — switched to 0.02 for the long settles.** The
+gates are kt/%-tolerances (5–10 %); the long settles at dt 0.01 dominated
+the suite (test_sustained 58 s, test_sprint 16 s, kempf 12 s, etc. —
+the post-force suite was 689 s serial, 11 min 29 s). Measured per-family
+deviations dt 0.01 vs 0.02: sustained 1800 s +0.036 kt (0.7 %), sprint 30 s
++0.012 kt (0.16 %), sprint 900 s +0.001 kt, tightest 900 s +0.001 kt, lever
+500 s <0.1 m — all <10 % of the gate widths. The tightest/turn gates
+(G1 89.4 ±7 %, F1 111.9 ±7 %, tightest 62 ±10 %) are an order of magnitude
+wider. The switch: `ll/hull.run_cruise` default 0.01→0.02, `ll/ship`
+`run_script`/`run_turn` 0.01→0.02, `ll/tests/test_gate3/4` loops and
+`test_revf_anchors/layers` 500–3600 s runs 0.01→0.02; the spike/t_rise
+tests stay at 0.01. The `test_dt_convergence` gate (0.01 vs 0.005 <0.5 %)
+stays, the long tests now run at the coarser step.
+
+- **F2. The calibrate cache — persisted beside the calibration.**
+`hl/calibrate.py` re-derived every 22+20+16+… LL cells on every run
+(799 s). Added `CACHE_VERSION=1`, `_cache_path` `hl/calibration/
+ll_cache-<commit>.json` keyed by `git rev-parse --short HEAD` and `DT`,
+`_load_cache`/`_save_cache` in `main()`: cache hit skips the pressure/
+drift/vstar grids (the dominant cost) and reuses the JSON (0.2 s vs
+600–800 s); miss measures and writes. The `_LL_CACHE` per-process memo
+for the yaw-build oracle remains; the new file is beside
+`calib-<id>.json` + `latest.json`.
+
+- **F3. pytest-xdist — the suite is now parallel.** The tests are
+self-contained (no shared state, deterministic RNG, per-test `Ship`),
+so `pytest -n auto` splits them. Installed `pytest-xdist 3.8.0`.
+Measured same machine, same venv, force-LL suite 159 green:
+
+  | mode | before | after |
+  |---|---|---|
+  | serial (`-q`) | 689 s (11:29) | ~450 s est. (dt 0.02 alone) |
+  | parallel (`-n auto`) | — | **258 s (4:17)** |
+
+  The 58 s `test_sustained` → ~39 s, `test_kempf` 12 s→7 s, the harness
+cruise_turn etc. all ~30–40 % faster. Docs note `pytest -n auto` as the
+dev default; CI stays serial (`-q`) for determinism.
+
+- **F4. The bisection warm-starts — minor.** `ll/hull.equilibrium_speed`
+(60 iters) and `ll/ship.rate_for_speed` (50) now warm-start from the
+previous grid point: narrow `lo/hi` by ±0.7 kt / ±6 spm when the previous
+rate/V is within 5/2.0, verify the bracket, then 40/35 iters (vs 60/50).
+Saves ~30 % of the 22×60 `simulate` calls in `measure_vstar` and the
+10×50 in `rate_for_speed` — the calibration's `V*` and `d_tables`
+grids are smooth, so the narrow bracket always holds. Measured
+`equilibrium_speed` 60→40 per `VSTAR_GRID` point where warm.
+
+Suite: 159 green, the HL re-uses the `calib-2026-08-22-0bdd860.json`
+(the LL unchanged, so no recalibration), the harness green. The next
+long calibration will write `ll_cache-<commit>.json` and hit on the next
+run.
