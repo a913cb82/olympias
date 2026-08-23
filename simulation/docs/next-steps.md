@@ -20,9 +20,9 @@ gates the next); the streams themselves do not block each other — their
 cross-feed is information only (noted per step). The E-tags (E1–E8) are the
 earlier section's names, kept for traceability.
 
-Serial priority (simplest direction, one stream at a time): **E → B → C → D** — E is behaviour-neutral hygiene that speeds every later run; B closes the last fitted class-A rows; C is the independent second opinions (C3 is a 1h decisive measurement, C1 is the heavy transcription); D is the portability scope decision. Physics-first alternative: `B → E → C → D`.
+Serial priority (simplest direction, one stream at a time): **B → C → D → E** — B is behaviour-neutral hygiene that speeds every later run; C closes the last fitted class-A rows; D is the independent second opinions (D3 is a 1h decisive measurement, D1 is the heavy transcription); E is the portability scope decision. Physics-first alternative: `C → B → D → E`.
 
-### Stream E — the performance stream (engineering hygiene)
+### Stream B — the performance stream (engineering hygiene)
 
 No physics: speed of the simulators and the suite. Behaviour-neutral by
 construction — every step re-verifies the trajectories byte-identical to
@@ -49,7 +49,7 @@ measured-priority order:
   iterations × 4-cycle sims per call — warm-start from the previous
   rate's root (the curves are smooth). Minor; only if F1–F3 land.
 
-### Stream B — the hull grounding: the real-lines program
+### Stream C — the hull grounding: the real-lines program
 
 The Plan-2 completion plus the lateral family (the drift item, the
 per-station layer's grounding). Computes the class-A rows (A_lat, clr)
@@ -77,9 +77,9 @@ turn gates re-run + the HL re-calibration (the Plan-2 loop).
   physics follow); Iz = m(L/3)² = 5.28e6 (Rg from the 1:24-model pendulum
   tests) vs the LL's Iz. Cheap; run with the gates.
 
-### Stream C — the second opinions (independent measurements of the same ship)
+### Stream D — the second opinions (independent measurements of the same ship)
 
-Inform Stream B; never block it (Stream A is done).
+Inform Stream C; never block it (Stream A is done).
 
 - **C1. The independent-model cross-check (E4).** Transcribe the decoded
   VBA (ManAcceleration / OarForces / RudderForces — the Clarke–Gedling–
@@ -104,7 +104,7 @@ Inform Stream B; never block it (Stream A is done).
   ~8, the E/A5 family is the suspect. Either way the T1 ledger gets a
   verdict.
 
-### Stream D — the portability program (the tuning rule's test)
+### Stream E — the portability program (the tuning rule's test)
 
 A larger scope; the kick-off is a decision.
 
@@ -122,7 +122,7 @@ A larger scope; the kick-off is a decision.
 
 ## Kick-off (what is parallelizable now)
 
-Serial priority is `E → B → C → D`; if parallel, `F1` (suite dt), `B1` (the audit), `C3` (a measurement) and `C1` (the transcription) are all independent starts; Streams B and C run independently. The full acceptance + the HL re-calibration re-run after every promoted change.
+Serial priority is `B → C → D → E`; if parallel, `F1` (suite dt), `B1` (the audit), `C3` (a measurement) and `C1` (the transcription) are all independent starts; Streams C and D run independently. The full acceptance + the HL re-calibration re-run after every promoted change.
 
 ## Risks (the named ones)
 
