@@ -20,6 +20,35 @@ gates the next); the streams themselves do not block each other — their
 cross-feed is information only (noted per step). The E-tags (E1–E8) are the
 earlier section's names, kept for traceability.
 
+Serial priority (simplest direction, one stream at a time): **E → B → C → D** — E is behaviour-neutral hygiene that speeds every later run; B closes the last fitted class-A rows; C is the independent second opinions (C3 is a 1h decisive measurement, C1 is the heavy transcription); D is the portability scope decision. Physics-first alternative: `B → E → C → D`.
+
+### Stream E — the performance stream (engineering hygiene)
+
+No physics: speed of the simulators and the suite. Behaviour-neutral by
+construction — every step re-verifies the trajectories byte-identical to
+HEAD before it ships (the probes and the 159-check suite). The landed
+passes (2026-08-24) are recorded in completed-work §6 (suite 318 → 237 s;
+the stations layer's tests −53 %); only the open levers follow, in
+measured-priority order:
+
+- **F1. The suite's time step (the biggest remaining lever).** The gates
+  are kt/%-tolerances; the long settle tests (300–900 s sims at dt = 0.01,
+  some already at 0.02) dominate the suite's 237 s. Doubling dt for the
+  long runs halves their cost; the LL has a dt-convergence gate
+  (test_dt_convergence) — measure each scenario family's deviation at
+  0.02 against the gate widths BEFORE switching any. The fixed-step rule
+  is about replayability (determinism), not the value.
+- **F2. hl/calibrate.py's LL cells.** The `_LL_CACHE` is per-process —
+  every ~12-min run re-derives the yaw-gate and pressure-cell rows.
+  Persist the cached rows keyed by the LL commit (a JSON beside the
+  calibration) and/or parallelize the independent cell grid (multiprocess).
+- **F3. pytest-xdist for the suite.** The suite is ~95 % CPU-bound LL
+  runs, the tests are self-contained — `pytest -n auto` splits them
+  across cores (a dev convenience; determinism is per-test).
+- **F4. The bisection helpers** (`rate_for_speed`, `run_hull`): 50
+  iterations × 4-cycle sims per call — warm-start from the previous
+  rate's root (the curves are smooth). Minor; only if F1–F3 land.
+
 ### Stream B — the hull grounding: the real-lines program
 
 The Plan-2 completion plus the lateral family (the drift item, the
@@ -91,38 +120,9 @@ A larger scope; the kick-off is a decision.
   Tables 1/2 — image reading) and the workbook's 15 charts' plotted series
   — feeds D1's inputs and C1's fidelity.
 
-### Stream E — the performance stream (engineering hygiene)
-
-No physics: speed of the simulators and the suite. Behaviour-neutral by
-construction — every step re-verifies the trajectories byte-identical to
-HEAD before it ships (the probes and the 159-check suite). The landed
-passes (2026-08-24) are recorded in completed-work §6 (suite 318 → 237 s;
-the stations layer's tests −53 %); only the open levers follow, in
-measured-priority order:
-
-- **F1. The suite's time step (the biggest remaining lever).** The gates
-  are kt/%-tolerances; the long settle tests (300–900 s sims at dt = 0.01,
-  some already at 0.02) dominate the suite's 237 s. Doubling dt for the
-  long runs halves their cost; the LL has a dt-convergence gate
-  (test_dt_convergence) — measure each scenario family's deviation at
-  0.02 against the gate widths BEFORE switching any. The fixed-step rule
-  is about replayability (determinism), not the value.
-- **F2. hl/calibrate.py's LL cells.** The `_LL_CACHE` is per-process —
-  every ~12-min run re-derives the yaw-gate and pressure-cell rows.
-  Persist the cached rows keyed by the LL commit (a JSON beside the
-  calibration) and/or parallelize the independent cell grid (multiprocess).
-- **F3. pytest-xdist for the suite.** The suite is ~95 % CPU-bound LL
-  runs, the tests are self-contained — `pytest -n auto` splits them
-  across cores (a dev convenience; determinism is per-test).
-- **F4. The bisection helpers** (`rate_for_speed`, `run_hull`): 50
-  iterations × 4-cycle sims per call — warm-start from the previous
-  rate's root (the curves are smooth). Minor; only if F1–F3 land.
-
 ## Kick-off (what is parallelizable now)
 
-C3 (a measurement), B1 (the audit) and C1 (the transcription) are all
-independent starts; Streams B and C run independently. The full acceptance
-+ the HL re-calibration re-run after every promoted change.
+Serial priority is `E → B → C → D`; if parallel, `F1` (suite dt), `B1` (the audit), `C3` (a measurement) and `C1` (the transcription) are all independent starts; Streams B and C run independently. The full acceptance + the HL re-calibration re-run after every promoted change.
 
 ## Risks (the named ones)
 
