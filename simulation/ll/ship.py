@@ -22,7 +22,8 @@ from __future__ import annotations
 
 import math
 
-from common.chain import KT, RHO, RIGS, VESSELS, OMEGA_CROSSFLOW, hull_power
+from common.chain import (KT, RHO, RIGS, VESSELS, OMEGA_CROSSFLOW,
+                           CLR_OFFSET_REAL, hull_power)
 from ll.hull import t_drive_for
 from ll.oar import simulate
 from ll.rig import LEVER_OAR
@@ -59,19 +60,19 @@ class Ship:
         pass force=False explicitly)."""
         self.rig_name = rig_name
         self.vessel = VESSELS[rig_name]        # Taylor ch.31 parameters
-        # The sway-calibrated values (calibrate_sway.py): the physical
-        # oar-race lever (~the athwartships arm — the fitted 4.8 m folded
-        # in the lateral dynamics the sway now models explicitly, register
-        # C3) and the effective yaw resistance with the physical CLR
-        # restoring moment in (register C1). The vessel's own Omega (5e6)
-        # and LEVER_OAR (4.8) stay for the steady research model.
+        # The grounded hull (Stream C B1/B3): A_lat, J, Omega, m_app and Iz
+        # are now from the real Lines Plan (basis_hull_offsets.tsv, LWL
+        # 32.35 m, trial WL 1.10 m). The parametric hull_form (p=1.5,q=0.8)
+        # is deleted; the fitted 4.8 m lever is decomposed to the physical
+        # 1.8 m athwartships arm (register C3) and the sway-calibrated
+        # CLR restoring moment is now the computed x_clr−x_cg.
         self.lever = 1.8
-        # Omega: the computed cross-flow pure-rotation moment
-        # (common.chain.OMEGA_CROSSFLOW = ½·rho·0.3·J, the drag-crisis C_D
-        # and the parametric hull + the ram; the audit's closure: the
-        # trial-fitted 3.2e6 equals it at 1.6 % — register C1 resolved).
-        # The pre-computation reference (the fitted 3.2e6) lives in the
-        # register; the lever 1.8 and the clr_offset 0.8 stay fitted.
+        # Omega: the grounded cross-flow pure-rotation moment
+        # (common.chain.OMEGA_REAL = ½·rho·0.27·J_REAL, J=23217 at trial WL,
+        # x_cg at LCB 15.67 m; C_D 0.27 is the lower edge of the 0.30–0.60
+        # drag-crisis band, rectangular vs tapered reconciliation, DECODE C9).
+        # The parametric 3.25e6 at C_D 0.30 (=1.6% from fitted 3.20e6) is the
+        # documented reference in the register.
         self.Omega = OMEGA_CROSSFLOW
         self.m_app = self.vessel.m_app
         self.I = self.vessel.I
@@ -126,10 +127,11 @@ class Ship:
         self.y = 0.0
         self.t = 0.0
         self._tempo_violation = 0.0
-        # The centre of lateral resistance, forward of the CG (m) — the
-        # sway-calibrated value (calibrate_sway.py); Coates plans would
-        # pin it [?]
-        self.clr_offset = 0.8
+        # The centre of lateral resistance, forward of the CG (m) — now
+        # grounded: x_clr 16.60 m from AP at trial WL 1.10 (real hull
+        # Simpson), x_cg at LCB 15.67 m (even keel) => 0.93 m forward.
+        # The fitted 0.8 m (calibrate_sway.py) is the documented reference.
+        self.clr_offset = CLR_OFFSET_REAL
 
 
     # ------------------------------------------------------------------

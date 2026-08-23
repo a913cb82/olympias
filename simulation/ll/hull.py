@@ -22,11 +22,17 @@ no-ceiling regime near cruise.
 
 from __future__ import annotations
 
-from common.chain import RIGS, T_DRIVE, SPM, hull_power
+from common.chain import M_REAL, RIGS, T_DRIVE, SPM, hull_power
 from ll.oar import Oar, simulate
 
-M_TRIAL = 41.35e3          # kg — trial displacement (2)
-M_APP_FACTOR = 1.10        # apparent-mass factor (2)
+M_TRIAL = M_REAL          # kg — trial displacement, now grounded: 40.95 t
+                          # at trial WL 1.10 m (real hull, 44.44 m³ design
+                          # WL 45.55 t, Vol 39.95 m³ trial; the parametric
+                          # 41.35 t is the documented reference).
+M_APP_FACTOR = 1.10        # apparent-mass factor (2) — the 1.10× potential-
+                          # flow value; the real hull's added mass is kept
+                          # at 1.10× for B3 (full J-based added mass is a
+                          # separate refinement).
 N_OARS = 170               # Olympias oar count
 
 

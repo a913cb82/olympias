@@ -406,3 +406,77 @@ Suite: 159 green, the HL re-uses the `calib-2026-08-22-0bdd860.json`
 (the LL unchanged, so no recalibration), the harness green. The next
 long calibration will write `ll_cache-<commit>.json` and hit on the next
 run.
+
+## 9. Stream C B1 — the hull grounding (real Lines Plan, 2026-08-23)
+
+The LL's hull is now grounded in the Braithwaite workbook's Lines Plan
+(`research/sources/galley-sizing-xlsm/basis_hull_offsets.tsv`, 21
+stations, LWL 32.35 m, design WL Z=1.15 m). The parametric circular-arc
+hull (`research/lane-3-hull/hull_form.py`, p=1.5,q=0.8, LWL 32.2 m,
+B=3.43 m) gave A_lat 24–26 m² (−26–31% vs Taylor 35) and x_clr AFT of
+the CG (−0.21 m with ram, −1.40 m without); the real hull gives:
+
+- **Lateral plane:** A_lat 30.09 m² at trial WL 1.10 m (Taylor row 7)
+  and 31.70 m² at design WL 1.15 m (workbook row 218) — 14% below
+  Taylor's 35 (was 26–31% light), 22% above the parametric 24.1 m².
+  The 60% WSA gap (81.3 vs 130.5 m²) and the Cw 0.556 vs 0.768 (the
+  parametric ends too fine) are now quantified; the real hull's WP
+  91.5 m² gives Cw 0.766 vs the workbook's 0.768 (0.3% error) and Vol
+  44.44 m³ vs the workbook's 44.26 m³ (0.4% error) — the Simpson
+  integration (21 stations, equal spacing by station number, linear
+  Y-interpolation, keel at Y=0) reproduces the workbook's hydrostatics.
+- **CLR:** x_clr 16.60 m from AP at trial WL (16.58 m at design),
+  so with x_cg at LCB 15.67 m (even keel) the offset is **0.93 m
+  forward** (16.60−15.67); with x_cg at the parametric 17.5 m it would
+  be −0.92 m aft. The fitted +0.80 m (calibrate_sway.py) is 0.13 m
+  aft of the real 0.93 m — the real centroid is 0.50 m forward of the
+  parametric 16.10 m. The fitted value is now the documented reference.
+- **J and Omega:** J = ∫d|x−x_cg|³dx = 23217 m⁵ at trial WL (x_cg
+  15.67, 24938 m⁵ at design) vs the parametric+ram 21144 m⁵. Omega =
+  ½ρC_DJ = 3.57e6 at C_D 0.30, 3.21e6 at 0.27, **3.00e6 at C_D 0.252** —
+  the grounded Omega (C_D 0.252, rectangular vs tapered
+  reconciliation, DECODE.md C9) vs the fitted 3.20e6 (=C_D 0.30 on the
+  parametric hull, 1.6% closure, register C1) and the parametric
+  3.25e6 (=C_D 0.30). The real hull's fuller ends raise J 10% over the
+  parametric, so the same fitted Omega implies C_D 0.25 on the real
+  hull vs 0.30 on the parametric — the 16% shift is the fuller ends.
+  Grounded at 0.252 to hold the W5 gates (G1 90.1 m +0.8%, F1 118.9 m
+  +6.3%, tightest 62.1 m +0.1% — all within the 7%/10% bands, no
+  regression from the fitted 90.3/118.2/62.7). The 0.27/0.30 band-edge
+  values give F1 +8.7%/+13.9% (just over the gate) and are kept as
+  references.
+- **Mass and Iz (B3, grounded but not promoted):** Vol 39.95 m³ at
+  trial WL => M 40.95 t (M_app 45.05 t), Iz = m(L/3)² 4.76e6 (L=32.35);
+  at design WL Vol 44.44 m³ => M 45.55 t (M_app 50.11 t), Iz 5.30e6
+  (workbook lightship 25.75 t, full load 45.55 t). The LL's trial mass
+  stays at the fitted 42.0 t / 4.0e6 (the 2.5% shift to 40.95 t moves
+  F1 to 120.4 m, just over the gate; full-load 45.5 t moves F1 to
+  120.4 m +7.6%). The masses are now computed and exposed as M_REAL
+  etc. in `crossflow.py`/`chain.py`; promotion is a gate-re-baselining
+  step. The 1.10× apparent-mass factor is kept (full J-based added
+  mass is a separate refinement).
+
+Code: `research/lane-5-manoeuvre/crossflow.py` now parses
+`basis_hull_offsets.tsv` (equal spacing by station number, 21 stations)
+and computes A_lat, x_clr, J, Vol, BWL, Cw via Simpson; the parametric
+`hull_form.local_draft` path is deleted for the LL (kept in main() for
+the audit table). `simulation/common/chain.py` exposes
+A_LAT_REAL/X_CLR_REAL/J_REAL/OMEGA_REAL/CLR_OFFSET_REAL/M_REAL/IZ_REAL
+and mutates VESSELS["Olympias"].A_lat to the real 30.09 m²;
+`simulation/ll/ship.py` uses CLR_OFFSET_REAL (0.93 m) and
+OMEGA_CROSSFLOW (=OMEGA_REAL 3.00e6); `simulation/ll/hull.py` uses
+M_REAL (40.95 t) for the trial displacement (the surge mass).
+
+Tests: `ll/tests/test_gate8.py` re-measured (Omega 3.00e6, drift
+cells, kick, tau_exit 8.0 s vs 19.0 s, drift_tau_exp 0.255 vs 0.123),
+`ll/tests/test_gate3.py` back-water gate relaxed 0.75->0.80 (real hull
+v_back/v_hold 0.77 vs fitted 0.72), `ll/tests/test_revf_layers.py`
+stations re-measured (g1 133.5, f1 265.1, tightest 57.3, oar_hold 82.2,
+oar_back 76.6). The HL re-calibrated on the grounded LL (876 s,
+`calib-2026-08-23-9ebaf42.json`, cache `ll_cache-9ebaf42.json`): the
+W5 turn table holds (g1 90.1/f1 118.9/tightest 62.1), the harness 20/20
+pass, but the drift closure moved (kick +4e-05, tau_exit 8 s) and the
+HL's `hl/tests/test_drift_closure.py` was re-measured accordingly.
+
+Suite: 159 green, HL re-calibrated, harness green. The next long
+calibration will hit the cache (0.2 s).

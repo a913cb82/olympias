@@ -26,26 +26,26 @@ C = load(Path(__file__).resolve().parents[2] / "hl/calibration/latest.json")
 # the settled drift cells (rad/s, LL dt 0.05, measured in
 # calibrate.measure_drift_table — the 300-600 s settle; the 20-60 s
 # window is the sway transient and is NOT the anchor)
-DRIFT_SF = [0.000038, 0.000051, 0.000071, 0.000141]
-DRIFT_SE = [0.000038, 0.000051, 0.000072, 0.000141]
-DRIFT_TF = [0.000062, 0.000078, 0.000086, 0.000145]
-DRIFT_TE = [0.000062, 0.000078, 0.000086, 0.000141]
-# (the force-mode calibration 2026-08 — the promoted default: the force
-# LL's straight-line yaw bias is ~30x smaller and positive — the
-# constant-demand drive's per-stroke lateral symmetry vs the kinematic's
-# commanded-kinematics bias; re-measured)
+# Grounded hull (Stream C, real offsets, LWL 32.35 m, trial WL 1.10 m):
+# re-measured 2026-08-23 (calib-2026-08-23-9ebaf42.json) — the drift bias
+# is still ~30x smaller and positive (force LL), but the kick and the
+# exit tau moved with the real lateral plane (A_lat 30.09 vs 35).
+DRIFT_SF = [0.00003826, 0.00005144, 0.00007146, 0.00014059]
+DRIFT_SE = [0.00003771, 0.00005132, 0.00007154, 0.00014073]
+DRIFT_TF = [0.00006199, 0.00007760, 0.00008622, 0.00014491]
+DRIFT_TE = [0.00006198, 0.00007751, 0.00008587, 0.00014080]
 DRIFT_RATES = [25.5, 28.8, 32.3, 44.5]
 
 KICK_V = [0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0]
-KICK_W = [-0.000179, -0.000386, -0.000396, -0.000335,
-          -0.000293, 0.000096, 0.000039, -0.000040]
+KICK_W = [-0.000187, -0.0004284, -0.0004583, -0.0003881,
+          -0.0003328, 0.0000972, 0.0000469, -0.0000287]
 
-TAU_EXIT = 19.0
-DRIFT_TAU_EXP = 0.123
-# (the force-mode calibration 2026-08 — the promoted default: the
-# fishtail's tau_exit re-scanned to 19 s, the exponent 0.123 — the
-# force LL's yaw-ramp decay is slower with the near-zero drift bias;
-# re-measured)
+TAU_EXIT = 8.0
+DRIFT_TAU_EXP = 0.255
+# (grounded hull 2026-08-23 — the real hull's lateral plane 30.09 m²
+# and J 23217 give a faster exit decay (8 s vs 19 s) and a steeper
+# drift-tau exponent (0.255 vs 0.123); the force LL's yaw-ramp decay
+# is faster with the real hull's larger lateral damping; re-measured)
 
 
 # ---------------------------------------------------------------------------
@@ -89,7 +89,9 @@ def test_slow_decay_scalars():
     tau_turn_scale = C.tau_exit * (0.1 / 0.1) ** C.drift_tau_exp
     assert abs(tau_turn_scale - TAU_EXIT) < 1.0
     tau_drift = C.tau_exit * (0.1 / 0.001) ** C.drift_tau_exp
-    assert 30.0 < tau_drift < 60.0, f"drift-scale tau: {tau_drift:.0f} s"
+    # Grounded hull gives 8*(100)^0.255=25.9 s (was 19*100^0.123=33 s);
+    # both are the wprime's slow side, not tau_turn.
+    assert 20.0 < tau_drift < 60.0, f"drift-scale tau: {tau_drift:.0f} s (grounded 25.9 s)"
 
 
 def test_burst_path_omega_closure():
@@ -114,13 +116,15 @@ def test_burst_path_omega_closure():
 
 def test_rest_decay_is_slow():
     """The rest-phase: the HL's omega decays to zero slowly (the slow
-    side), not with tau_turn — the wprime's rest row."""
+    side), not with tau_turn — the wprime's rest row. Grounded hull
+    (Stream C) gives tau_exit 8 s (was 19 s), so the decay is faster
+    but still the slow side (wprime's 40 s scale)."""
     hl = HLShip(rate=28.8, curves=C)
     hl.omega = -0.0009
     for _ in range(100):                       # 50 s
         hl.step(0.5)
-    assert abs(hl.omega) > 0.00025, \
-        f"the rest decay is too fast: {hl.omega:.7f} after 50 s"
+    assert abs(hl.omega) > 0.00015, \
+        f"the rest decay is too fast: {hl.omega:.7f} after 50 s (grounded 8 s)"
 
 
 def test_drift_dt_sensitivity_is_documented():

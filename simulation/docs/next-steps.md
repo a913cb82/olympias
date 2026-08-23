@@ -1,54 +1,69 @@
 # Next steps — the open work
 
-Status 2026-08-24. Everything DONE lives in `completed-work.md` (the verdict
+Status 2026-08-23. Everything DONE lives in `completed-work.md` (the verdict
 ledger). Context: the deep-dive in `comparison-with-ll.md`.
 
 The standing rule: the gates are the posterior — nothing is promoted or
 changed without the acceptance re-run (VALIDATION §0–8) and the HL
 re-calibration; nothing is tuned silently (the oQ-18 discipline). Current
 state: **the force-driven oar is the PROMOTED default (Stream A complete,
-2026-08)** — the stroke emerges from the rower's demand + the oar's
-inertia + the blade's water force; the kinematic commanded-kinematics
-mode stays as the labelled reference layer (force=False). Ω is computed
-(the cross-flow audit); clr_offset/A_lat fitted (class-A — the real
-lines are now in hand, Stream C B1).
+2026-08) and the hull is GROUNDED in the real Lines Plan (Stream C B1
+complete, 2026-08-23)** — the stroke emerges from the demand + inertia +
+blade force; the hull's lateral plane (A_lat 30.09 m² at trial WL 1.10 m),
+CLR (0.93 m forward, x_clr 16.60 m from AP) and cross-flow J (23217 m⁵)
+are now computed from `basis_hull_offsets.tsv` (LWL 32.35 m, 21 stations);
+Omega = ½ρ·0.252·J = 3.00e6 (C_D 0.252, rectangular vs tapered
+reconciliation, DECODE C9); the parametric hull_form (p=1.5,q=0.8) is
+deleted. The kinematic layer stays as the labelled reference (force=False).
 
 ## The work streams
 
-Three orthogonal tracks (Streams A and B are done — see `completed-work.md §7` and `§8`). Within a stream the steps are a sequence (a step
-gates the next); the streams themselves do not block each other — their
-cross-feed is information only (noted per step). The E-tags (E1–E8) are the
-earlier section's names, kept for traceability.
+Two orthogonal tracks remain (Streams A, B and C B1 are done — see
+`completed-work.md §7`, `§8` and `§9`). Within a stream the steps are a
+sequence (a step gates the next); the streams themselves do not block
+ each other — their cross-feed is information only (noted per step).
+The E-tags (E1–E8) are the earlier section's names, kept for traceability.
 
-Serial priority (simplest direction, one stream at a time): **C → D → E** — C closes the last fitted class-A rows; D is the independent second opinions (D3 is a 1h decisive measurement, D1 is the heavy transcription); E is the portability scope decision.
+Serial priority (simplest direction, one stream at a time): **C(b2/b3) → D → E** — C's remaining B2/B3 close the last lever/mass rows; D is the independent second opinions (D3 is a 1h decisive measurement, D1 is the heavy transcription); E is the portability scope decision.
 
 ### Stream C — the hull grounding: the real-lines program
 
 The Plan-2 completion plus the lateral family (the drift item, the
-per-station layer's grounding). Computes the class-A rows (A_lat, clr)
-that Stream A's turns depend on. Each step: if the values move → the LL
-turn gates re-run + the HL re-calibration (the Plan-2 loop).
+per-station layer's grounding). The hull's class-A rows (A_lat, clr, J)
+are now grounded in the real Lines Plan (B1 complete, 2026-08-23); the
+parametric hull_form is deleted. Each remaining step: if the values move
+→ the LL turn gates re-run + the HL re-calibration (the Plan-2 loop).
 
-- **B1. The real-lines cross-flow audit (E1).** The lateral plane, A_lat,
-  the CLR and the cross-flow J from
-  `research/sources/galley-sizing-xlsm/basis_hull_offsets.tsv` (the
-  parametric hull + the assumed ram were the named gap). Targets: the
-  fitted clr_offset +0.8 m (the parametric hull computed AFT), Taylor's
-  A_lat 35 m² (the parametric hull was 26–31 % light), and the CN split —
-  the workbook's rectangular projection with CN 0.4 vs 0.8 vs our
-  tapered-plane C_D 0.30 should collapse to one value on the real plane.
-  Also bears on the drift-angle open item (the model's 1.4° vs the trials'
-  8–15° — the lateral force's distribution).
+- **B1. DONE — the real-lines cross-flow audit (E1).** Grounded:
+  A_lat 30.09 m² at trial WL 1.10 m (31.70 m² at design WL 1.15 m),
+  x_clr 16.60 m from AP, CLR offset 0.93 m forward (x_clr−x_cg, x_cg at
+  LCB 15.67 m even keel), J 23217 m⁵ (x_cg 15.67), Omega = ½ρ·0.252·J =
+  3.00e6 (C_D 0.252, the rectangular 0.4/0.8 vs tapered 0.30
+  reconciliation, DECODE C9; the parametric J 21144 at C_D 0.30 gave
+  3.25e6 (=1.6% from fitted 3.20e6) is the documented reference). The
+  fitted clr_offset +0.8 m and Taylor A_lat 35 m² are superseded; the
+  real hull's lateral plane is 14% below Taylor (was 26–31% light on
+  the parametric) and the CLR is 0.13 m forward of the fitted value —
+  the W5 turns hold (G1 90.1 m +0.8%, F1 118.9 m +6.3%, tightest 62.1 m
+  +0.1%) with no regression, the HL re-calibrated (calib-2026-08-23-
+  9ebaf42.json, 876 s, cache ll_cache-9ebaf42.json). The drift-angle
+  open item (1.4° vs 8–15°) is unchanged (the lateral distribution, not
+  the area, drives it).
 - **B2. The lateral strengthening + the sway re-calibration (A1's
   follow-ups).** The per-station layer's grounding: the station decode
   (the plan pins the thole arms — the register B6 material), the lateral
   model's strengthening (the drift item's own fix — would absorb the oar
   turns' counter), and the sway re-calibration with the layer as the
   default (the lever's elimination is the fitting reduction).
-- **B3. The mass and Iz reconciliations (E2/E6).** The LL's ship mass vs
-  the workbook's 45.5 t full load / 25.75 t light (m_app and the turn
-  physics follow); Iz = m(L/3)² = 5.28e6 (Rg from the 1:24-model pendulum
-  tests) vs the LL's Iz. Cheap; run with the gates.
+- **B3. The mass and Iz reconciliations (E2/E6) — grounded but not
+  promoted.** The real hull gives M 40.95 t at trial WL 1.10 m (Vol
+  39.95 m³) and 45.55 t at design WL 1.15 m (Vol 44.44 m³, the workbook's
+  44.26 m³), M_app 45.05 t/50.11 t, Iz = m(L/3)² 4.76e6/5.30e6 (L=32.35 m,
+  Rg L/3 from the 1:24-model pendulum). The LL's trial mass stays at the
+  fitted 42.0 t / 4.0e6 (the 2.5% shift to 40.95 t moves F1 +1.6% to
+  120.4 m, just over the 7% gate; the full-load 45.5 t moves F1 +7.6%
+  to 120.4 m). The masses are now computed and exposed as M_REAL etc.
+  in `crossflow.py`/`chain.py`; promotion is a gate-re-baselining step.
 
 ### Stream D — the second opinions (independent measurements of the same ship)
 
@@ -95,7 +110,11 @@ A larger scope; the kick-off is a decision.
 
 ## Kick-off (what is parallelizable now)
 
-Serial priority is `C → D → E`; if parallel, `B1` (the audit), `C3` (a measurement) and `C1` (the transcription) are all independent starts; Streams C and D run independently. The full acceptance + the HL re-calibration re-run after every promoted change.
+Serial priority is `C(b2/b3) → D → E`; if parallel, `B2` (the station
+decode), `C3` (a measurement) and `C1` (the transcription) are all
+independent starts; Streams C and D run independently. The full acceptance
++ the HL re-calibration re-run after every promoted change. Stream C B1
+is done and the HL is re-calibrated on it (calib-2026-08-23-9ebaf42).
 
 ## Risks (the named ones)
 

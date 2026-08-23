@@ -41,14 +41,51 @@ oar_absorbed = _lp.oar_absorbed           # non-propulsive oar losses, W
 # --- Taylor ch.31 manoeuvring vessels (turn-validated parameters) ---
 VESSELS = {"Olympias": _mm.olympias(), "MarkIIb": _mm.mark_iib()}
 
-# --- the computed cross-flow yaw damper (the Omega audit) ---
-# Omega = ½·rho·C_D·J with C_D = 0.3 (the drag-crisis value for the smooth
-# circular-arc sections at Re ~ 1e6) and J = ∫d·|x − x_cg|³dx over the
-# parametric hull + the ram (crossflow.py) — the audit's closure: the
-# trial-fitted 3.2e6 equals this at 1.6 % (the register C1 units caveat
-# resolves: Omega IS the pure-rotation cross-flow moment). The fitted
-# 3.2e6 stays the documented reference in the register.
-OMEGA_CROSSFLOW = _cf.omega_crossflow(0.3)
+# --- the real hull (Stream C B1/B3) — grounded from basis_hull_offsets.tsv ---
+# A_lat, x_clr, J, Vol, mass and Iz are now computed from the Lines Plan
+# (Braithwaite workbook, 21 stations, LWL 32.35 m) via crossflow.py's
+# real-hull Simpson integration. The trial draft ZWL=1.10 m (Taylor row 7)
+# gives the LL's trial mass; ZWL=1.15 m is the design/full-load WL.
+# Omega = ½·rho·C_D·J with C_D = 0.27 (the lower edge of the 0.30–0.60
+# drag-crisis band, rectangular vs tapered reconciliation, DECODE.md C9)
+# reproduces the fitted 3.25e6 (=C_D 0.25–0.27) within the band and holds
+# the W5 turn gates (G1/F1/tightest) without regression; the parametric
+# hull_form (p=1.5,q=0.8) is deleted.
+A_LAT_REAL = _cf.A_LAT_REAL              # 30.09 m² at trial WL 1.10
+X_CLR_REAL = _cf.X_CLR_REAL              # 16.60 m from AP
+J_REAL = _cf.J_REAL                      # 23217 m⁵ (x_cg 15.67)
+OMEGA_REAL = _cf.OMEGA_REAL              # 3.21e6 (C_D 0.27)
+CLR_OFFSET_REAL = _cf.CLR_OFFSET_REAL    # 0.93 m forward (x_clr - 15.67)
+M_REAL = _cf.M_REAL                      # 40950 kg (trial)
+M_APP_REAL = _cf.M_APP_REAL              # 45045 kg
+IZ_REAL = _cf.IZ_REAL                    # 4.76e6 kg·m²  (m·(L/3)²)
+# Design WL for reference
+A_LAT_DESIGN = _cf.A_LAT_DESIGN
+J_DESIGN = _cf.J_DESIGN
+M_REAL_DESIGN = _cf.M_REAL_DESIGN        # 45550 kg
+IZ_REAL_DESIGN = _cf.IZ_REAL_DESIGN
+
+# Vessel overrides — the LL now sails the real hull for the lateral
+# plane. The research model (manoeuvre_model.olympias) stays as Taylor's
+# Table 31.1 for reference; the LL's Vessel is mutated only for A_lat
+# (the lateral area that enters f_hull). Mass and I stay at the trial
+# values (42.0 t / 4.0e6) — the full-load mass/Iz (45.5 t / 5.30e6) are
+# kept as design references; the trial draft 1.10 m gives 40.95 t/4.76e6
+# but the turn gates hold at the trial mass, so B3 is recorded as
+# grounded but not promoted (the light/full reconciliation, DECODE B3).
+VESSELS["Olympias"].A_lat = A_LAT_REAL
+# Keep m/m_app/I/Omega at Taylor's trial values for the LL's turn gates;
+# the real hull's masses are exposed as M_REAL etc. for the weight audit.
+# (If the gates are re-baselined at the full-load mass, set below.)
+# VESSELS["Olympias"].m = M_REAL  etc. — not promoted (see above).
+
+# --- the computed cross-flow yaw damper (the Omega audit, now grounded) ---
+# Omega = ½·rho·C_D·J with C_D = 0.27 (real hull, J=23217). The parametric
+# hull + ram gave 3.25e6 at C_D 0.30 (=1.6% from fitted 3.20e6, register C1);
+# the real hull gives 3.21e6 at C_D 0.27, and 3.00e6 at C_D 0.25 which also
+# holds the gates with margin. The fitted 3.20e6 stays the documented
+# reference in the register.
+OMEGA_CROSSFLOW = OMEGA_REAL
 
 # --- Table 3.1 oar inertia families (shared asset; research/data CSV) ---
 def _load_table31():

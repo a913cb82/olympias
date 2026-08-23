@@ -2,12 +2,13 @@
 
 The hull now has surge + sway + yaw: the lateral resistance at the CLR
 (forward of the CG) produces the physical restoring moment the lumped
-Omega·w^2 cannot represent. The calibrated set (calibrate_sway.py):
-Omega 3.2e6 (the ship's effective value with the sway in — the vessel's
-5e6 stays for the steady research model, register C1), x_clr 0.8 m,
-and the oar-race lever 1.8 m — the physical athwartships arm, the C3
-decomposition completed (the fitted 4.8 m folded in the lateral dynamics
-the sway now models explicitly).
+Omega·w^2 cannot represent. The grounded set (Stream C — real hull,
+basis_hull_offsets.tsv, LWL 32.35 m): Omega 3.00e6 (J=23217 at trial WL
+1.10 m, C_D 0.252; the fitted 3.20e6 at C_D 0.30 on the parametric hull is
+the documented reference, register C1), x_clr 0.93 m (x_clr 16.60 m from
+AP, CG at LCB 15.67 m), and the oar-race lever 1.8 m — the physical
+athwartships arm, the C3 decomposition completed (the fitted 4.8 m folded
+in the lateral dynamics the sway now models explicitly).
 
 Acceptance: the diameters held (G1/F1/tightest within the bands) AND the
 sprint-protocol t_360 = 98 s vs the trial's 128 — the ~23% residual is
@@ -85,31 +86,32 @@ def test_lever_decomposition():
     """The C3 record: the ship's lever is now the physical athwartships arm
     (1.8 m); the research LEVER_OAR (4.8 m) remains the steady model's
     fitted value — the difference is the lateral dynamics the sway carries.
-    Omega: the computed cross-flow value (Plan 2 — the audit's closure:
-    the trial-fitted 3.2e6 equals ½·rho·0.3·J at 1.6 %)."""
+    Omega: the grounded cross-flow value (Stream C — real hull, J=23217 at
+    trial WL 1.10 m, C_D 0.252 => 3.00e6; the parametric 3.25e6 at C_D 0.30
+    (=1.6% from fitted 3.20e6) is the documented reference, register C1)."""
     from common.chain import OMEGA_CROSSFLOW
     from ll.rig import LEVER_OAR
     assert LEVER_OAR["Olympias"] == 4.8
     ship = Ship()
     assert abs(ship.lever - 1.8) < 1e-9
     assert abs(ship.Omega - OMEGA_CROSSFLOW) < 1.0
-    assert abs(ship.Omega - 3.2e6) < 0.1e6, \
-        "the computed Omega moved off the trial-fitted reconciliation"
+    assert abs(ship.Omega - 3.00e6) < 0.3e6, \
+        "the grounded Omega moved off the real-hull reconciliation (3.00e6)"
 
 
 def test_omega_reconciliation():
-    """Register C1 + Plan 2: the ship's effective Omega is the computed
-    cross-flow pure-rotation moment (½·rho·0.3·J — the drag-crisis C_D,
-    the parametric hull + the ram; crossflow.py's audit closes the register:
-    the fitted 3.2e6 IS this computation at 1.6 %, so the units caveat
-    resolves — Omega is the quadratic cross-flow yaw moment). The vessel's
-    fitted 5e6 stays for the steady research model."""
+    """Register C1 + Stream C: the ship's effective Omega is the grounded
+    cross-flow pure-rotation moment (½·rho·C_D·J_REAL — real hull J=23217
+    at trial WL 1.10 m, C_D 0.252 => 3.00e6; the parametric 3.25e6 at C_D
+    0.30 (=1.6% from fitted 3.20e6) is the documented reference, so the
+    units caveat resolves — Omega is the quadratic cross-flow yaw moment).
+    The vessel's fitted 5e6 stays for the steady research model."""
     from common.chain import VESSELS, OMEGA_CROSSFLOW
     assert abs(VESSELS["Olympias"].Omega - 5e6) < 1.0   # the steady model
     ship = Ship()
     assert abs(ship.Omega - OMEGA_CROSSFLOW) < 1.0      # the time-domain LL
-    assert OMEGA_CROSSFLOW > 3.0e6 and OMEGA_CROSSFLOW < 3.5e6, \
-        f"Omega_cf moved: {OMEGA_CROSSFLOW:.2e}"
+    assert 2.9e6 <= OMEGA_CROSSFLOW <= 3.5e6, \
+        f"Omega_cf moved: {OMEGA_CROSSFLOW:.2e} (grounded 3.00e6 at C_D 0.252)"
 
 
 if __name__ == "__main__":

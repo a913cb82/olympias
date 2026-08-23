@@ -58,8 +58,13 @@ def test_stations_turn_diameters(stations_turns):
     stays). The pattern is INVERTED vs the trials (the g1's 2.6x wider
     while the oar turns' 23% tighter) — the layer's net turn pattern
     does not match reality yet (the over-damping, next-steps A1)."""
-    expected = dict(g1=132.9, f1=261.2, tightest=57.6,
-                    oar_hold=81.9, oar_back=77.7)
+    # Grounded hull (Stream C, real offsets, LWL 32.35 m, trial WL 1.10 m):
+    # mid-body Ywl 1.845->A_lat 30.09, J 23217, Omega 3.00e6, clr 0.93.
+    # Stations layer re-measured (kinematic, force=False): g1 133.5,
+    # f1 265.1 (+1.5% vs parametric), tightest 57.3, oar_hold 82.2,
+    # oar_back 76.6 — still inverted vs trials, aggregated default stays.
+    expected = dict(g1=133.5, f1=265.1, tightest=57.3,
+                    oar_hold=82.2, oar_back=76.6)
     for name, d in stations_turns.items():
         key = name.replace("-", "_")
         assert abs(d - expected[key]) < 3.0, f"{name}: {d:.1f}"
