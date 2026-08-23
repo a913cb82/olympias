@@ -260,11 +260,14 @@ no CLI: `from commands.parser import parse_file, parse_script` — errors raise
 
 ## Status (current state)
 
-All three phases are complete: the LL is the validated oracle
-(VALIDATION §1–§8 — the honest mismatch ledger §7), the HL is the
-machine-calibrated fast ship, and the pair harness produces the Level-2
+All three phases are complete and the force-driven oar is the **promoted
+default** (completed-work §7 — `Ship(force=True)`; kinematic is the
+labelled reference `force=False`): the LL is the validated oracle
+(VALIDATION §1–§8 — the honest mismatch ledger §7, now §5a promoted),
+the HL is the machine-calibrated fast ship
+(`calib-2026-08-22-0bdd860.json`), and the pair harness produces the Level-2
 equivalence tables (VALIDATION §9) with the annotated script run in
-`harness/equivalence-annotated.md`. The suite is green (141 checks; the
+`harness/equivalence-annotated.md`. The suite is green (159 checks; the
 per-gate count lives in VALIDATION §8). The coverage map
 (VALIDATION §10) shows only validated / open-with-locked-test /
 annotated (documented HL-loose) rows; the open items, their quantified

@@ -15,57 +15,10 @@ lines are now in hand, Stream B1).
 
 ## The work streams
 
-Five orthogonal tracks. Within a stream the steps are a sequence (a step
+Four orthogonal tracks (Stream A — the force-driven oar — is done, see `completed-work.md §7`). Within a stream the steps are a sequence (a step
 gates the next); the streams themselves do not block each other — their
 cross-feed is information only (noted per step). The E-tags (E1–E8) are the
 earlier section's names, kept for traceability.
-
-### Stream A — the force-driven oar: the promotion sequence — DONE (2026-08)
-
-The force mode is the promoted default (P1.6). The sequence's outcomes:
-
-- **A1 — the turns in force mode ✓**: the W5 acceptance on the force
-  layer: G1 90.3 m (+1.0 %), F1 118.2 m (+5.6 %), tightest 62.7 m
-  (+1.1 %) — all within the bands.
-- **A2 — the sprint and the cruise triple — investigated and resolved as
-  the chain's L basis**: the force mode's emerging blade efficiency
-  (0.758–0.775) matches the chain's E (0.756–0.78) to ~0.3 %; its
-  pull length (the oar arc lin·B = 0.804, matching the shipboard
-  measured strokes 0.75–0.85 and the sprint-validated effective chord
-  0.78) sits ON the Olympias's own power chain (the hull=1.0 triple
-  6.65/7.13/7.62 vs the chain's 6.57/7.15/7.69 — within ~1 %). The ch.7
-  triple itself is Shaw's MARK II table (his ch.7 appendix: L = 0.99,
-  E = 0.78, hull ×1.08 — `[x]`); the force mode's flat −6.3 % vs it is
-  exactly that L basis — the Olympias's stroke is too short for 7–8 kt
-  at those rates (ch.9's own claim). The demand now carries the chain's
-  pull-length geometry (Fh = P·cosC_mean — the mean tangential
-  projection; the EOM previously counted the full arc, ~3 % over). The
-  sprint's named residual (−7 % at the 30-s point): the midship's
-  straight-rudder drag (the turn-validated 39.4·V² — the ch.9's
-  validation used the bare hull law) + the demand geometry; the W' was
-  re-anchored to the force mode's excess (5.0 → 6.0 kJ — the same ch.9
-  trial, the flip now counted) and the endurance holds ~45 s.
-- **A3 — the MarkIIb — resolved**: the force mode reaches the chain's
-  design speed at the full demand (9.58 kt vs Table 9.7's 9.7 —
-  −1.2 %); the old "cap at 5.1" was the W'-drained state, not the
-  physics. The kinematic's 6.06 shortfall (oQ-18) is gone in force
-  mode; the A5 register's drive-time tension quantified (the emerging
-  drive 0.41–0.43 s vs the measured 0.472 at the 0.078 m² blade — the
-  B2 polar is the named closing path).
-- **A4 — the promotion**: Ship's force default True; the full
-  acceptance re-run (the LL gates, the HL re-calibration
-  `calib-2026-08-22-0bdd860.json`, the harness); the backing's check
-  (the moderate-speed full flat-plate — the kinematic's own parked-blade
-  convention — with the trailing 8 % above the w_p threshold) landed as
-  the shared back-hold; the stations layer stays kinematic by contract
-  (its tests pass force=False explicitly).
-- **A5 — the docs**: VALIDATION §5a/§10/§11, CALIBRATION rows 1/2/3/12,
-  the registers — updated. The class-C carry-overs stay flagged: the
-  flip's t_rise, the kinematic recovery `[?]`, HOLD_FRAC's grip, the
-  thalmian shape, the B3 profile shape.
-
-The kinematic mode remains the labelled reference layer (force=False —
-its tests and the triple lock are untouched).
 
 ### Stream B — the hull grounding: the real-lines program
 
@@ -97,7 +50,7 @@ turn gates re-run + the HL re-calibration (the Plan-2 loop).
 
 ### Stream C — the second opinions (independent measurements of the same ship)
 
-Inform Streams A and B; never block them.
+Inform Stream B; never block it (Stream A is done).
 
 - **C1. The independent-model cross-check (E4).** Transcribe the decoded
   VBA (ManAcceleration / OarForces / RudderForces — the Clarke–Gedling–
@@ -114,12 +67,13 @@ Inform Streams A and B; never block them.
   trial-speed-validated and stays unless a gate says otherwise.
 - **C3. The no-head-room sprint test (E3) — T1's decisive cheap
   measurement.** The workbook's 9.95 kt is all-170 at the trials thrust law
-  with NO thalmian shortfall; our LL's sprint (7.45 kinematic / 7.72 force)
-  uses the fitted head-room 0.6 at 44.5 spm. Run the LL with the thalmian
-  factor 1.0: if the equilibrium approaches ~9.9, the whole sprint deficit
-  is the head-room shape (the class-C row), not the blade law; if it stays
+  with NO thalmian shortfall; our LL's sprint (force promoted: 7.65 kt
+  @ 44.5 spm, 0.6 head-room; no-head-room 9.16 kt) uses the fitted
+  head-room 0.6 at 44.5 spm. Run the LL with the thalmian factor 1.0:
+  if the equilibrium approaches ~9.9, the whole sprint deficit is the
+  head-room shape (the class-C row), not the blade law; if it stays
   ~8, the E/A5 family is the suspect. Either way the T1 ledger gets a
-  verdict — A2's first input.
+  verdict.
 
 ### Stream D — the portability program (the tuning rule's test)
 

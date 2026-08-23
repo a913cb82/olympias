@@ -144,17 +144,18 @@ no gate.
 The stroke (drive time, sweep, the ω profile) EMERGES from the rower's
 applied force + the oar's inertia + the blade's water force; the measured
 kinematics (Table 9.6's 0.43 s, the sweep) become the gates, not the
-inputs. Status: `ll/oar.py` force mode + `Ship(force=True)`, default OFF;
-the kinematic mode untouched.
+inputs. Status at P1.5: `ll/oar.py` force mode + `Ship(force=True)`,
+default OFF — the kinematic mode untouched. **Now PROMOTED — see §7
+(the force mode is the Ship's default; kinematic is `force=False`).**
 
 **The key discovery:** the drive SELF-BALANCES — the oar settles at the
 speed where the blade drag exactly absorbs the demand
 (vn = −√(Fh·lin/(k·l_cp))), never a stall — so the emerging stroke IS the
 measured stroke without a fitted timing schedule.
 
-**The results** (locked in `ll/tests/test_force_drive.py` F1-1..F1-7 and
+**The results at P1.5** (locked in `ll/tests/test_force_drive.py` F1-1..F1-7 and
 `ll/tests/test_force_ship.py` F2-1..F2-3; VALIDATION §5a, §8, §11-T1;
-CALIBRATION rows 1–2 marked IN PROGRESS):
+CALIBRATION rows 1–2 marked IN PROGRESS — **now DONE, see §7**):
 - the emerging drive times at the four Table 9.6 points
   **1.005/0.972/0.925/0.932** (the Olympias pair ±5 %; the MarkIIb −7 %/−7 %
   — the A5 family); the emerging thrust at 7.2 kt 0.976 × the kinematic;
@@ -177,9 +178,10 @@ flip, the drive substeps at 1e-3, the recovery kinematic `[?]`) ✅; P1.3
 (the single-oar validation — the 4-point ±5 % gate) ✅; P1.4 (the crew
 integration — TierCrew/SideCrew/Ship force plumbing, the thalmian factor
 scales the DEMAND at the source) ✅; P1.5 (the ship gates — measured,
-locked as the layer's own gates; the trials' acceptance at P1.6) 🟡.
+locked as the layer's own gates) ✅; P1.6 the promotion **DONE** (see §7).
 
-The suite: 162 checks green (the kinematic default untouched).
+The suite at P1.5: 162 checks green (the kinematic default untouched;
+now 159 with the force default — §7).
 
 ## 3. Plan 2 — the cross-flow audit: verdict executed 2026-08-22
 
