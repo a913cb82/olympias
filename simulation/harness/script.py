@@ -70,11 +70,11 @@ def turn_stream(rate: float, helm: tuple, oar_state=("row", "row")) -> list:
     from commands.parser import Command
 
     cmds = [
-        Command(time=0.0, verb="rate", args=[rate], lineno=1),
-        Command(time=0.0, verb="helm", args=[helm[0], float(helm[1])], lineno=2),
+        Command(time=0.0, verb="rate", args=(rate,), lineno=1),
+        Command(time=0.0, verb="helm", args=(helm[0], float(helm[1])), lineno=2),
     ]
     if oar_state[0] != "row" or oar_state[1] != "row":
         side = "starboard" if oar_state[1] != "row" else "port"
         state = oar_state[1] if oar_state[1] != "row" else oar_state[0]
-        cmds.append(Command(time=0.0, verb="oars", args=[state, side], lineno=3))
+        cmds.append(Command(time=0.0, verb="oars", args=(state, side), lineno=3))
     return cmds

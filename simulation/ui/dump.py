@@ -43,7 +43,7 @@ TURN_LABELS = {
 
 def write_log(
     id_: str, sim: str, label: str, meta: dict, commands: list, rows: list
-) -> None:
+) -> Path:
     LOGS.mkdir(exist_ok=True)
     payload = {
         "meta": dict(label=label, sim=sim, sim_label=SIM_LABEL[sim], **meta),

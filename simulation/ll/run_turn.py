@@ -13,7 +13,9 @@ the W5 validation (research/lane-5-manoeuvre/manoeuvre.md Part 3): G1 89.4 m, F1
 import argparse
 import math
 import sys
+from collections.abc import Callable
 from pathlib import Path
+from typing import Any, cast
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
@@ -22,7 +24,7 @@ from common.chain import KT
 
 from ll.ship import Ship, rate_for_speed, run_turn
 
-SCENARIOS = {
+SCENARIOS: dict[str, dict[str, Any]] = {
     "g1": {
         "V0": 6.0,
         "rate": lambda: rate_for_speed("Olympias", 6.0, n_oars=170),
@@ -61,10 +63,12 @@ SCENARIOS = {
 
 def run_one(name: str) -> None:
     cfg = SCENARIOS[name]
-    kw = {k: v for k, v in cfg.items() if k not in ("V0", "note", "rate")}
-    kw["rate"] = cfg["rate"]()
+    kw: dict[str, Any] = {
+        k: v for k, v in cfg.items() if k not in ("V0", "note", "rate")
+    }
+    kw["rate"] = cast(Callable[[], float], cfg["rate"])()
     ship = Ship(**kw)
-    ship.V = cfg["V0"] * KT
+    ship.V = cast(float, cfg["V0"]) * KT
     r = run_turn(ship)
     print(
         f"{name:10s} D={r['D']:7.1f} m  t_180={r['t_turn']:6.1f} s  "

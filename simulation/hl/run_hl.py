@@ -81,9 +81,19 @@ def run_one(name: str) -> None:
     cfg = SCENARIOS[name]
     from ll.ship import rate_for_speed  # build-time: the LL's rate
 
-    rate = rate_for_speed("Olympias", cfg["V0"], n_oars=cfg["n_oars"])
-    ship = Ship(rate=rate, oar_state=cfg["oar_state"], helm=cfg["helm"])
-    ship.V = cfg["V0"] * KT
+    v0_raw = cfg["V0"]
+    assert isinstance(v0_raw, (int, float))
+    v0 = float(v0_raw)
+    n_oars_raw = cfg["n_oars"]
+    assert isinstance(n_oars_raw, int)
+    n_oars = n_oars_raw
+    rate = rate_for_speed("Olympias", v0, n_oars=n_oars)
+    ship = Ship(
+        rate=rate,
+        oar_state=cfg["oar_state"],
+        helm=cfg["helm"],
+    )
+    ship.V = v0 * KT
     r = run_turn(ship)
     d_pct = (r["D"] / cfg["anchor"] - 1.0) * 100.0
     print(

@@ -64,7 +64,7 @@ from common.chain import CN, RHO
 #   "geometric" — Shaw's appendix d-formula slip limit: OFF by default — it
 #                contradicts the measured Table 9.6 kinematics (less
 #                thrust, negative at our points; lower bound, locked).
-TURNING_POINT = "actual"
+TURNING_POINT: str = "actual"
 
 # The macon-polars variant (the Rev F B2 item): the report's
 # Caplan-Gardiner approximations C_L = sin(2a), C_D = 2 sin^2 a — the
@@ -75,7 +75,7 @@ TURNING_POINT = "actual"
 # coefficient 2 sin a is 1.37x the flat plate's 1.8 sin^2 a — NOT
 # negligible; the chain's calibrated C_N·A product absorbs the
 # shortfall (the A5 register). OFF by default.
-BLADE_POLAR = False
+BLADE_POLAR: bool = False
 
 
 def _d_turning_point(C: float, B: float) -> float:

@@ -18,6 +18,7 @@ by the AIC.
 """
 
 import math
+from typing import Any
 
 import numpy as np
 from scipy.optimize import least_squares
@@ -144,7 +145,7 @@ def select_yaw_family(rec, dt, label="", force=None):
     (A, tf, ts, td) + the selection record."""
     ts = np.arange(1, len(rec) + 1) * dt
     ys = np.asarray(rec, float)
-    rows = []
+    rows: list[dict[str, Any]] = []
     for family in YAW_FAMILIES:
         hit = fit_yaw_family(ts, ys, family, yb_starts(family))
         if hit is None:
@@ -189,16 +190,18 @@ def select_yaw_family(rec, dt, label="", force=None):
                 "canon": can,
             }
         )
-    rows.sort(key=lambda r: r["aic"])
+    rows.sort(key=lambda r: float(r["aic"]))
     if not rows:
         raise RuntimeError(f"no yaw family fitted for {label}")
     pick = (
         next((r for r in rows if r["family"] == force), rows[0]) if force else rows[0]
     )
-    names = ("A", "tf", "ts", "td")[: len(pick["x"])]
+    pick_x: list[Any] = pick["x"]
+    pick_spans: dict[float, Any] = pick["spans"]
+    names = ("A", "tf", "ts", "td")[: len(pick_x)]
     spread = {}
     for i, name in enumerate(names):
-        vals = [s[i] for s in pick["spans"].values()]
+        vals = [s[i] for s in pick_spans.values()]
         spread[name] = (max(vals) - min(vals)) if vals else float("nan")
     can = yb_canonical(pick["family"], pick["x"], pick["ss"])
     return dict(
@@ -278,6 +281,8 @@ def fit_fp(vs, ds):
             rec = {"deg": deg, "p1": p1, "p2": p1, "rss": rss, "aic": aic, "loo": loo}
             if best is None or aic < best["aic"]:
                 best = rec
+    if best is None:
+        raise RuntimeError("no fractional polynomial fitted")
     p1, p2 = best["p1"], best["p2"]
     X = (
         fp_design(v, p1, p2)

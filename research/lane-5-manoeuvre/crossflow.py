@@ -184,30 +184,32 @@ def _load_real_offsets():
     import re
 
     text = _BASIS_TSV.read_text(encoding="utf-8")
-    stations = []
-    cur = None
+    stations: list[tuple[int, list[tuple[float, float]]]] = []
+    cur_pairs: list[tuple[float, float]] | None = None
     for line in text.splitlines():
         if line.startswith("# station"):
-            num = int(re.search(r"\d+", line.split("X=")[0]).group(0))
-            cur = {"num": num, "pairs": []}
-            stations.append(cur)
+            m = re.search(r"\d+", line.split("X=")[0])
+            assert m is not None
+            num = int(m.group(0))
+            cur_pairs = []
+            stations.append((num, cur_pairs))
         elif line.strip() == "" or line.strip().startswith("#"):
             continue
         else:
-            if cur is None:
+            if cur_pairs is None:
                 continue
             vals = line.strip().split()
             if len(vals) >= 2:
                 try:
-                    cur["pairs"].append((float(vals[0]), float(vals[1])))
+                    cur_pairs.append((float(vals[0]), float(vals[1])))
                 except ValueError:
                     pass
     # assign X equally spaced by station number: 21->0, 1->LWL_REAL
     dx = LWL_REAL / 20.0
-    out = []
-    for s in sorted(stations, key=lambda s: s["num"], reverse=True):
-        x = (21 - s["num"]) * dx
-        out.append((x, s["pairs"]))
+    out: list[tuple[float, list[tuple[float, float]]]] = []
+    for num, pairs in sorted(stations, key=lambda x: x[0], reverse=True):
+        x = (21 - num) * dx
+        out.append((x, pairs))
     return out
 
 

@@ -334,7 +334,7 @@ class Oar:
             h = dt / n
             fx = fy = fh = 0.0
             vn = fn = 0.0
-            s = None
+            s: OarStep | None = None
             for _ in range(n):
                 s = self._force_substep(h, V, ship_state)
                 fx += s.Fx * h
@@ -342,6 +342,7 @@ class Oar:
                 fh += s.Fh * h
                 vn += abs(s.vn) * h
                 fn += abs(s.Fn) * h
+            assert s is not None
             self.t_since_catch += dt
             return OarStep(
                 t=self.t_since_catch - dt,

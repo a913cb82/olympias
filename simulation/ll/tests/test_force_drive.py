@@ -230,6 +230,7 @@ def test_start_from_rest():
     assert oar.t_drive_last > 0.0, "the first drive from rest never finished"
     # and the handle force stayed at the demand (no deadspot spike)
     assert peak <= Fh_MAX * 1.001, f"peak Fh {peak:.0f} N at the start"
+    assert crew.plan is not None
     print(
         f"       first drive from rest: {oar.t_drive_last:.3f} s "
         f"(the kinematic deadspot would demand ~2 kN; the demand "

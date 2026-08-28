@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
 from common.chain import CN, OAR_TIER_MIT, RHO, RIGS
@@ -102,7 +103,7 @@ class TierCrew:
         t_rise: float = 0.15,
         hold_frac: float = HOLD_FRAC,
         power_factor: float = 1.0,
-        stations: list | None = None,
+        stations: list[Any] | None = None,
         side: int = 1,
         force: bool = False,
     ):
@@ -147,6 +148,7 @@ class TierCrew:
         self.hold_frac = hold_frac
         self.hold_k = hold_frac * self.k
         if stations:
+            assert self._rigs is not None
             self.oars = [
                 Oar(
                     rg,
@@ -191,6 +193,7 @@ class TierCrew:
         # integrates its own EOM) — it keeps the scalar loop.
         self._vgeo = None
         if stations:
+            assert self._rigs is not None
             xs = np.array([st[0] for st in stations])
             ys = np.array([st[1] for st in stations])
             lout = np.array([rg["lout"] for rg in self._rigs])
@@ -526,7 +529,7 @@ class TierCrew:
     # ------------------------------------------------------------------
     def step(
         self, dt: float, V: float, ship_state: tuple | None = None
-    ) -> tuple[float, float, float]:
+    ) -> tuple[float, float, float, float]:
         """Advance one step; returns (rowing force N/oar, fh_peak N,
         hold-brake force N/oar — split so the ship can use different yaw
         levers for the two: the brake is a keel-aligned drag at the oar
@@ -633,6 +636,7 @@ class TierCrew:
         blade FORCES sit at the pre-advance C (the step's start), the
         blade POSITIONS at the post-advance C (one dt later — the scalar
         loop reads o.C after o.step)."""
+        assert self._vgeo is not None
         xs, ys, lout, lin, l_cp, cf, slip = self._vgeo
         o0 = self.oar
         C0 = o0.C
@@ -694,9 +698,7 @@ class TierCrew:
                     mit=self.mit,
                     t_rise=self.t_rise,
                     force=self.force,
-                    station=(
-                        (st[0], st[1], self._side) if self._stations_geom else None
-                    ),
+                    station=((st[0], st[1], self._side) if st is not None else None),
                 )
                 for rg, st in zip(
                     self._rigs or (self.rig,), self._stations_geom or (None,)
@@ -726,7 +728,7 @@ class TierCrew:
                 mit=self.mit,
                 t_rise=self.t_rise,
                 force=self.force,
-                station=((st[0], st[1], self._side) if self._stations_geom else None),
+                station=((st[0], st[1], self._side) if st is not None else None),
             )
             for rg, st in zip(self._rigs or (self.rig,), self._stations_geom or (None,))
         ]
@@ -774,7 +776,7 @@ class SideCrew:
         fleet: str = "spruce",
         t_rise: float = 0.15,
         hold_frac: float = HOLD_FRAC,
-        stations: dict | None = None,
+        stations: dict[str, list[Any]] | None = None,
         side: int = 1,
         force: bool = False,
     ):
@@ -807,7 +809,7 @@ class SideCrew:
                 t_rise=t_rise,
                 hold_frac=hold_frac,
                 power_factor=1.0,
-                stations=stations and stations["thranite"],
+                stations=stations["thranite"] if stations else None,
                 side=side,
                 force=force,
             ),
@@ -823,7 +825,7 @@ class SideCrew:
                 t_rise=t_rise,
                 hold_frac=hold_frac,
                 power_factor=1.0,
-                stations=stations and stations["zygian"],
+                stations=stations["zygian"] if stations else None,
                 side=side,
                 force=force,
             ),
@@ -839,7 +841,7 @@ class SideCrew:
                 t_rise=t_rise,
                 hold_frac=hold_frac,
                 power_factor=thalmian_power_factor(rate),
-                stations=stations and stations["thalmian"],
+                stations=stations["thalmian"] if stations else None,
                 side=side,
                 force=force,
             ),

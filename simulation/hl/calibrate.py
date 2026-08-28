@@ -21,6 +21,7 @@ import subprocess
 import sys
 import time
 from pathlib import Path
+from typing import Any, cast
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
@@ -475,6 +476,7 @@ def measure_tau_exit():
         log(f"  tau_exit {tau:4.0f}: position err {err:.3f} NM")
         if err < best_err:
             best, best_err = tau, err
+    assert best is not None
     log(f"  tau_exit: {best:.0f} s (position err {best_err:.3f} NM)")
     return float(best)
 
@@ -535,9 +537,9 @@ def measure_tau_hold_at(rate, v0_kt=6.5, helm=("starboard", 1.0)):
     ll = LLShip(rate=rate, oar_state=("row", "hold"))
     ll.V = v0_kt * KT
     cmds = [
-        Command(0.0, "rate", [rate], 1),
-        Command(0.0, "helm", [helm[0], float(helm[1])], 2),
-        Command(0.0, "oars", ["hold", "starboard"], 3),
+        Command(0.0, "rate", (rate,), 1),
+        Command(0.0, "helm", (helm[0], float(helm[1])), 2),
+        Command(0.0, "oars", ("hold", "starboard"), 3),
     ]
     llV = {}
     evs, ix = list(cmds), 0
@@ -550,7 +552,8 @@ def measure_tau_hold_at(rate, v0_kt=6.5, helm=("starboard", 1.0)):
         if abs(ll.t - t) < 0.03 and 3 <= t <= 30:
             llV[t] = ll.V
     pts = [5, 10, 15, 30]
-    best, best_rms = None, None
+    best: float | None = None
+    best_rms: float | None = None
     for tau in (28.0, 24.0, 20.0, 18.0, 16.0, 14.0, 12.0, 10.0):
         hl = HLShip(rate=rate)
         hl.V = v0_kt * KT
@@ -566,8 +569,10 @@ def measure_tau_hold_at(rate, v0_kt=6.5, helm=("starboard", 1.0)):
             if abs(hl.t - t) < 0.03 and 3 <= t <= 30:
                 hv[t] = hl.V
         rms = math.sqrt(sum((hv[t] - llV[t]) ** 2 for t in pts) / len(pts))
-        if best is None or rms < best_rms:
+        if best is None or best_rms is None or rms < best_rms:
             best, best_rms = tau, rms
+    assert best is not None
+    assert best_rms is not None
     log(
         f"  tau_hold@{rate}: {best:.1f} s (the HL-V-shape rms "
         f"{best_rms * KT:.3f} kt over the 5-30 s window)"
@@ -632,6 +637,7 @@ def _collapse_window(
         diff = abs(hl_mean - ll_mean)
         if diff < best_diff:
             best, best_diff = tau, diff
+    assert best is not None
     log(
         f"  {state} {rate_before}->{rate_after} collapse: tau {best:.0f} s "
         f"(mean diff {best_diff * KT:.3f} kt; LL window mean {ll_mean / KT:.2f} kt)"
@@ -1094,6 +1100,7 @@ def fit_d_scale(tables, ll_d, scalars):
             err = abs(abs(ship.y) / d_ref - 1.0)
             if best is None or err < best[0]:
                 best = (err, s)
+        assert best is not None
         scales[name] = best[1]
         worst = max(worst, best[0])
         log(f"  d scale {name:9s}: {best[1]:.3f} (|y| err {best[0] * 100:.1f} %)")
@@ -1108,9 +1115,11 @@ def main() -> None:
     log(f"calibration run: {cal_id} (LL commit {commit})")
 
     cached = _load_cache(commit)
+    tables: dict[str, Any]
+    d_tables: Any
     if cached is not None:
-        tables = cached["tables"]
-        d_tables = cached["d_tables"]
+        tables = cast(dict[str, Any], cached["tables"])
+        d_tables = cast(Any, cached["d_tables"])
         # cached tables already contain all LL cells up to d_tables;
         # later LL-derived steps (tau_hold/back etc.) are cheap vs the
         # drift/pressure grids, but we also cache them if present
@@ -1382,7 +1391,7 @@ def measure_turn_beta():
         rate = rate_for_speed("Olympias", v0_kt, n_oars=n_oars)
         ship = LLShip(rate=rate, oar_state=oar_state)
         ship.V = v0_kt * KT
-        ship.apply(Command(0.0, "helm", list(helm), 1))
+        ship.apply(Command(0.0, "helm", tuple(helm), 1))
         bs = []
         while ship.t < 150.0:
             ship.step(DT)

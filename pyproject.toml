@@ -7,18 +7,5 @@ exclude = [".venv", ".git", "__pycache__", "research/sources/galley-sizing-xlsm/
 extra-paths = ["simulation", "research/lane-4-oars", "research/lane-5-manoeuvre", "research/lane-3-hull", "research/lane-6-validation", "research/sources/recovery/wayback"]
 python-version = "3.10"
 
-[tool.ty.rules]
-invalid-argument-type = "ignore"
-not-subscriptable = "ignore"
-unsupported-operator = "ignore"
-unresolved-attribute = "ignore"
-invalid-return-type = "ignore"
-invalid-assignment = "ignore"
-unresolved-reference = "ignore"
-call-non-callable = "ignore"
-not-iterable = "ignore"
-no-matching-overload = "ignore"
-unresolved-import = "ignore"
-
 [tool.ruff.lint]
 ignore = []

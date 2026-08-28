@@ -21,6 +21,7 @@ Gates (the LL gates — docs/VALIDATION.md):
 import math
 import sys
 from pathlib import Path
+from typing import Any, cast
 
 import pytest
 
@@ -119,13 +120,21 @@ def test_sprint_peak():
 
 def test_rest_start():
     ship = Ship(rate=44.5)
-    stats = {"pk": 0.0, "min_sweep": 9.9, "first": None, "v10": None, "v600": None}
+    stats: dict[str, Any] = {
+        "pk": 0.0,
+        "min_sweep": 9.9,
+        "first": None,
+        "v10": None,
+        "v600": None,
+    }
 
     def obs(s):
         for crew in s.crew.values():
-            stats["pk"] = max(stats["pk"], crew.last_fh)
+            stats["pk"] = max(cast(float, stats["pk"]), crew.last_fh)
             if crew.plan:
-                stats["min_sweep"] = min(stats["min_sweep"], crew.plan.sweep)
+                stats["min_sweep"] = min(
+                    cast(float, stats["min_sweep"]), crew.plan.sweep
+                )
                 if stats["first"] is None:
                     stats["first"] = crew.plan
         if abs(s.t - 10) < 0.02:

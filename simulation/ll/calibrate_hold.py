@@ -64,6 +64,7 @@ def main():
         print(f"{f:9.3f} {D:7.1f} {t360:8.1f} {V:9.2f} {score:7.3f}")
         if best is None or score < best[0]:
             best = (score, f, D, t360, V)
+    assert best is not None
     print(
         f"\nbest: hold_frac = {best[1]:.3f} -> D = {best[2]:.1f} m "
         f"(anchor 62), t_360 = {best[3]:.1f} s (anchor 128), "
