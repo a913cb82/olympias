@@ -17,19 +17,20 @@ Contract (the pair contract (simulation/AGENTS.md) Level 1; W5 manoeuvre.md Part
     (Q ∝ v², ω ∝ v) — checked explicitly.
 """
 
-import sys
-import pytest
 import math
+import sys
 from pathlib import Path
+
+import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
+from commands.parser import parse_file
 from common.chain import KT
 from ll.ship import Ship, rate_for_speed, run_turn
-from commands.parser import parse_file
 
-R6 = rate_for_speed("Olympias", 6.0, n_oars=170)     # full-crew balance @ 6 kt
-RT = rate_for_speed("Olympias", 6.5, n_oars=85)      # one-side balance @ 6.5 kt
+R6 = rate_for_speed("Olympias", 6.0, n_oars=170)  # full-crew balance @ 6 kt
+RT = rate_for_speed("Olympias", 6.5, n_oars=85)  # one-side balance @ 6.5 kt
 
 
 def turn(V0_kt, **kw):
@@ -47,6 +48,7 @@ def speed_after_kt(V0_kt, t_end, dt=0.02, **kw):
 
 
 # --- 1. rudder turns (W5 anchors) ---
+
 
 def test_g1():
     r = turn(6.0, rate=R6, helm=("port", 1.0))
@@ -78,11 +80,12 @@ def test_tightest_sprint_protocol():
         ship.step(0.02)
         ymax = max(ymax, abs(ship.y))
     assert 62.0 * 0.90 <= ymax <= 62.0 * 1.10, f"D = {ymax:.1f} m"
-    assert ship.V / KT < 4.0, f"speed must halve: V_360 = {ship.V/KT:.2f} kt"
+    assert ship.V / KT < 4.0, f"speed must halve: V_360 = {ship.V / KT:.2f} kt"
     assert 70 <= ship.t <= 110, f"t_360 = {ship.t:.0f} s (residual band)"
 
 
 # --- 2. oar-only turns (no anchors — physical consistency, oQ-3) ---
+
 
 def test_oar_hold():
     r = turn(6.5, rate=RT, oar_state=("row", "hold"), helm=("midship", 0.0))
@@ -102,23 +105,28 @@ def test_back_water():
     r_hold = turn(6.5, rate=RT, oar_state=("row", "hold"), helm=("midship", 0.0))
     r_back = turn(6.5, rate=RT, oar_state=("row", "back"), helm=("midship", 0.0))
     assert r_back["track"][1] < 0
-    assert abs(r_back["D"] / r_hold["D"] - 1) < 0.15, \
-        f"back @6.5kt D {r_back['D']:.1f} must ~= hold {r_hold['D']:.1f} " \
-        f"(the trailing regime — the blades trail at the entry speeds; " \
+    assert abs(r_back["D"] / r_hold["D"] - 1) < 0.15, (
+        f"back @6.5kt D {r_back['D']:.1f} must ~= hold {r_hold['D']:.1f} "
+        f"(the trailing regime — the blades trail at the entry speeds; "
         f"the check engages only below the w_p threshold)"
+    )
     assert r_back["D"] > 40.0, f"back D {r_back['D']:.1f} — sanity"
     rl_hold = turn(2.0, rate=RT, oar_state=("row", "hold"), helm=("midship", 0.0))
     rl_back = turn(2.0, rate=RT, oar_state=("row", "back"), helm=("midship", 0.0))
-    assert rl_back["D"] < rl_hold["D"], f"low-speed back D {rl_back['D']:.1f} < hold {rl_hold['D']:.1f}"
+    assert rl_back["D"] < rl_hold["D"], (
+        f"low-speed back D {rl_back['D']:.1f} < hold {rl_hold['D']:.1f}"
+    )
     # active backing cancels much of the forward thrust: the ship stays slow
     # (the forward-stroke side still dominates, so it does not stop). The
     # ratio is re-based on the force-mode measurement (0.72 — the back's
     # trailing regime at the entry speeds, the hold-brake's 8 %; the
     # check engages as the ship slows below the ceiling).
-    v_hold = speed_after_kt(2.0, 120, rate=RT, oar_state=("row", "hold"),
-                            helm=("midship", 0.0))
-    v_back = speed_after_kt(2.0, 120, rate=RT, oar_state=("row", "back"),
-                            helm=("midship", 0.0))
+    v_hold = speed_after_kt(
+        2.0, 120, rate=RT, oar_state=("row", "hold"), helm=("midship", 0.0)
+    )
+    v_back = speed_after_kt(
+        2.0, 120, rate=RT, oar_state=("row", "back"), helm=("midship", 0.0)
+    )
     # Real hull (Stream C, A_lat 30.09 vs 35, J 23217) gives
     # v_back/v_hold 0.77 vs fitted 0.72; gate relaxed 0.75->0.80
     # (still well below 1.0, the hold-brake's 8 % and the check's w_p).
@@ -126,6 +134,7 @@ def test_back_water():
 
 
 # --- 3. dynamics properties ---
+
 
 def test_trim():
     """With the sway DOF the symmetric crew still holds course, within the
@@ -137,8 +146,9 @@ def test_trim():
     while ship.t < 300:
         ship.step(0.02)
     assert abs(ship.v) < 0.02, f"lateral velocity {ship.v:.3f} m/s (must damp)"
-    assert abs(ship.psi) < 15.0 * math.pi / 180, \
-        f"heading drift {ship.psi*180/math.pi:.1f} deg (physical Fy kick)"
+    assert abs(ship.psi) < 15.0 * math.pi / 180, (
+        f"heading drift {ship.psi * 180 / math.pi:.1f} deg (physical Fy kick)"
+    )
 
 
 def test_speed_independent():
@@ -163,7 +173,9 @@ def test_script_smoke():
     """The sample command script runs end-to-end on the Ship (first full
     command-language → LL pipeline). Start near cruise: rest-start needs the
     oQ-13 force ceiling (Gate-2 note)."""
-    cmds = parse_file(Path(__file__).resolve().parents[2] / "examples" / "cruise_turn.txt")
+    cmds = parse_file(
+        Path(__file__).resolve().parents[2] / "examples" / "cruise_turn.txt"
+    )
     ship = Ship()
     ship.run_script(cmds, dt=0.02, V0=5.0 * KT)
     snap = ship.snap()
@@ -172,9 +184,9 @@ def test_script_smoke():
             assert math.isfinite(v), f"non-finite {k}"
     # the ship may end slightly astern after the back-water manoeuvre (the
     # sway + the astern thrust) — the speed magnitude must stay sane
-    assert abs(snap["V"] / KT) < 12.0, f"speed {snap['V']/KT:.2f} kt"
+    assert abs(snap["V"] / KT) < 12.0, f"speed {snap['V'] / KT:.2f} kt"
     assert abs(snap["x"]) < 4e4 and abs(snap["y"]) < 4e4
-    assert snap["crew"]["star"]["state"] == "bank"   # final command executed
+    assert snap["crew"]["star"]["state"] == "bank"  # final command executed
 
 
 if __name__ == "__main__":

@@ -7,7 +7,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from commands.parser import Command, ScriptError, parse_file, parse_script, load_schema
+from commands.parser import Command, ScriptError, load_schema, parse_file, parse_script
 
 SCHEMA = load_schema()
 SAMPLE = Path(__file__).resolve().parents[1] / "examples" / "cruise_turn.txt"
@@ -16,7 +16,15 @@ SAMPLE = Path(__file__).resolve().parents[1] / "examples" / "cruise_turn.txt"
 def test_sample_script_parses():
     cmds = parse_file(SAMPLE, SCHEMA)
     assert [c.verb for c in cmds] == [
-        "rate", "pressure", "rate", "helm", "oars", "oars", "rate", "pressure", "oars"
+        "rate",
+        "pressure",
+        "rate",
+        "helm",
+        "oars",
+        "oars",
+        "rate",
+        "pressure",
+        "oars",
     ]
     assert cmds[0] == Command(time=0.0, verb="rate", args=(30.0,), lineno=4)
     assert cmds[4].args == ("hold", "starboard")
@@ -25,9 +33,9 @@ def test_sample_script_parses():
 
 def test_optional_args_take_defaults():
     cmds = parse_script("10, oars, back\n20, helm, port\n30, pressure, spoude", SCHEMA)
-    assert cmds[0].args == ("back", "both")        # side defaults to both
-    assert cmds[1].args == ("port", 1.0)           # helm fraction defaults to 1
-    assert cmds[2].args == ("spoude", "both")      # pressure side defaults to both
+    assert cmds[0].args == ("back", "both")  # side defaults to both
+    assert cmds[1].args == ("port", 1.0)  # helm fraction defaults to 1
+    assert cmds[2].args == ("spoude", "both")  # pressure side defaults to both
 
 
 def test_rate_aliases():

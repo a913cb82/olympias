@@ -30,22 +30,32 @@ from __future__ import annotations
 import math
 
 from common.chain import KT, VESSELS
-from hl.curves import default
 from ll.ship import RUDDER_FAC
+
+from hl.curves import default
 
 OTHER = {"port": "star", "star": "port"}
 HELM_SIDES = {"port": "port", "starboard": "star", "midship": "midship"}
-DEFAULT_DT = 0.5          # the HL design (simulation/AGENTS.md): 0.5-1 s step
+DEFAULT_DT = 0.5  # the HL design (simulation/AGENTS.md): 0.5-1 s step
 
 
 class Ship:
-    def __init__(self, rig_name: str = "Olympias", n_oars: int = 170,
-                 rate: float = 28.8, pressure=("spoude", "spoude"),
-                 oar_state=("row", "row"), helm=("midship", 0.0),
-                 fleet: str = "spruce", curves=None, dt: float = DEFAULT_DT):
+    def __init__(
+        self,
+        rig_name: str = "Olympias",
+        n_oars: int = 170,
+        rate: float = 28.8,
+        pressure=("spoude", "spoude"),
+        oar_state=("row", "row"),
+        helm=("midship", 0.0),
+        fleet: str = "spruce",
+        curves=None,
+        dt: float = DEFAULT_DT,
+    ):
         if rig_name != "Olympias":
             raise NotImplementedError(
-                f"HL v1 supports the Olympias rig only ({rig_name})")
+                f"HL v1 supports the Olympias rig only ({rig_name})"
+            )
         self.curves = curves if curves is not None else default()
         self.vessel = VESSELS[rig_name]
         self.m_app = self.vessel.m_app
@@ -54,7 +64,7 @@ class Ship:
         self.pressure = {"port": pressure[0], "star": pressure[1]}
         self.oar_state = {"port": oar_state[0], "star": oar_state[1]}
         self.helm_dir, self.helm_frac = HELM_SIDES[helm[0]], float(helm[1])
-        self.fleet = fleet          # stored; the bootstrap V* is the spruce LL
+        self.fleet = fleet  # stored; the bootstrap V* is the spruce LL
         self.dt = dt
         self.V = 0.0
         self.omega = 0.0
@@ -66,22 +76,28 @@ class Ship:
         self.W_max = self.curves.w_max
         self.W_frac = 1.0
         self.rate_eff = rate
-        self._wss_prev = 0.0       # the previous turn target (release detect)
-        self._exit_omega = 0.0     # the fishtail's decaying yaw rate
-        self._yb_delay = 0.0       # the yaw-build's S-shape delay (s; the omega is frozen during it)
-        self._v_prev = 0.0         # the previous V (the ramp detect)
+        self._wss_prev = 0.0  # the previous turn target (release detect)
+        self._exit_omega = 0.0  # the fishtail's decaying yaw rate
+        self._yb_delay = (
+            0.0  # the yaw-build's S-shape delay (s; the omega is frozen during it)
+        )
+        self._v_prev = 0.0  # the previous V (the ramp detect)
 
     # ------------------------------------------------------------------
     def step(self, dt: float) -> None:
         c = self.curves
-        rowing = [s for s in ("port", "star")
-                  if self.oar_state[s] == "row"
-                  and c.resolve_pressure(self.pressure[s]) > 0.0
-                  and self.rate > 0.5]
+        rowing = [
+            s
+            for s in ("port", "star")
+            if self.oar_state[s] == "row"
+            and c.resolve_pressure(self.pressure[s]) > 0.0
+            and self.rate > 0.5
+        ]
 
         # -- surge -----------------------------------------------------
-        p_eff = min(c.resolve_pressure(self.pressure[s]) for s in rowing) \
-            if rowing else 0.0
+        p_eff = (
+            min(c.resolve_pressure(self.pressure[s]) for s in rowing) if rowing else 0.0
+        )
         if rowing:
             empty = self.W[rowing[0]] <= 0.0
             # the achieved rate: the exhausted crew loses tempo at high
@@ -114,8 +130,7 @@ class Ship:
                         tau = c.tau_back(self.rate)
                 else:
                     tau = c.tau_hold(self.rate)
-                vstar = c.vasym(r_eff, p_eff, self.oar_state[stopped],
-                                empty)
+                vstar = c.vasym(r_eff, p_eff, self.oar_state[stopped], empty)
             self.V += (vstar - self.V) / tau * dt
             # the applied rudder drag the chase target cannot know (the
             # calibrated V* rows are no-rudder equilibria): the LL loses
@@ -123,36 +138,46 @@ class Ship:
             # finding); turn_drag(frac) (task F -> T4) is the measured
             # sway-coupled residual the exact drag law misses, per helm
             # fraction (the LL's loss is nonlinear in helm)
-            if (self.helm_dir != "midship" and self.helm_frac > 0.0
-                    and self.V > 0.0):
-                a_rud = ((RUDDER_FAC - 1.0)
-                         + c.turn_drag(self.helm_frac, p_eff, r_eff)) \
-                    * self.vessel.rudder_straight * (self.V / KT) ** 2 \
+            if self.helm_dir != "midship" and self.helm_frac > 0.0 and self.V > 0.0:
+                a_rud = (
+                    ((RUDDER_FAC - 1.0) + c.turn_drag(self.helm_frac, p_eff, r_eff))
+                    * self.vessel.rudder_straight
+                    * (self.V / KT) ** 2
                     / self.m_app
+                )
                 self.V = max(0.0, self.V - a_rud * dt)
         else:
             vkt = abs(self.V) / KT
-            rud_fac = RUDDER_FAC if (self.helm_dir != "midship"
-                                     and self.helm_frac > 0.0) else 1.0
-            drag = (self.vessel.hull_drag(vkt)
-                    + rud_fac * self.vessel.rudder_straight * vkt * vkt)
-            held = [s for s in ("port", "star")
-                    if self.oar_state[s] in ("hold", "back")]
+            rud_fac = (
+                RUDDER_FAC
+                if (self.helm_dir != "midship" and self.helm_frac > 0.0)
+                else 1.0
+            )
+            drag = (
+                self.vessel.hull_drag(vkt)
+                + rud_fac * self.vessel.rudder_straight * vkt * vkt
+            )
+            held = [
+                s for s in ("port", "star") if self.oar_state[s] in ("hold", "back")
+            ]
             if held and self.V > 0.0:
                 drag += len(held) * self.n_side * c.hold_k * self.V * self.V
             a = -drag / self.m_app
-            if a * dt <= -self.V:        # stop at rest; no reversal
+            if a * dt <= -self.V:  # stop at rest; no reversal
                 self.V = 0.0
             else:
                 self.V += a * dt
 
         # -- yaw --------------------------------------------------------
-        asym = [s for s in ("port", "star")
-                if self.oar_state[s] in ("hold", "back")
-                and self.oar_state[OTHER[s]] == "row"]
+        asym = [
+            s
+            for s in ("port", "star")
+            if self.oar_state[s] in ("hold", "back")
+            and self.oar_state[OTHER[s]] == "row"
+        ]
         if asym:
             side = asym[0]
-            sign = -1.0 if side == "star" else 1.0    # turn toward the held side
+            sign = -1.0 if side == "star" else 1.0  # turn toward the held side
             frac = self.helm_frac if self.helm_dir == side else 0.0
             # the oar-only turns (no helm) chase the measured speed-
             # dependent orbit (the drained spiral — the LL's orbit
@@ -166,8 +191,11 @@ class Ship:
             # spoude-measured d_oar_v would run the cruise's
             # steady-rowed legs ~1.4x too tight
             if frac <= 0.0:
-                if (self.helm_frac > 0.0 and self.helm_dir != "midship"
-                        and self.oar_state[side] == "hold"):
+                if (
+                    self.helm_frac > 0.0
+                    and self.helm_dir != "midship"
+                    and self.oar_state[side] == "hold"
+                ):
                     # the mixed hold: the helm + the OPPOSITE-
                     # side hold — the LL's turn is the HELM's (the rudder
                     # dominates at speed, the hold's brake only widens
@@ -207,7 +235,7 @@ class Ship:
         # drift build-up itself keeps the fast tau_turn
         if self._wss_prev != 0.0 and turn_target == 0.0:
             self._exit_omega = self.omega
-        prev_target = self._wss_prev          # the delay trigger's reference
+        prev_target = self._wss_prev  # the delay trigger's reference
         self._wss_prev = turn_target
         if self._exit_omega:
             self._exit_omega *= math.exp(-dt / c.tau_exit)
@@ -228,10 +256,8 @@ class Ship:
         # (the measured yaw_build families — the HL's single-tau build
         # phased the turn's psi early and accumulated in the position
         # rows)
-        if (abs(wss) < abs(self.omega) * 0.99
-                and abs(self.omega) < 0.005):
-            tau_yaw = c.tau_exit * (0.1 / max(abs(self.omega), 1e-4)) \
-                ** c.drift_tau_exp
+        if abs(wss) < abs(self.omega) * 0.99 and abs(self.omega) < 0.005:
+            tau_yaw = c.tau_exit * (0.1 / max(abs(self.omega), 1e-4)) ** c.drift_tau_exp
         else:
             b = c.yaw_build(self.helm_frac, bool(asym))
             # the S-shape's delay: the LL's build is slow-early
@@ -240,17 +266,16 @@ class Ship:
             # the turn scale, 3x above the straight drift — so the
             # drift's slow W'-variation never re-arms it); during the
             # delay the omega is frozen (no chase)
-            if (abs(wss - prev_target) > 0.1 * abs(wss)
-                    and abs(wss) > 0.005):
+            if abs(wss - prev_target) > 0.1 * abs(wss) and abs(wss) > 0.005:
                 self._yb_delay = b.get("td", 0.0)
             if self._yb_delay > 0:
                 self._yb_delay -= dt
                 tau_yaw = None
             elif abs(wss - self.omega) > (1.0 - b["A"]) * abs(wss):
-                tau_yaw = b["tf"]        # the fast rise (the fitted tau,
+                tau_yaw = b["tf"]  # the fast rise (the fitted tau,
                 # measured per family)
             else:
-                tau_yaw = b["ts"]          # the sway-coupled tail
+                tau_yaw = b["ts"]  # the sway-coupled tail
         if tau_yaw is not None:
             self.omega += (wss - self.omega) / tau_yaw * dt
         self._v_prev = self.V
@@ -273,29 +298,35 @@ class Ship:
         def drain(side, net, dt):
             if net > 0.0:
                 return max(0.0, self.W[side] - net * dt)
-            return min(self.W_max, self.W[side] + min(-net,
-                                                      self.W_max / c.tau_w) * dt)
+            return min(self.W_max, self.W[side] + min(-net, self.W_max / c.tau_w) * dt)
+
         if rowing:
-            stopped = [s for s in ("port", "star")
-                       if self.oar_state[s] in ("hold", "back")]
+            stopped = [
+                s for s in ("port", "star") if self.oar_state[s] in ("hold", "back")
+            ]
             if len(rowing) == 1 and stopped:
                 row_side, stop_side = rowing[0], stopped[0]
                 # the FRESH-phase drain is the commanded pull (the
                 # measured net_fresh — the turns' full-tank entry); the
                 # drained nets (net_asym ~ 0) apply only after the tank
                 # empties (the drained cruise_turn context)
-                row_net = c.net_asym(r_eff, p_eff,
-                                     self.oar_state[stop_side]) \
-                    if empty else c.net_fresh(r_eff, p_eff)
+                row_net = (
+                    c.net_asym(r_eff, p_eff, self.oar_state[stop_side])
+                    if empty
+                    else c.net_fresh(r_eff, p_eff)
+                )
                 self.W[row_side] = drain(row_side, row_net, dt)
                 if self.oar_state[stop_side] == "back":
                     # the flow-limit gate: locked (net ~ 0) while the
                     # ship is fast; the unlocked drain (the fresh net)
                     # below v_flow; the drained net after its own empty
-                    stop_net = c.net_asym(r_eff, p_eff, "back") \
-                        if self.W[stop_side] <= 0.0 \
-                        else (0.0 if self.V > c.v_flow * KT
-                              else c.net_fresh(r_eff, p_eff))
+                    stop_net = (
+                        c.net_asym(r_eff, p_eff, "back")
+                        if self.W[stop_side] <= 0.0
+                        else (
+                            0.0 if self.V > c.v_flow * KT else c.net_fresh(r_eff, p_eff)
+                        )
+                    )
                     self.W[stop_side] = drain(stop_side, stop_net, dt)
                 else:
                     self.W[stop_side] = drain(stop_side, 0.0, dt)
@@ -305,8 +336,11 @@ class Ship:
         else:
             for side in ("port", "star"):
                 self.W[side] = drain(side, -c.p_crit, dt)  # refill at the cap
-        self.W_frac = self.W[rowing[0]] / self.curves.w_max \
-            if rowing else self.W["port"] / self.curves.w_max
+        self.W_frac = (
+            self.W[rowing[0]] / self.curves.w_max
+            if rowing
+            else self.W["port"] / self.curves.w_max
+        )
 
         # -- position ----------------------------------------------------
         self.psi += self.omega * dt
@@ -318,16 +352,27 @@ class Ship:
         # sign convention (the beta's measured sign)
         v_sway = 0.0
         if abs(wss) > 1e-6:
-            beta = c.turn_beta(self.helm_frac, self.oar_state[
-                next((s for s in ("port", "star")
-                      if self.oar_state[s] in ("hold", "back")), "port")],
-                bool(asym))
-            v_sway = self.V * math.tan(math.radians(beta)) \
+            beta = c.turn_beta(
+                self.helm_frac,
+                self.oar_state[
+                    next(
+                        (
+                            s
+                            for s in ("port", "star")
+                            if self.oar_state[s] in ("hold", "back")
+                        ),
+                        "port",
+                    )
+                ],
+                bool(asym),
+            )
+            v_sway = (
+                self.V
+                * math.tan(math.radians(beta))
                 * min(1.0, abs(self.omega) / abs(wss))
-        self.x += (self.V * math.cos(self.psi)
-                   - v_sway * math.sin(self.psi)) * dt
-        self.y += (self.V * math.sin(self.psi)
-                   + v_sway * math.cos(self.psi)) * dt
+            )
+        self.x += (self.V * math.cos(self.psi) - v_sway * math.sin(self.psi)) * dt
+        self.y += (self.V * math.sin(self.psi) + v_sway * math.cos(self.psi)) * dt
         self.t += dt
 
     # ------------------------------------------------------------------
@@ -350,18 +395,23 @@ class Ship:
 
     @staticmethod
     def _sides(side: str) -> tuple:
-        return ("port", "star") if side == "both" \
-            else (HELM_SIDES[side],)
+        return ("port", "star") if side == "both" else (HELM_SIDES[side],)
 
-    def run_script(self, commands, dt: float | None = None,
-                   until: float | None = None, V0: float = 0.0) -> None:
+    def run_script(
+        self,
+        commands,
+        dt: float | None = None,
+        until: float | None = None,
+        V0: float = 0.0,
+    ) -> None:
         """Run a parsed command stream; commands apply at their timestamps."""
         self.V = V0
         events = list(commands)
         idx = 0
         dt = self.dt if dt is None else dt
-        t_end = until if until is not None \
-            else (events[-1].time if events else 0.0) + 1e-6
+        t_end = (
+            until if until is not None else (events[-1].time if events else 0.0) + 1e-6
+        )
         while self.t <= t_end:
             while idx < len(events) and events[idx].time <= self.t + 1e-6:
                 self.apply(events[idx])
@@ -372,12 +422,22 @@ class Ship:
     def snap(self) -> dict:
         crew = {}
         for side in ("port", "star"):
-            crew[side] = dict(state=self.oar_state[side],
-                              pressure=self.pressure[side],
-                              rate_eff=self.rate_eff,
-                              W_frac=self.W[side] / self.curves.w_max,
-                              limited="none")
-        return dict(t=self.t, V=self.V, omega=self.omega, psi=self.psi,
-                    x=self.x, y=self.y, rate=self.rate, crew=crew,
-                    helm=(self.helm_dir, self.helm_frac),
-                    calibration=self.curves.meta["id"])
+            crew[side] = {
+                "state": self.oar_state[side],
+                "pressure": self.pressure[side],
+                "rate_eff": self.rate_eff,
+                "W_frac": self.W[side] / self.curves.w_max,
+                "limited": "none",
+            }
+        return {
+            "t": self.t,
+            "V": self.V,
+            "omega": self.omega,
+            "psi": self.psi,
+            "x": self.x,
+            "y": self.y,
+            "rate": self.rate,
+            "crew": crew,
+            "helm": (self.helm_dir, self.helm_frac),
+            "calibration": self.curves.meta["id"],
+        }

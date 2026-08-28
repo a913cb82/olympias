@@ -18,4 +18,4 @@ dynamics that a future sway/hold-water model would make explicit. The fitted
 value is used as-is; do not re-derive silently.
 """
 
-LEVER_OAR = {"Olympias": 4.8, "MarkIIb": 5.4}   # Table 31.1 row 10, m
+LEVER_OAR = {"Olympias": 4.8, "MarkIIb": 5.4}  # Table 31.1 row 10, m

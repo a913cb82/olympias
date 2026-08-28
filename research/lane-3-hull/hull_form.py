@@ -18,13 +18,14 @@ condition matches the BMT displacement anchors:
 
 Pure stdlib.  Run: python3 hull_form.py
 """
+
 import math
 
 G = 9.81
-RHO = 1025.0          # sea water kg/m3 (SG 1.025)
-LWL = 32.2            # m, waterline length (Taylor Table 31.1)
-DRAFT_AMS = 1.1       # m, design draft amidships (Table 31.1)
-TRIAL_VOL = 42.25e3 / RHO   # m3  (= 41.22)
+RHO = 1025.0  # sea water kg/m3 (SG 1.025)
+LWL = 32.2  # m, waterline length (Taylor Table 31.1)
+DRAFT_AMS = 1.1  # m, design draft amidships (Table 31.1)
+TRIAL_VOL = 42.25e3 / RHO  # m3  (= 41.22)
 LIGHT_VOL = 25.798e3 / RHO  # m3  (= 25.17)
 
 
@@ -40,7 +41,7 @@ def segment_area(B, d):
         R = (B * B + d * d) / (2.0 * d)
     theta = 2.0 * math.asin(min(B / R, 1.0))
     area = R * R * (theta - math.sin(theta)) / 2.0
-    perimeter = R * theta                       # arc length (wetted)
+    perimeter = R * theta  # arc length (wetted)
     return area, perimeter, R
 
 
@@ -61,7 +62,7 @@ def integrate(Bmax, p, q, dmax=DRAFT_AMS, n=400):
     vol, wsa = 0.0, 0.0
     lcb_num = 0.0
     for i in range(n):
-        x = (i + 0.5) / n                      # midpoint
+        x = (i + 0.5) / n  # midpoint
         B = waterline_half_breadth(x, Bmax, p)
         d = local_draft(x, dmax, q)
         area, peri, _ = segment_area(B, d)
@@ -81,7 +82,7 @@ def waterplane_moment_inertia(Bmax, p, dmax, n=400):
     for i in range(n):
         x = (i + 0.5) / n
         B = waterline_half_breadth(x, Bmax, p)
-        It += B ** 3
+        It += B**3
     return (2.0 / 3.0) * (LWL / n) * It
 
 
@@ -117,7 +118,7 @@ def vcb_and_lcb(Bmax, p, q, dmax, nx=240, nz=240):
         if d <= 0 or B <= 0:
             continue
         R = (B * B + d * d) / (2.0 * d)
-        c = R - d                      # circle centre height above keel
+        c = R - d  # circle centre height above keel
         area = 0.0
         zbar_num = 0.0
         for j in range(nz):
@@ -146,14 +147,18 @@ def main():
     # Start from the Poitiers waterline beam (2*Bmax = 3.43 m) and the
     # midship-section block shape; tune the planform exponent p.
     # p=1.0 -> elliptical planform (C_wp = 2/pi ~ 0.64); p=2 -> more pointed.
-    print(f"Anchors: LWL={LWL} m, draft_ams={DRAFT_AMS} m, "
-          f"trial vol={TRIAL_VOL:.2f} m3, light vol={LIGHT_VOL:.2f} m3\n")
+    print(
+        f"Anchors: LWL={LWL} m, draft_ams={DRAFT_AMS} m, "
+        f"trial vol={TRIAL_VOL:.2f} m3, light vol={LIGHT_VOL:.2f} m3\n"
+    )
     for p in (1.0, 1.4, 2.0):
         for q in (0.6, 0.8, 1.0):
             Bmax = 3.43 / 2.0
             vol, _, _ = integrate(Bmax, p, q)
-            print(f"p={p:<4} q={q:<4} Bmax={Bmax:.3f} m -> vol={vol:.2f} m3 "
-                  f"(trial target {TRIAL_VOL:.2f}) err={100*(vol-TRIAL_VOL)/TRIAL_VOL:+.1f}%")
+            print(
+                f"p={p:<4} q={q:<4} Bmax={Bmax:.3f} m -> vol={vol:.2f} m3 "
+                f"(trial target {TRIAL_VOL:.2f}) err={100 * (vol - TRIAL_VOL) / TRIAL_VOL:+.1f}%"
+            )
 
     # --- Pick p,q that put trial volume within ~1% of target.
     best = None
@@ -165,35 +170,46 @@ def main():
                 best = (err, p, q, vol, wsa, lcb)
     err, p, q, vol, wsa, lcb = best
     Bmax = 3.43 / 2.0
-    print(f"\nBest fit: p={p}, q={q}, Bmax={Bmax:.3f} m (2*Bmax={2*Bmax:.3f} m)")
-    print(f"  trial volume   {vol:8.2f} m3  vs target {TRIAL_VOL:.2f} m3 "
-          f"({100*err:+.1f}%)")
+    print(f"\nBest fit: p={p}, q={q}, Bmax={Bmax:.3f} m (2*Bmax={2 * Bmax:.3f} m)")
+    print(
+        f"  trial volume   {vol:8.2f} m3  vs target {TRIAL_VOL:.2f} m3 "
+        f"({100 * err:+.1f}%)"
+    )
     print(f"  wetted surface {wsa:8.2f} m2")
-    print(f"  LCB (from stern) {lcb*LWL:8.2f} m  (fraction {lcb:.3f})")
+    print(f"  LCB (from stern) {lcb * LWL:8.2f} m  (fraction {lcb:.3f})")
 
     # --- Derived hydrostatics at trial condition.
     Cb = block_coeff(vol, Bmax, DRAFT_AMS)
-    Cwp = (sum(2 * waterline_half_breadth((i+0.5)/400, Bmax, p) * LWL/400
-               for i in range(400))) / (LWL * 2 * Bmax)
+    Cwp = (
+        sum(
+            2 * waterline_half_breadth((i + 0.5) / 400, Bmax, p) * LWL / 400
+            for i in range(400)
+        )
+    ) / (LWL * 2 * Bmax)
     print(f"\nBlock coeff Cb = {Cb:.3f}")
     print(f"Waterplane area coeff Cwp = {Cwp:.3f}")
 
     # --- Light ship: solve for the draft that gives light volume.
     T_light = solve_draft_for_volume(LIGHT_VOL, Bmax, p, q)
     v_light, wsa_light, _ = integrate(Bmax, p, q, dmax=T_light)
-    print(f"\nLight ship: draft = {T_light:.3f} m -> vol {v_light:.2f} m3 "
-          f"({v_light*RHO/1000:.2f} t), wetted {wsa_light:.1f} m2")
+    print(
+        f"\nLight ship: draft = {T_light:.3f} m -> vol {v_light:.2f} m3 "
+        f"({v_light * RHO / 1000:.2f} t), wetted {wsa_light:.1f} m2"
+    )
 
     # --- Vertical centre of buoyancy (above baseline / keel underside) + KM.
     vcb, _ = vcb_and_lcb(Bmax, p, q, DRAFT_AMS)
     print(f"\nVCB above keel (baseline) at trial condition = {vcb:.3f} m")
     It = waterplane_moment_inertia(Bmax, p, DRAFT_AMS)
-    BM = It / TRIAL_VOL                        # metacentric radius
-    KM = vcb + BM                              # metacentre height above keel
-    print(f"  waterplane I_t = {It:6.1f} m4 ;  BM = {BM:.3f} m ;  "
-          f"KM (model) = {KM:.3f} m")
-    print(f"  BMT ch.25 trial: KM = 2.90 m, KG = 1.77 m -> GM = 1.13 m "
-          f"(model GM = {KM - 1.77:.2f} m)")
+    BM = It / TRIAL_VOL  # metacentric radius
+    KM = vcb + BM  # metacentre height above keel
+    print(
+        f"  waterplane I_t = {It:6.1f} m4 ;  BM = {BM:.3f} m ;  KM (model) = {KM:.3f} m"
+    )
+    print(
+        f"  BMT ch.25 trial: KM = 2.90 m, KG = 1.77 m -> GM = 1.13 m "
+        f"(model GM = {KM - 1.77:.2f} m)"
+    )
 
     # --- Weight check via wetted-surface friction (ITTC 1957 line):
     # Cf = 0.075/(log10(Re)-2)^2 ;  Rf = 0.5*rho*V^2*S*Cf.  Report at 3.5 m/s.
@@ -201,12 +217,16 @@ def main():
         Re = V * LWL / 1.14e-6
         Cf = 0.075 / (math.log10(Re) - 2.0) ** 2
         Rf = 0.5 * RHO * V * V * wsa * Cf
-        print(f"  friction @ {V:4.1f} m/s: Cf={Cf:.5f}  Rf={Rf:8.0f} N "
-              f"({Rf*V/1000:6.1f} kW)")
+        print(
+            f"  friction @ {V:4.1f} m/s: Cf={Cf:.5f}  Rf={Rf:8.0f} N "
+            f"({Rf * V / 1000:6.1f} kW)"
+        )
         # Shaw's law: W = 155V^3 + 4.13V^5
-        W_shaw = 155 * V ** 3 + 4.13 * V ** 5
-        print(f"      Shaw W = {W_shaw:8.0f} W  -> friction is "
-              f"{100*Rf*V/W_shaw:.0f}% of total")
+        W_shaw = 155 * V**3 + 4.13 * V**5
+        print(
+            f"      Shaw W = {W_shaw:8.0f} W  -> friction is "
+            f"{100 * Rf * V / W_shaw:.0f}% of total"
+        )
 
     # --- Cross-check vs Taylor Table 31.1 bare-hull drag 40.2 v^2 (v knots).
     # Skin fraction should be dominant below ~6.7 kt and ~equal to wave-making
@@ -219,15 +239,17 @@ def main():
         Rf = 0.5 * RHO * V * V * wsa * Cf
         Rt = 40.2 * vkt * vkt
         Rw = max(Rt - Rf, 0.0)
-        print(f"  {vkt:4.1f} kt: Rf={Rf:6.0f} N ({100*Rf/Rt:4.0f}%), "
-              f"wave residual={Rw:6.0f} N ({100*Rw/Rt:4.0f}%)  "
-              f"[Taylor Rt={Rt:.0f} N]")
+        print(
+            f"  {vkt:4.1f} kt: Rf={Rf:6.0f} N ({100 * Rf / Rt:4.0f}%), "
+            f"wave residual={Rw:6.0f} N ({100 * Rw / Rt:4.0f}%)  "
+            f"[Taylor Rt={Rt:.0f} N]"
+        )
 
     # --- Save machine-readable summary.
     with open("research/lane-3-hull/hull-form-summary.csv", "w") as f:
         f.write("parameter,value,unit,source\n")
         f.write(f"LWL,{LWL},m,Taylor T31.1 / Poitiers 32.08\n")
-        f.write(f"B_wl,{2*Bmax:.3f},m,Poitiers model from Coates lines\n")
+        f.write(f"B_wl,{2 * Bmax:.3f},m,Poitiers model from Coates lines\n")
         f.write(f"draft_trial,{DRAFT_AMS},m,Taylor T31.1\n")
         f.write(f"draft_light,{T_light:.3f},m,computed from light vol 25.798 t\n")
         f.write(f"planform_p,{p},-,fitted\n")
@@ -238,7 +260,7 @@ def main():
         f.write(f"wetted_light,{wsa_light:.1f},m2,computed\n")
         f.write(f"Cb_trial,{Cb:.3f},-,computed\n")
         f.write(f"Cwp,{Cwp:.3f},-,computed\n")
-        f.write(f"LCB_from_stern,{lcb*LWL:.2f},m,computed\n")
+        f.write(f"LCB_from_stern,{lcb * LWL:.2f},m,computed\n")
     print("\nwrote research/lane-3-hull/hull-form-summary.csv")
 
 

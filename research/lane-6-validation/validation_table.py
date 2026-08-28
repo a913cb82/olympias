@@ -20,6 +20,7 @@ Sensitivity pass (W6 checklist):
   - oar efficiency 40%->54% (as speed falls, ch.22 range)
   - crew power (S5/S6 envelope)
 """
+
 import math
 import sys
 
@@ -46,7 +47,7 @@ def lane4_speed(n_rowers, spm, eff, stroke=0.78, mark2=False):
     lo, hi = 0.5, 8.0
     for _ in range(80):
         mid = 0.5 * (lo + hi)
-        w = 155 * mid ** 3 + 4.13 * mid ** 5
+        w = 155 * mid**3 + 4.13 * mid**5
         if w > W:
             hi = mid
         else:
@@ -55,8 +56,7 @@ def lane4_speed(n_rowers, spm, eff, stroke=0.78, mark2=False):
 
 
 def lane5_turn(ves, vkt, phi, fac, one_side):
-    from manoeuvre_model import mark_iib, olympias
-    d, w, drift = ves.steady_turn(vkt, phi, fac, one_side=one_side)
+    d, _w, drift = ves.steady_turn(vkt, phi, fac, one_side=one_side)
     return d, drift
 
 
@@ -70,30 +70,44 @@ def validation_table():
     # ch.22 gives 53-55% rowing efficiency (calm water & wind): show band.
     va_lo = lane4_speed(154, 45, 0.53)
     va_hi = lane4_speed(154, 45, 0.55)
-    rows.append(("A. sustained (154 rowers, 45 spm)",
-                 "8.2-8.3", f"{va_lo:.1f}-{va_hi:.1f}", "target"))
+    rows.append(
+        (
+            "A. sustained (154 rowers, 45 spm)",
+            "8.2-8.3",
+            f"{va_lo:.1f}-{va_hi:.1f}",
+            "target",
+        )
+    )
 
     # --- B. Sprint anchor S10: 130 rowers, 44.5 spm, E=0.730
     v = lane4_speed(130, 44.5, 0.730)
-    rows.append(("B. sprint (130 rowers, 44.5 spm, E=0.730)",
-                 "8.2-8.3", f"{v:4.1f}", "target"))
+    rows.append(
+        ("B. sprint (130 rowers, 44.5 spm, E=0.730)", "8.2-8.3", f"{v:4.1f}", "target")
+    )
 
     # --- C. GPS 2-min runs: 135 rowers (~7.8-7.9), 121 rowers (peak 8.2)
     v135_lo = lane4_speed(135, 44.5, 0.53)
     v135_hi = lane4_speed(135, 44.5, 0.55)
     v121 = lane4_speed(121, 44.5, 0.730)
-    rows.append(("C. GPS ~135 rowers", "7.8-7.9",
-                 f"{v135_lo:.1f}-{v135_hi:.1f}", "target"))
+    rows.append(
+        ("C. GPS ~135 rowers", "7.8-7.9", f"{v135_lo:.1f}-{v135_hi:.1f}", "target")
+    )
     rows.append(("C. GPS 121 rowers (peak)", "~8.2", f"{v121:4.1f}", "target"))
 
     # --- D. Acceleration 0->7 kt in 32 s (1988, less-trained): use Taylor model
     mb = mark_iib()
-    prof, hit7 = mb.simulate_forward(0.0, 60.0, stop_at=(60.0, 7.0))
+    _prof, hit7 = mb.simulate_forward(0.0, 60.0, stop_at=(60.0, 7.0))
     t7 = hit7[0] if hit7 else float("nan")
     # Taylor model is for trained Mark IIb; 1988 Olympias crew slower -> target 32 s.
     # Our model reaches 7 kt faster (trained), so report model time as lower bound.
-    rows.append(("D. accel 0->7 kt (trained model)", "32 s (1988 crew)",
-                 f"{t7:4.1f} s (model, trained)", "context"))
+    rows.append(
+        (
+            "D. accel 0->7 kt (trained model)",
+            "32 s (1988 crew)",
+            f"{t7:4.1f} s (model, trained)",
+            "context",
+        )
+    )
 
     # --- E. Turns (lane-5 model, already validated to <=7%)
     mb_turns = [
@@ -108,8 +122,7 @@ def validation_table():
     rows.append(("E. Olympias tightest", "62 m", f"{d:.0f} m", "target"))
 
     # --- F. Braking (lane-5): stop <20 s, <170 m; astern 9.4 kt
-    rows.append(("F. braking stop", "<20 s / <170 m",
-                 "19.0 s / 56 m", "target"))
+    rows.append(("F. braking stop", "<20 s / <170 m", "19.0 s / 56 m", "target"))
     rows.append(("F. astern speed (60 s)", "9.4 kt", "9.4 kt", "target"))
 
     # --- G. Hull form hydrostatics (lane-3, S14)
@@ -140,25 +153,29 @@ def sensitivity_pass():
         v = lane4_speed(130, 44.5, 0.730)
         # rough: higher displacement -> more wetted area -> more drag
         v2 = v * (1.0 / d_frac) ** 0.25
-        print(f"    displacement x{d_frac:4.2f}: sprint {v2:5.2f} kt "
-              f"({(v2/base_sprint-1)*100:+5.1f}%)")
+        print(
+            f"    displacement x{d_frac:4.2f}: sprint {v2:5.2f} kt "
+            f"({(v2 / base_sprint - 1) * 100:+5.1f}%)"
+        )
 
     print("  --- GM sensitivity (crew lean, B7):")
     from manoeuvre_model import mark_iib
+
     mb = mark_iib()
     vkt, phi, fac = 9.5, 22.5, 3.25
-    d, w, drift = mb.steady_turn(vkt, phi, fac)
+    d, _w, _drift = mb.steady_turn(vkt, phi, fac)
     v = vkt * KT2MS
     f_rud = mb.rudder_coeff(phi) * mb.rudder_drag(vkt, phi, fac)
     f_hull = mb.m_app * v * v / (d / 2.0) - f_rud
     for gm in (1.13, 0.99, 0.85):
-        gm_eff = gm - 0.2                       # crew lean into turn (2.3)
+        gm_eff = gm - 0.2  # crew lean into turn (2.3)
         tipping = f_rud * mb.arm_rud + f_hull * mb.arm_lat
         heel = math.degrees(math.atan(tipping / (mb.m * 9.81 * gm_eff)))
-        print(f"    GM {gm:5.2f} m (GM_eff {gm_eff:.2f}): fast-anastrophe "
-              f"heel ~{heel:4.1f} deg")
-    print("    -> turn diameter is yaw-driven (unchanged); GM sets the heel "
-          "limit")
+        print(
+            f"    GM {gm:5.2f} m (GM_eff {gm_eff:.2f}): fast-anastrophe "
+            f"heel ~{heel:4.1f} deg"
+        )
+    print("    -> turn diameter is yaw-driven (unchanged); GM sets the heel limit")
     print("       GM 1.13 (trial) is the solid BMT value; 0.99/0.85 are the")
     print("       crew-lean cases (register B7) -> heel stays within ~3-4 deg")
 

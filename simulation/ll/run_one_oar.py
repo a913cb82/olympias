@@ -17,19 +17,24 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from common.chain import (KT, RIGS, T_DRIVE, SPM, OQ18, rigid_stroke,
-                          hull_power)
+from common.chain import KT, OQ18, RIGS, SPM, T_DRIVE, hull_power, rigid_stroke
+
 from ll.oar import Oar, simulate
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description=__doc__,
-                                 formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     ap.add_argument("--rig", default="Olympias", choices=sorted(RIGS))
     ap.add_argument("--v-kts", type=float, default=7.2)
     ap.add_argument("--spm", type=float, default=28.8)
-    ap.add_argument("--t-drive", type=float, default=None,
-                    help="effective pull time (s); default: Table 9.6 if known, else cycle/3")
+    ap.add_argument(
+        "--t-drive",
+        type=float,
+        default=None,
+        help="effective pull time (s); default: Table 9.6 if known, else cycle/3",
+    )
     ap.add_argument("--dt", type=float, default=0.001)
     ap.add_argument("--cycles", type=int, default=4)
     args = ap.parse_args()
@@ -45,10 +50,14 @@ def main() -> None:
 
     got = simulate(Oar(rig, args.spm, t_drive), V, args.dt, args.cycles)
 
-    print(f"rig       : {args.rig}  (lin {rig['lin']:.3f} m, lout {rig['lout']:.3f} m, "
-          f"sweep {rig['sweep']:.1f} deg, area {rig['area']:.3f} m2)")
-    print(f"run       : {args.v_kts} kt ({V:.3f} m/s), {args.spm} spm, "
-          f"t_drive {t_drive:.3f} s [{src}], dt {args.dt} s, {args.cycles} cycles")
+    print(
+        f"rig       : {args.rig}  (lin {rig['lin']:.3f} m, lout {rig['lout']:.3f} m, "
+        f"sweep {rig['sweep']:.1f} deg, area {rig['area']:.3f} m2)"
+    )
+    print(
+        f"run       : {args.v_kts} kt ({V:.3f} m/s), {args.spm} spm, "
+        f"t_drive {t_drive:.3f} s [{src}], dt {args.dt} s, {args.cycles} cycles"
+    )
     print(f"mean thrust/oar : {got['mean_thrust']:7.2f} N")
     print(f"mean handle F   : {got['mean_fh']:7.1f} N  (RMS over drive)")
     print(f"peak blade F    : {got['fb_peak']:7.1f} N")
@@ -56,15 +65,19 @@ def main() -> None:
 
     need = hull_power(V, hull=1.0 if args.rig == "Olympias" else 1.08) / 170.0
     prop = got["mean_thrust"] * V
-    print(f"prop W/man      : {prop:7.1f} W  vs hull need {need:7.1f} W "
-          f"({prop / need * 100:5.1f} %)")
+    print(
+        f"prop W/man      : {prop:7.1f} W  vs hull need {need:7.1f} W "
+        f"({prop / need * 100:5.1f} %)"
+    )
 
     key = (args.rig, args.v_kts)
     if key in T_DRIVE and abs(SPM[args.rig][args.v_kts] - args.spm) < 0.01:
         ref = rigid_stroke(V, rig, args.spm, t_drive=t_drive)
-        print(f"vs rigid model  : thrust {ref['mean_thrust']:6.2f} N "
-              f"(d {abs(got['mean_thrust'] / ref['mean_thrust'] - 1) * 100:.2f} %), "
-              f"Fh {ref['mean_fh']:6.1f} N (d {abs(got['mean_fh'] / ref['mean_fh'] - 1) * 100:.2f} %)")
+        print(
+            f"vs rigid model  : thrust {ref['mean_thrust']:6.2f} N "
+            f"(d {abs(got['mean_thrust'] / ref['mean_thrust'] - 1) * 100:.2f} %), "
+            f"Fh {ref['mean_fh']:6.1f} N (d {abs(got['mean_fh'] / ref['mean_fh'] - 1) * 100:.2f} %)"
+        )
     if args.rig == "MarkIIb":
         print(f"note: {OQ18}")
 

@@ -19,16 +19,15 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 import pytest
-
-from common.chain import KT
 from commands.parser import parse_file
+from common.chain import KT
 from hl.ship import Ship as HLShip
-from ll.ship import Ship as LLShip
 from ll.hull import equilibrium_speed
+from ll.ship import Ship as LLShip
 
 LL_TURN_D = {"g1": 89.7, "f1": 117.4, "tightest": 67.7, "oar-hold": 126.6}
 
-STEADY_ANCHORS = {25.5: 4.92, 28.8: 5.38, 32.3: 5.72}   # LL settled, kt
+STEADY_ANCHORS = {25.5: 4.92, 28.8: 5.38, 32.3: 5.72}  # LL settled, kt
 # (the force-mode baseline 2026-08 — the promoted default: the force
 # LL's steady levels sit +1.4-1.7 % above the kinematic's — the demand
 # geometry's cosC_mean correction vs the emerging drive; re-measured)
@@ -69,10 +68,15 @@ def _hl_run(rate, pressure, t_end, V0_frac=0.9):
 # ---------------------------------------------------------------------------
 def test_api_parity_with_ll():
     """The same constructor shape and command verbs the LL accepts."""
-    hl = HLShip(rate=30.0, pressure=("steady", "spoude"),
-                oar_state=("row", "hold"), helm=("port", 0.5))
-    cmds = parse_file(Path(__file__).resolve().parents[2]
-                      / "examples" / "cruise_turn.txt")
+    hl = HLShip(
+        rate=30.0,
+        pressure=("steady", "spoude"),
+        oar_state=("row", "hold"),
+        helm=("port", 0.5),
+    )
+    cmds = parse_file(
+        Path(__file__).resolve().parents[2] / "examples" / "cruise_turn.txt"
+    )
     hl.run_script(cmds, V0=5.0 * KT)
     s = hl.snap()
     for key in ("t", "V", "omega", "psi", "x", "y", "rate", "crew", "helm"):
@@ -86,8 +90,9 @@ def test_api_parity_with_ll():
 
 def test_determinism():
     a, b = HLShip(), HLShip()
-    cmds = parse_file(Path(__file__).resolve().parents[2]
-                      / "examples" / "cruise_turn.txt")
+    cmds = parse_file(
+        Path(__file__).resolve().parents[2] / "examples" / "cruise_turn.txt"
+    )
     a.run_script(cmds, V0=5.0 * KT)
     b.run_script(cmds, V0=5.0 * KT)
     sa, sb = a.snap(), b.snap()
@@ -163,17 +168,30 @@ def test_sprint_burst():
 def test_turn_diameters():
     """D = |y| at 180 deg within 5 % of the current LL turn values."""
     from ll.ship import rate_for_speed
+
     for name, d_ref in LL_TURN_D.items():
-        cfg = dict(V0=6.0, oar_state=("row", "row"), helm=("port", 1.0),
-                   n_oars=170)
+        cfg = {
+            "V0": 6.0,
+            "oar_state": ("row", "row"),
+            "helm": ("port", 1.0),
+            "n_oars": 170,
+        }
         if name == "f1":
             cfg["helm"] = ("port", 22.5 / 67.5)
         elif name == "tightest":
-            cfg = dict(V0=6.5, oar_state=("row", "hold"),
-                       helm=("starboard", 1.0), n_oars=85)
+            cfg = {
+                "V0": 6.5,
+                "oar_state": ("row", "hold"),
+                "helm": ("starboard", 1.0),
+                "n_oars": 85,
+            }
         elif name == "oar-hold":
-            cfg = dict(V0=6.5, oar_state=("row", "hold"),
-                       helm=("midship", 0.0), n_oars=85)
+            cfg = {
+                "V0": 6.5,
+                "oar_state": ("row", "hold"),
+                "helm": ("midship", 0.0),
+                "n_oars": 85,
+            }
         rate = rate_for_speed("Olympias", cfg["V0"], n_oars=cfg["n_oars"])
         ship = HLShip(rate=rate, oar_state=cfg["oar_state"], helm=cfg["helm"])
         ship.V = cfg["V0"] * KT
@@ -185,14 +203,15 @@ def test_turn_diameters():
 # ---------------------------------------------------------------------------
 def test_script_smoke_and_perf():
     """The shared example script runs, deterministically, fast."""
-    cmds = parse_file(Path(__file__).resolve().parents[2]
-                      / "examples" / "cruise_turn.txt")
+    cmds = parse_file(
+        Path(__file__).resolve().parents[2] / "examples" / "cruise_turn.txt"
+    )
     t0 = time.time()
     ship = HLShip()
     ship.run_script(cmds, V0=5.0 * KT)
     wall = time.time() - t0
     s = ship.snap()
-    assert s["t"] > 1700.0                       # the script ran to the end
+    assert s["t"] > 1700.0  # the script ran to the end
     assert 0.0 <= s["V"] / KT <= 12.0
     assert 0.0 <= s["crew"]["port"]["W_frac"] <= 1.0
     assert wall < 1.0, f"10-min run took {wall:.1f} s"

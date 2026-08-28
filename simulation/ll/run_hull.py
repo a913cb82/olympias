@@ -21,7 +21,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from common.chain import KT, OQ18
-from ll.hull import run_cruise, equilibrium_speed
+
+from ll.hull import equilibrium_speed, run_cruise
 
 TARGETS = {
     25.5: (7.0, "ch.7 ref (Mark II hull)"),
@@ -33,51 +34,77 @@ TARGETS = {
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description=__doc__,
-                                 formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     ap.add_argument("--spm", type=float, default=28.8)
     ap.add_argument("--oars", type=int, default=170)
     ap.add_argument("--t-end", type=float, default=600.0)
     ap.add_argument("--dt", type=float, default=0.01)
-    ap.add_argument("--fh-max", type=float, default=None,
-                    help="provisional rower force ceiling, N (oQ-13; demo only)")
+    ap.add_argument(
+        "--fh-max",
+        type=float,
+        default=None,
+        help="provisional rower force ceiling, N (oQ-13; demo only)",
+    )
     ap.add_argument("--v0", type=float, default=None, help="start speed, kt")
     ap.add_argument("--table", action="store_true", help="equilibrium table over rates")
     args = ap.parse_args()
 
     if args.table:
-        print(f"{'rate':>6} {'t_drive':>8} {'V* kt':>8} {'settled':>8} {'ripple':>8} "
-              f"{'target':>8}  note")
+        print(
+            f"{'rate':>6} {'t_drive':>8} {'V* kt':>8} {'settled':>8} {'ripple':>8} "
+            f"{'target':>8}  note"
+        )
         for r, (tgt, note) in sorted(TARGETS.items()):
             eq = equilibrium_speed("Olympias", r, n_oars=args.oars)
             out = run_cruise("Olympias", r, t_end=300.0, dt=args.dt)
-            print(f"{r:6.1f} {eq['t_drive']:8.3f} {eq['V']/KT:8.2f} "
-                  f"{out['V_settled']/KT:8.2f} {out['ripple']/KT:8.2f} "
-                  f"{tgt:8.1f}  {note}")
+            print(
+                f"{r:6.1f} {eq['t_drive']:8.3f} {eq['V'] / KT:8.2f} "
+                f"{out['V_settled'] / KT:8.2f} {out['ripple'] / KT:8.2f} "
+                f"{tgt:8.1f}  {note}"
+            )
         print(f"\nnote: {OQ18}")
         return
 
     v0 = None if args.v0 is None else args.v0 * KT
-    out = run_cruise("Olympias", args.spm, t_end=args.t_end, dt=args.dt,
-                     fh_max=args.fh_max, n_oars=args.oars, v0=v0)
+    out = run_cruise(
+        "Olympias",
+        args.spm,
+        t_end=args.t_end,
+        dt=args.dt,
+        fh_max=args.fh_max,
+        n_oars=args.oars,
+        v0=v0,
+    )
     eq = out["eq"]
-    print(f"run       : {args.spm} spm, {args.oars} oars, Olympias rig, hull=1.0, "
-          f"t_end {args.t_end:.0f} s, dt {args.dt} s")
+    print(
+        f"run       : {args.spm} spm, {args.oars} oars, Olympias rig, hull=1.0, "
+        f"t_end {args.t_end:.0f} s, dt {args.dt} s"
+    )
     print(f"t_drive   : {eq['t_drive']:.3f} s [{out['t_drive_src']}]")
-    print(f"mean-force equilibrium V* : {eq['V']/KT:6.2f} kt  "
-          f"(thrust/oar {eq['thrust_oar']:.2f} N, mean Fh {eq['mean_fh']:.0f} N)")
-    print(f"full-run settled V        : {out['V_settled']/KT:6.2f} kt  "
-          f"(coupling agreement {abs(out['V_settled']/eq['V']-1)*100:.2f} %)")
-    print(f"stroke surge ripple (p-p) : {out['ripple']/KT:6.2f} kt")
+    print(
+        f"mean-force equilibrium V* : {eq['V'] / KT:6.2f} kt  "
+        f"(thrust/oar {eq['thrust_oar']:.2f} N, mean Fh {eq['mean_fh']:.0f} N)"
+    )
+    print(
+        f"full-run settled V        : {out['V_settled'] / KT:6.2f} kt  "
+        f"(coupling agreement {abs(out['V_settled'] / eq['V'] - 1) * 100:.2f} %)"
+    )
+    print(f"stroke surge ripple (p-p) : {out['ripple'] / KT:6.2f} kt")
     print(f"settle time (1 % band)    : {out['settle_time']:6.0f} s")
     print(f"peak handle force         : {out['peak_fh']:6.0f} N")
     if args.spm in TARGETS:
         tgt, note = TARGETS[args.spm]
-        print(f"target                    : {tgt:6.1f} kt  ({note})  "
-              f"[{out['V_settled']/KT/tgt*100:5.1f} %]")
+        print(
+            f"target                    : {tgt:6.1f} kt  ({note})  "
+            f"[{out['V_settled'] / KT / tgt * 100:5.1f} %]"
+        )
     if args.fh_max:
-        print("note: force ceiling (oQ-13) is a crude provisional clamp — "
-              "kinematics unchanged; demo only")
+        print(
+            "note: force ceiling (oQ-13) is a crude provisional clamp — "
+            "kinematics unchanged; demo only"
+        )
 
 
 if __name__ == "__main__":

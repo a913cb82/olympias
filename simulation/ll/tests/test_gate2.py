@@ -17,27 +17,29 @@ Contract (the pair contract (simulation/AGENTS.md), Level 1; plan next-actions G
 """
 
 import sys
-import pytest
 from pathlib import Path
+
+import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from common.chain import KT, OQ18
-from ll.hull import run_cruise, equilibrium_speed, SurgeHull
+import itertools
+
+from common.chain import KT, OQ18, RIGS
+from ll.hull import SurgeHull, equilibrium_speed, run_cruise, t_drive_for
 from ll.oar import Oar
-from common.chain import RIGS
-from ll.hull import t_drive_for
 
 # --- 1. equilibrium at the anchored points ---
 
+
 def test_anchor_288():
     eq = equilibrium_speed("Olympias", 28.8)
-    assert 6.84 <= eq["V"] / KT <= 7.56, f"V* = {eq['V']/KT:.2f} kt @ 28.8 spm"
+    assert 6.84 <= eq["V"] / KT <= 7.56, f"V* = {eq['V'] / KT:.2f} kt @ 28.8 spm"
 
 
 def test_table96_36():
     eq = equilibrium_speed("Olympias", 36.0)
-    assert 7.79 <= eq["V"] / KT <= 8.61, f"V* = {eq['V']/KT:.2f} kt @ 36 spm"
+    assert 7.79 <= eq["V"] / KT <= 8.61, f"V* = {eq['V'] / KT:.2f} kt @ 36 spm"
 
 
 def _v_star(spm, n_oars, t_drive):
@@ -45,9 +47,11 @@ def _v_star(spm, n_oars, t_drive):
     from ll.oar import simulate
 
     def g(V):
-        res = simulate(Oar(RIGS["Olympias"], spm, t_drive), V, t_drive / 600,
-                       n_cycles=4)
+        res = simulate(
+            Oar(RIGS["Olympias"], spm, t_drive), V, t_drive / 600, n_cycles=4
+        )
         return n_oars * res["mean_thrust"] - drag_force(V)
+
     lo, hi = 0.5, 6.5
     for _ in range(60):
         mid = 0.5 * (lo + hi)
@@ -68,38 +72,45 @@ def test_sprint_brackets_trial():
     lo = _v_star(44.5, 130, 0.392) / KT
     hi = _v_star(44.5, 130, 0.347) / KT
     assert hi > 8.4 and lo < 8.2, f"bracket [{lo:.2f}, {hi:.2f}] kt must span 8.2-8.4"
+
+
 def test_sprint_default_locked():
     """The calibrated t_drive(44.5) = 0.371 s (register A8, mismatch #2)
     reproduces the trial: the default sprint equilibrium sits IN the
     8.2-8.4 kt band (the extrapolated 0.347 s gave 8.76 kt)."""
     eq = equilibrium_speed("Olympias", 44.5, n_oars=130)
-    assert 8.2 <= eq["V"] / KT <= 8.4, f"sprint V* = {eq['V']/KT:.2f} kt"
+    assert 8.2 <= eq["V"] / KT <= 8.4, f"sprint V* = {eq['V'] / KT:.2f} kt"
 
 
 def test_sprint_170_overshoot():
     """The full 170-oar crew exceeds the trial band — the ch.9 trial was
     rowed by ~130; the difference is crew count, not physics."""
     eq = equilibrium_speed("Olympias", 44.5, n_oars=170)
-    assert eq["V"] / KT > 8.4, f"170-oar sprint {eq['V']/KT:.2f} kt"
+    assert eq["V"] / KT > 8.4, f"170-oar sprint {eq['V'] / KT:.2f} kt"
 
 
 def test_cruise_monotonic():
     Vs = [equilibrium_speed("Olympias", r)["V"] for r in (25.5, 28.8, 32.3, 36.0, 44.5)]
-    assert all(b > a for a, b in zip(Vs, Vs[1:])), Vs
+    assert all(b > a for a, b in itertools.pairwise(Vs)), Vs
 
 
 # --- 2. full per-step coupling ---
 
+
 def test_coupling_agreement():
     out = run_cruise("Olympias", 28.8, t_end=300.0)
     d = abs(out["V_settled"] / out["eq"]["V"] - 1)
-    assert d < 0.01, f"settled {out['V_settled']/KT:.3f} kt vs eq {out['eq']['V']/KT:.3f} kt"
+    assert d < 0.01, (
+        f"settled {out['V_settled'] / KT:.3f} kt vs eq {out['eq']['V'] / KT:.3f} kt"
+    )
     assert out["V_settled"] / KT <= 7.56
 
 
 def test_settling():
     out = run_cruise("Olympias", 28.8, t_end=600.0)
-    assert out["settle_time"] is not None and out["settle_time"] < 300, out["settle_time"]
+    assert out["settle_time"] is not None and out["settle_time"] < 300, out[
+        "settle_time"
+    ]
     # no mean-overshoot beyond 0.5% of V* (the trailing mean is ripple-free)
     vmax = max(out["wmean"]) / KT
     assert vmax < out["V_settled"] / KT * 1.005, f"mean overshoot to {vmax:.2f} kt"
@@ -109,8 +120,10 @@ def test_ripple():
     """Stroke-frequency surge: the ship surges each drive and eases in the
     recovery. Expected ~0.1-0.25 kt p-p; must stay small vs V* (physical)."""
     out = run_cruise("Olympias", 28.8, t_end=300.0)
-    assert out["ripple"] / KT < 0.35, f"ripple {out['ripple']/KT:.2f} kt"
-    assert out["ripple"] / KT > 0.05, f"ripple suspiciously small {out['ripple']/KT:.3f} kt"
+    assert out["ripple"] / KT < 0.35, f"ripple {out['ripple'] / KT:.2f} kt"
+    assert out["ripple"] / KT > 0.05, (
+        f"ripple suspiciously small {out['ripple'] / KT:.3f} kt"
+    )
 
 
 def test_dt_convergence():
@@ -120,6 +133,7 @@ def test_dt_convergence():
 
 
 # --- 3. regime honesty ---
+
 
 def test_rest_demands_ceiling():
     """At low speed, prescribed kinematics demand inhuman handle forces —
@@ -137,7 +151,9 @@ def test_start_ceiling_smoke():
     rest without inhuman forces. No acceptance band (oQ-13)."""
     out = run_cruise("Olympias", 28.8, t_end=600.0, fh_max=700.0, v0=0.0)
     assert out["peak_fh"] <= 700.0 * (1 + 1e-9)
-    assert out["V_settled"] / KT > 6.0, f"only {out['V_settled']/KT:.2f} kt after 600 s"
+    assert out["V_settled"] / KT > 6.0, (
+        f"only {out['V_settled'] / KT:.2f} kt after 600 s"
+    )
 
 
 print(f"note: {OQ18}")

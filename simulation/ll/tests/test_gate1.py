@@ -14,19 +14,22 @@ Contract (the pair contract (simulation/AGENTS.md), Level 1 + §5 note):
 """
 
 import sys
-import pytest
 from pathlib import Path
+
+import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from common.chain import RIGS, T_DRIVE, SPM, KT, hull_power, rigid_stroke, OQ18
+from common.chain import KT, OQ18, RIGS, SPM, T_DRIVE, hull_power, rigid_stroke
 from ll.oar import Oar, simulate
+
 
 def rel(a, b):
     return abs(a / b - 1.0)
 
 
 # --- 1. agreement with the rigid-oar reference at all four Table 9.6 points ---
+
 
 def test_agreement():
     for (rig_name, vkt), t_drive in T_DRIVE.items():
@@ -36,24 +39,29 @@ def test_agreement():
         ref = rigid_stroke(V, rig, r, t_drive=t_drive)
         dt = t_drive / 600
         got = simulate(Oar(rig, r, t_drive), V, dt, n_cycles=4)
-        assert rel(got["mean_thrust"], ref["mean_thrust"]) < 0.005, \
+        assert rel(got["mean_thrust"], ref["mean_thrust"]) < 0.005, (
             f"{rig_name}@{vkt}kt thrust {got['mean_thrust']:.3f} vs {ref['mean_thrust']:.3f}"
-        assert rel(got["mean_fh"], ref["mean_fh"]) < 0.005, \
+        )
+        assert rel(got["mean_fh"], ref["mean_fh"]) < 0.005, (
             f"{rig_name}@{vkt}kt Fh {got['mean_fh']:.1f} vs {ref['mean_fh']:.1f}"
+        )
         assert rel(got["eff"], ref["eff"]) < 0.005
-        assert rel(got["fb_peak"], ref["fb_peak"]) < 0.01, \
+        assert rel(got["fb_peak"], ref["fb_peak"]) < 0.01, (
             f"{rig_name}@{vkt}kt peak {got['fb_peak']:.1f} vs {ref['fb_peak']:.1f}"
+        )
 
 
 # --- 2. physics-anchored bands (cruise family) ---
+
 
 def test_handle_force_band():
     rig = RIGS["Olympias"]
     for vkt, r, lo, hi in [(7.2, 28.8, 210.0, 225.0), (8.2, 36.0, 200.0, 215.0)]:
         t_drive = T_DRIVE[("Olympias", vkt)]
         got = simulate(Oar(rig, r, t_drive), vkt * KT, t_drive / 600, n_cycles=4)
-        assert lo <= got["mean_fh"] <= hi, \
+        assert lo <= got["mean_fh"] <= hi, (
             f"{vkt} kt {r} spm: mean Fh {got['mean_fh']:.1f} N outside [{lo}, {hi}]"
+        )
 
 
 def test_power_anchor():
@@ -66,10 +74,13 @@ def test_power_anchor():
     prop_per_man = got["mean_thrust"] * V
     need_per_man = hull_power(V, hull=1.0) / 170.0
     ratio = prop_per_man / need_per_man
-    assert 0.95 <= ratio <= 1.10, f"prop W/man {prop_per_man:.1f} vs hull need {need_per_man:.1f}"
+    assert 0.95 <= ratio <= 1.10, (
+        f"prop W/man {prop_per_man:.1f} vs hull need {need_per_man:.1f}"
+    )
 
 
 # --- 3. integration behaviour ---
+
 
 def test_convergence():
     rig = RIGS["Olympias"]
@@ -99,16 +110,17 @@ def test_cycle_wrap():
     n_cycles = 0
     for _ in range(2000):
         oar.step(dt, 7.2 * KT)
-        if not prev and oar.in_drive:          # catch crossing
+        if not prev and oar.in_drive:  # catch crossing
             assert abs(oar.C - oar.sweep / 2) < 1e-9
             assert abs(oar.t_since_catch - dt) < 1e-9
             n_cycles += 1
         prev = oar.in_drive
     assert n_cycles >= 1
-    assert abs(n_cycles - 2000 * dt / oar.cycle) < 2   # quantization bound
+    assert abs(n_cycles - 2000 * dt / oar.cycle) < 2  # quantization bound
 
 
 # --- 4. oQ-18 inherited honestly (documented, not silent) ---
+
 
 def test_mark2_shortfall_persists():
     """The Mark IIb under-prediction must match the rigid model exactly.
@@ -123,8 +135,10 @@ def test_mark2_shortfall_persists():
         got = simulate(Oar(rig, r, t_drive), V, t_drive / 600, n_cycles=4)
         assert rel(got["mean_thrust"], ref["mean_thrust"]) < 0.005
         need = hull_power(V, hull=1.08) / 170.0
-        assert 0.45 < got["mean_thrust"] * V / need < 0.60, \
+        assert 0.45 < got["mean_thrust"] * V / need < 0.60, (
             "Mark IIb fraction changed — update OQ18 documentation first"
+        )
+
 
 print(f"note: {OQ18}")
 

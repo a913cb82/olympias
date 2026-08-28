@@ -16,14 +16,14 @@ the turn's build-up (the trial's entry/approach vs the instant hard-over),
 documented, not parameter-fittable within the physical ranges.
 """
 
-import sys
 import math
+import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from common.chain import KT
-from ll.ship import Ship, run_turn, rate_for_speed
+from ll.ship import Ship, rate_for_speed, run_turn
 
 R6 = rate_for_speed("Olympias", 6.0, n_oars=170)
 
@@ -75,7 +75,7 @@ def test_lateral_damping():
     """Straight-line: the lateral velocity damps (no divergent instability);
     the heading drifts only by the physical per-stroke Fy kick."""
     s = Ship(rate=R6)
-    s.v = 0.5                     # an initial lateral disturbance
+    s.v = 0.5  # an initial lateral disturbance
     s.V = 6.0 * KT
     while s.t < 120:
         s.step(0.02)
@@ -91,12 +91,14 @@ def test_lever_decomposition():
     (=1.6% from fitted 3.20e6) is the documented reference, register C1)."""
     from common.chain import OMEGA_CROSSFLOW
     from ll.rig import LEVER_OAR
+
     assert LEVER_OAR["Olympias"] == 4.8
     ship = Ship()
     assert abs(ship.lever - 1.8) < 1e-9
     assert abs(ship.Omega - OMEGA_CROSSFLOW) < 1.0
-    assert abs(ship.Omega - 3.00e6) < 0.3e6, \
+    assert abs(ship.Omega - 3.00e6) < 0.3e6, (
         "the grounded Omega moved off the real-hull reconciliation (3.00e6)"
+    )
 
 
 def test_omega_reconciliation():
@@ -106,14 +108,17 @@ def test_omega_reconciliation():
     0.30 (=1.6% from fitted 3.20e6) is the documented reference, so the
     units caveat resolves — Omega is the quadratic cross-flow yaw moment).
     The vessel's fitted 5e6 stays for the steady research model."""
-    from common.chain import VESSELS, OMEGA_CROSSFLOW
-    assert abs(VESSELS["Olympias"].Omega - 5e6) < 1.0   # the steady model
+    from common.chain import OMEGA_CROSSFLOW, VESSELS
+
+    assert abs(VESSELS["Olympias"].Omega - 5e6) < 1.0  # the steady model
     ship = Ship()
-    assert abs(ship.Omega - OMEGA_CROSSFLOW) < 1.0      # the time-domain LL
-    assert 2.9e6 <= OMEGA_CROSSFLOW <= 3.5e6, \
+    assert abs(ship.Omega - OMEGA_CROSSFLOW) < 1.0  # the time-domain LL
+    assert 2.9e6 <= OMEGA_CROSSFLOW <= 3.5e6, (
         f"Omega_cf moved: {OMEGA_CROSSFLOW:.2e} (grounded 3.00e6 at C_D 0.252)"
+    )
 
 
 if __name__ == "__main__":
     import pytest
+
     raise SystemExit(pytest.main([__file__]))

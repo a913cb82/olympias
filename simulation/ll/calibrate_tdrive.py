@@ -16,17 +16,17 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from common.chain import KT
+
 from ll.hull import equilibrium_speed
 
-TARGET = 8.3        # kt — the ch.9 four-run sprint mean (8.2-8.3)
+TARGET = 8.3  # kt — the ch.9 four-run sprint mean (8.2-8.3)
 
 
 def main():
     lo, hi = 0.30, 0.45
 
     def v_star(td):
-        return equilibrium_speed("Olympias", 44.5, n_oars=130,
-                                 t_drive=td)["V"] / KT
+        return equilibrium_speed("Olympias", 44.5, n_oars=130, t_drive=td)["V"] / KT
 
     print(f"calibrating t_drive(44.5) so the LL hits {TARGET} kt @ 130 oars:")
     for _ in range(40):
@@ -36,11 +36,12 @@ def main():
         else:
             hi = mid
     td = 0.5 * (lo + hi)
-    print(f"  t_drive(44.5) = {td:.3f} s  ->  V* = {v_star(td):.2f} kt "
-          f"(target {TARGET})")
-    print(f"  vs the extrapolated 0.347 s (bracket 0.392 @ 36 spm .. 0.347);")
-    print(f"  the calibrated 0.375 s = the value that reproduced the trial")
-    print(f"  in the Gate-2 bracket analysis — now pinned instead of assumed.")
+    print(
+        f"  t_drive(44.5) = {td:.3f} s  ->  V* = {v_star(td):.2f} kt (target {TARGET})"
+    )
+    print("  vs the extrapolated 0.347 s (bracket 0.392 @ 36 spm .. 0.347);")
+    print("  the calibrated 0.375 s = the value that reproduced the trial")
+    print("  in the Gate-2 bracket analysis — now pinned instead of assumed.")
 
 
 if __name__ == "__main__":

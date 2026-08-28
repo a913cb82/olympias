@@ -14,7 +14,6 @@ behaviour of the labelled layers.
 import math
 
 import pytest
-
 from common.chain import KT, RIGS
 from ll.oar import Oar, simulate
 from ll.ship import Ship, run_turn
@@ -24,8 +23,14 @@ def _one_turn(mode, rate, helm, state, v0_kt):
     # the per-station layer is the KINEMATIC layer (its contract — the
     # force mode's per-oar EOM is not phase-locked and keeps the scalar
     # loop) — the layer's tests stay kinematic explicitly
-    s = Ship(rate=rate, helm=helm, oar_state=state,
-             pressure=("spoude", "spoude"), stations=mode, force=False)
+    s = Ship(
+        rate=rate,
+        helm=helm,
+        oar_state=state,
+        pressure=("spoude", "spoude"),
+        stations=mode,
+        force=False,
+    )
     s.V = v0_kt * KT
     r = run_turn(s, dt=0.02, target_psi=math.pi)
     return r["D"]
@@ -37,6 +42,7 @@ def stations_turns():
     measurement): V0 6.0/6.5 kt, the rate from rate_for_speed, helm
     full/22.5, 170/85 oars — the harness's own cells."""
     from ll.ship import rate_for_speed
+
     cells = [
         ("g1", 6.0, 170, ("port", 1.0), ("row", "row")),
         ("f1", 6.0, 170, ("port", 22.5 / 67.5), ("row", "row")),
@@ -63,8 +69,13 @@ def test_stations_turn_diameters(stations_turns):
     # Stations layer re-measured (kinematic, force=False): g1 133.5,
     # f1 265.1 (+1.5% vs parametric), tightest 57.3, oar_hold 82.2,
     # oar_back 76.6 — still inverted vs trials, aggregated default stays.
-    expected = dict(g1=133.5, f1=265.1, tightest=57.3,
-                    oar_hold=82.2, oar_back=76.6)
+    expected = {
+        "g1": 133.5,
+        "f1": 265.1,
+        "tightest": 57.3,
+        "oar_hold": 82.2,
+        "oar_back": 76.6,
+    }
     for name, d in stations_turns.items():
         key = name.replace("-", "_")
         assert abs(d - expected[key]) < 3.0, f"{name}: {d:.1f}"
@@ -76,8 +87,14 @@ def test_stations_effective_lever():
     as the BLADE arm, not the thole's) and a local-flow damping of
     ~400 kN m s. The fitted 1.8 is the NET (blade arm minus the
     damping), which the register C3 now records."""
-    s = Ship(rate=28.8, helm=("port", 22.5 / 67.5), oar_state=("row", "row"),
-             pressure=("spoude", "spoude"), stations=True, force=False)
+    s = Ship(
+        rate=28.8,
+        helm=("port", 22.5 / 67.5),
+        oar_state=("row", "row"),
+        pressure=("spoude", "spoude"),
+        stations=True,
+        force=False,
+    )
     s.V = 6.5 * KT
     Q = Fd = om = 0.0
     n = 0
@@ -93,7 +110,9 @@ def test_stations_effective_lever():
     Q, Fd, om = Q / n, Fd / n, om / n
     lever = abs(Q / Fd)
     damp = abs(Q) / abs(om) / 1000.0
-    assert 4.0 < lever < 5.2, f"effective lever {lever:.2f} m"  # the chain law: unchanged family
+    assert 4.0 < lever < 5.2, (
+        f"effective lever {lever:.2f} m"
+    )  # the chain law: unchanged family
     assert 300 < damp < 500, f"damping {damp:.0f} kN m s"
 
 
@@ -104,6 +123,7 @@ def test_polar_variant_thrust():
     attack; the chain's calibrated C_N·A absorbs the shortfall (the A5
     register). The variant's OFF by default."""
     import ll.blade
+
     rig = RIGS["Olympias"]
     ref = simulate(Oar(rig, 28.8, 0.43), 7.2 * KT, 0.43 / 600, 6)
     ll.blade.BLADE_POLAR = True
@@ -112,5 +132,3 @@ def test_polar_variant_thrust():
     finally:
         ll.blade.BLADE_POLAR = False
     assert 1.25 < pol["mean_thrust"] / ref["mean_thrust"] < 1.55
-
-

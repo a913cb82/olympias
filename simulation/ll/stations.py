@@ -37,7 +37,7 @@ moves toward the trials' 8-15°.
 
 import math
 
-INT = 0.888            # m — interscalmium (the chain)
+INT = 0.888  # m — interscalmium (the chain)
 # the thole athwartships arms — PHYSICAL geometry, bounded by the
 # sources (not tuning coefficients; the per-station layer's whole
 # point is that the fitted lever disappears):
@@ -49,28 +49,29 @@ INT = 0.888            # m — interscalmium (the chain)
 #                    outrigger brackets [?] (the B6 decode would pin it)
 #   thalmian ~1.2 m — "far inboard" (to keep the lower oar angle
 #                    shallow — the build log's own words) [?]
-ARM = {"thranite": 2.7, "zygian": 2.0, "thalmian": 1.2}   # m
+ARM = {"thranite": 2.7, "zygian": 2.0, "thalmian": 1.2}  # m
 # the short oars (Rev F Table 3): overall 4.0 vs 4.22; the inboard to
 # the handle centre 0.774 vs 0.935, the outboard to the blade centre
 # 2.781 vs 2.873 — the chain's rig scaled by those ratios
-SHORT = dict(lin_scale=0.774 / 0.935, lout_scale=2.781 / 2.873)
-SHORT_STATIONS = 2     # per side at each end [?]
+SHORT = {"lin_scale": 0.774 / 0.935, "lout_scale": 2.781 / 2.873}
+SHORT_STATIONS = 2  # per side at each end [?]
 
-N_TIER = {"thranite": 31, "zygian": 27, "thalmian": 27}   # per side
+N_TIER = {"thranite": 31, "zygian": 27, "thalmian": 27}  # per side
 
 
 def station_layout():
     """The per-side stations: {tier: [(x, y, short), ...]} — x fore-aft
     (m, + bow), y athwartships (+ port), short = the short-oar flag."""
     out = {}
-    xs = [(i - 15) * INT for i in range(31)]       # 31 evenly spaced [?]
+    xs = [(i - 15) * INT for i in range(31)]  # 31 evenly spaced [?]
     for tier in ("thranite", "zygian", "thalmian"):
         n = N_TIER[tier]
-        lo = (31 - n) // 2                          # the middle 27
+        lo = (31 - n) // 2  # the middle 27
         st = []
         for i in range(lo, lo + n):
-            short = tier in ("zygian", "thalmian") \
-                and (i - lo < SHORT_STATIONS or lo + n - 1 - i < SHORT_STATIONS)
+            short = tier in ("zygian", "thalmian") and (
+                i - lo < SHORT_STATIONS or lo + n - 1 - i < SHORT_STATIONS
+            )
             st.append((xs[i], ARM[tier], short))
         out[tier] = st
     return out

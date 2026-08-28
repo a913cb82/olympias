@@ -30,26 +30,40 @@ Validation targets (section 6):
   - Olympias tightest recorded: 62 m (halves speed)
   - braking: 9.9 kt -> stop in <20 s over <170 m (margin), then 9.4 kt astern
 """
+
 import math
 
-RHO = 1025.0        # seawater density, kg/m3 (2.2)
+RHO = 1025.0  # seawater density, kg/m3 (2.2)
 KT2MS = 0.514444
 
+
 class Vessel:
-    def __init__(self, name, m, m_app, k, rudder_straight, A_lat,
-                 lever_rudder, lever_oar, I, Omega, bands):
+    def __init__(
+        self,
+        name,
+        m,
+        m_app,
+        k,
+        rudder_straight,
+        A_lat,
+        lever_rudder,
+        lever_oar,
+        I,
+        Omega,
+        bands,
+    ):
         self.name = name
-        self.m = m                      # displacement, kg
-        self.m_app = m_app              # apparent mass, kg
-        self.k = k                      # thrust law: T(kN) = k - slope*v(kt)
+        self.m = m  # displacement, kg
+        self.m_app = m_app  # apparent mass, kg
+        self.k = k  # thrust law: T(kN) = k - slope*v(kt)
         self.slope = 0.967
-        self.rudder_straight = rudder_straight   # N per (kt)^2
-        self.A_lat = A_lat              # effective lateral section, m2
+        self.rudder_straight = rudder_straight  # N per (kt)^2
+        self.A_lat = A_lat  # effective lateral section, m2
         self.lever_rudder = lever_rudder  # C of M to rudder, m
-        self.lever_oar = lever_oar      # C of M to oar race, m
-        self.I = I                      # yaw moment of inertia, kg m2
-        self.Omega = Omega              # rotational-resistance coeff, kg m2 s
-        self.bands = bands              # list of (vmax, a, b): drag = a v^2 - b
+        self.lever_oar = lever_oar  # C of M to oar race, m
+        self.I = I  # yaw moment of inertia, kg m2
+        self.Omega = Omega  # rotational-resistance coeff, kg m2 s
+        self.bands = bands  # list of (vmax, a, b): drag = a v^2 - b
         # vertical lever arms from C of M (Table 31.1 rows 13-14):
         self.arm_lat = {"Mark IIb": 1.42, "Olympias": 1.46}[name]
         self.arm_rud = {"Mark IIb": 1.12, "Olympias": 1.16}[name]
@@ -82,7 +96,9 @@ class Vessel:
 
     def rudder_torque(self, vkt, phi_deg, along_factor):
         """Yaw torque from the rudder, N m (2.2)."""
-        f_lat = self.rudder_coeff(phi_deg) * self.rudder_drag(vkt, phi_deg, along_factor)
+        f_lat = self.rudder_coeff(phi_deg) * self.rudder_drag(
+            vkt, phi_deg, along_factor
+        )
         return f_lat * self.lever_rudder
 
     def oar_torque(self, vkt, one_side_only=True):
@@ -104,16 +120,27 @@ class Vessel:
         R = v / omega
         # drift angle from lateral force balance (centripetal):
         #   rho A_lat v^2 sin(beta) + F_rud_lat = m_app v^2 / R
-        f_rud = self.rudder_coeff(phi_deg) * self.rudder_drag(vkt, phi_deg, along_factor)
+        f_rud = self.rudder_coeff(phi_deg) * self.rudder_drag(
+            vkt, phi_deg, along_factor
+        )
         need = self.m_app * v * v / R - f_rud
         arg = need / (RHO * self.A_lat * v * v)
         arg = max(min(arg, 1.0), -1.0)
         drift = math.degrees(math.asin(arg)) if v > 0 else 0.0
         return 2.0 * R, omega, drift
 
-    def simulate_forward(self, v0_kt, t_end, dt=0.05, thrust_on=True,
-                         rudder_phi=0.0, along_factor=1.0, stop_at=None,
-                         reverse_frac=0.0, include_straight_rudder=True):
+    def simulate_forward(
+        self,
+        v0_kt,
+        t_end,
+        dt=0.05,
+        thrust_on=True,
+        rudder_phi=0.0,
+        along_factor=1.0,
+        stop_at=None,
+        reverse_frac=0.0,
+        include_straight_rudder=True,
+    ):
         """Time integration of surge motion.
 
         Returns list of (t, v_kt).  thrust_on False = coasting.
@@ -156,7 +183,7 @@ def mark_iib():
         m=44000.0,
         m_app=48400.0,
         k=17.4,
-        rudder_straight=10.0,        # N per kt^2
+        rudder_straight=10.0,  # N per kt^2
         A_lat=39.0,
         lever_rudder=16.5,
         lever_oar=5.4,
@@ -176,8 +203,8 @@ def olympias():
         name="Olympias",
         m=42000.0,
         m_app=46200.0,
-        k=17.4,                      # thrust law fitted to Olympias trials
-        rudder_straight=39.4,        # (79.6 - 40.2) v^2, N per kt^2
+        k=17.4,  # thrust law fitted to Olympias trials
+        rudder_straight=39.4,  # (79.6 - 40.2) v^2, N per kt^2
         A_lat=35.0,
         lever_rudder=14.9,
         lever_oar=4.8,
@@ -185,7 +212,7 @@ def olympias():
         Omega=5e6,
         bands=[
             (6.7, 40.2, 0.0),
-            (99.0, 40.2, 0.0),       # Olympias bands above 6.7 not tabulated
+            (99.0, 40.2, 0.0),  # Olympias bands above 6.7 not tabulated
         ],
     )
 
@@ -197,8 +224,9 @@ if __name__ == "__main__":
 
     print("\n[1] Rudder lateral-force coefficient (2.2):")
     for phi in (22.5, 45.0, 67.5):
-        print(f"  coeff({phi} deg) = {mb.rudder_coeff(phi):.3f} "
-              f"(target band 0.40-0.80)")
+        print(
+            f"  coeff({phi} deg) = {mb.rudder_coeff(phi):.3f} (target band 0.40-0.80)"
+        )
 
     print("\n[2] Steady turning diameters (section 6.2):")
     cases = [
@@ -211,24 +239,27 @@ if __name__ == "__main__":
         d, w, drift = ves.steady_turn(vkt, phi, fac, one_side=one_side)
         err = (d - target) / target * 100
         flag = "OK" if abs(err) < 10 else ("CLOSE" if abs(err) < 20 else "OFF")
-        print(f"  {label:22s}: D = {d:5.1f} m (target {target:4.0f}) "
-              f"[{err:+5.0f}% {flag}]  drift {drift:5.1f} deg")
+        print(
+            f"  {label:22s}: D = {d:5.1f} m (target {target:4.0f}) "
+            f"[{err:+5.0f}% {flag}]  drift {drift:5.1f} deg"
+        )
 
     print("\n[3] Forward acceleration (section 6.1, Mark IIb):")
     prof, hit55 = mb.simulate_forward(0.0, 40.0, stop_at=(10.0, 5.5))
     _, hit9 = mb.simulate_forward(0.0, 40.0, stop_at=(24.0, 9.0))
-    print(f"  t=10 s  v = {prof[round(10/0.05)][1]:5.2f} kt (target 5.5)")
-    print(f"  t=24 s  v = {prof[round(24/0.05)][1]:5.2f} kt (target 9.0)")
-    print(f"  t=40 s  v = {prof[round(40/0.05)][1]:5.2f} kt (target ~9.9 full)")
-    print(f"  v reaches 5.5 kt at t={hit55[0]:.1f} s; "
-          f"9.0 kt at t={hit9[0]:.1f} s")
+    print(f"  t=10 s  v = {prof[round(10 / 0.05)][1]:5.2f} kt (target 5.5)")
+    print(f"  t=24 s  v = {prof[round(24 / 0.05)][1]:5.2f} kt (target 9.0)")
+    print(f"  t=40 s  v = {prof[round(40 / 0.05)][1]:5.2f} kt (target ~9.9 full)")
+    print(f"  v reaches 5.5 kt at t={hit55[0]:.1f} s; 9.0 kt at t={hit9[0]:.1f} s")
 
     print("\n[5] Apparent-mass sanity check (2.1, Table 31.1):")
-    print(f"  Mark IIb m_app/m = {mb.m_app/mb.m:.3f} (target 1.10)")
+    print(f"  Mark IIb m_app/m = {mb.m_app / mb.m:.3f} (target 1.10)")
     op = olympias()
-    print(f"  Olympias m_app/m = {op.m_app/op.m:.3f} (target 1.10)")
-    print(f"  straight-rudder drag Olympias = {op.rudder_straight:.1f} v^2 N "
-          f"(from (79.6-40.2) = 39.4)")
+    print(f"  Olympias m_app/m = {op.m_app / op.m:.3f} (target 1.10)")
+    print(
+        f"  straight-rudder drag Olympias = {op.rudder_straight:.1f} v^2 N "
+        f"(from (79.6-40.2) = 39.4)"
+    )
 
     print("\n[4] Braking from 9.9 kt (rudders flared 67.5 opposite, 6.1):")
     # braking: rudders flared 67.5 in opposite directions (max drag, no turn).
@@ -243,9 +274,9 @@ if __name__ == "__main__":
         drag = mb.hull_drag(vkt) + 2 * mb.rudder_drag(vkt, 67.5, 3.25)
         thrust = 0.0
         if t >= 18.0:
-            thrust = -0.8 * mb.thrust(vkt)   # rowing astern (80% of forward)
+            thrust = -0.8 * mb.thrust(vkt)  # rowing astern (80% of forward)
         elif t >= 10.0:
-            thrust = -mb.thrust(0.0)         # braking = max thrust at zero speed
+            thrust = -mb.thrust(0.0)  # braking = max thrust at zero speed
         sign = 1.0 if v > 0 else -1.0
         v += (thrust - sign * drag) / mb.m_app * dt
         if v < 0:
@@ -256,11 +287,15 @@ if __name__ == "__main__":
                 break
         dist += abs(v) * dt
         t += dt
-    print(f"  stop after {stop_t:.1f} s, distance travelled {dist:.0f} m "
-          f"(target <20 s, <170 m margin)")
-    print(f"  speed after 60 s astern: "
-          f"{mb.simulate_forward(0.0, 60.0, reverse_frac=0.8)[0][-1][1]:5.2f} kt "
-          f"(target 9.4 kt backwards)")
+    print(
+        f"  stop after {stop_t:.1f} s, distance travelled {dist:.0f} m "
+        f"(target <20 s, <170 m margin)"
+    )
+    print(
+        f"  speed after 60 s astern: "
+        f"{mb.simulate_forward(0.0, 60.0, reverse_frac=0.8)[0][-1][1]:5.2f} kt "
+        f"(target 9.4 kt backwards)"
+    )
 
     print("\n[6] Heel check (2.3, section 6.2): heel <= 3 deg for oar rig")
     # Heel = balance of tipping moments against ship-as-pendulum with length
@@ -270,17 +305,17 @@ if __name__ == "__main__":
     #     resistance centre (row 13).  Restoring = m g GM.
     # GM uses an effective height 0.2 m lower (crew lean) per 2.3.
     for label, vkt, phi, fac, one_side in [
-            ("fast anastrophe", 9.5, 22.5, 3.25, False),
-            ("tight anastrophe", 6.5, 67.5, 3.25, True),
-            ("max-speed tight", 9.9, 67.5, 3.25, False)]:
+        ("fast anastrophe", 9.5, 22.5, 3.25, False),
+        ("tight anastrophe", 6.5, 67.5, 3.25, True),
+        ("max-speed tight", 9.9, 67.5, 3.25, False),
+    ]:
         ves = mb
         d, w, drift = ves.steady_turn(vkt, phi, fac, one_side=one_side)
         f_rud = ves.rudder_coeff(phi) * ves.rudder_drag(vkt, phi, fac)
         v = vkt * KT2MS
         f_hull = ves.m_app * v * v / (d / 2.0) - f_rud
-        gm_eff = ves.GM - 0.2                      # crew lean into turn (2.3)
+        gm_eff = ves.GM - 0.2  # crew lean into turn (2.3)
         tipping = f_rud * ves.arm_rud + f_hull * ves.arm_lat
         heel = math.degrees(math.atan(tipping / (ves.m * 9.81 * gm_eff)))
         flag = "OK (<=3)" if heel <= 3.0 else ">3 deg"
-        print(f"  {label:22s}: heel ~{heel:4.1f} deg {flag} "
-              f"(drift {drift:.1f} deg)")
+        print(f"  {label:22s}: heel ~{heel:4.1f} deg {flag} (drift {drift:.1f} deg)")

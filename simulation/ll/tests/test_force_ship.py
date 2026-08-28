@@ -26,15 +26,13 @@ physics change that silently shifts it fails:
 """
 
 import sys
-import math
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 import pytest
-
 from common.chain import KT, OAR_FAMILIES, hull_power
-from ll.rower import TierCrew, Fh_MAX
+from ll.rower import Fh_MAX, TierCrew
 from ll.ship import Ship
 
 FAM = OAR_FAMILIES["old-zygian"]
@@ -52,9 +50,14 @@ def loop(ship, t_end, dt=0.02, v0_kt=0.0, on_step=None):
             crew.end_of_step(dt)
         vkt = abs(ship.V) / KT
         q, drag, f_rud = 0.0, ship.vessel.rudder_straight * vkt * vkt, 0.0
-        ship.hull_advance(dt, ship.n_side * (fx["port"] + fx["star"]),
-                          ship.n_side * ship.lever * (fx["port"] - fx["star"]),
-                          f_rud, q, drag)
+        ship.hull_advance(
+            dt,
+            ship.n_side * (fx["port"] + fx["star"]),
+            ship.n_side * ship.lever * (fx["port"] - fx["star"]),
+            f_rud,
+            q,
+            drag,
+        )
         ship._keleustes(dt)
         if on_step:
             on_step(ship)
@@ -63,22 +66,26 @@ def loop(ship, t_end, dt=0.02, v0_kt=0.0, on_step=None):
 
 # --- F2-1 the sprint burst + fade ---
 
+
 def test_sprint_burst():
     s30 = loop(Ship(rate=44.5, force=True), 30, v0_kt=8.5)
     s = loop(Ship(rate=44.5, force=True), 900, v0_kt=8.5)
-    assert s30.V / KT > 7.5, f"burst speed {s30.V/KT:.2f} kt"
+    assert s30.V / KT > 7.5, f"burst speed {s30.V / KT:.2f} kt"
     assert s.crew["port"].W_frac < 0.1, f"W_frac {s.crew['port'].W_frac:.2f}"
-    assert s.V / KT < 0.9 * (s30.V / KT), \
-        f"V(900) {s.V/KT:.2f} vs V(30) {s30.V/KT:.2f} — no fade"
-    print(f"       force-mode sprint: V(30 s) {s30.V/KT:.2f} kt, "
-          f"V(900 s) {s.V/KT:.2f} kt (kinematic: 7.45; trials 8.2-8.3)")
+    assert s.V / KT < 0.9 * (s30.V / KT), (
+        f"V(900) {s.V / KT:.2f} vs V(30) {s30.V / KT:.2f} — no fade"
+    )
+    print(
+        f"       force-mode sprint: V(30 s) {s30.V / KT:.2f} kt, "
+        f"V(900 s) {s.V / KT:.2f} kt (kinematic: 7.45; trials 8.2-8.3)"
+    )
 
 
 # --- F2-2 the cruise triple (the T1 measurement) ---
 
+
 def force_mean_thrust(rate, vkt):
-    crew = TierCrew("Olympias", 1, rate, 0.43,
-                    pressure="chain", mit=FAM, force=True)
+    crew = TierCrew("Olympias", 1, rate, 0.43, pressure="chain", mit=FAM, force=True)
     V = vkt * KT
     t = 0.0
     while t < 4 * crew.oar.cycle:
@@ -94,8 +101,10 @@ def force_mean_thrust(rate, vkt):
 
 def force_equilibrium(rate, hull=1.0, n_oars=170):
     def g(V):
-        return n_oars * force_mean_thrust(rate, V / KT) \
-            - hull_power(V, hull) / max(V, 1e-6)
+        return n_oars * force_mean_thrust(rate, V / KT) - hull_power(V, hull) / max(
+            V, 1e-6
+        )
+
     lo, hi = 0.5, 6.5
     for _ in range(40):
         mid = 0.5 * (lo + hi)
@@ -106,26 +115,31 @@ def force_equilibrium(rate, hull=1.0, n_oars=170):
     return 0.5 * (lo + hi) / KT
 
 
-TRIPLE = {25.5: 6.65, 28.8: 7.13, 32.3: 7.62}   # kt, hull=1.0 (measured)
+TRIPLE = {25.5: 6.65, 28.8: 7.13, 32.3: 7.62}  # kt, hull=1.0 (measured)
 
 
 def test_cruise_triple():
     for rate, ref in TRIPLE.items():
         v = force_equilibrium(rate)
-        assert abs(v - ref) < 0.10, \
-            f"{rate} spm: {v:.2f} kt vs the locked {ref:.2f}"
+        assert abs(v - ref) < 0.10, f"{rate} spm: {v:.2f} kt vs the locked {ref:.2f}"
     # the T1 shape: the deficit is FLAT vs the ch.7 (the Mark II table)
-    gaps = [8.0 - force_equilibrium(32.3, hull=1.08),
-            7.0 - force_equilibrium(25.5, hull=1.08)]
-    assert abs(gaps[0] - gaps[1]) < 0.5, \
+    gaps = [
+        8.0 - force_equilibrium(32.3, hull=1.08),
+        7.0 - force_equilibrium(25.5, hull=1.08),
+    ]
+    assert abs(gaps[0] - gaps[1]) < 0.5, (
         f"the deficit's rate-dependence changed: {gaps[0]:.2f} vs {gaps[1]:.2f} kt"
-    print(f"       force-mode triple (hull=1.0): "
-          f"{ {r: round(force_equilibrium(r), 2) for r in (25.5, 28.8, 32.3)} } kt "
-          f"(the Olympias chain: 6.57/7.15/7.69 — within ~1 %; the ch.7's "
-          f"7/7.5/8 is the Mark II table, the flat -4.1 % is the L basis)")
+    )
+    print(
+        f"       force-mode triple (hull=1.0): "
+        f"{ {r: round(force_equilibrium(r), 2) for r in (25.5, 28.8, 32.3)} } kt "
+        f"(the Olympias chain: 6.57/7.15/7.69 — within ~1 %; the ch.7's "
+        f"7/7.5/8 is the Mark II table, the flat -4.1 % is the L basis)"
+    )
 
 
 # --- F2-3 the rest start ---
+
 
 def test_rest_start():
     ship = Ship(rate=44.5, force=True)
@@ -141,13 +155,17 @@ def test_rest_start():
 
     loop(ship, 600, v0_kt=0.0, on_step=obs)
     assert pk[0] <= Fh_MAX * 1.001, f"peak Fh {pk[0]:.0f} N"
-    assert vs.get(10) is not None and vs[10] < 6.0, \
+    assert vs.get(10) is not None and vs[10] < 6.0, (
         f"launch too fast: V(10) {vs.get(10):.1f} kt (the bulk envelope 5.5)"
-    assert vs.get(600) is not None and vs[600] > 3.0, \
+    )
+    assert vs.get(600) is not None and vs[600] > 3.0, (
         f"reaches cruise-ish: V(600) {vs.get(600):.1f} kt"
-    print(f"       force-mode start: V(10) {vs.get(10):.2f}, "
-          f"V(60) {vs.get(60):.2f}, V(600) {vs.get(600):.2f} kt, "
-          f"peak Fh {pk[0]:.0f} N")
+    )
+    print(
+        f"       force-mode start: V(10) {vs.get(10):.2f}, "
+        f"V(60) {vs.get(60):.2f}, V(600) {vs.get(600):.2f} kt, "
+        f"peak Fh {pk[0]:.0f} N"
+    )
 
 
 if __name__ == "__main__":

@@ -38,8 +38,8 @@ def avg_shares(rate, t_end=900.0, warm=600.0, v0_kt=6.5):
         s.step(0.02)
         if s.t >= warm:
             tel = s.crew["port"].tier_telemetry()
-            for k in TIER_N:
-                acc[k] += tel[k]["p_ext"] * TIER_N[k]
+            for k, n in TIER_N.items():
+                acc[k] += tel[k]["p_ext"] * n
             steps += 1
     tot = sum(acc.values())
     return {k: acc[k] / tot for k in TIER_N}
@@ -85,12 +85,13 @@ def test_tier_structure():
     assert abs(tel["thranite"]["power_factor"] - 1.0) < 1e-9
     assert abs(tel["thalmian"]["power_factor"] - 0.9) < 1e-9
     s2 = Ship(rate=44.5)
-    assert abs(s2.crew["port"].tier_telemetry()["thalmian"]["power_factor"]
-               - 0.6) < 1e-9
+    assert (
+        abs(s2.crew["port"].tier_telemetry()["thalmian"]["power_factor"] - 0.6) < 1e-9
+    )
     # the aggregate MIT reference (tier-weighted) is preserved
-    assert abs(s.mit - 9.7) < 0.01            # spruce fleet
+    assert abs(s.mit - 9.7) < 0.01  # spruce fleet
     old_fir = Ship(rate=28.8, fleet="old-fir")
-    assert abs(old_fir.mit - 14.7) < 0.1      # (31*13.1 + 27*18.0 + 27*13.1)/85
+    assert abs(old_fir.mit - 14.7) < 0.1  # (31*13.1 + 27*18.0 + 27*13.1)/85
 
 
 def test_feather_clamp_telemetry():
@@ -107,4 +108,5 @@ def test_feather_clamp_telemetry():
 
 if __name__ == "__main__":
     import pytest
+
     raise SystemExit(pytest.main([__file__]))

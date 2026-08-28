@@ -24,23 +24,48 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+import itertools
+
 from commands.parser import Command, parse_file
 from common.chain import KT
-from hl.curves import Calibration, _scalars, _tables
 from ll.hull import equilibrium_speed
-from ll.ship import Ship as LLShip, rate_for_speed
+from ll.ship import Ship as LLShip
+from ll.ship import rate_for_speed
 
-DT = 0.05                 # the LL's comparison dt
+from hl.curves import Calibration, _scalars, _tables
+
+DT = 0.05  # the LL's comparison dt
 OUT_DIR = Path(__file__).resolve().parent / "calibration"
 
 # protocol grids (the schema's anchor levels; numeric pressures interpolate)
-VSTAR_GRID = [8.0, 10.0, 12.0, 14.0, 16.0, 18.0, 20.0, 22.0, 24.0, 25.5,
-              28.8, 30.0, 32.3, 34.0, 36.0, 38.0, 40.0, 42.0, 44.5, 46.0,
-              48.0, 50.0]
+VSTAR_GRID = [
+    8.0,
+    10.0,
+    12.0,
+    14.0,
+    16.0,
+    18.0,
+    20.0,
+    22.0,
+    24.0,
+    25.5,
+    28.8,
+    30.0,
+    32.3,
+    34.0,
+    36.0,
+    38.0,
+    40.0,
+    42.0,
+    44.5,
+    46.0,
+    48.0,
+    50.0,
+]
 PRESSURE_RATES = [24.0, 25.5, 27.0, 28.8, 30.0, 32.3, 34.0, 36.0, 40.0, 44.5]
 EMPTY_RATES = [25.5, 27.0, 28.8, 30.0, 32.3, 34.0, 36.0, 44.5]
 ASYM_RATES = {"hold": [24.0, 30.0, 36.0], "back": [24.0, 30.0, 36.0, 44.5]}
-NET_RATES = [20.0, 25.5, 28.8, 32.3, 36.0, 44.5]   # 20.0: the G1/F1 turn rate
+NET_RATES = [20.0, 25.5, 28.8, 32.3, 36.0, 44.5]  # 20.0: the G1/F1 turn rate
 TEMPO_RATES = [25.5, 36.0, 40.0, 44.5, 50.0]
 DRIFT_RATES = [25.5, 28.8, 32.3, 44.5]
 
@@ -51,11 +76,15 @@ def log(msg):
 
 def git_commit():
     try:
-        out = subprocess.run(["git", "rev-parse", "--short", "HEAD"],
-                             capture_output=True, text=True, cwd=str(OUT_DIR
-                             .parents[1]))
+        out = subprocess.run(
+            ["git", "rev-parse", "--short", "HEAD"],
+            capture_output=True,
+            text=True,
+            cwd=str(OUT_DIR.parents[1]),
+            check=False,
+        )
         return out.stdout.strip() or "unknown"
-    except Exception:
+    except OSError:
         return "unknown"
 
 
@@ -81,20 +110,25 @@ def _load_cache(commit: str):
             return None
         log(f"  cache hit {p.name} — reusing LL cells, skipping LL runs")
         return data.get("cells")
-    except Exception as exc:
+    except (OSError, json.JSONDecodeError, ValueError) as exc:
         log(f"  cache {p.name} invalid ({exc}) — miss")
         return None
 
 
 def _save_cache(commit: str, cells: dict) -> None:
     p = _cache_path(commit)
-    meta = dict(ll_commit=commit, dt=DT, cache_version=CACHE_VERSION,
-                date=datetime.date.today().isoformat())
+    meta = {
+        "ll_commit": commit,
+        "dt": DT,
+        "cache_version": CACHE_VERSION,
+        "date": datetime.datetime.now(tz=datetime.timezone.utc).date().isoformat(),
+    }
     try:
-        p.write_text(json.dumps(dict(meta=meta, cells=cells), indent=2),
-                     encoding="utf-8")
+        p.write_text(
+            json.dumps({"meta": meta, "cells": cells}, indent=2), encoding="utf-8"
+        )
         log(f"  cache wrote {p.name}")
-    except Exception as exc:
+    except OSError as exc:
         log(f"  cache write failed ({exc})")
 
 
@@ -107,8 +141,8 @@ def measure_vstar(rates):
     kt, t0 = [], time.time()
     for r in rates:
         kt.append(equilibrium_speed("Olympias", r)["V"] / KT)
-    log(f"  vstar: {len(rates)} rates, {time.time()-t0:.0f} s")
-    return dict(rates=rates, kt=kt)
+    log(f"  vstar: {len(rates)} rates, {time.time() - t0:.0f} s")
+    return {"rates": rates, "kt": kt}
 
 
 def _settle_tail(ship, t_end=420.0, tail=60):
@@ -138,12 +172,11 @@ def measure_pressure_rows(rates, pressure):
     is the drained state's speed)."""
     kt, stds, t0 = [], [], time.time()
     for r in rates:
-        v, s = _settle_tail(LLShip(rate=r, pressure=(pressure, pressure)),
-                            t_end=120.0)
+        v, s = _settle_tail(LLShip(rate=r, pressure=(pressure, pressure)), t_end=120.0)
         kt.append(round(v, 3))
         stds.append(round(s, 3))
-    log(f"  {pressure} row: {len(rates)} rates, {time.time()-t0:.0f} s")
-    return dict(rates=rates, kt=kt, std_kt=stds)
+    log(f"  {pressure} row: {len(rates)} rates, {time.time() - t0:.0f} s")
+    return {"rates": rates, "kt": kt, "std_kt": stds}
 
 
 def measure_empty(rates):
@@ -156,8 +189,8 @@ def measure_empty(rates):
                 tier.W = 0.0
         v, _ = _settle_tail(ship)
         kt.append(round(v, 3))
-    log(f"  empty row: {len(rates)} rates, {time.time()-t0:.0f} s")
-    return dict(rates=rates, kt=kt)
+    log(f"  empty row: {len(rates)} rates, {time.time() - t0:.0f} s")
+    return {"rates": rates, "kt": kt}
 
 
 def measure_asym(state, rates):
@@ -166,15 +199,15 @@ def measure_asym(state, rates):
     for r in rates:
         v, _ = _settle_tail(LLShip(rate=r, oar_state=("row", state)))
         kt.append(round(v, 3))
-        v, _ = _settle_tail(LLShip(rate=r, oar_state=("row", state),
-                                   pressure=("steady", "steady")))
+        v, _ = _settle_tail(
+            LLShip(rate=r, oar_state=("row", state), pressure=("steady", "steady"))
+        )
         steady_kt.append(round(v, 3))
-    log(f"  {state} rows: {len(rates)} rates, {time.time()-t0:.0f} s")
-    return dict(rates=rates, kt=kt, steady_kt=steady_kt)
+    log(f"  {state} rows: {len(rates)} rates, {time.time() - t0:.0f} s")
+    return {"rates": rates, "kt": kt, "steady_kt": steady_kt}
 
 
-def _tank_net(rate, pressure, settle=60.0, window=60.0, preset=None,
-              from_rest=False):
+def _tank_net(rate, pressure, settle=60.0, window=60.0, preset=None, from_rest=False):
     """The LL's tank net (W/man; + drain, - refill): the least-squares
     slope of W_frac(t) over the unsaturated part of a 1 Hz trace. A
     fixed-window slope is biased when the tank hits its 0/1 caps
@@ -187,8 +220,7 @@ def _tank_net(rate, pressure, settle=60.0, window=60.0, preset=None,
     higher — the blade sees still water) — measure from V0 = 0, not from
     0.9·V*."""
     ship = LLShip(rate=rate, pressure=(pressure, pressure))
-    ship.V = 0.0 if from_rest else 0.9 * equilibrium_speed("Olympias",
-                                                          rate)["V"]
+    ship.V = 0.0 if from_rest else 0.9 * equilibrium_speed("Olympias", rate)["V"]
     if preset is not None:
         for crew in ship.crew.values():
             for tier in crew.tiers.values():
@@ -200,10 +232,10 @@ def _tank_net(rate, pressure, settle=60.0, window=60.0, preset=None,
         if t >= next_s:
             Vs.append(ship.crew["port"].W_frac)
             next_s += 1.0
-    ws = Vs[int(settle):]
+    ws = Vs[int(settle) :]
     ts, us = [], []
     for i, w in enumerate(ws):
-        if 0.02 < w < 0.98:            # the unsaturated part only
+        if 0.02 < w < 0.98:  # the unsaturated part only
             ts.append(float(i))
             us.append(w)
     if len(ts) < 10:
@@ -211,8 +243,9 @@ def _tank_net(rate, pressure, settle=60.0, window=60.0, preset=None,
     n = len(ts)
     mt = sum(ts) / n
     mu = sum(us) / n
-    slope = sum((t_ - mt) * (u - mu) for t_, u in zip(ts, us)) \
-        / sum((t_ - mt) ** 2 for t_ in ts)
+    slope = sum((t_ - mt) * (u - mu) for t_, u in zip(ts, us)) / sum(
+        (t_ - mt) ** 2 for t_ in ts
+    )
     return -slope * 5000.0
 
 
@@ -222,7 +255,7 @@ def _tank_net_directed(rate, pressure):
     (the draining points would empty a low-preset tank during the settle;
     the refilling points would cap a full one)."""
     probe = _tank_net(rate, pressure, settle=10.0, window=30.0)
-    if probe > 2.0:                          # a drain
+    if probe > 2.0:  # a drain
         return _tank_net(rate, pressure, settle=15.0, window=90.0)
     return _tank_net(rate, pressure, preset=0.10, settle=90.0, window=90.0)
 
@@ -234,12 +267,13 @@ def measure_nets(rates):
     right preset."""
     spoude, steady, fast, t0 = [], [], [], time.time()
     for r in rates:
-        spoude.append(round(_tank_net(r, "spoude", settle=15.0, window=90.0,
-                                      from_rest=True), 1))
+        spoude.append(
+            round(_tank_net(r, "spoude", settle=15.0, window=90.0, from_rest=True), 1)
+        )
         steady.append(round(_tank_net_directed(r, "steady"), 1))
         fast.append(round(_tank_net_directed(r, "fast"), 1))
-    log(f"  nets: {len(rates)} rates x 3 levels, {time.time()-t0:.0f} s")
-    return dict(rates=rates, spoude=spoude, steady=steady, fast=fast)
+    log(f"  nets: {len(rates)} rates x 3 levels, {time.time() - t0:.0f} s")
+    return {"rates": rates, "spoude": spoude, "steady": steady, "fast": fast}
 
 
 def measure_drift_kick():
@@ -261,7 +295,7 @@ def measure_drift_kick():
         s = [w for v, w in rows if b - 0.25 <= v < b + 0.25]
         ws.append(round(sum(s) / len(s), 7) if s else 0.0)
     log(f"  drift kick: {ws}")
-    return dict(v=v_bins, w=ws)
+    return {"v": v_bins, "w": ws}
 
 
 def measure_drift_tau(tau_exit=None):
@@ -274,8 +308,8 @@ def measure_drift_tau(tau_exit=None):
     tau(|w|) = tau_exit * (0.1/|w|)^p bridges the two anchors.
     Returns the exponent p (the drift-anchor / the turn-anchor)."""
     import math
-    tau_exit = tau_exit if tau_exit is not None \
-        else measure_tau_exit()
+
+    tau_exit = tau_exit if tau_exit is not None else measure_tau_exit()
     # the wprime path: the FULL tank (the burst's kick decays through the
     # tank's drain — the drained-preset run under-measures the tau)
     ship = LLShip(rate=44.5, pressure=("spoude", "spoude"))
@@ -297,12 +331,15 @@ def measure_drift_tau(tau_exit=None):
     ys = [math.log(w_settled - w) for t, w in pts]
     ts = [t for t, w in pts]
     n = len(ys)
-    slope = (n * sum(t * y for t, y in zip(ts, ys)) - sum(ts) * sum(ys)) \
-        / (n * sum(t * t for t in ts) - sum(ts) ** 2)
+    slope = (n * sum(t * y for t, y in zip(ts, ys)) - sum(ts) * sum(ys)) / (
+        n * sum(t * t for t in ts) - sum(ts) ** 2
+    )
     tau = -1.0 / slope
     p = math.log(tau / tau_exit) / math.log(0.1 / abs(peak))
-    log(f"  drift-decay: peak {peak:.6f} settled {w_settled:.6f} "
-        f"tau {tau:.1f} s -> exponent {p:.3f}")
+    log(
+        f"  drift-decay: peak {peak:.6f} settled {w_settled:.6f} "
+        f"tau {tau:.1f} s -> exponent {p:.3f}"
+    )
     return round(p, 3)
 
 
@@ -351,10 +388,14 @@ def measure_drift_table():
             else:
                 tf.append(round(full, 8))
                 te.append(round(empty, 8))
-    log(f"  drift: spoude full {sf} / empty {se}; steady full {tf} / "
-        f"empty {te}")
-    return dict(rates=rates, spoude_full=sf, spoude_empty=se,
-                steady_full=tf, steady_empty=te)
+    log(f"  drift: spoude full {sf} / empty {se}; steady full {tf} / empty {te}")
+    return {
+        "rates": rates,
+        "spoude_full": sf,
+        "spoude_empty": se,
+        "steady_full": tf,
+        "steady_empty": te,
+    }
 
 
 def _psi_slope(ps):
@@ -363,8 +404,9 @@ def _psi_slope(ps):
     n = len(ps)
     mt = sum(ts) / n
     mu = sum(ps) / n
-    return sum((t_ - mt) * (p - mu) for t_, p in zip(ts, ps)) \
-        / sum((t_ - mt) ** 2 for t_ in ts)
+    return sum((t_ - mt) * (p - mu) for t_, p in zip(ts, ps)) / sum(
+        (t_ - mt) ** 2 for t_ in ts
+    )
 
 
 def measure_tau_exit():
@@ -378,8 +420,10 @@ def measure_tau_exit():
     ~4 s and the heading integral ~10 s; the position rows (the actual
     gates) prefer ~14 s — the scan judges the gates."""
     import math
+
     from hl.curves import default
     from hl.ship import Ship as HLShip
+
     # the drift anchor (as in measure_drift_tau)
     ship = LLShip(rate=44.5, pressure=("spoude", "spoude"))
     t, ws = 0.0, []
@@ -395,27 +439,30 @@ def measure_tau_exit():
     ys = [math.log(w_settled - w) for t, w in pts]
     ts = [t for t, w in pts]
     n = len(ys)
-    slope = (n * sum(t * y for t, y in zip(ts, ys)) - sum(ts) * sum(ys)) \
-        / (n * sum(t * t for t in ts) - sum(ts) ** 2)
+    slope = (n * sum(t * y for t, y in zip(ts, ys)) - sum(ts) * sum(ys)) / (
+        n * sum(t * t for t in ts) - sum(ts) ** 2
+    )
     tau_meas = -1.0 / slope
 
     def run_script(path):
         from commands.parser import parse_file
+
         cmds = parse_file(Path(__file__).resolve().parents[1] / path)
         out = {}
-        for name, ship in (("ll", LLShip()),
-                           ("hl", HLShip(rate=28.8, curves=c))):
+        for name, ship in (("ll", LLShip()), ("hl", HLShip(rate=28.8, curves=c))):
             ship.V = 0.0
             events, idx, next_s, rows = list(cmds), 0, 0.0, []
             while ship.t <= events[-1].time + 1e-6:
                 while idx < len(events) and events[idx].time <= ship.t + 1e-6:
-                    ship.apply(events[idx]); idx += 1
+                    ship.apply(events[idx])
+                    idx += 1
                 ship.step(0.05 if name == "ll" else 0.5)
                 if ship.t >= next_s:
                     rows.append(ship.snap())
                     next_s += 1.0
             out[name] = rows
         from harness.comparator import metrics
+
         return metrics(out["ll"], out["hl"])["position_sep"]["hl"]
 
     best, best_err = None, float("inf")
@@ -424,8 +471,7 @@ def measure_tau_exit():
         c = default()
         c.tau_exit = tau
         c.drift_tau_exp = exp
-        err = run_script("examples/sprint_turn.txt") \
-            + run_script("examples/zigzag.txt")
+        err = run_script("examples/sprint_turn.txt") + run_script("examples/zigzag.txt")
         log(f"  tau_exit {tau:4.0f}: position err {err:.3f} NM")
         if err < best_err:
             best, best_err = tau, err
@@ -438,10 +484,14 @@ def _exponential_fit(v0, tail):
     samples (v_asym = the tail mean). Returns (tau, rms m/s)."""
     v_asym = sum(tail[-60:]) / 60.0
     best, best_rms = None, float("inf")
-    for tau in [x / 2 for x in range(4, 161)]:      # 2.0 .. 80.0 s
-        rms = math.sqrt(sum((v - (v_asym + (v0 - v_asym)
-                                  * math.exp(-i / tau))) ** 2
-                            for i, v in enumerate(tail)) / len(tail))
+    for tau in [x / 2 for x in range(4, 161)]:  # 2.0 .. 80.0 s
+        rms = math.sqrt(
+            sum(
+                (v - (v_asym + (v0 - v_asym) * math.exp(-i / tau))) ** 2
+                for i, v in enumerate(tail)
+            )
+            / len(tail)
+        )
         if rms < best_rms:
             best, best_rms = tau, rms
     return best, best_rms, v_asym
@@ -452,8 +502,7 @@ def _entry_decay(state, rate, pressure="fast", v0_kt=6.0, t_end=330.0):
     from v0 (the scenario's cruise speed), the state's equilibrium —
     fitted as the chase model's exponential (the fit_tau_surge
     methodology)."""
-    ship = LLShip(rate=rate, oar_state=("row", state),
-                  pressure=(pressure, pressure))
+    ship = LLShip(rate=rate, oar_state=("row", state), pressure=(pressure, pressure))
     ship.V = v0_kt * KT
     t, next_s, Vs = 0.0, 0.0, []
     while t < t_end:
@@ -463,8 +512,10 @@ def _entry_decay(state, rate, pressure="fast", v0_kt=6.0, t_end=330.0):
             Vs.append(ship.V)
             next_s += 1.0
     tau, rms, v_asym = _exponential_fit(v0_kt * KT, Vs)
-    log(f"  {state}@{rate} entry: tau {tau:.1f} s (RMS {rms*KT:.3f} kt, "
-        f"settles {v_asym/KT:.2f} kt)")
+    log(
+        f"  {state}@{rate} entry: tau {tau:.1f} s (RMS {rms * KT:.3f} kt, "
+        f"settles {v_asym / KT:.2f} kt)"
+    )
     return tau, rms, v_asym / KT
 
 
@@ -477,18 +528,23 @@ def measure_tau_hold_at(rate, v0_kt=6.5, helm=("starboard", 1.0)):
     points (the window the turn's yaw reads — the wss = 2V/d runs on
     the V). The 44-spm cell (the tempo-loss usage) completes the
     table."""
-    from hl.ship import Ship as HLShip
     from commands.parser import Command
+
+    from hl.ship import Ship as HLShip
+
     ll = LLShip(rate=rate, oar_state=("row", "hold"))
     ll.V = v0_kt * KT
-    cmds = [Command(0.0, "rate", [rate], 1),
-            Command(0.0, "helm", [helm[0], float(helm[1])], 2),
-            Command(0.0, "oars", ["hold", "starboard"], 3)]
+    cmds = [
+        Command(0.0, "rate", [rate], 1),
+        Command(0.0, "helm", [helm[0], float(helm[1])], 2),
+        Command(0.0, "oars", ["hold", "starboard"], 3),
+    ]
     llV = {}
     evs, ix = list(cmds), 0
     while ll.t <= 40.0:
         while ix < len(evs) and evs[ix].time <= ll.t + 1e-6:
-            ll.apply(evs[ix]); ix += 1
+            ll.apply(evs[ix])
+            ix += 1
         ll.step(DT)
         t = round(ll.t)
         if abs(ll.t - t) < 0.03 and 3 <= t <= 30:
@@ -503,7 +559,8 @@ def measure_tau_hold_at(rate, v0_kt=6.5, helm=("starboard", 1.0)):
         hv = {}
         while hl.t <= 40.0:
             while ix < len(evs) and evs[ix].time <= hl.t + 1e-6:
-                hl.apply(evs[ix]); ix += 1
+                hl.apply(evs[ix])
+                ix += 1
             hl.step(0.5)
             t = round(hl.t)
             if abs(hl.t - t) < 0.03 and 3 <= t <= 30:
@@ -511,13 +568,22 @@ def measure_tau_hold_at(rate, v0_kt=6.5, helm=("starboard", 1.0)):
         rms = math.sqrt(sum((hv[t] - llV[t]) ** 2 for t in pts) / len(pts))
         if best is None or rms < best_rms:
             best, best_rms = tau, rms
-    log(f"  tau_hold@{rate}: {best:.1f} s (the HL-V-shape rms "
-        f"{best_rms*KT:.3f} kt over the 5-30 s window)")
+    log(
+        f"  tau_hold@{rate}: {best:.1f} s (the HL-V-shape rms "
+        f"{best_rms * KT:.3f} kt over the 5-30 s window)"
+    )
     return best
 
 
-def _collapse_window(state, rate_before, rate_after, entry_tau,
-                     pressure="fast", settle=90.0, window=180.0):
+def _collapse_window(
+    state,
+    rate_before,
+    rate_after,
+    entry_tau,
+    pressure="fast",
+    settle=90.0,
+    window=180.0,
+):
     """The low-rate collapse transition (task E): the cruise_turn 1440 s
     bin — the LL at (row, back) at the pre-transition rate, the rate
     drops to the collapse regime. The LL's transient is dip-and-recover
@@ -526,8 +592,10 @@ def _collapse_window(state, rate_before, rate_after, entry_tau,
     philosophy). entry_tau: the measured back-entry τ at the high rate
     (the tau_back table's second point)."""
     from hl.ship import Ship as HLShip
-    ship = LLShip(rate=rate_before, oar_state=("row", state),
-                  pressure=(pressure, pressure))
+
+    ship = LLShip(
+        rate=rate_before, oar_state=("row", state), pressure=(pressure, pressure)
+    )
     ship.V = 0.9 * equilibrium_speed("Olympias", rate_before)["V"]
     t, next_s, Vs = 0.0, 0.0, []
     while t < settle + window:
@@ -539,16 +607,22 @@ def _collapse_window(state, rate_before, rate_after, entry_tau,
             Vs.append(ship.V)
             next_s += 1.0
     i0 = int(settle) - 1
-    v0 = sum(Vs[i0 - 5:i0]) / 5.0
-    ll_mean = sum(Vs[i0:i0 + int(window)]) / window
+    v0 = sum(Vs[i0 - 5 : i0]) / 5.0
+    ll_mean = sum(Vs[i0 : i0 + int(window)]) / window
     tables = _tables()
     best, best_diff = None, float("inf")
-    for tau in [x for x in range(10, 161)]:        # 10 .. 160 s
-        tables["tau_back"] = {"rates": [rate_after, rate_before],
-                               "tau": [tau, entry_tau]}
-        cal = Calibration(dict(id="fit"), tables, _scalars())
-        hl = HLShip(rate=rate_after, oar_state=("row", state),
-                    pressure=(pressure, pressure), curves=cal)
+    for tau in [x for x in range(10, 161)]:  # 10 .. 160 s
+        tables["tau_back"] = {
+            "rates": [rate_after, rate_before],
+            "tau": [tau, entry_tau],
+        }
+        cal = Calibration({"id": "fit"}, tables, _scalars())
+        hl = HLShip(
+            rate=rate_after,
+            oar_state=("row", state),
+            pressure=(pressure, pressure),
+            curves=cal,
+        )
         hl.V = v0
         vs = []
         while hl.t < window + 1e-6:
@@ -558,8 +632,10 @@ def _collapse_window(state, rate_before, rate_after, entry_tau,
         diff = abs(hl_mean - ll_mean)
         if diff < best_diff:
             best, best_diff = tau, diff
-    log(f"  {state} {rate_before}->{rate_after} collapse: tau {best:.0f} s "
-        f"(mean diff {best_diff*KT:.3f} kt; LL window mean {ll_mean/KT:.2f} kt)")
+    log(
+        f"  {state} {rate_before}->{rate_after} collapse: tau {best:.0f} s "
+        f"(mean diff {best_diff * KT:.3f} kt; LL window mean {ll_mean / KT:.2f} kt)"
+    )
     return float(best), best_diff * KT, ll_mean / KT
 
 
@@ -570,12 +646,17 @@ def measure_state_tau(state):
     window-mean fit). Returns (tau_entry, tau_collapse)."""
     if state == "hold":
         tau, rms, v = _entry_decay("hold", 44.0)
-        return dict(entry=tau, rms_mps=rms, settles_kt=v)
+        return {"entry": tau, "rms_mps": rms, "settles_kt": v}
     tau_e, rms_e, v_e = _entry_decay("back", 44.0)
     tau_c, diff_c, mean_c = _collapse_window("back", 44.0, 24.0, tau_e)
-    return dict(entry=tau_e, collapse=tau_c, entry_rms_mps=rms_e,
-                collapse_mean_diff_mps=diff_c, settles_kt=v_e,
-                window_mean_kt=mean_c)
+    return {
+        "entry": tau_e,
+        "collapse": tau_c,
+        "entry_rms_mps": rms_e,
+        "collapse_mean_diff_mps": diff_c,
+        "settles_kt": v_e,
+        "window_mean_kt": mean_c,
+    }
 
 
 def measure_tempo_loss(rates):
@@ -601,9 +682,11 @@ def measure_tempo_loss(rates):
                     effs.append(ship.crew["port"].rate_eff)
                     next_s += 1.0
             out.append(round(sum(effs[-30:]) / 30.0, 2))
-    log(f"  tempo loss: rates {rates} -> full {full}, empty {empty}, "
-        f"{time.time()-t0:.0f} s")
-    return dict(rates=rates, full_rate_eff=full, empty_rate_eff=empty)
+    log(
+        f"  tempo loss: rates {rates} -> full {full}, empty {empty}, "
+        f"{time.time() - t0:.0f} s"
+    )
+    return {"rates": rates, "full_rate_eff": full, "empty_rate_eff": empty}
 
 
 def measure_turn_drag(tables):
@@ -616,19 +699,25 @@ def measure_turn_drag(tables):
     lose relatively more — the fitted spoude curve under-applied there);
     the per-fraction x per-pressure table (T4)."""
     from hl.ship import Ship as HLShip
-    rates = [rate_for_speed("Olympias", 6.0),   # 19.9 — the G1 anchor
-             28.8, 30.0, 44.5]
+
+    rates = [
+        rate_for_speed("Olympias", 6.0),  # 19.9 — the G1 anchor
+        28.8,
+        30.0,
+        44.5,
+    ]
     fracs = [1 / 3, 1 / 2, 2 / 3, 1.0]
     pressures = ["spoude", "steady"]
-    out = dict(fracs=fracs, rates=rates)
+    out = {"fracs": fracs, "rates": rates}
     rmses = []
     for pressure in pressures:
         per_rate = []
         for rate in rates:
             ks = []
             for frac in fracs:
-                ll = LLShip(rate=rate, pressure=(pressure, pressure),
-                            helm=("port", frac))
+                ll = LLShip(
+                    rate=rate, pressure=(pressure, pressure), helm=("port", frac)
+                )
                 ll.V = 6.0 * KT
                 t, next_s, ll_vs = 0.0, 0.0, []
                 while abs(ll.psi) < math.pi and ll.t < 900.0:
@@ -638,24 +727,31 @@ def measure_turn_drag(tables):
                         ll_vs.append(ll.V)
                         next_s += 1.0
                 best, best_rms = None, float("inf")
-                for k in [x / 100 for x in range(0, 201, 2)]:   # 0.00 .. 2.00
-                    cal = Calibration(dict(id="fit"), tables,
-                                      dict(_scalars(), turn_drag_extra=k))
-                    hl = HLShip(rate=rate, pressure=(pressure, pressure),
-                                helm=("port", frac), curves=cal)
+                for k in [x / 100 for x in range(0, 201, 2)]:  # 0.00 .. 2.00
+                    cal = Calibration(
+                        {"id": "fit"}, tables, dict(_scalars(), turn_drag_extra=k)
+                    )
+                    hl = HLShip(
+                        rate=rate,
+                        pressure=(pressure, pressure),
+                        helm=("port", frac),
+                        curves=cal,
+                    )
                     hl.V = 6.0 * KT
-                    hl_vs = [v for i, v in enumerate(hl_step(hl))
-                             if i % 2 == 0]
+                    hl_vs = [v for i, v in enumerate(hl_step(hl)) if i % 2 == 0]
                     n = min(len(ll_vs), len(hl_vs))
-                    rms = math.sqrt(sum((ll_vs[i] - hl_vs[i]) ** 2
-                                        for i in range(n)) / n)
+                    rms = math.sqrt(
+                        sum((ll_vs[i] - hl_vs[i]) ** 2 for i in range(n)) / n
+                    )
                     if rms < best_rms:
                         best, best_rms = k, rms
                 ks.append(best)
                 rmses.append(best_rms)
             per_rate.append(ks)
-            log(f"  turn drag {pressure} @ {rate:.1f}: " +
-                " ".join(f"k={k:.2f}" for k in ks))
+            log(
+                f"  turn drag {pressure} @ {rate:.1f}: "
+                + " ".join(f"k={k:.2f}" for k in ks)
+            )
         out[pressure] = per_rate
     return out, max(rmses) * KT
 
@@ -677,7 +773,6 @@ def measure_yaw_build():
     two-timescale baseline, and the baseline wins if the candidate
     degrades the positions."""
     from hl.curvesel import select_yaw_family
-    builds = {}
 
     def cells(force=None):
         out = {}
@@ -686,23 +781,33 @@ def measure_yaw_build():
         for frac in (1.0, 2.0 / 3.0, 1.0 / 3.0):
             ship = LLShip(rate=rate, pressure=("steady", "steady"))
             ship.V = 0.0
-            while ship.t < 600.0:          # the steady straight
+            while ship.t < 600.0:  # the steady straight
                 ship.step(DT)
             ship.helm_dir, ship.helm_frac = "port", frac
             rec = []
             while ship.t < 720.0:
                 ship.step(DT)
                 rec.append(abs(ship.omega))
-            sel = select_yaw_family(rec, DT, f"helm {frac:.3f}",
-                                    force=force)
-            fracs.append(frac); As.append(sel["A"]); tfs.append(sel["tf"])
-            tss.append(sel["ts"]); tds.append(sel["td"])
+            sel = select_yaw_family(rec, DT, f"helm {frac:.3f}", force=force)
+            fracs.append(frac)
+            As.append(sel["A"])
+            tfs.append(sel["tf"])
+            tss.append(sel["ts"])
+            tds.append(sel["td"])
             fams.append(sel["family"])
-        out["helm"] = dict(fracs=fracs, A=As, tf=tfs, ts=tss, td=tds,
-                           family=fams)
+        out["helm"] = {
+            "fracs": fracs,
+            "A": As,
+            "tf": tfs,
+            "ts": tss,
+            "td": tds,
+            "family": fams,
+        }
         rate = rate_for_speed("Olympias", 6.5, n_oars=85)
-        for key, helm, state in (("tightest", ("starboard", 1.0), "hold"),
-                                 ("oar", ("midship", 0.0), "hold")):
+        for key, helm, state in (
+            ("tightest", ("starboard", 1.0), "hold"),
+            ("oar", ("midship", 0.0), "hold"),
+        ):
             ship = LLShip(rate=rate, helm=helm, oar_state=("row", state))
             ship.V = 6.5 * KT
             rec = []
@@ -710,8 +815,13 @@ def measure_yaw_build():
                 ship.step(DT)
                 rec.append(abs(ship.omega))
             sel = select_yaw_family(rec, DT, key, force=force)
-            out[key] = dict(A=sel["A"], tf=sel["tf"], ts=sel["ts"],
-                            td=sel["td"], family=sel["family"])
+            out[key] = {
+                "A": sel["A"],
+                "tf": sel["tf"],
+                "ts": sel["ts"],
+                "td": sel["td"],
+                "family": sel["family"],
+            }
         return out
 
     aic_table = cells()
@@ -721,13 +831,17 @@ def measure_yaw_build():
     # deterministic oracle)
     cand_err = _yaw_gate_err(aic_table)
     base_err = _yaw_gate_err(base_table)
-    log(f"  yaw-build gate check: AIC-combined {cand_err:.3f} NM vs "
-        f"two-baseline {base_err:.3f} NM")
+    log(
+        f"  yaw-build gate check: AIC-combined {cand_err:.3f} NM vs "
+        f"two-baseline {base_err:.3f} NM"
+    )
     if cand_err <= base_err + 0.05:
         log("  -> the AIC-combined candidate accepted")
         return aic_table
-    log("  -> the gate arbiter picks the two-timescale baseline "
-        "(the delayed build phases the turn positions)")
+    log(
+        "  -> the gate arbiter picks the two-timescale baseline "
+        "(the delayed build phases the turn positions)"
+    )
     return base_table
 
 
@@ -741,12 +855,13 @@ def _yaw_gate_err(yaw_build_table):
     The base is the PREVIOUS calibration's full tables (the proper
     d-scaled cells — the raw module defaults would distort the turns'
     sizes and the decision with them)."""
-    global _LL_CACHE
     import json as _json
+
     from hl.curves import Calibration
     from hl.ship import Ship as HLShip
-    prev = _json.load(open(Path(__file__).resolve().parent
-                           / "calibration" / "latest.json"))
+
+    with open(Path(__file__).resolve().parent / "calibration" / "latest.json") as fh:
+        prev = _json.load(fh)
     tables = dict(prev["tables"])
     tables["yaw_build"] = yaw_build_table
     cal = Calibration(prev["meta"], tables, prev.get("scalars"))
@@ -759,7 +874,8 @@ def _yaw_gate_err(yaw_build_table):
             events, idx, rows = list(cmds), 0, []
             while ll.t <= events[-1].time + 1e-6:
                 while idx < len(events) and events[idx].time <= ll.t + 1e-6:
-                    ll.apply(events[idx]); idx += 1
+                    ll.apply(events[idx])
+                    idx += 1
                 ll.step(DT)
                 if abs(ll.t - round(ll.t)) < DT / 2:
                     rows.append(ll.snap())
@@ -770,11 +886,13 @@ def _yaw_gate_err(yaw_build_table):
         events, idx, hl_rows = list(cmds), 0, []
         while hl.t <= events[-1].time + 1e-6:
             while idx < len(events) and events[idx].time <= hl.t + 1e-6:
-                hl.apply(events[idx]); idx += 1
+                hl.apply(events[idx])
+                idx += 1
             hl.step(0.5)
             if abs(hl.t - round(hl.t)) < 0.25:
                 hl_rows.append(hl.snap())
         from harness.comparator import metrics
+
         m = metrics(ll_rows, hl_rows)
         total += m["position_sep"]["hl"]
     return total
@@ -816,8 +934,8 @@ def measure_d_tables():
         d = _ll_turn_D(r65, helm, oar_state=("row", "hold"), v0_kt=6.5)
         oar.append([round(frac, 4), round(d, 1)])
         log(f"  d_oar frac={frac:.3f}: {d:.1f} m")
-    log(f"  D tables: {time.time()-t0:.0f} s")
-    return dict(rudder=rudder, oar=oar)
+    log(f"  D tables: {time.time() - t0:.0f} s")
+    return {"rudder": rudder, "oar": oar}
 
 
 # ---------------------------------------------------------------------------
@@ -836,9 +954,11 @@ def fit_tau_surge(vstar_kt_28):
             next_s += 1.0
     target = vstar_kt_28 * KT
     best, best_rms = None, float("inf")
-    for tau in [x / 2 for x in range(10, 80)]:        # 5.0 .. 39.5 s
-        rms = math.sqrt(sum((v - target * (1 - math.exp(-i / tau))) ** 2
-                            for i, v in enumerate(Vs)) / len(Vs))
+    for tau in [x / 2 for x in range(10, 80)]:  # 5.0 .. 39.5 s
+        rms = math.sqrt(
+            sum((v - target * (1 - math.exp(-i / tau))) ** 2 for i, v in enumerate(Vs))
+            / len(Vs)
+        )
         if rms < best_rms:
             best, best_rms = tau, rms
     return best, best_rms
@@ -852,29 +972,49 @@ def fit_tau_turn(tables, ll_d, scalars=None):
     must be in — the ship's turn deceleration changes the path D)."""
     scalars = _scalars() if scalars is None else scalars
     from hl.ship import Ship as HLShip
+
     # a copy for the fits: the stored tables keep null for the midship D
     # (json has no inf); the fit needs the real infinity
     cal_tables = dict(tables)
-    cal_tables["d_rudder"] = [[f, math.inf if d is None else d]
-                               for f, d in tables["d_rudder"]]
+    cal_tables["d_rudder"] = [
+        [f, math.inf if d is None else d] for f, d in tables["d_rudder"]
+    ]
     scenarios = [
-        (ll_d["g1"], rate_for_speed("Olympias", 6.0), ("port", 1.0),
-         ("row", "row"), 6.0),
-        (ll_d["f1"], rate_for_speed("Olympias", 6.0), ("port", 1.0 / 3),
-         ("row", "row"), 6.0),
-        (ll_d["tightest"], rate_for_speed("Olympias", 6.5, n_oars=85),
-         ("starboard", 1.0), ("row", "hold"), 6.5),
-        (ll_d["oar_hold"], rate_for_speed("Olympias", 6.5, n_oars=85),
-         ("midship", 0.0), ("row", "hold"), 6.5),
+        (
+            ll_d["g1"],
+            rate_for_speed("Olympias", 6.0),
+            ("port", 1.0),
+            ("row", "row"),
+            6.0,
+        ),
+        (
+            ll_d["f1"],
+            rate_for_speed("Olympias", 6.0),
+            ("port", 1.0 / 3),
+            ("row", "row"),
+            6.0,
+        ),
+        (
+            ll_d["tightest"],
+            rate_for_speed("Olympias", 6.5, n_oars=85),
+            ("starboard", 1.0),
+            ("row", "hold"),
+            6.5,
+        ),
+        (
+            ll_d["oar_hold"],
+            rate_for_speed("Olympias", 6.5, n_oars=85),
+            ("midship", 0.0),
+            ("row", "hold"),
+            6.5,
+        ),
     ]
     best, best_max = None, float("inf")
     for tau in (3.0, 3.5, 4.0, 4.5, 5.0, 6.0, 8.0):
-        cal = Calibration(dict(id="fit"), cal_tables,
-                          dict(scalars, tau_turn=tau))
+        cal = Calibration({"id": "fit"}, cal_tables, dict(scalars, tau_turn=tau))
         worst = 0.0
         for d_ref, rate, helm, oar_state, v0 in scenarios:
-            ship = HLShip(rate=rate, helm=helm, oar_state=oar_state,
-                          curves=cal)
+            ship = HLShip(rate=rate, helm=helm, oar_state=oar_state, curves=cal)
             ship.V = v0 * KT
             while abs(ship.psi) < math.pi and ship.t < 900.0:
                 ship.step(ship.dt)
@@ -895,38 +1035,59 @@ def fit_d_scale(tables, ll_d, scalars):
     cell), with the scales recorded. The measured build's tf is
     untouched."""
     from hl.ship import Ship as HLShip
+
     scenarios = [
-        ("g1", ll_d["g1"], rate_for_speed("Olympias", 6.0),
-         ("port", 1.0), ("row", "row"), 6.0),
-        ("f1", ll_d["f1"], rate_for_speed("Olympias", 6.0),
-         ("port", 1.0 / 3), ("row", "row"), 6.0),
-        ("tightest", ll_d["tightest"], rate_for_speed("Olympias", 6.5,
-                                                      n_oars=85),
-         ("starboard", 1.0), ("row", "hold"), 6.5),
-        ("oar_hold", ll_d["oar_hold"], rate_for_speed("Olympias", 6.5,
-                                                      n_oars=85),
-         ("midship", 0.0), ("row", "hold"), 6.5),
+        (
+            "g1",
+            ll_d["g1"],
+            rate_for_speed("Olympias", 6.0),
+            ("port", 1.0),
+            ("row", "row"),
+            6.0,
+        ),
+        (
+            "f1",
+            ll_d["f1"],
+            rate_for_speed("Olympias", 6.0),
+            ("port", 1.0 / 3),
+            ("row", "row"),
+            6.0,
+        ),
+        (
+            "tightest",
+            ll_d["tightest"],
+            rate_for_speed("Olympias", 6.5, n_oars=85),
+            ("starboard", 1.0),
+            ("row", "hold"),
+            6.5,
+        ),
+        (
+            "oar_hold",
+            ll_d["oar_hold"],
+            rate_for_speed("Olympias", 6.5, n_oars=85),
+            ("midship", 0.0),
+            ("row", "hold"),
+            6.5,
+        ),
     ]
     scales, worst = {}, 0.0
     for name, d_ref, rate, helm, oar_state, v0 in scenarios:
         best = None
-        for s in [x / 100.0 for x in range(80, 121)]:      # 0.80 .. 1.20
+        for s in [x / 100.0 for x in range(80, 121)]:  # 0.80 .. 1.20
             cal_tables = dict(tables)
             dr = [[f, d] for f, d in cal_tables["d_rudder"]]
             do = [[f, d] for f, d in cal_tables["d_oar"]]
             if name == "g1":
                 dr = [[f, d * s if f == 1.0 else d] for f, d in dr]
             elif name == "f1":
-                dr = [[f, d * s if abs(f - 1 / 3) < 1e-3 else d]
-                      for f, d in dr]
+                dr = [[f, d * s if abs(f - 1 / 3) < 1e-3 else d] for f, d in dr]
             elif name == "tightest":
                 do = [[f, d * s if f == 1.0 else d] for f, d in do]
             else:
                 do = [[f, d * s if f == 0.0 else d] for f, d in do]
             cal_tables["d_rudder"], cal_tables["d_oar"] = dr, do
-            cal = Calibration(dict(id="fit"), cal_tables, scalars)
-            ship = HLShip(rate=rate, helm=helm, oar_state=oar_state,
-                          curves=cal)
+            cal = Calibration({"id": "fit"}, cal_tables, scalars)
+            ship = HLShip(rate=rate, helm=helm, oar_state=oar_state, curves=cal)
             ship.V = v0 * KT
             while abs(ship.psi) < math.pi and ship.t < 900.0:
                 ship.step(ship.dt)
@@ -935,14 +1096,14 @@ def fit_d_scale(tables, ll_d, scalars):
                 best = (err, s)
         scales[name] = best[1]
         worst = max(worst, best[0])
-        log(f"  d scale {name:9s}: {best[1]:.3f} (|y| err {best[0]*100:.1f} %)")
+        log(f"  d scale {name:9s}: {best[1]:.3f} (|y| err {best[0] * 100:.1f} %)")
     return scales, worst
 
 
 def main() -> None:
     t_all = time.time()
     commit = git_commit()
-    date = datetime.date.today().isoformat()
+    date = datetime.datetime.now(tz=datetime.timezone.utc).date().isoformat()
     cal_id = f"calib-{date}-{commit}"
     log(f"calibration run: {cal_id} (LL commit {commit})")
 
@@ -956,14 +1117,12 @@ def main() -> None:
         if "tau_hold_raw" in cached and "tau_back_raw" in cached:
             tau_hold = cached["tau_hold_raw"]
             tau_back = cached["tau_back_raw"]
-            tau_exit_cached = cached.get("tau_exit_raw")
-            turn_drag_cached = cached.get("turn_drag_raw")
-            yaw_build_cached = cached.get("yaw_build_raw")
-            skip_ll_tail = True
+            cached.get("tau_exit_raw")
+            cached.get("turn_drag_raw")
+            cached.get("yaw_build_raw")
         else:
-            skip_ll_tail = False
+            pass
     else:
-        skip_ll_tail = False
         tables = {
             "vstar": measure_vstar(VSTAR_GRID),
             "steady": measure_pressure_rows(PRESSURE_RATES, "steady"),
@@ -984,123 +1143,161 @@ def main() -> None:
         tables["d_oar_v"] = measure_d_oar_v()
         tables["turn_beta"] = measure_turn_beta()
         d_tables = measure_d_tables()
-        tables["d_rudder"] = [[f, None] if f == 0.0 else [f, d]
-                              for f, d in d_tables["rudder"]]
+        tables["d_rudder"] = [
+            [f, None] if f == 0.0 else [f, d] for f, d in d_tables["rudder"]
+        ]
         tables["d_oar"] = d_tables["oar"]
         # persist the LL cells for future runs (keyed by commit+dt)
-        _save_cache(commit, dict(tables=tables, d_tables=d_tables))
+        _save_cache(commit, {"tables": tables, "d_tables": d_tables})
 
     tau_hold = measure_state_tau("hold")
     tau_back = measure_state_tau("back")
-    tables["tau_back"] = {"rates": [24.0, 44.0],
-                           "tau": [tau_back["collapse"],
-                                    tau_back["entry"]]}
+    tables["tau_back"] = {
+        "rates": [24.0, 44.0],
+        "tau": [tau_back["collapse"], tau_back["entry"]],
+    }
     tau_exit = measure_tau_exit()
-    tau_surge, rms_surge = fit_tau_surge(tables["vstar"]["kt"][
-        VSTAR_GRID.index(28.8)])
-    log(f"  tau_surge fit: {tau_surge:.1f} s (RMS {rms_surge*KT:.2f} kt)")
+    tau_surge, rms_surge = fit_tau_surge(tables["vstar"]["kt"][VSTAR_GRID.index(28.8)])
+    log(f"  tau_surge fit: {tau_surge:.1f} s (RMS {rms_surge * KT:.2f} kt)")
     turn_drag, rms_k = measure_turn_drag(tables)
-    turn_k = turn_drag["spoude"][0][-1]        # the G1-anchor full-helm cell
+    turn_k = turn_drag["spoude"][0][-1]  # the G1-anchor full-helm cell
     tables["turn_drag"] = turn_drag
     tables["yaw_build"] = measure_yaw_build()
-    d_scales, d_worst = fit_d_scale(tables, dict(
-        g1=[d for f, d in d_tables["rudder"] if f == 1.0][0],
-        f1=[d for f, d in d_tables["rudder"] if abs(f - 1 / 3) < 1e-3][0],
-        tightest=[d for f, d in d_tables["oar"] if f == 1.0][0],
-        oar_hold=[d for f, d in d_tables["oar"] if f == 0.0][0],
-    ), _scalars())
-    tables["d_rudder"] = [[f, d * d_scales["g1"] if f == 1.0
-                           else d * d_scales["f1"]
-                           if abs(f - 1 / 3) < 1e-3 else d]
-                          for f, d in tables["d_rudder"]]
-    tables["d_oar"] = [[f, d * d_scales["tightest"] if f == 1.0
-                        else d * d_scales["oar_hold"] if f == 0.0 else d]
-                       for f, d in tables["d_oar"]]
-    tau_turn, max_d = fit_tau_turn(tables, dict(
-        g1=[d for f, d in d_tables["rudder"] if f == 1.0][0],
-        f1=[d for f, d in d_tables["rudder"] if abs(f - 1 / 3) < 1e-3][0],
-        tightest=[d for f, d in d_tables["oar"] if f == 1.0][0],
-        oar_hold=[d for f, d in d_tables["oar"] if f == 0.0][0],
-    ), dict(_scalars(), turn_drag_extra=turn_k))
-    log(f"  tau_turn fit: {tau_turn:.1f} s "
-        f"(max |D diff| {max_d*100:.1f} % across the families)")
+    d_scales, d_worst = fit_d_scale(
+        tables,
+        {
+            "g1": next(d for f, d in d_tables["rudder"] if f == 1.0),
+            "f1": next(d for f, d in d_tables["rudder"] if abs(f - 1 / 3) < 1e-3),
+            "tightest": next(d for f, d in d_tables["oar"] if f == 1.0),
+            "oar_hold": next(d for f, d in d_tables["oar"] if f == 0.0),
+        },
+        _scalars(),
+    )
+    tables["d_rudder"] = [
+        [
+            f,
+            d * d_scales["g1"]
+            if f == 1.0
+            else d * d_scales["f1"]
+            if abs(f - 1 / 3) < 1e-3
+            else d,
+        ]
+        for f, d in tables["d_rudder"]
+    ]
+    tables["d_oar"] = [
+        [
+            f,
+            d * d_scales["tightest"]
+            if f == 1.0
+            else d * d_scales["oar_hold"]
+            if f == 0.0
+            else d,
+        ]
+        for f, d in tables["d_oar"]
+    ]
+    tau_turn, max_d = fit_tau_turn(
+        tables,
+        {
+            "g1": next(d for f, d in d_tables["rudder"] if f == 1.0),
+            "f1": next(d for f, d in d_tables["rudder"] if abs(f - 1 / 3) < 1e-3),
+            "tightest": next(d for f, d in d_tables["oar"] if f == 1.0),
+            "oar_hold": next(d for f, d in d_tables["oar"] if f == 0.0),
+        },
+        dict(_scalars(), turn_drag_extra=turn_k),
+    )
+    log(
+        f"  tau_turn fit: {tau_turn:.1f} s "
+        f"(max |D diff| {max_d * 100:.1f} % across the families)"
+    )
 
     # the hold's entry decay at its usages — the tightest's 31.5 spm
     # helm+hold V-collapse fit (scanned on the HL's V-shape vs the LL's)
     # + the 44-spm tempo-loss cell — a rate table, like the back's
     tau_hold_31 = measure_tau_hold_at(31.5)
-    scalars = dict(_scalars(), tau_surge=tau_surge, tau_turn=tau_turn,
-                   tau_hold=dict(rates=[31.5, 44.0],
-                                 tau=[tau_hold_31, tau_hold["entry"]]),
-                   turn_drag_extra=turn_k,
-                   tau_exit=tau_exit,
-                   drift_tau_exp=measure_drift_tau(tau_exit),
-                   v_flow=measure_v_flow())
-    residuals = dict(
-        d_scale_max_d_pct=d_worst * 100.0,
-        d_scales=d_scales,
-        vstar="exact at the grid points (mean-force bisection)",
-        pressure_rows_std_kt=dict(
-            steady=tables["steady"].pop("std_kt"),
-            fast=tables["fast"].pop("std_kt"),
-        ),
-        tau_surge_rms_mps=rms_surge,
-        tau_turn_max_d_pct=max_d * 100.0,
-        tau_hold_rms_mps=tau_hold["rms_mps"],
-        tau_hold_settles_kt=tau_hold["settles_kt"],
-        tau_back_entry_rms_mps=tau_back["entry_rms_mps"],
-        tau_back_collapse_mean_diff_mps=tau_back["collapse_mean_diff_mps"],
-        tau_back_window_mean_kt=tau_back["window_mean_kt"],
-        tempo_loss_full_is_commanded=(
-            tables["tempo_loss"]["full_rate_eff"] ==
-            tables["tempo_loss"]["rates"]),
-        turn_drag_rms_mps=rms_k,
-        tau_exit="the LL's omega decay after helm->midship, exponential "
-                 "fit over 240 s",
-        drift="LSQ yaw slope at the (rate, pressure, tank) cells: the "
-              "full-tank window 20-60 s + the drained 600-900 s",
+    scalars = dict(
+        _scalars(),
+        tau_surge=tau_surge,
+        tau_turn=tau_turn,
+        tau_hold={"rates": [31.5, 44.0], "tau": [tau_hold_31, tau_hold["entry"]]},
+        turn_drag_extra=turn_k,
+        tau_exit=tau_exit,
+        drift_tau_exp=measure_drift_tau(tau_exit),
+        v_flow=measure_v_flow(),
     )
-    meta = dict(
-        id=cal_id, ll_commit=commit, date=date,
-        config=dict(rig="Olympias", fleet="spruce", hull=1.0, n_oars=170),
-        protocols=dict(
-            vstar="ll.hull.equilibrium_speed",
-            pressure_rows="LL ship 420-s settle, 60-s tail mean",
-            empty="LL ship, tiers' W preset 0, settle",
-            asym="LL ship (row, hold / row, back), spoude + steady, settle",
-            nets="LL tank slope at the settled speed (refills: low preset, "
-                 "short window)",
-            net_fresh="LL full-drain mean (tier W / time to empty) from "
-                      "the 6.5-kt entry (the turns' full-tank context)",
-            d_oar_v="LL oar-back 600-s run: the instantaneous 2V/|omega| "
-                    "binned by V (the drained means; the fresh plateau "
-                    "anchored to the d_oar(0) gate cell)",
-            v_flow="the LL oar-back run's star-side W' slope vs V (the "
-                   "back blades' flow-limit unlock ~3.0 kt)",
-            d_tables="ll.ship.run_turn protocol (|y| at 180 deg)",
-            tau_surge="LSQ of the chase to the 28.8 spm rest start",
-            tau_turn="scan so the HL's |y| at 180 deg matches the LL's",
-            drift="LL straight-cruise yaw slope at the anchors (task C)",
-            tau_exit="LL omega decay after the helm returns midship",
-            tempo_loss="LL exhausted rate_eff at the anchor rates (task B)",
-            tau_hold="LL (row, hold) entry decay fits at 31.5/44 spm "
-                     "(task E)",
-            tau_back="LL (row, back) entry fit at 44 + the 44->24 collapse "
-                     "window-mean fit (task E)",
-            turn_drag="LL G1-turn V(t) vs the HL's, extra-drag scan (task F)",
+    residuals = {
+        "d_scale_max_d_pct": d_worst * 100.0,
+        "d_scales": d_scales,
+        "vstar": "exact at the grid points (mean-force bisection)",
+        "pressure_rows_std_kt": {
+            "steady": tables["steady"].pop("std_kt"),
+            "fast": tables["fast"].pop("std_kt"),
+        },
+        "tau_surge_rms_mps": rms_surge,
+        "tau_turn_max_d_pct": max_d * 100.0,
+        "tau_hold_rms_mps": tau_hold["rms_mps"],
+        "tau_hold_settles_kt": tau_hold["settles_kt"],
+        "tau_back_entry_rms_mps": tau_back["entry_rms_mps"],
+        "tau_back_collapse_mean_diff_mps": tau_back["collapse_mean_diff_mps"],
+        "tau_back_window_mean_kt": tau_back["window_mean_kt"],
+        "tempo_loss_full_is_commanded": (
+            tables["tempo_loss"]["full_rate_eff"] == tables["tempo_loss"]["rates"]
         ),
-    )
+        "turn_drag_rms_mps": rms_k,
+        "tau_exit": "the LL's omega decay after helm->midship, exponential "
+        "fit over 240 s",
+        "drift": "LSQ yaw slope at the (rate, pressure, tank) cells: the "
+        "full-tank window 20-60 s + the drained 600-900 s",
+    }
+    meta = {
+        "id": cal_id,
+        "ll_commit": commit,
+        "date": date,
+        "config": {"rig": "Olympias", "fleet": "spruce", "hull": 1.0, "n_oars": 170},
+        "protocols": {
+            "vstar": "ll.hull.equilibrium_speed",
+            "pressure_rows": "LL ship 420-s settle, 60-s tail mean",
+            "empty": "LL ship, tiers' W preset 0, settle",
+            "asym": "LL ship (row, hold / row, back), spoude + steady, settle",
+            "nets": "LL tank slope at the settled speed (refills: low preset, "
+            "short window)",
+            "net_fresh": "LL full-drain mean (tier W / time to empty) from "
+            "the 6.5-kt entry (the turns' full-tank context)",
+            "d_oar_v": "LL oar-back 600-s run: the instantaneous 2V/|omega| "
+            "binned by V (the drained means; the fresh plateau "
+            "anchored to the d_oar(0) gate cell)",
+            "v_flow": "the LL oar-back run's star-side W' slope vs V (the "
+            "back blades' flow-limit unlock ~3.0 kt)",
+            "d_tables": "ll.ship.run_turn protocol (|y| at 180 deg)",
+            "tau_surge": "LSQ of the chase to the 28.8 spm rest start",
+            "tau_turn": "scan so the HL's |y| at 180 deg matches the LL's",
+            "drift": "LL straight-cruise yaw slope at the anchors (task C)",
+            "tau_exit": "LL omega decay after the helm returns midship",
+            "tempo_loss": "LL exhausted rate_eff at the anchor rates (task B)",
+            "tau_hold": "LL (row, hold) entry decay fits at 31.5/44 spm (task E)",
+            "tau_back": "LL (row, back) entry fit at 44 + the 44->24 collapse "
+            "window-mean fit (task E)",
+            "turn_drag": "LL G1-turn V(t) vs the HL's, extra-drag scan (task F)",
+        },
+    }
 
     OUT_DIR.mkdir(exist_ok=True)
-    out = dict(id=cal_id, meta=meta, tables=tables, scalars=scalars,
-               residuals=residuals)
+    out = {
+        "id": cal_id,
+        "meta": meta,
+        "tables": tables,
+        "scalars": scalars,
+        "residuals": residuals,
+    }
     path = OUT_DIR / f"{cal_id}.json"
     with open(path, "w", encoding="utf-8") as fh:
         json.dump(out, fh, indent=2)
     shutil.copy(path, OUT_DIR / "latest.json")
-    log(f"\nwrote {path.name} (+ latest.json) in {time.time()-t_all:.0f} s")
-    log("next: python3 harness/run_validation.py  (the loop: adjust -> "
-        "re-run -> re-validate)")
+    log(f"\nwrote {path.name} (+ latest.json) in {time.time() - t_all:.0f} s")
+    log(
+        "next: python3 harness/run_validation.py  (the loop: adjust -> "
+        "re-run -> re-validate)"
+    )
+
 
 def measure_asym_nets():
     """The rowing side's tank net in the one-side-stopped legs:
@@ -1115,19 +1312,18 @@ def measure_asym_nets():
         spoude, steady = [], []
         for rate in [24.0, 30.0, 36.0]:
             for preset, outk in (("spoude", spoude), ("steady", steady)):
-                ship = LLShip(rate=rate, pressure=(preset, preset),
-                              oar_state=("row", state))
-                ship.V = 3.3                     # the hold-speed entry
+                ship = LLShip(
+                    rate=rate, pressure=(preset, preset), oar_state=("row", state)
+                )
+                ship.V = 3.3  # the hold-speed entry
                 for _ in range(int(300.0 / DT)):  # settle into the orbit
                     ship.step(DT)
                 w0 = [t.W for t in ship.crew["port"].tiers.values()]
                 for _ in range(int(120.0 / DT)):
                     ship.step(DT)
                 w1 = [t.W for t in ship.crew["port"].tiers.values()]
-                outk.append(round(sum(a - b for a, b in zip(w0, w1))
-                                  / 3.0 / 120.0, 1))
-        out[state] = dict(rates=[24.0, 30.0, 36.0],
-                          spoude=spoude, steady=steady)
+                outk.append(round(sum(a - b for a, b in zip(w0, w1)) / 3.0 / 120.0, 1))
+        out[state] = {"rates": [24.0, 30.0, 36.0], "spoude": spoude, "steady": steady}
         log(f"  asym nets {state}: spoude {spoude} steady {steady}")
     return out
 
@@ -1152,8 +1348,9 @@ def measure_fresh_nets(rates):
         spoude, steady = [], []
         for rate in rates:
             for preset, outk in (("spoude", spoude), ("steady", steady)):
-                ship = LLShip(rate=rate, pressure=(preset, preset),
-                              oar_state=("row", state))
+                ship = LLShip(
+                    rate=rate, pressure=(preset, preset), oar_state=("row", state)
+                )
                 ship.V = 6.5 * KT
                 for _ in range(int(1.0 / DT)):
                     ship.step(DT)
@@ -1168,8 +1365,7 @@ def measure_fresh_nets(rates):
                     outk.append(round(w0 / t_empty, 1))
                 else:
                     outk.append(0.0)
-        out[state] = dict(rates=list(rates),
-                          spoude=spoude, steady=steady)
+        out[state] = {"rates": list(rates), "spoude": spoude, "steady": steady}
         log(f"  fresh nets {state}: spoude {spoude} steady {steady}")
     return out
 
@@ -1194,16 +1390,19 @@ def measure_turn_beta():
                 bs.append(math.degrees(math.atan2(ship.v, ship.V)))
         return round(sum(bs) / len(bs), 2)
 
-    out = dict(
-        fracs=[1.0, 1.0 / 3.0],
-        helm=[beta_of(6.0, 170, ("port", 1.0)),
-              beta_of(6.0, 170, ("port", 22.5 / 67.5))],
-        tightest=beta_of(6.5, 85, ("starboard", 1.0), ("row", "hold")),
-        oar=dict(hold=beta_of(6.5, 85, ("midship", 0.0), ("row", "hold")),
-                 back=beta_of(6.5, 85, ("midship", 0.0), ("row", "back"))),
-    )
-    log(f"  turn_beta: helm {out['helm']} tightest {out['tightest']} "
-        f"oar {out['oar']}")
+    out = {
+        "fracs": [1.0, 1.0 / 3.0],
+        "helm": [
+            beta_of(6.0, 170, ("port", 1.0)),
+            beta_of(6.0, 170, ("port", 22.5 / 67.5)),
+        ],
+        "tightest": beta_of(6.5, 85, ("starboard", 1.0), ("row", "hold")),
+        "oar": {
+            "hold": beta_of(6.5, 85, ("midship", 0.0), ("row", "hold")),
+            "back": beta_of(6.5, 85, ("midship", 0.0), ("row", "back")),
+        },
+    }
+    log(f"  turn_beta: helm {out['helm']} tightest {out['tightest']} oar {out['oar']}")
     return out
 
 
@@ -1217,8 +1416,10 @@ def measure_d_oar_v():
     3.0 kt (the half-circle anchor — the gate measures the fresh
     orbit)."""
     from harness.script import turn_stream
-    from hl.curvesel import fit_fp
     from ll.ship import rate_for_speed
+
+    from hl.curvesel import fit_fp
+
     rate = rate_for_speed("Olympias", 6.5, n_oars=85)
     ship = LLShip(rate=rate, oar_state=("row", "back"))
     ship.V = 6.5 * KT
@@ -1227,19 +1428,30 @@ def measure_d_oar_v():
     vs, ds = [], []
     while ship.t <= 600.0:
         while idx < len(events) and events[idx].time <= ship.t + 1e-6:
-            ship.apply(events[idx]); idx += 1
+            ship.apply(events[idx])
+            idx += 1
         ship.step(DT)
-        if ship.t >= 110.0 and ship.V > 0.4 * KT:   # the drained phase
+        if ship.t >= 110.0 and ship.V > 0.4 * KT:  # the drained phase
             vs.append(ship.V / KT)
             ds.append(2.0 * ship.V / max(abs(ship.omega), 1e-9))
     fp = fit_fp(vs, ds)
-    out = dict(fp=dict(deg=fp["deg"], p1=fp["p1"], p2=fp["p2"],
-                       coeffs=fp["coeffs"]),
-               v_plateau=3.0, plateau_d=103.5,
-               fp_rss=fp["rss"], fp_loo=fp["loo"])
-    log(f"  d_oar_v FP{int(fp['deg'])}: p1={fp['p1']} p2={fp['p2']} "
+    out = {
+        "fp": {
+            "deg": fp["deg"],
+            "p1": fp["p1"],
+            "p2": fp["p2"],
+            "coeffs": fp["coeffs"],
+        },
+        "v_plateau": 3.0,
+        "plateau_d": 103.5,
+        "fp_rss": fp["rss"],
+        "fp_loo": fp["loo"],
+    }
+    log(
+        f"  d_oar_v FP{int(fp['deg'])}: p1={fp['p1']} p2={fp['p2']} "
         f"coeffs={[round(c, 2) for c in fp['coeffs']]} "
-        f"(AIC {fp['aic']:.0f}, LOO {fp['loo']:.1f})")
+        f"(AIC {fp['aic']:.0f}, LOO {fp['loo']:.1f})"
+    )
     return out
 
 
@@ -1252,6 +1464,7 @@ def measure_v_flow():
     half-power point (~3.0)."""
     from harness.script import turn_stream
     from ll.ship import rate_for_speed
+
     rate = rate_for_speed("Olympias", 6.5, n_oars=85)
     ship = LLShip(rate=rate, oar_state=("row", "back"))
     ship.V = 6.5 * KT
@@ -1261,7 +1474,8 @@ def measure_v_flow():
     prev = None
     while ship.t <= 600.0:
         while idx < len(events) and events[idx].time <= ship.t + 1e-6:
-            ship.apply(events[idx]); idx += 1
+            ship.apply(events[idx])
+            idx += 1
         ship.step(DT)
         if ship.t >= 40.0 and int(ship.t * 2) != int((ship.t - DT) * 2):
             s = ship.crew["star"].W_frac
@@ -1274,13 +1488,13 @@ def measure_v_flow():
     active = [(v, s) for v, s in slopes if s > 0.02 * full]
     half = full / 2.0
     v_flow = None
-    for (v0, s0), (v1, s1) in zip(active, active[1:]):
+    for (v0, s0), (v1, s1) in itertools.pairwise(active):
         if s0 <= half <= s1 or s1 <= half <= s0:
             f = (half - s0) / (s1 - s0)
             v_flow = v0 + f * (v1 - v0)
             break
     out = round(v_flow, 2) if v_flow else 3.0
-    log(f"  v_flow: {out} kt (slopes {len(slopes)}, full rate {full*1000:.1f}/ks)")
+    log(f"  v_flow: {out} kt (slopes {len(slopes)}, full rate {full * 1000:.1f}/ks)")
     return out
 
 

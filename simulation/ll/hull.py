@@ -22,18 +22,21 @@ no-ceiling regime near cruise.
 
 from __future__ import annotations
 
-from common.chain import M_REAL, RIGS, T_DRIVE, SPM, hull_power
+import itertools
+
+from common.chain import M_REAL, RIGS, SPM, T_DRIVE, hull_power
+
 from ll.oar import Oar, simulate
 
-M_TRIAL = M_REAL          # kg — trial displacement, now grounded: 40.95 t
-                          # at trial WL 1.10 m (real hull, 44.44 m³ design
-                          # WL 45.55 t, Vol 39.95 m³ trial; the parametric
-                          # 41.35 t is the documented reference).
-M_APP_FACTOR = 1.10        # apparent-mass factor (2) — the 1.10× potential-
-                          # flow value; the real hull's added mass is kept
-                          # at 1.10× for B3 (full J-based added mass is a
-                          # separate refinement).
-N_OARS = 170               # Olympias oar count
+M_TRIAL = M_REAL  # kg — trial displacement, now grounded: 40.95 t
+# at trial WL 1.10 m (real hull, 44.44 m³ design
+# WL 45.55 t, Vol 39.95 m³ trial; the parametric
+# 41.35 t is the documented reference).
+M_APP_FACTOR = 1.10  # apparent-mass factor (2) — the 1.10× potential-
+# flow value; the real hull's added mass is kept
+# at 1.10× for B3 (full J-based added mass is a
+# separate refinement).
+N_OARS = 170  # Olympias oar count
 
 
 # Calibrated entries beyond Table 9.6 (register A8):
@@ -49,8 +52,9 @@ def t_drive_for(rig_name: str, spm: float) -> tuple[float, str]:
     interpolation/extrapolation otherwise, flagged."""
     if (rig_name, spm) in CALIBRATED_T_DRIVE:
         return CALIBRATED_T_DRIVE[(rig_name, spm)], "calibrated"
-    pts = sorted((SPM[rn][vkt], td) for (rn, vkt), td in T_DRIVE.items()
-                 if rn == rig_name)
+    pts = sorted(
+        (SPM[rn][vkt], td) for (rn, vkt), td in T_DRIVE.items() if rn == rig_name
+    )
     for r, td in pts:
         if abs(r - spm) < 0.01:
             return td, "exact"
@@ -61,7 +65,7 @@ def t_drive_for(rig_name: str, spm: float) -> tuple[float, str]:
         (r1, td1), (r2, td2) = pts[-2], pts[-1]
         kind = "extrapolated"
     else:
-        for (r1, td1), (r2, td2) in zip(pts, pts[1:]):
+        for (r1, td1), (r2, td2) in itertools.pairwise(pts):
             if r1 <= spm <= r2:
                 break
         kind = "interpolated"
@@ -76,13 +80,17 @@ def drag_force(V: float, hull: float = 1.0) -> float:
 _EQ_LAST: dict[tuple, tuple[float, float]] = {}
 
 
-def equilibrium_speed(rig_name: str, spm: float, n_oars: int = N_OARS,
-                      hull: float = 1.0, t_drive: float | None = None) -> dict:
+def equilibrium_speed(
+    rig_name: str,
+    spm: float,
+    n_oars: int = N_OARS,
+    hull: float = 1.0,
+    t_drive: float | None = None,
+) -> dict:
     """Mean-force equilibrium: solve n_oars·T̄(V) = D(V) by bisection.
     T̄(V) is the time-stepped oar's cycle-mean thrust at fixed V (Gate-1 oar).
     t_drive: override the Table 9.6 schedule (calibration use — A8)."""
-    td, _ = (t_drive_for(rig_name, spm) if t_drive is None
-             else (t_drive, "override"))
+    td, _ = t_drive_for(rig_name, spm) if t_drive is None else (t_drive, "override")
 
     def g(V: float) -> float:
         res = simulate(Oar(RIGS[rig_name], spm, td), V, td / 600, n_cycles=4)
@@ -111,24 +119,34 @@ def equilibrium_speed(rig_name: str, spm: float, n_oars: int = N_OARS,
     Ve = 0.5 * (lo + hi)
     res = simulate(Oar(RIGS[rig_name], spm, td), Ve, td / 600, n_cycles=4)
     _EQ_LAST[key] = (spm, Ve)
-    return dict(V=Ve, thrust_oar=res["mean_thrust"], mean_fh=res["mean_fh"],
-                t_drive=td)
+    return {
+        "V": Ve,
+        "thrust_oar": res["mean_thrust"],
+        "mean_fh": res["mean_fh"],
+        "t_drive": td,
+    }
 
 
 class SurgeHull:
     """Per-step coupling: oar forces and drag recomputed at the current V."""
 
-    def __init__(self, m_trial: float = M_TRIAL, m_app_factor: float = M_APP_FACTOR,
-                 hull: float = 1.0, n_oars: int = N_OARS,
-                 fh_max: float | None = None):
+    def __init__(
+        self,
+        m_trial: float = M_TRIAL,
+        m_app_factor: float = M_APP_FACTOR,
+        hull: float = 1.0,
+        n_oars: int = N_OARS,
+        fh_max: float | None = None,
+    ):
         self.m = m_app_factor * m_trial
         self.hull = hull
         self.n_oars = n_oars
-        self.fh_max = fh_max          # provisional rower ceiling (oQ-13); None = off
+        self.fh_max = fh_max  # provisional rower ceiling (oQ-13); None = off
         self.V = 0.0
 
-    def run(self, oar: Oar, V0: float, t_end: float, dt: float,
-            sample_dt: float = 0.1) -> dict:
+    def run(
+        self, oar: Oar, V0: float, t_end: float, dt: float, sample_dt: float = 0.1
+    ) -> dict:
         """Integrate from V0 for t_end s at step dt. Returns the fine timeline
         (10 Hz by default), settled speed (mean over the final stroke cycle),
         stroke-frequency ripple (p-p over that cycle), settle time (1 % band),
@@ -143,7 +161,7 @@ class SurgeHull:
             s = oar.step(dt, self.V)
             fx, fh = s.Fx, s.Fh
             if self.fh_max is not None and fh > self.fh_max and s.immersed:
-                scale = self.fh_max / fh          # force-limited blade (crude)
+                scale = self.fh_max / fh  # force-limited blade (crude)
                 fx *= scale
                 fh *= scale
             peak_fh = max(peak_fh, fh)
@@ -160,10 +178,12 @@ class SurgeHull:
         cyc = oar.cycle
         tail = [v for t, v in zip(ts, Vs) if t >= t_end - cyc]
         V_settled = sum(tail) / len(tail)
-        ripple = (max(tail) - min(tail))
+        ripple = max(tail) - min(tail)
         win = max(1, int(10.0 / sample_dt))
-        wmean = [sum(Vs[max(0, i - win + 1):i + 1]) / min(i + 1, win)
-                 for i in range(len(Vs))]
+        wmean = [
+            sum(Vs[max(0, i - win + 1) : i + 1]) / min(i + 1, win)
+            for i in range(len(Vs))
+        ]
         smin, smax = [0.0] * len(wmean), [0.0] * len(wmean)
         mn = mx = wmean[-1]
         for i in range(len(wmean) - 1, -1, -1):
@@ -173,16 +193,33 @@ class SurgeHull:
         tol = 0.005 * V_settled
         settle_time = None
         for i, t in enumerate(ts):
-            if t >= 20.0 and smax[i] - smin[i] < tol and abs(wmean[i] - V_settled) < tol:
+            if (
+                t >= 20.0
+                and smax[i] - smin[i] < tol
+                and abs(wmean[i] - V_settled) < tol
+            ):
                 settle_time = t
                 break
-        return dict(ts=ts, Vs=Vs, V_settled=V_settled, ripple=ripple,
-                    settle_time=settle_time, peak_fh=peak_fh, wmean=wmean)
+        return {
+            "ts": ts,
+            "Vs": Vs,
+            "V_settled": V_settled,
+            "ripple": ripple,
+            "settle_time": settle_time,
+            "peak_fh": peak_fh,
+            "wmean": wmean,
+        }
 
 
-def run_cruise(rig_name: str, spm: float, t_end: float = 600.0, dt: float = 0.02,
-               fh_max: float | None = None, n_oars: int = N_OARS,
-               v0: float | None = None) -> dict:
+def run_cruise(
+    rig_name: str,
+    spm: float,
+    t_end: float = 600.0,
+    dt: float = 0.02,
+    fh_max: float | None = None,
+    n_oars: int = N_OARS,
+    v0: float | None = None,
+) -> dict:
     """Convenience: equilibrium speed, then a full coupled run from 0.9·V*."""
     eq = equilibrium_speed(rig_name, spm, n_oars=n_oars)
     td, tsrc = t_drive_for(rig_name, spm)

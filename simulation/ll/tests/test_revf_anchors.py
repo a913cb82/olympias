@@ -9,8 +9,6 @@ physics moved and the ledger rows must be re-measured.
 
 import math
 
-import pytest
-
 from ll.ship import Ship
 
 
@@ -27,8 +25,9 @@ def _two_tier(ship, side, rowing, state="row"):
 def _settled_turn(rate, port_act, star_act, t_end=600.0):
     """The settled yaw rate for a partial-crew turn from rest.
     port_act/star_act: ("row", True/False) or ("hold", ...) etc."""
-    s = Ship(rate=rate, pressure=("spoude", "spoude"),
-             oar_state=(port_act[0], star_act[0]))
+    s = Ship(
+        rate=rate, pressure=("spoude", "spoude"), oar_state=(port_act[0], star_act[0])
+    )
     _two_tier(s, "port", port_act[1])
     _two_tier(s, "star", star_act[1])
     while s.t < t_end:
@@ -81,7 +80,7 @@ def test_stationary_turn_in_place():
 
 def test_stationary_turn_one_side():
     """Rev F C7: one side's Z+T ahead vs rest — the 1.06 deg/s reading."""
-    om, v = _settled_turn(27.0, ("row", True), ("row", False))
+    om, _v = _settled_turn(27.0, ("row", True), ("row", False))
     assert abs(om - 1.06) < 0.15, f"one-side stationary turn {om:.2f} deg/s"
 
 
@@ -100,8 +99,7 @@ def test_thranite_only_equilibrium():
     """Rev F D10: thranites only (62 oars) at 33.3 spm — the LL settles
     4.19 kt (chain-law baseline) vs the record's loose 3.3 kt reading
     [+?]; a lock on the measured state, not a gate."""
-    s = Ship(rate=33.3, pressure=("spoude", "spoude"),
-             oar_state=("row", "row"))
+    s = Ship(rate=33.3, pressure=("spoude", "spoude"), oar_state=("row", "row"))
     for side in ("port", "star"):
         for t in ("zygian", "thalmian"):
             s.crew[side].tiers[t].set_pressure("rest")
@@ -115,10 +113,12 @@ def test_rudder_drag_cross_check():
     our rudder_straight 39.4 per kt² — measured +8-9 % at 5-8 kt; an
     independent confirmation of the constant."""
     from common.chain import VESSELS
+
     v = VESSELS["Olympias"]
     for kt in (5.0, 7.0, 8.0):
         vms = kt * 0.514444
         theirs = 137.0 * vms * vms + 0.65 * vms
         ours = v.rudder_straight * kt * kt
-        assert 0.0 < (ours - theirs) / theirs < 0.12, \
+        assert 0.0 < (ours - theirs) / theirs < 0.12, (
             f"rudder drag @{kt} kt: ours {ours:.0f} vs theirs {theirs:.0f}"
+        )

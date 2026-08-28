@@ -29,10 +29,10 @@ class ScriptError(ValueError):
 
 @dataclass(frozen=True)
 class Command:
-    time: float          # seconds from script start
-    verb: str            # one of the schema verbs
+    time: float  # seconds from script start
+    verb: str  # one of the schema verbs
     args: tuple[Any, ...]
-    lineno: int          # 1-based, for error messages and replay logs
+    lineno: int  # 1-based, for error messages and replay logs
 
     def __str__(self) -> str:
         args = ", ".join(str(a) for a in self.args)
@@ -45,8 +45,8 @@ def load_schema(path: Path | str = SCHEMA_PATH) -> dict:
 
 
 def _tokens(line: str) -> list[str]:
-    line = line.split("#", 1)[0]     # strip comment to end of line
-    line = line.replace(",", " ")    # comma- or space-separated
+    line = line.split("#", 1)[0]  # strip comment to end of line
+    line = line.replace(",", " ")  # comma- or space-separated
     return line.split()
 
 
@@ -57,9 +57,7 @@ def _parse_number(raw: str, spec: dict, verb: str, lineno: int) -> float:
         raise ScriptError(f"line {lineno}: {verb}: expected a number, got {raw!r}")
     lo, hi = spec.get("min"), spec.get("max")
     if (lo is not None and value < lo) or (hi is not None and value > hi):
-        raise ScriptError(
-            f"line {lineno}: {verb}: {value:g} out of range [{lo}, {hi}]"
-        )
+        raise ScriptError(f"line {lineno}: {verb}: {value:g} out of range [{lo}, {hi}]")
     return value
 
 

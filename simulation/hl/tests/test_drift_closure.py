@@ -7,15 +7,12 @@ physics change that moves any of the measured constants breaks here.
 Run: python3 -m pytest hl/tests/test_drift_closure.py -q
 """
 
-import math
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-import pytest
 
-from common.chain import KT
 from commands.parser import parse_file
 from hl.curves import load
 from hl.ship import Ship as HLShip
@@ -37,8 +34,16 @@ DRIFT_TE = [0.00006198, 0.00007751, 0.00008587, 0.00014080]
 DRIFT_RATES = [25.5, 28.8, 32.3, 44.5]
 
 KICK_V = [0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0]
-KICK_W = [-0.000187, -0.0004284, -0.0004583, -0.0003881,
-          -0.0003328, 0.0000972, 0.0000469, -0.0000287]
+KICK_W = [
+    -0.000187,
+    -0.0004284,
+    -0.0004583,
+    -0.0003881,
+    -0.0003328,
+    0.0000972,
+    0.0000469,
+    -0.0000287,
+]
 
 TAU_EXIT = 8.0
 DRIFT_TAU_EXP = 0.255
@@ -50,14 +55,17 @@ DRIFT_TAU_EXP = 0.255
 
 # ---------------------------------------------------------------------------
 def test_drift_cells_match_the_measurement():
-    for rates, got, ref in ((DRIFT_RATES, C._drift_sf, DRIFT_SF),
-                            (DRIFT_RATES, C._drift_se, DRIFT_SE),
-                            (DRIFT_RATES, C._drift_tf, DRIFT_TF),
-                            (DRIFT_RATES, C._drift_te, DRIFT_TE)):
+    for rates, got, ref in (
+        (DRIFT_RATES, C._drift_sf, DRIFT_SF),
+        (DRIFT_RATES, C._drift_se, DRIFT_SE),
+        (DRIFT_RATES, C._drift_tf, DRIFT_TF),
+        (DRIFT_RATES, C._drift_te, DRIFT_TE),
+    ):
         for r, g in zip(rates, got):
             i = DRIFT_RATES.index(r)
-            assert abs(g - ref[i]) < 2e-5, \
+            assert abs(g - ref[i]) < 2e-5, (
                 f"drift cell moved: {r} {g:.7f} vs the measured {ref[i]:.7f}"
+            )
 
 
 def test_drift_cells_are_the_settled_values():
@@ -73,16 +81,18 @@ def test_drift_cells_are_the_settled_values():
 def test_kick_curve_matches_the_measurement():
     assert C._kick_v == KICK_V
     for v, ref in zip(KICK_V, KICK_W):
-        assert abs(C.drift_kick(v) - ref) < 2e-5, \
+        assert abs(C.drift_kick(v) - ref) < 2e-5, (
             f"kick at V={v}: {C.drift_kick(v):.7f} vs {ref:.7f}"
+        )
     assert C.drift_kick(0.4) == 0.0
     assert abs(C.drift_kick(6.0) - KICK_W[-1]) < 1e-6  # flat above the ramp
 
 
 def test_slow_decay_scalars():
     assert abs(C.tau_exit - TAU_EXIT) < 1.0
-    assert abs(C.drift_tau_exp - DRIFT_TAU_EXP) < 0.02, \
+    assert abs(C.drift_tau_exp - DRIFT_TAU_EXP) < 0.02, (
         f"drift_tau_exp moved: {C.drift_tau_exp}"
+    )
     # the power-law bridge: the turn-scale ~ the exit tau, the
     # drift-scale ~40 s at the chain-law calibration (the re-scan's
     # verdict 19.0/0.164 — the tank-tested drag law's drift dynamics)
@@ -91,7 +101,9 @@ def test_slow_decay_scalars():
     tau_drift = C.tau_exit * (0.1 / 0.001) ** C.drift_tau_exp
     # Grounded hull gives 8*(100)^0.255=25.9 s (was 19*100^0.123=33 s);
     # both are the wprime's slow side, not tau_turn.
-    assert 20.0 < tau_drift < 60.0, f"drift-scale tau: {tau_drift:.0f} s (grounded 25.9 s)"
+    assert 20.0 < tau_drift < 60.0, (
+        f"drift-scale tau: {tau_drift:.0f} s (grounded 25.9 s)"
+    )
 
 
 def test_burst_path_omega_closure():
@@ -99,8 +111,9 @@ def test_burst_path_omega_closure():
     through a drained 44.5-spoude burst from rest (the ramp's kick, the
     slow decay) — the heading separation stays small."""
     cmds = [(0.0, "rate", 44.5), (0.0, "pressure", "spoude")]
-    cmds = list(parse_file(
-        Path(__file__).resolve().parents[2] / "examples/wprime_burst.txt"))
+    cmds = list(
+        parse_file(Path(__file__).resolve().parents[2] / "examples/wprime_burst.txt")
+    )
     ll = LLShip(rate=28.8)
     hl = HLShip(rate=28.8, curves=C)
     ll.run_script(cmds, dt=0.05)
@@ -108,9 +121,11 @@ def test_burst_path_omega_closure():
     # the burst-2 window: the ramp's kick + the slow decay
     sep = abs(ll.psi - hl.psi)
     assert sep < 0.15, f"heading separation over the burst: {sep:.3f} rad"
+
     # the mean omega over the ramp-decay window tracks within 40 %
     def wmean(ship, lo, hi):
         pass  # the snap-based check below is enough for the lock
+
     assert True
 
 
@@ -121,10 +136,11 @@ def test_rest_decay_is_slow():
     but still the slow side (wprime's 40 s scale)."""
     hl = HLShip(rate=28.8, curves=C)
     hl.omega = -0.0009
-    for _ in range(100):                       # 50 s
+    for _ in range(100):  # 50 s
         hl.step(0.5)
-    assert abs(hl.omega) > 0.00015, \
+    assert abs(hl.omega) > 0.00015, (
         f"the rest decay is too fast: {hl.omega:.7f} after 50 s (grounded 8 s)"
+    )
 
 
 def test_drift_dt_sensitivity_is_documented():
@@ -139,9 +155,10 @@ def test_drift_dt_sensitivity_is_documented():
     must be revisited. The protocol itself is pinned to 0.05 by
     hl/calibrate.DT."""
     from hl import calibrate as cal
+
     assert cal.DT == 0.05, f"the drift protocol's dt moved: {cal.DT}"
     from ll.ship import Ship
-    from ll.rower import W_MAX
+
     ship = Ship(rate=44.5, pressure=("spoude", "spoude"))
     n = int(600 / 0.1)
     rec = []
@@ -152,14 +169,16 @@ def test_drift_dt_sensitivity_is_documented():
     xs = [r[0] for r in rec]
     ys = [r[1] for r in rec]
     mx, my = sum(xs) / len(xs), sum(ys) / len(ys)
-    slope = sum((x - mx) * (y - my) for x, y in zip(xs, ys)) / \
-        sum((x - mx) ** 2 for x in xs)
+    slope = sum((x - mx) * (y - my) for x, y in zip(xs, ys)) / sum(
+        (x - mx) ** 2 for x in xs
+    )
     cell = C.drift_bias(44.5, 1.0, 1.0)
     # the chain-law baseline (2026-08): the drift's dt-sensitivity
     # COLLAPSED (the 0.1 slope ~1.1x the 0.05 cell, was >2x) — the
     # tank-tested drag law changed the straight-line's rectification;
     # the lock now asserts the collapsed state (a physics change would
     # trip it and the protocol/docs must be revisited)
-    assert abs(slope) < 2.0 * abs(cell), \
-        f"dt 0.1 slope {slope:.6f} vs the 0.05 cell {cell:.6f} — " \
+    assert abs(slope) < 2.0 * abs(cell), (
+        f"dt 0.1 slope {slope:.6f} vs the 0.05 cell {cell:.6f} — "
         "the sensitivity's collapsed state moved"
+    )

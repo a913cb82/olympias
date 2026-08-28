@@ -30,10 +30,12 @@ the observed turns decelerate (the chapter says the tightest turn "halves
 speed"), and the observed 360-deg time is an average over the whole
 decelerating turn.  That is a documented caveat, not a fitted correction.
 """
+
 import math
 import sys
-sys.path.insert(0, '.')
-from manoeuvre_model import olympias, mark_iib
+
+sys.path.insert(0, ".")
+from manoeuvre_model import mark_iib, olympias
 
 RAD2DEG = 180.0 / math.pi
 LWL = 32.2  # Olympias waterline length, m (Table 31.1 row 6)
@@ -43,9 +45,11 @@ def report(vessel, label, vkt, phi, fac, one_side, target=None, note=""):
     d, w, drift = vessel.steady_turn(vkt, phi, fac, one_side=one_side)
     yaw = w * RAD2DEG
     t360 = 360.0 / yaw if yaw > 0 else float("inf")
-    s = f"  {label:30s} v={vkt:4.1f}kt phi={phi:4.1f}deg one={int(one_side)}" \
-        f"  D={d:6.1f} m  yaw={yaw:4.2f} deg/s  360t={t360:4.0f} s" \
+    s = (
+        f"  {label:30s} v={vkt:4.1f}kt phi={phi:4.1f}deg one={int(one_side)}"
+        f"  D={d:6.1f} m  yaw={yaw:4.2f} deg/s  360t={t360:4.0f} s"
         f"  drift={drift:4.1f} deg"
+    )
     if target is not None:
         err = (d - target) / target * 100
         s += f"  [D vs {target:3.0f}: {err:+5.0f}%]"
@@ -56,7 +60,9 @@ def report(vessel, label, vkt, phi, fac, one_side, target=None, note=""):
 
 
 print("=" * 120)
-print("W5 re-run: Taylor ch.31 model vs trial turns F1-F6 (Hellenic Navy) and G1-G5 (Trust crew)")
+print(
+    "W5 re-run: Taylor ch.31 model vs trial turns F1-F6 (Hellenic Navy) and G1-G5 (Trust crew)"
+)
 print("=" * 120)
 op = olympias()
 mb = mark_iib()
@@ -71,39 +77,79 @@ print("    Morrison 1988: 1.9 lengths, 360 deg in 128 s -> avg 2.91 kt, 2.81 deg
 print("    1990 video / CS Monitor 1988: ~2.6-3 deg/s fast tight turns")
 
 print("\n[2] Diameter anchors (the W5 headline validation)")
-report(op, "tightest Olympias", 6.5, 67.5, 1.4, True, target=62,
-       note="one side stops, full rudder")
-report(mb, "fast anastrophe", 9.5, 22.5, 3.25, False, target=145,
-       note="Mark IIb, full crew")
-report(mb, "tight anastrophe", 6.5, 67.5, 3.25, True, target=80,
-       note="Mark IIb, one side stops")
+report(
+    op,
+    "tightest Olympias",
+    6.5,
+    67.5,
+    1.4,
+    True,
+    target=62,
+    note="one side stops, full rudder",
+)
+report(
+    mb,
+    "fast anastrophe",
+    9.5,
+    22.5,
+    3.25,
+    False,
+    target=145,
+    note="Mark IIb, full crew",
+)
+report(
+    mb,
+    "tight anastrophe",
+    6.5,
+    67.5,
+    3.25,
+    True,
+    target=80,
+    note="Mark IIb, one side stops",
+)
 
 print("\n[3] G-series (Trust crew, ch.31 s3): flat measured oar thrust 4-7 kt,")
 print("    constant effective thrust through the turn.  Full rudder on G1-G3.")
 for label, vkt, phi, one in [
-        ("G1 full rudder full crew", 6.0, 67.5, False),
-        ("G2 (low entry speed)", 5.5, 67.5, False),
-        ("G3 (not completed)", 6.0, 67.5, False),
-        ("G4", 6.0, 45.0, False),
-        ("G5", 6.0, 45.0, False)]:
+    ("G1 full rudder full crew", 6.0, 67.5, False),
+    ("G2 (low entry speed)", 5.5, 67.5, False),
+    ("G3 (not completed)", 6.0, 67.5, False),
+    ("G4", 6.0, 45.0, False),
+    ("G5", 6.0, 45.0, False),
+]:
     report(op, label, vkt, phi, 1.4, one)
 
 print("\n[4] F-series (Hellenic Navy, ch.31 s3): wider variety of rudder angles;")
 print("    F1 smallest rudder angle; F5/F6 thranites only (half crew, lower thrust).")
 for label, vkt, phi, one in [
-        ("F1 smallest rudder angle", 6.0, 22.5, False),
-        ("F2 (low entry speed)", 5.5, 45.0, False),
-        ("F3 45 deg", 6.0, 45.0, False),
-        ("F4 45 deg", 6.0, 45.0, False),
-        ("F5 thranites only", 5.5, 67.5, False),
-        ("F6 thranites only", 5.5, 67.5, False)]:
+    ("F1 smallest rudder angle", 6.0, 22.5, False),
+    ("F2 (low entry speed)", 5.5, 45.0, False),
+    ("F3 45 deg", 6.0, 45.0, False),
+    ("F4 45 deg", 6.0, 45.0, False),
+    ("F5 thranites only", 5.5, 67.5, False),
+    ("F6 thranites only", 5.5, 67.5, False),
+]:
     report(op, label, vkt, phi, 1.4, one)
 
 print("\n[5] Yaw-rate / turn-time reconciliation (documented caveat)")
-report(op, "Morrison 1988 360-deg turn", 2.91, 67.5, 1.4, True,
-       note="obs 360t=128 s @ 2.91 kt avg; model 360t=70 s (steady, one-side)")
-report(op, "same turn, entry speed", 6.5, 67.5, 1.4, True,
-       note="steady at constant 6.5 kt -> 360t=60 s; observed turn decelerates")
+report(
+    op,
+    "Morrison 1988 360-deg turn",
+    2.91,
+    67.5,
+    1.4,
+    True,
+    note="obs 360t=128 s @ 2.91 kt avg; model 360t=70 s (steady, one-side)",
+)
+report(
+    op,
+    "same turn, entry speed",
+    6.5,
+    67.5,
+    1.4,
+    True,
+    note="steady at constant 6.5 kt -> 360t=60 s; observed turn decelerates",
+)
 print("  -> model omega is set at constant speed; the real tightest turn")
 print("     halves speed (ch.31 s6.2), so its mean yaw rate is ~2.8-3 deg/s,")
 print("     i.e. 360 deg in ~120-130 s.  The model's DIAMETER still matches")
@@ -111,5 +157,12 @@ print("     62 m; matching the time history would need a full time-domain yaw")
 print("     integration with deceleration (not part of Taylor's Excel model).")
 
 print("\n[6] G1/G2 drift angle (ch.31 s2.2/3)")
-report(op, "G1 drift, force balance", 6.0, 67.5, 1.4, False,
-       note="reported 15 +/- 2 deg (Taylor prefers ~7.8 deg from time-delay)")
+report(
+    op,
+    "G1 drift, force balance",
+    6.0,
+    67.5,
+    1.4,
+    False,
+    note="reported 15 +/- 2 deg (Taylor prefers ~7.8 deg from time-delay)",
+)

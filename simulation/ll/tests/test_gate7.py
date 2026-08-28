@@ -17,12 +17,11 @@ G7-4 the as-designed equilibrium lands on 9.7 kt.
 """
 
 import sys
-import math
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from common.chain import KT, RIGS, T_DRIVE, SPM, hull_power
+from common.chain import KT, RIGS, SPM, T_DRIVE, hull_power
 from ll.oar import Oar, simulate
 
 MIIB = RIGS["MarkIIb"]
@@ -41,7 +40,7 @@ def test_cant_effect_measured():
     no_cant = prop_fraction({**MIIB, "cant": 0.0}, 7.5, SPM["MarkIIb"][7.5])
     assert 0.45 < with_cant < 0.60, f"with cant {with_cant:.2f}"
     assert 0.25 < no_cant < 0.35, f"without cant {no_cant:.2f}"
-    assert 1.5 < with_cant / no_cant < 2.0, f"cant ratio {with_cant/no_cant:.2f}"
+    assert 1.5 < with_cant / no_cant < 2.0, f"cant ratio {with_cant / no_cant:.2f}"
 
 
 def test_identity_at_olympias():
@@ -100,4 +99,5 @@ def test_as_designed_equilibrium():
 
 if __name__ == "__main__":
     import pytest
+
     raise SystemExit(pytest.main([__file__]))

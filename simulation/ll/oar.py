@@ -47,22 +47,31 @@ from ll.blade import blade_consts, blade_force
 @dataclass(frozen=True, slots=True)
 class OarStep:
     """Per-step telemetry (deterministic, replayable)."""
-    t: float             # seconds since the last catch
-    C: float             # oar angle from athwartships (rad)
-    omega: float         # angular rate (rad/s)
+
+    t: float  # seconds since the last catch
+    C: float  # oar angle from athwartships (rad)
+    omega: float  # angular rate (rad/s)
     immersed: bool
-    vn: float            # normal flow at blade CP (m/s)
-    Fn: float            # blade force magnitude (N)
-    Fx: float            # force on hull, along keel (N)
-    Fy: float            # force on hull, athwartships (N)
-    Fh: float            # handle force (N)
+    vn: float  # normal flow at blade CP (m/s)
+    Fn: float  # blade force magnitude (N)
+    Fx: float  # force on hull, along keel (N)
+    Fy: float  # force on hull, athwartships (N)
+    Fh: float  # handle force (N)
 
 
 class Oar:
-    def __init__(self, rig: dict, r_spm: float, t_drive: float | None = None,
-                 direction: int = 1, mit: float = 0.0, t_rise: float = 0.15,
-                 sweep_factor: float = 1.0, station: tuple | None = None,
-                 force: bool = False):
+    def __init__(
+        self,
+        rig: dict,
+        r_spm: float,
+        t_drive: float | None = None,
+        direction: int = 1,
+        mit: float = 0.0,
+        t_rise: float = 0.15,
+        sweep_factor: float = 1.0,
+        station: tuple | None = None,
+        force: bool = False,
+    ):
         """direction = +1 forward stroke; -1 backing water (drive sweeps the
         other way — the blade force law then gives negative thrust naturally).
 
@@ -90,32 +99,32 @@ class Oar:
         self.mit = mit
         self.t_rise = t_rise
         self.force = force
-        self._l_cp = rig["lout"] - (rig["blade"] - 0.260)   # blade CP
+        self._l_cp = rig["lout"] - (rig["blade"] - 0.260)  # blade CP
         # the precomputed blade-law constants (blade_consts) — the
         # per-step hot path skips the per-call derivations
         self._bc = blade_consts(rig)
         # the force-driven mode's per-stroke inputs (configure_force) and
         # telemetry: the emerging in-water drive time and the entry speed
-        self.fh_demand = 0.0          # N — the drive's constant demand
-        self.fh_flip = 0.0            # N — the catch-flip force (the spike)
-        self.omega_entry = 0.0        # rad/s — blade-entry |omega|
+        self.fh_demand = 0.0  # N — the drive's constant demand
+        self.fh_flip = 0.0  # N — the catch-flip force (the spike)
+        self.omega_entry = 0.0  # rad/s — blade-entry |omega|
         self.in_flip = False
         self._flip_t = 0.0
         self._drive_t = 0.0
-        self.t_drive_last = 0.0       # s — the last drive's in-water time
-        self.omega_now = 0.0          # rad/s — the oar's instantaneous rate
+        self.t_drive_last = 0.0  # s — the last drive's in-water time
+        self.omega_now = 0.0  # rad/s — the oar's instantaneous rate
         self.cycle = 60.0 / r_spm
         self.t_drive = t_drive if t_drive is not None else self.cycle * 0.333
         self.t_recovery = self.cycle - self.t_drive
         self.sweep = math.radians(rig["sweep"]) * sweep_factor  # tier sweep
-        self.omega_cmd = self.sweep / self.t_drive        # commanded drive speed
+        self.omega_cmd = self.sweep / self.t_drive  # commanded drive speed
         self.omega_rec_cmd = self.sweep / self.t_recovery
         # effective kinematics (the crew model may override per stroke)
         self.omega_drive = self.omega_cmd
         self.omega_recover = self.omega_rec_cmd
         self.sweep_eff = self.sweep
-        self.C = self.dir * self.sweep / 2.0              # at the catch
-        self.in_drive = True                              # first drive starts now
+        self.C = self.dir * self.sweep / 2.0  # at the catch
+        self.in_drive = True  # first drive starts now
         self.t_since_catch = 0.0
         self.cycle_no = 0
 
@@ -129,11 +138,17 @@ class Oar:
         if self.mit <= 0.0:
             return 0.0
         if self.t_since_catch >= self.cycle - self.t_rise:
-            return (self.mit * (self.omega_drive + self.omega_recover)
-                    / (self.t_rise * self.rig["lin"]))
+            return (
+                self.mit
+                * (self.omega_drive + self.omega_recover)
+                / (self.t_rise * self.rig["lin"])
+            )
         if self.t_drive <= self.t_since_catch < self.t_drive + self.t_rise:
-            return (-self.mit * (self.omega_drive + self.omega_recover)
-                    / (self.t_rise * self.rig["lin"]))
+            return (
+                -self.mit
+                * (self.omega_drive + self.omega_recover)
+                / (self.t_rise * self.rig["lin"])
+            )
         return 0.0
 
     def flip_power(self, rate_eff: float) -> float:
@@ -155,21 +170,27 @@ class Oar:
         self.in_flip = False
         self._flip_t = 0.0
         self._drive_t = 0.0
-        self.omega_now = 0.0          # the first drive starts from rest
+        self.omega_now = 0.0  # the first drive starts from rest
         self.t_since_catch = 0.0
         self.cycle_no = 0
 
-    def configure_stroke(self, omega_drive: float, omega_recover: float,
-                         sweep_eff: float) -> None:
+    def configure_stroke(
+        self, omega_drive: float, omega_recover: float, sweep_eff: float
+    ) -> None:
         """Set the effective kinematics for the next drive (called at the
         catch by the crew model — ll/rower.py)."""
         self.omega_drive = omega_drive
         self.omega_recover = omega_recover
         self.sweep_eff = sweep_eff
 
-    def configure_force(self, fh_demand: float, fh_flip: float,
-                        omega_entry: float, omega_recover: float,
-                        sweep_eff: float) -> None:
+    def configure_force(
+        self,
+        fh_demand: float,
+        fh_flip: float,
+        omega_entry: float,
+        omega_recover: float,
+        sweep_eff: float,
+    ) -> None:
         """Set the force-driven stroke (called at the catch by the crew —
         ll/rower.py): the drive's constant demand, the flip force (the spike
         over t_rise), the blade-entry |omega|, the recovery speed, the sweep.
@@ -183,8 +204,9 @@ class Oar:
     # ------------------------------------------------------------------
     # force-driven mode (Plan 1): the substep phase machine
 
-    def _force_substep(self, h: float, V: float,
-                       ship_state: tuple | None = None) -> OarStep:
+    def _force_substep(
+        self, h: float, V: float, ship_state: tuple | None = None
+    ) -> OarStep:
         """Advance the force-mode phase machine by h; return the
         instantaneous forces. Phases: recovery (kinematic, blade out) -> flip
         (pinned at the catch, the spike force over t_rise — the reversal in
@@ -199,8 +221,9 @@ class Oar:
                 v, r = ship_state
                 flow = (V, v, r, x, y)
                 C_eff = side * self.C
-            f = blade_force(C_eff, self.omega_now, V, self.rig, True,
-                            flow=flow, bc=self._bc)
+            f = blade_force(
+                C_eff, self.omega_now, V, self.rig, True, flow=flow, bc=self._bc
+            )
             # the blade's drag opposes the blade's motion RELATIVE TO THE
             # water: the moment is -Fn·l_cp with Fn = k·|vn|·vn (the signed
             # flat-plate force — the companion's exact form). At vn > 0 (the
@@ -211,63 +234,92 @@ class Oar:
             # opposes. The equilibrium vn = -dir·sqrt(Fh·lin/(k·l_cp))
             # attracts — never a stall.
             if self.mit > 0.0:
-                acc = (-self.dir * self.fh_demand * self.rig["lin"]
-                       - f["Fn"] * self._l_cp) / self.mit
+                acc = (
+                    -self.dir * self.fh_demand * self.rig["lin"] - f["Fn"] * self._l_cp
+                ) / self.mit
                 self.omega_now += acc * h
             else:
                 # massless: the instantaneous equilibrium speed
                 vn_eq = -self.dir * math.sqrt(
-                    self.fh_demand * self.rig["lin"]
-                    / (0.5 * 1025.0 * self.rig["area"] * 1.8 * self._l_cp))
-                self.omega_now = (vn_eq - f["vn"] + self._l_cp
-                                  * self.omega_now) / self._l_cp
+                    self.fh_demand
+                    * self.rig["lin"]
+                    / (0.5 * 1025.0 * self.rig["area"] * 1.8 * self._l_cp)
+                )
+                self.omega_now = (
+                    vn_eq - f["vn"] + self._l_cp * self.omega_now
+                ) / self._l_cp
             self.C += self.omega_now * h
             self._drive_t += h
-            if self.dir * self.C <= -self.sweep_eff / 2:    # finish
+            if self.dir * self.C <= -self.sweep_eff / 2:  # finish
                 self.C = -self.dir * self.sweep_eff / 2
                 self.in_drive = False
                 self.t_drive_last = self._drive_t
                 self._drive_t = 0.0
-            return OarStep(t=self.t_since_catch, C=self.C,
-                           omega=self.omega_now, immersed=True, vn=f["vn"],
-                           Fn=f["Fn"], Fx=f["Fx"], Fy=f["Fy"],
-                           Fh=self.fh_demand)
+            return OarStep(
+                t=self.t_since_catch,
+                C=self.C,
+                omega=self.omega_now,
+                immersed=True,
+                vn=f["vn"],
+                Fn=f["Fn"],
+                Fx=f["Fx"],
+                Fy=f["Fy"],
+                Fh=self.fh_demand,
+            )
         if self.in_flip:
             # the pinned flip: C stays at the catch; the oar's rate goes
             # linearly from +dir·omega_recover to -dir·omega_entry under the
             # spike force (the EOM's closed form over t_rise)
             self._flip_t += h
             frac = min(1.0, self._flip_t / self.t_rise)
-            w = self.dir * (self.omega_recover
-                            - (self.omega_recover + self.omega_entry) * frac)
+            w = self.dir * (
+                self.omega_recover - (self.omega_recover + self.omega_entry) * frac
+            )
             self.omega_now = w
             if self._flip_t >= self.t_rise:
                 self.in_flip = False
                 self.in_drive = True
                 self._drive_t = 0.0
                 self.omega_now = -self.dir * self.omega_entry
-            return OarStep(t=self.t_since_catch, C=self.C,
-                           omega=self.omega_now, immersed=False, vn=0.0,
-                           Fn=0.0, Fx=0.0, Fy=0.0, Fh=self.fh_flip)
+            return OarStep(
+                t=self.t_since_catch,
+                C=self.C,
+                omega=self.omega_now,
+                immersed=False,
+                vn=0.0,
+                Fn=0.0,
+                Fx=0.0,
+                Fy=0.0,
+                Fh=self.fh_flip,
+            )
         # the recovery (kinematic, as the commanded mode)
         self.C += self.dir * self.omega_recover * h
-        if self.dir * self.C >= self.sweep_eff / 2:         # catch
+        if self.dir * self.C >= self.sweep_eff / 2:  # catch
             self.C = self.dir * self.sweep_eff / 2
             self.cycle_no += 1
             self.t_since_catch = 0.0
             if self.mit > 0.0:
-                self.in_flip = True                         # the flip first
+                self.in_flip = True  # the flip first
                 self._flip_t = 0.0
             else:
                 self.in_drive = True
                 self._drive_t = 0.0
                 self.omega_now = -self.dir * self.omega_entry
-        return OarStep(t=self.t_since_catch, C=self.C,
-                       omega=self.dir * self.omega_recover, immersed=False,
-                       vn=0.0, Fn=0.0, Fx=0.0, Fy=0.0, Fh=0.0)
+        return OarStep(
+            t=self.t_since_catch,
+            C=self.C,
+            omega=self.dir * self.omega_recover,
+            immersed=False,
+            vn=0.0,
+            Fn=0.0,
+            Fx=0.0,
+            Fy=0.0,
+            Fh=0.0,
+        )
 
-    def _step_force(self, dt: float, V: float,
-                    ship_state: tuple | None = None) -> OarStep:
+    def _step_force(
+        self, dt: float, V: float, ship_state: tuple | None = None
+    ) -> OarStep:
         """One ship step in force mode: substep the phase machine (the
         drive's EOM needs dt ~ 1e-3 — the blade-force stiffness ~50 s^-1)
         and return the MEAN forces over the step (the impulse-correct
@@ -278,7 +330,7 @@ class Oar:
         cost is confined to the phases that carry force."""
         if self.in_drive or self.in_flip:
             h = 0.001
-            n = max(1, int(round(dt / h)))
+            n = max(1, round(dt / h))
             h = dt / n
             fx = fy = fh = 0.0
             vn = fn = 0.0
@@ -291,22 +343,32 @@ class Oar:
                 vn += abs(s.vn) * h
                 fn += abs(s.Fn) * h
             self.t_since_catch += dt
-            return OarStep(t=self.t_since_catch - dt, C=s.C, omega=s.omega,
-                           immersed=s.immersed, vn=vn / dt, Fn=fn / dt,
-                           Fx=fx / dt, Fy=fy / dt, Fh=fh / dt)
+            return OarStep(
+                t=self.t_since_catch - dt,
+                C=s.C,
+                omega=s.omega,
+                immersed=s.immersed,
+                vn=vn / dt,
+                Fn=fn / dt,
+                Fx=fx / dt,
+                Fy=fy / dt,
+                Fh=fh / dt,
+            )
         # the recovery: split the step exactly at the catch crossing (the
         # motion is linear; the flip/drive then run the remainder)
         C_cross = self.dir * self.sweep_eff / 2
         C_end = self.C + self.dir * self.omega_recover * dt
-        if self.dir * (C_cross - self.C) > 0.0 \
-                and self.dir * (C_end - C_cross) >= 0.0 \
-                and self.omega_recover > 0.0:
+        if (
+            self.dir * (C_cross - self.C) > 0.0
+            and self.dir * (C_end - C_cross) >= 0.0
+            and self.omega_recover > 0.0
+        ):
             t1 = (C_cross - self.C) / (self.dir * self.omega_recover)
             self.C = C_cross
             self.cycle_no += 1
             self.t_since_catch = 0.0
             if self.mit > 0.0:
-                self.in_flip = True                # the flip first
+                self.in_flip = True  # the flip first
                 self._flip_t = 0.0
             else:
                 self.in_drive = True
@@ -317,46 +379,62 @@ class Oar:
             return s
         s = self._force_substep(dt, V, ship_state)
         self.t_since_catch += dt
-        return OarStep(t=self.t_since_catch - dt, C=s.C, omega=s.omega,
-                       immersed=s.immersed, vn=s.vn, Fn=s.Fn,
-                       Fx=s.Fx, Fy=s.Fy, Fh=s.Fh)
+        return OarStep(
+            t=self.t_since_catch - dt,
+            C=s.C,
+            omega=s.omega,
+            immersed=s.immersed,
+            vn=s.vn,
+            Fn=s.Fn,
+            Fx=s.Fx,
+            Fy=s.Fy,
+            Fh=s.Fh,
+        )
 
     def step(self, dt: float, V: float, ship_state: tuple | None = None) -> OarStep:
         if self.force:
             return self._step_force(dt, V, ship_state)
         C = self.C
         immersed = self.in_drive
-        omega = (-self.dir * self.omega_drive if immersed
-                 else self.dir * self.omega_recover)
+        omega = (
+            -self.dir * self.omega_drive if immersed else self.dir * self.omega_recover
+        )
         flow = None
         if self.station is not None and ship_state is not None:
-            x, y, side = self.station      # y signed (port +, star -)
+            x, y, side = self.station  # y signed (port +, star -)
             v, r = ship_state
             flow = (V, v, r, x, y)
-            C_eff = side * C               # the starboard sweep mirrors
+            C_eff = side * C  # the starboard sweep mirrors
         else:
             C_eff = C
-        f = blade_force(C_eff, omega, V, self.rig, immersed, flow=flow,
-                        bc=self._bc)
+        f = blade_force(C_eff, omega, V, self.rig, immersed, flow=flow, bc=self._bc)
         # the inertia pulses (blade out of the water at the stroke ends)
         f["Fh"] = f["Fh"] + self.inertia_fh()
         # advance
         if self.in_drive:
             self.C -= self.dir * self.omega_drive * dt
-            if self.dir * self.C <= -self.sweep_eff / 2:   # finish
+            if self.dir * self.C <= -self.sweep_eff / 2:  # finish
                 self.C = -self.dir * self.sweep_eff / 2
                 self.in_drive = False
         else:
             self.C += self.dir * self.omega_recover * dt
-            if self.dir * self.C >= self.sweep_eff / 2:    # catch
+            if self.dir * self.C >= self.sweep_eff / 2:  # catch
                 self.C = self.dir * self.sweep_eff / 2
                 self.in_drive = True
                 self.cycle_no += 1
                 self.t_since_catch = 0.0
         self.t_since_catch += dt
-        return OarStep(t=self.t_since_catch - dt, C=C, omega=omega,
-                       immersed=immersed, vn=f["vn"], Fn=f["Fn"], Fx=f["Fx"],
-                       Fy=f["Fy"], Fh=f["Fh"])
+        return OarStep(
+            t=self.t_since_catch - dt,
+            C=C,
+            omega=omega,
+            immersed=immersed,
+            vn=f["vn"],
+            Fn=f["Fn"],
+            Fx=f["Fx"],
+            Fy=f["Fy"],
+            Fh=f["Fh"],
+        )
 
 
 def simulate(oar: Oar, V: float, dt: float, n_cycles: int) -> dict:
@@ -374,9 +452,9 @@ def simulate(oar: Oar, V: float, dt: float, n_cycles: int) -> dict:
             Ft += s.Fx * V * dt
             Th += s.Fh * abs(s.omega) * oar.rig["lin"] * dt
             fb_peak = max(fb_peak, abs(s.Fn))
-    return dict(
-        mean_thrust=Fx_sum / (oar.cycle * n_cycles),
-        mean_fh=math.sqrt(Fh2 / (oar.t_drive * n_cycles)),
-        eff=Ft / Th if Th else float("nan"),
-        fb_peak=fb_peak,
-    )
+    return {
+        "mean_thrust": Fx_sum / (oar.cycle * n_cycles),
+        "mean_fh": math.sqrt(Fh2 / (oar.t_drive * n_cycles)),
+        "eff": Ft / Th if Th else float("nan"),
+        "fb_peak": fb_peak,
+    }

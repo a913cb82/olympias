@@ -21,7 +21,7 @@ import math
 
 from common.chain import KT
 
-NM = 1852.0                # nautical mile, m
+NM = 1852.0  # nautical mile, m
 T_3NM = 3.0 * NM
 
 
@@ -31,7 +31,7 @@ def _interp_cross(rows, key, target, out_key=None, sign=None):
     linearly interpolated between the bracketing samples. Returns
     (t_cross, interpolated out_key value) — out_key defaults to key."""
     out_key = key if out_key is None else out_key
-    prev = None                       # (t, key value, out value)
+    prev = None  # (t, key value, out value)
     for r in rows:
         v = abs(r[key]) if sign is None else sign * r[key]
         if v >= target:
@@ -60,6 +60,7 @@ def metrics(ll_rows, hl_rows, exclude_bins=()):
     drift-bias decision) — no correction needed here.
     exclude_bins: the per-script scoped 3-min bins (task T5 — the
     cruise_turn back-tail window, the HL's documented domain boundary)."""
+
     def mean_v(rows):
         # the distance/time integral — the honest mean speed. The
         # sample-mean aliases the low-speed per-stroke surge ripple
@@ -83,7 +84,7 @@ def metrics(ll_rows, hl_rows, exclude_bins=()):
                     t3[name] = rows[i]["t"]
                 break
 
-    end = lambda rows: rows[-1]                     # noqa: E731
+    end = lambda rows: rows[-1]
     x_ll, y_ll = end(ll_rows)["x"], end(ll_rows)["y"]
     x_hl, y_hl = end(hl_rows)["x"], end(hl_rows)["y"]
     sep = math.hypot(x_hl - x_ll, y_hl - y_ll)
@@ -93,12 +94,21 @@ def metrics(ll_rows, hl_rows, exclude_bins=()):
     # |pos_ll - pos_hl| over the whole run (the sum normalized by the
     # duration — the same signal, comparable across scripts)
     n_path = min(len(ll_rows), len(hl_rows))
-    path = sum(math.hypot(ll_rows[i]["x"] - hl_rows[i]["x"],
-                          ll_rows[i]["y"] - hl_rows[i]["y"]) / NM
-               for i in range(n_path)) / n_path
-    path_max = max(math.hypot(ll_rows[i]["x"] - hl_rows[i]["x"],
-                              ll_rows[i]["y"] - hl_rows[i]["y"]) / NM
-                   for i in range(n_path))
+    path = (
+        sum(
+            math.hypot(
+                ll_rows[i]["x"] - hl_rows[i]["x"], ll_rows[i]["y"] - hl_rows[i]["y"]
+            )
+            / NM
+            for i in range(n_path)
+        )
+        / n_path
+    )
+    path_max = max(
+        math.hypot(ll_rows[i]["x"] - hl_rows[i]["x"], ll_rows[i]["y"] - hl_rows[i]["y"])
+        / NM
+        for i in range(n_path)
+    )
 
     w_ll = end(ll_rows)["crew"]["port"]["W_frac"]
     w_hl = end(hl_rows)["crew"]["port"]["W_frac"]
@@ -139,6 +149,7 @@ def metrics(ll_rows, hl_rows, exclude_bins=()):
                     out.append([])
                 out[b].append(r["V"])
             return [sum(b) / len(b) for b in out]
+
         bl, bh = binned(rows_ll), binned(rows_hl)
         diffs = []
         for i, (a, b) in enumerate(zip(bl, bh)):
@@ -151,38 +162,77 @@ def metrics(ll_rows, hl_rows, exclude_bins=()):
         rms = math.sqrt(sum(d * d for d in diffs) / len(diffs))
         return mx, rms
 
-    return dict(
-        mean_speed=dict(ll=ll_v / KT, hl=hl_v / KT, tol=0.01, unit="kt"),
-        mean_speed_pct=dict(ll=0.0, hl=ll_v and (hl_v / ll_v - 1.0), tol=0.01,
-                            unit="%"),
-        t_3nm=dict(ll=t3.get("ll"), hl=t3.get("hl"), tol=0.01, unit="s"),
-        t_3nm_pct=dict(ll=0.0,
-                       hl=(t3["hl"] / t3["ll"] - 1.0)
-                       if "ll" in t3 and "hl" in t3 else None,
-                       tol=0.01, unit="%"),
-        turn_D=dict(ll=d_turn.get("ll"), hl=d_turn.get("hl"), tol=0.05,
-                    unit="m"),
-        turn_D_pct=dict(ll=0.0, hl=d_diff, tol=0.05, unit="%"),
-        fatigue=dict(ll=w_ll, hl=w_hl, tol=0.05, unit="W_frac"),
-        fatigue_delta=dict(ll=0.0, hl=w_hl - w_ll, tol=0.05, unit="pts"),
-        fatigue_consumed=dict(ll=dep_ll, hl=dep_hl, tol=0.05, unit="W' frac"),
-        fatigue_consumed_delta=dict(ll=0.0, hl=dep_hl - dep_ll, tol=0.05,
-                                    unit="pts"),
-        rate_eff=dict(ll=rate_ll, hl=rate_hl, tol=1.0, unit="spm"),
-        rate_eff_delta=dict(ll=0.0, hl=rate_hl - rate_ll, tol=1.0,
-                            unit="spm"),
-        position_sep=dict(ll=0.0, hl=sep / NM, tol=0.1, unit="NM"),
-        position_path=dict(ll=0.0, hl=path, tol=0.1, unit="NM"),
-        position_max=dict(ll=0.0, hl=path_max, tol=0.2, unit="NM"),
-        heading=dict(ll=end(ll_rows)["psi"], hl=end(hl_rows)["psi"],
-                     tol=5.0, unit="deg"),
-        distance=dict(ll=d_ll[-1] / NM, hl=d_hl[-1] / NM, tol=0.05,
-                      unit="NM"),
-        bin_max=dict(ll=0.0, hl=bin_diffs(ll_rows, hl_rows, exclude=exclude_bins)[0],
-                     tol=5.0, unit="%"),
-        bin_rms=dict(ll=0.0, hl=bin_diffs(ll_rows, hl_rows, exclude=exclude_bins)[1],
-                     tol=3.0, unit="%"),
-    )
+    return {
+        "mean_speed": {"ll": ll_v / KT, "hl": hl_v / KT, "tol": 0.01, "unit": "kt"},
+        "mean_speed_pct": {
+            "ll": 0.0,
+            "hl": ll_v and (hl_v / ll_v - 1.0),
+            "tol": 0.01,
+            "unit": "%",
+        },
+        "t_3nm": {"ll": t3.get("ll"), "hl": t3.get("hl"), "tol": 0.01, "unit": "s"},
+        "t_3nm_pct": {
+            "ll": 0.0,
+            "hl": (t3["hl"] / t3["ll"] - 1.0) if "ll" in t3 and "hl" in t3 else None,
+            "tol": 0.01,
+            "unit": "%",
+        },
+        "turn_D": {
+            "ll": d_turn.get("ll"),
+            "hl": d_turn.get("hl"),
+            "tol": 0.05,
+            "unit": "m",
+        },
+        "turn_D_pct": {"ll": 0.0, "hl": d_diff, "tol": 0.05, "unit": "%"},
+        "fatigue": {"ll": w_ll, "hl": w_hl, "tol": 0.05, "unit": "W_frac"},
+        "fatigue_delta": {"ll": 0.0, "hl": w_hl - w_ll, "tol": 0.05, "unit": "pts"},
+        "fatigue_consumed": {
+            "ll": dep_ll,
+            "hl": dep_hl,
+            "tol": 0.05,
+            "unit": "W' frac",
+        },
+        "fatigue_consumed_delta": {
+            "ll": 0.0,
+            "hl": dep_hl - dep_ll,
+            "tol": 0.05,
+            "unit": "pts",
+        },
+        "rate_eff": {"ll": rate_ll, "hl": rate_hl, "tol": 1.0, "unit": "spm"},
+        "rate_eff_delta": {
+            "ll": 0.0,
+            "hl": rate_hl - rate_ll,
+            "tol": 1.0,
+            "unit": "spm",
+        },
+        "position_sep": {"ll": 0.0, "hl": sep / NM, "tol": 0.1, "unit": "NM"},
+        "position_path": {"ll": 0.0, "hl": path, "tol": 0.1, "unit": "NM"},
+        "position_max": {"ll": 0.0, "hl": path_max, "tol": 0.2, "unit": "NM"},
+        "heading": {
+            "ll": end(ll_rows)["psi"],
+            "hl": end(hl_rows)["psi"],
+            "tol": 5.0,
+            "unit": "deg",
+        },
+        "distance": {
+            "ll": d_ll[-1] / NM,
+            "hl": d_hl[-1] / NM,
+            "tol": 0.05,
+            "unit": "NM",
+        },
+        "bin_max": {
+            "ll": 0.0,
+            "hl": bin_diffs(ll_rows, hl_rows, exclude=exclude_bins)[0],
+            "tol": 5.0,
+            "unit": "%",
+        },
+        "bin_rms": {
+            "ll": 0.0,
+            "hl": bin_diffs(ll_rows, hl_rows, exclude=exclude_bins)[1],
+            "tol": 3.0,
+            "unit": "%",
+        },
+    }
 
 
 def equivalence_table(ll_rows, hl_rows, meta, title="") -> str:
@@ -192,33 +242,45 @@ def equivalence_table(ll_rows, hl_rows, meta, title="") -> str:
     informational — their tolerance is the paired gate row's."""
     m = metrics(ll_rows, hl_rows)
     cal = meta["calibration"]
-    lines = [f"### {title}" if title else "### equivalence table",
-             "",
-             f"calibration: {cal} · LL dt={meta['ll_dt']} s · "
-             f"HL dt={meta['hl_dt']} s · 1 Hz samples · V0={meta['V0']/KT:.1f} kt",
-             "",
-             "| metric | LL | HL | diff | tolerance | verdict |",
-             "| --- | --- | --- | --- | --- | --- |"]
+    lines = [
+        f"### {title}" if title else "### equivalence table",
+        "",
+        (
+            f"calibration: {cal} · LL dt={meta['ll_dt']} s · "
+            f"HL dt={meta['hl_dt']} s · 1 Hz samples · V0={meta['V0'] / KT:.1f} kt"
+        ),
+        "",
+        "| metric | LL | HL | diff | tolerance | verdict |",
+        "| --- | --- | --- | --- | --- | --- |",
+    ]
     for key, row in m.items():
         if row["hl"] is None:
             lines.append(f"| {key} | {row['ll']} | n/a | n/a | ±{row['tol']} | — |")
             continue
         ll, hl, tol = row["ll"], row["hl"], row["tol"]
-        unit = row["unit"]
-        gated = key.endswith("_pct") or key.endswith("_delta") \
-            or key in ("position_sep", "position_path",
-                       "position_max")
+        row["unit"]
+        gated = key.endswith(("_pct", "_delta")) or key in (
+            "position_sep",
+            "position_path",
+            "position_max",
+        )
         if key.endswith("_pct") or key == "turn_D_pct":
             diff = f"{hl * 100:+.1f} %"
             ok = abs(hl) < tol
-        elif key in ("fatigue_delta", "fatigue_consumed_delta",
-                     "position_sep", "position_path",
-                     "position_max"):
+        elif key in (
+            "fatigue_delta",
+            "fatigue_consumed_delta",
+            "position_sep",
+            "position_path",
+            "position_max",
+        ):
             diff = f"{hl:+.3f}"
             ok = abs(hl) < tol
         else:
             diff = f"{hl - ll:+.3f}"
             ok = not gated or abs(hl - ll) < tol
-        lines.append(f"| {key} | {ll:.3f} | {hl:.3f} | {diff} | {tol} | "
-                     f"{'—' if not gated else ('PASS' if ok else 'VIOLATION')} |")
+        lines.append(
+            f"| {key} | {ll:.3f} | {hl:.3f} | {diff} | {tol} | "
+            f"{'—' if not gated else ('PASS' if ok else 'VIOLATION')} |"
+        )
     return "\n".join(lines) + "\n"

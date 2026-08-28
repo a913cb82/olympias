@@ -20,22 +20,30 @@ Gates (the LL gates — docs/VALIDATION.md):
   G5-8 regression: the other suites stay green (run separately).
 """
 
-import sys
-import pytest
 import math
+import sys
 from pathlib import Path
+
+import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from common.chain import KT, RIGS, T_DRIVE, SPM, OAR_FAMILIES, OAR_TABLE31_LIN, rigid_stroke
+from common.chain import (
+    KT,
+    OAR_FAMILIES,
+    OAR_TABLE31_LIN,
+    RIGS,
+    SPM,
+    T_DRIVE,
+    rigid_stroke,
+)
 from ll.oar import Oar, simulate
-from ll.rower import Fh_MAX, SideCrew
-from ll.hull import t_drive_for
+from ll.rower import Fh_MAX
 from ll.ship import Ship
 
-FAM = OAR_FAMILIES                       # mean MIT per family (kg m2)
+FAM = OAR_FAMILIES  # mean MIT per family (kg m2)
 SPIKE_REF = {"spruce": 116.0, "old-zygian": 215.0, "old-thranite": 156.0}
-LIN_LL = RIGS["Olympias"]["lin"]         # the LL oar's inboard (0.957 m)
+LIN_LL = RIGS["Olympias"]["lin"]  # the LL oar's inboard (0.957 m)
 
 
 def spike(I, omega, t_rise, lin):
@@ -44,19 +52,22 @@ def spike(I, omega, t_rise, lin):
 
 # --- G5-1 / G5-2 spike magnitudes and handiness ---
 
+
 def test_spike_reference():
     """Reproduce oar_inertia.py's numbers (Table-1.092-m reference) within 2 %.
     The physical full-reversal spike (w_rec + w_drive) is ~26 % higher."""
     td = T_DRIVE[("Olympias", 7.2)]
-    omega_d = math.radians(48.1) / td          # 1.95 rad/s
+    omega_d = math.radians(48.1) / td  # 1.95 rad/s
     omega_r = math.radians(48.1) / (60.0 / 28.8 - td)
     for fam, ref in SPIKE_REF.items():
         got = spike(FAM[fam], omega_d, 0.15, OAR_TABLE31_LIN)
         assert abs(got / ref - 1) < 0.02, f"{fam}: {got:.0f} vs ref {ref}"
         full = spike(FAM[fam], omega_d + omega_r, 0.15, OAR_TABLE31_LIN)
-        assert abs(full / ref - 1) > 0.2      # the reversal correction is real
-    print(f"       full-reversal spikes (w_rec+w_drive): "
-          f"{ {k: round(spike(FAM[k], omega_d+omega_r, 0.15, OAR_TABLE31_LIN)) for k in FAM} }")
+        assert abs(full / ref - 1) > 0.2  # the reversal correction is real
+    print(
+        f"       full-reversal spikes (w_rec+w_drive): "
+        f"{ {k: round(spike(FAM[k], omega_d + omega_r, 0.15, OAR_TABLE31_LIN)) for k in FAM} }"
+    )
 
 
 def test_handiness():
@@ -68,6 +79,7 @@ def test_handiness():
 
 # --- G5-3 means preserved with the layer ON ---
 
+
 def test_means_preserved():
     for (rig_name, vkt), t_drive in T_DRIVE.items():
         rig = RIGS[rig_name]
@@ -76,13 +88,15 @@ def test_means_preserved():
         ref = rigid_stroke(V, rig, r, t_drive=t_drive)
         oar = Oar(rig, r, t_drive, mit=FAM["old-zygian"], t_rise=0.15)
         got = simulate(oar, V, t_drive / 600, n_cycles=4)
-        assert abs(got["mean_thrust"] / ref["mean_thrust"] - 1) < 0.01, \
+        assert abs(got["mean_thrust"] / ref["mean_thrust"] - 1) < 0.01, (
             f"{rig_name}@{vkt}: thrust {got['mean_thrust']:.2f} vs {ref['mean_thrust']:.2f}"
+        )
         assert abs(got["mean_fh"] / ref["mean_fh"] - 1) < 0.01
         assert abs(got["eff"] / ref["eff"] - 1) < 0.01
 
 
 # --- G5-4 energy closure ---
+
 
 def test_energy_closure():
     """Momentum closure: the catch and release pulses deliver equal and
@@ -90,8 +104,13 @@ def test_energy_closure():
     cycle). The flip ENERGY is accounted exactly in the W' basis
     (flip_power = 1/2·I·w_d^2·r/60) — the pulses are impulse-equivalent,
     not energy-shape-exact (documented in the LL gates (docs/VALIDATION.md))."""
-    oar = Oar(RIGS["Olympias"], 28.8, T_DRIVE[("Olympias", 7.2)],
-              mit=FAM["old-zygian"], t_rise=0.15)
+    oar = Oar(
+        RIGS["Olympias"],
+        28.8,
+        T_DRIVE[("Olympias", 7.2)],
+        mit=FAM["old-zygian"],
+        t_rise=0.15,
+    )
     V = 7.2 * KT
     oar.reset()
     l_cp = oar.rig["lout"] - (oar.rig["blade"] - 0.260)
@@ -100,17 +119,19 @@ def test_energy_closure():
     while oar.cycle_no < 4:
         s = oar.step(0.001, V)
         fh_blade = abs(s.Fn) * l_cp / oar.rig["lin"]
-        imp_net += (s.Fh - fh_blade) * 0.001        # the pulse impulses
+        imp_net += (s.Fh - fh_blade) * 0.001  # the pulse impulses
         if s.immersed:
             imp_blade += fh_blade * 0.001
-    assert abs(imp_net) < 0.005 * imp_blade, \
+    assert abs(imp_net) < 0.005 * imp_blade, (
         f"net pulse impulse {imp_net:.1f} N.s vs blade {imp_blade:.0f} N.s"
+    )
     # the flip energy lives in the W' basis (per stroke):
     e_stroke = oar.flip_power(28.8) * 60.0 / 28.8
-    assert abs(e_stroke - 0.5 * FAM["old-zygian"] * oar.omega_drive ** 2) < 1e-9
+    assert abs(e_stroke - 0.5 * FAM["old-zygian"] * oar.omega_drive**2) < 1e-9
 
 
 # --- G5-5 couple anchor ---
+
 
 def test_couple_anchor():
     """Drive-mean handle force at the anchored point (28.8 spm / 7.2 kt —
@@ -125,12 +146,13 @@ def test_couple_anchor():
 
 # --- G5-6 ceiling interplay ---
 
+
 def test_ceiling():
     for fleet in ("spruce", "old-fir"):
         ship = Ship(rate=44.5, fleet=fleet)
         ship.V = 8.5 * KT
         pk = 0.0
-        for _ in range(3000):                     # 30 s burst
+        for _ in range(3000):  # 30 s burst
             fx = {}
             for side, crew in ship.crew.items():
                 fx[side], fh, _, _ = crew.step(0.01, ship.V)
@@ -139,13 +161,15 @@ def test_ceiling():
                 crew.end_of_step(0.01)
             ship._keleustes(0.01)
             vkt = abs(ship.V) / KT
-            q, drag = (0.0, ship.vessel.rudder_straight * vkt * vkt)
-            ship.hull_advance(0.01, ship.n_side * (fx["port"] + fx["star"]),
-                              0.0, 0.0, 0.0, drag)
+            _q, drag = (0.0, ship.vessel.rudder_straight * vkt * vkt)
+            ship.hull_advance(
+                0.01, ship.n_side * (fx["port"] + fx["star"]), 0.0, 0.0, 0.0, drag
+            )
         assert pk <= Fh_MAX * 1.001, f"{fleet}: peak Fh {pk:.0f} N"
 
 
 # --- G5-7 companion: force-driven drive time ---
+
 
 def test_force_driven():
     """Companion (the LL gates — docs/VALIDATION.md): solve I·theta_ddot = -Fh·lin + Fn·l_cp
@@ -159,11 +183,11 @@ def test_force_driven():
     k = 0.5 * 1025.0 * rig["area"] * 1.8
     V = 7.2 * KT
     td_ref = T_DRIVE[("Olympias", 7.2)]
-    fh_demand = 7.43 * 28.8                       # the chain's mean pull
+    fh_demand = 7.43 * 28.8  # the chain's mean pull
     I = FAM["old-zygian"]
     dt = 5e-5
     B = math.radians(48.1)
-    C, w, t, swept = B / 2, -B / td_ref, 0.0, 0.0   # blade enters at full speed
+    C, w, t, swept = B / 2, -B / td_ref, 0.0, 0.0  # blade enters at full speed
     while swept < B and t < 5.0:
         # vn = V·cosC + l_cp·w (w < 0 during the drive); the blade force on
         # the oar resists the aft sweep: I·w_dot = -Fh·lin - fn·l_cp
@@ -173,8 +197,9 @@ def test_force_driven():
         C += w * dt
         swept += -w * dt
         t += dt
-    assert 0.85 * td_ref < t < 1.15 * td_ref, \
+    assert 0.85 * td_ref < t < 1.15 * td_ref, (
         f"force-driven drive {t:.2f} s vs Table 9.6 {td_ref:.2f} s"
+    )
     print(f"       force-driven drive time ≈ {t:.2f} s vs Table 9.6 {td_ref:.2f} s")
 
 

@@ -33,10 +33,11 @@ FP_POWERS = (-2.0, -1.0, -0.5, 0.5, 1.0, 2.0, 3.0)
 
 # -- the yaw-build families -------------------------------------------
 
+
 def yb_shape(t, family, x):
     """The family's shape with the settle factored out: f(t), 0..1."""
     if family == "single":
-        tau, = x
+        (tau,) = x
         return 1.0 - np.exp(-t / tau)
     if family == "dsingle":
         td, tau = x
@@ -45,9 +46,11 @@ def yb_shape(t, family, x):
         A, tf, ts = x
         return 1.0 - A * np.exp(-t / tf) - (1.0 - A) * np.exp(-t / ts)
     A, tf, ts, td = x
-    return np.where(t < td, 0.0,
-                    1.0 - A * np.exp(-(t - td) / tf)
-                    - (1.0 - A) * np.exp(-(t - td) / ts))
+    return np.where(
+        t < td,
+        0.0,
+        1.0 - A * np.exp(-(t - td) / tf) - (1.0 - A) * np.exp(-(t - td) / ts),
+    )
 
 
 def yb_bounds(family):
@@ -57,11 +60,14 @@ def yb_bounds(family):
     lo, hi = [], []
     for i in range(n):
         if family in ("two", "dtwo") and i == 0:
-            lo.append(0.0); hi.append(1.0)        # A
+            lo.append(0.0)
+            hi.append(1.0)  # A
         elif (family == "dsingle" and i == 1) or (family == "dtwo" and i == 3):
-            lo.append(0.0); hi.append(6.0)        # td
+            lo.append(0.0)
+            hi.append(6.0)  # td
         else:
-            lo.append(0.5); hi.append(120.0)      # the taus
+            lo.append(0.5)
+            hi.append(120.0)  # the taus
     return (lo, hi)
 
 
@@ -93,13 +99,16 @@ def fit_yaw_family(ts, ys, family, x0s):
     Returns (rss, x) or None."""
     best = None
     for x0 in x0s:
+
         def resid(x):
             f = yb_shape(ts, family, x)
             ss = float(np.dot(ys, f) / np.dot(f, f))
             return ys - ss * f
+
         try:
-            res = least_squares(resid, np.asarray(x0, float),
-                                bounds=yb_bounds(family), max_nfev=2000)
+            res = least_squares(
+                resid, np.asarray(x0, float), bounds=yb_bounds(family), max_nfev=2000
+            )
         except ValueError:
             continue
         rss = float(np.dot(res.fun, res.fun))
@@ -111,18 +120,16 @@ def fit_yaw_family(ts, ys, family, x0s):
 def yb_canonical(family, x, ss):
     """The family's fit mapped to the ship's (A, tf, ts, td) form."""
     if family == "single":
-        tau, = x
-        return dict(A=1.0, tf=float(tau), ts=float(tau), td=0.0, ss=ss)
+        (tau,) = x
+        return {"A": 1.0, "tf": float(tau), "ts": float(tau), "td": 0.0, "ss": ss}
     if family == "dsingle":
         td, tau = x
-        return dict(A=1.0, tf=float(tau), ts=float(tau), td=float(td),
-                    ss=ss)
+        return {"A": 1.0, "tf": float(tau), "ts": float(tau), "td": float(td), "ss": ss}
     if family == "two":
         A, tf, ts = x
-        return dict(A=float(A), tf=float(tf), ts=float(ts), td=0.0, ss=ss)
+        return {"A": float(A), "tf": float(tf), "ts": float(ts), "td": 0.0, "ss": ss}
     A, tf, ts, td = x
-    return dict(A=float(A), tf=float(tf), ts=float(ts), td=float(td),
-                ss=ss)
+    return {"A": float(A), "tf": float(tf), "ts": float(ts), "td": float(td), "ss": ss}
 
 
 def select_yaw_family(rec, dt, label="", force=None):
@@ -144,7 +151,7 @@ def select_yaw_family(rec, dt, label="", force=None):
             continue
         rss, x = hit
         n = len(ys)
-        k = len(x) + 1                     # the shape params + the settle
+        k = len(x) + 1  # the shape params + the settle
         aic = n * math.log(max(rss / n, 1e-300)) + 2.0 * k
         f = yb_shape(ts, family, x)
         ss = float(np.dot(ys, f) / np.dot(f, f))
@@ -153,7 +160,7 @@ def select_yaw_family(rec, dt, label="", force=None):
         loo = 0.0
         for iw in range(nw):
             keep = np.ones(len(ys), bool)
-            keep[int(iw * w):int((iw + 1) * w)] = False
+            keep[int(iw * w) : int((iw + 1) * w)] = False
             if keep.sum() < 20:
                 continue
             h2 = fit_yaw_family(ts[keep], ys[keep], family, [x])
@@ -170,36 +177,60 @@ def select_yaw_family(rec, dt, label="", force=None):
             if h3 is not None:
                 spans[T] = h3[1]
         can = yb_canonical(family, x, ss)
-        rows.append(dict(family=family, rss=rss, aic=aic, ss=ss,
-                         x=list(x), loo=loo, spans=spans, canon=can))
+        rows.append(
+            {
+                "family": family,
+                "rss": rss,
+                "aic": aic,
+                "ss": ss,
+                "x": list(x),
+                "loo": loo,
+                "spans": spans,
+                "canon": can,
+            }
+        )
     rows.sort(key=lambda r: r["aic"])
     if not rows:
         raise RuntimeError(f"no yaw family fitted for {label}")
-    pick = next((r for r in rows if r["family"] == force), rows[0]) \
-        if force else rows[0]
-    names = ("A", "tf", "ts", "td")[:len(pick["x"])]
+    pick = (
+        next((r for r in rows if r["family"] == force), rows[0]) if force else rows[0]
+    )
+    names = ("A", "tf", "ts", "td")[: len(pick["x"])]
     spread = {}
     for i, name in enumerate(names):
         vals = [s[i] for s in pick["spans"].values()]
         spread[name] = (max(vals) - min(vals)) if vals else float("nan")
     can = yb_canonical(pick["family"], pick["x"], pick["ss"])
-    return dict(family=pick["family"],
-                ranking=[dict(family=r["family"], aic=r["aic"],
-                              rss=r["rss"], loo=r["loo"], canon=r["canon"])
-                         for r in rows],
-                win_spread=spread, **can)
+    return dict(
+        family=pick["family"],
+        ranking=[
+            {
+                "family": r["family"],
+                "aic": r["aic"],
+                "rss": r["rss"],
+                "loo": r["loo"],
+                "canon": r["canon"],
+            }
+            for r in rows
+        ],
+        win_spread=spread,
+        **can,
+    )
 
 
 # -- the fractional polynomials (the static tables) --------------------
 
+
 def fp_design(v, p1, p2):
     """The FP2 design matrix: [1, V^p1, V^p2]; the repeated power
     p1 == p2 uses the V^p·ln V form (the standard convention)."""
+
     def col(p):
         if p == 0.0:
             return np.log(v)
         c = np.power(v, p)
         return c
+
     c1 = col(p1)
     if p1 == p2:
         c2 = c1 * np.log(v)
@@ -220,7 +251,6 @@ def fit_fp(vs, ds):
     best = None
     for deg, plist in ((1, FP_POWERS), (2, FP_POWERS)):
         for p1 in plist:
-            ps = [p1] if deg == 1 else [p1, p1]
             if deg == 1:
                 X = np.column_stack([np.ones_like(v), np.power(v, p1)])
                 k = 2
@@ -231,20 +261,29 @@ def fit_fp(vs, ds):
                     rss = _fp_rss(X, y)
                     loo = _fp_loo(v, y, p1, p2, deg)
                     aic = n * math.log(max(rss / n, 1e-300)) + 2.0 * k
-                    rec = dict(deg=deg, p1=p1, p2=p2, rss=rss, aic=aic,
-                               loo=loo)
+                    rec = {
+                        "deg": deg,
+                        "p1": p1,
+                        "p2": p2,
+                        "rss": rss,
+                        "aic": aic,
+                        "loo": loo,
+                    }
                     if best is None or aic < best["aic"]:
                         best = rec
                 continue
             rss = _fp_rss(X, y)
             loo = _fp_loo(v, y, p1, p1, 1)
             aic = n * math.log(max(rss / n, 1e-300)) + 2.0 * k
-            rec = dict(deg=deg, p1=p1, p2=p1, rss=rss, aic=aic, loo=loo)
+            rec = {"deg": deg, "p1": p1, "p2": p1, "rss": rss, "aic": aic, "loo": loo}
             if best is None or aic < best["aic"]:
                 best = rec
     p1, p2 = best["p1"], best["p2"]
-    X = fp_design(v, p1, p2) if best["deg"] == 2 else \
-        np.column_stack([np.ones_like(v), np.power(v, p1)])
+    X = (
+        fp_design(v, p1, p2)
+        if best["deg"] == 2
+        else np.column_stack([np.ones_like(v), np.power(v, p1)])
+    )
     coeffs = np.linalg.lstsq(X, y, rcond=None)[0]
     best["coeffs"] = list(coeffs)
     return best
@@ -264,8 +303,7 @@ def _fp_loo(v, y, p1, p2, deg):
         keep = np.ones(n, bool)
         keep[i] = False
         if deg == 1:
-            X = np.column_stack([np.ones(keep.sum()),
-                                 np.power(v[keep], p1)])
+            X = np.column_stack([np.ones(keep.sum()), np.power(v[keep], p1)])
         else:
             X = fp_design(v[keep], p1, p2)
         b = np.linalg.lstsq(X, y[keep], rcond=None)[0]

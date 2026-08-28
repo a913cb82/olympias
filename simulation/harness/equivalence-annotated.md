@@ -62,8 +62,7 @@ The gated rows are decided by the row name; everything else is
 informational:
 
 ```python
-gated = key.endswith("_pct") or key.endswith("_delta") \
-    or key == "position_sep"
+gated = key.endswith("_pct") or key.endswith("_delta") or key == "position_sep"
 ```
 
 So the gated rows are: `mean_speed_pct`, `t_3nm_pct`, `turn_D_pct`,

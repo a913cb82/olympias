@@ -19,14 +19,14 @@ Gate-1/7 compatibility: the default law is numerically the flat-plate law
 (the identity), so the validated anchors cannot drift under this layer.
 """
 
-import sys
 import math
+import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-import ll.blade as blade
-from common.chain import CN, KT, RHO, RIGS, T_DRIVE, SPM
+from common.chain import CN, KT, RHO, RIGS, SPM, T_DRIVE
+from ll import blade
 from ll.oar import Oar, simulate
 
 
@@ -61,10 +61,12 @@ def test_actual_turning_point_identity():
                         assert f["vn"] == vn, f"{name} vn"
                         cf = math.cos(math.radians(rig.get("cant", 0.0)))
                         nx = math.cos(C) * cf
-                        p = V * nx / w                 # the actual turning point
+                        p = V * nx / w  # the actual turning point
                         q = l_cp - p
                         assert abs(f["p"] - p) < 1e-12 and abs(f["q"] - q) < 1e-12
-                        assert abs(f["vn"] - slip * (-w) * q) < 1e-12 * max(1.0, abs(f["vn"]))
+                        assert abs(f["vn"] - slip * (-w) * q) < 1e-12 * max(
+                            1.0, abs(f["vn"])
+                        )
                         shaw = k * (q / p) ** 2 * (slip * V * nx) ** 2
                         assert abs(abs(f["Fn"]) - shaw) < 1e-9 * max(1.0, shaw)
 
@@ -85,35 +87,45 @@ def test_geometric_slip_limit_is_net_negative():
         finally:
             blade.TURNING_POINT = "actual"
         assert geom < 0.0, f"{name}@{vkt} kt: geometric thrust {geom:.2f} N >= 0"
-        assert geom < flat * 0.5, \
+        assert geom < flat * 0.5, (
             f"{name}@{vkt} kt: slip limit {geom:.2f} not a lower bound of {flat:.2f}"
+        )
 
 
 def test_deadspot_qp_geometry():
     """The Mark IIb deadspot in the law's own quantities: at the chain's
     points the blade CP rides NEAR the actual turning point (small q/p — the
     blade outruns the water only marginally), deeper than the Olympias's."""
-    for name, vkt, lo, hi in [("Olympias", 7.2, 0.20, 0.35),
-                              ("MarkIIb", 7.5, 0.10, 0.25)]:
+    for name, vkt, lo, hi in [
+        ("Olympias", 7.2, 0.20, 0.35),
+        ("MarkIIb", 7.5, 0.10, 0.25),
+    ]:
         rig = RIGS[name]
         V = vkt * KT
         td = T_DRIVE[(name, vkt)]
         B = math.radians(rig["sweep"])
         w = B / td
-        f = blade.blade_force(0.0, -w, V, rig)         # mid-stroke
+        f = blade.blade_force(0.0, -w, V, rig)  # mid-stroke
         qp = f["q"] / f["p"]
         assert lo < qp < hi, f"{name}@{vkt} kt: q/p = {qp:.3f} outside [{lo}, {hi}]"
-        assert f["q"] > 0.0                            # CP outboard of the
-                                                       # turning point (deadspot)
-    qp_ol = blade.blade_force(0.0, -math.radians(RIGS["Olympias"]["sweep"])
-                              / T_DRIVE[("Olympias", 7.2)], 7.2 * KT,
-                              RIGS["Olympias"])
-    qp_mb = blade.blade_force(0.0, -math.radians(RIGS["MarkIIb"]["sweep"])
-                              / T_DRIVE[("MarkIIb", 7.5)], 7.5 * KT,
-                              RIGS["MarkIIb"])
+        assert f["q"] > 0.0  # CP outboard of the
+        # turning point (deadspot)
+    qp_ol = blade.blade_force(
+        0.0,
+        -math.radians(RIGS["Olympias"]["sweep"]) / T_DRIVE[("Olympias", 7.2)],
+        7.2 * KT,
+        RIGS["Olympias"],
+    )
+    qp_mb = blade.blade_force(
+        0.0,
+        -math.radians(RIGS["MarkIIb"]["sweep"]) / T_DRIVE[("MarkIIb", 7.5)],
+        7.5 * KT,
+        RIGS["MarkIIb"],
+    )
     assert (qp_mb["q"] / qp_mb["p"]) < (qp_ol["q"] / qp_ol["p"])
 
 
 if __name__ == "__main__":
     import pytest
+
     raise SystemExit(pytest.main([__file__]))

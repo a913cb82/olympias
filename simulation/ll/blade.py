@@ -95,17 +95,25 @@ def blade_consts(rig: dict) -> tuple:
     `rig` is a shared research dict — never mutate it; pass the tuple to
     blade_force(..., bc=...) to skip the per-call derivations."""
     lin = rig["lin"]
-    return (lin,
-            rig["lout"] - (rig["blade"] - 0.260),   # blade CP from thole
-            0.5 * RHO * rig["area"] * CN,
-            math.cos(math.radians(rig.get("cant", 0.0))),
-            rig.get("slip", 1.0),
-            math.radians(rig["sweep"]))
+    return (
+        lin,
+        rig["lout"] - (rig["blade"] - 0.260),  # blade CP from thole
+        0.5 * RHO * rig["area"] * CN,
+        math.cos(math.radians(rig.get("cant", 0.0))),
+        rig.get("slip", 1.0),
+        math.radians(rig["sweep"]),
+    )
 
 
-def blade_force(C: float, omega: float, V: float, rig: dict,
-                immersed: bool = True, flow: tuple | None = None,
-                bc: tuple | None = None) -> dict:
+def blade_force(
+    C: float,
+    omega: float,
+    V: float,
+    rig: dict,
+    immersed: bool = True,
+    flow: tuple | None = None,
+    bc: tuple | None = None,
+) -> dict:
     """Blade force at oar angle C (rad) and angular rate omega (rad/s, + = bowward),
     hull speed V (m/s). Returns vn, Fn, Fx, Fy, Fh (N) and the law's
     turning-point geometry p, q (m; None when undefined).
@@ -123,7 +131,15 @@ def blade_force(C: float, omega: float, V: float, rig: dict,
     Evaluates the (q/p)^2 turning-point law at the interpretation selected
     by TURNING_POINT (module constant, see the module docstring)."""
     if not immersed:
-        return dict(vn=0.0, Fn=0.0, Fx=0.0, Fy=0.0, Fh=0.0, p=None, q=None)
+        return {
+            "vn": 0.0,
+            "Fn": 0.0,
+            "Fx": 0.0,
+            "Fy": 0.0,
+            "Fh": 0.0,
+            "p": None,
+            "q": None,
+        }
     if bc is None:
         bc = blade_consts(rig)
     lin, l_cp, k, cf, slip, B = bc
@@ -163,7 +179,7 @@ def blade_force(C: float, omega: float, V: float, rig: dict,
         Fn = k * (2.0 / CN) * vm * vn * slip
     else:
         Fn = k * abs(vn) * vn
-    Fx = -Fn * nx                                 # force on hull, along keel
+    Fx = -Fn * nx  # force on hull, along keel
     Fy = -Fn * ny
     Fh = abs(Fn) * l_cp / lin
-    return dict(vn=vn, Fn=Fn, Fx=Fx, Fy=Fy, Fh=Fh, p=p, q=q)
+    return {"vn": vn, "Fn": Fn, "Fx": Fx, "Fy": Fy, "Fh": Fh, "p": p, "q": q}

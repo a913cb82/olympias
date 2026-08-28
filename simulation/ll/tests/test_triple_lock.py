@@ -19,10 +19,9 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 import pytest
-
 from ll.hull import equilibrium_speed
 
-TRIPLE = [(25.5, 6.83), (28.8, 7.15), (32.3, 7.51)]   # kt @ hull=1.08
+TRIPLE = [(25.5, 6.83), (28.8, 7.15), (32.3, 7.51)]  # kt @ hull=1.08
 
 
 def _v(rate):

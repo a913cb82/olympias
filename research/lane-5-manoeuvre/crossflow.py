@@ -47,20 +47,19 @@ d_ram, [?]) extends the plane forward of the bow.
 Usage: python3 crossflow.py
 """
 
-import math
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "lane-3-hull"))
 
-import hull_form  # noqa: E402
+import hull_form
 
-RHO = 1025.0            # sea water, kg/m3
-LWL = 32.2              # m, waterline length (Table 31.1)
-X_CG = 17.5             # m from the stern post (ch.25 LCG; clr_rotation.py)
-DMAX = 1.1              # m, trial draft amidships (Table 31.1)
-P_PLAN, Q_ROCK = 1.5, 0.8      # the fitted planform/rocker exponents
-BMAX = 3.43 / 2.0       # m, waterline half-breadth (Poitiers model)
+RHO = 1025.0  # sea water, kg/m3
+LWL = 32.2  # m, waterline length (Table 31.1)
+X_CG = 17.5  # m from the stern post (ch.25 LCG; clr_rotation.py)
+DMAX = 1.1  # m, trial draft amidships (Table 31.1)
+P_PLAN, Q_ROCK = 1.5, 0.8  # the fitted planform/rocker exponents
+BMAX = 3.43 / 2.0  # m, waterline half-breadth (Poitiers model)
 
 # the real hull (Braithwaite workbook, basis_hull_offsets.tsv): LWL 32.35 m
 # at the design WL Z=1.15 m the workbook gives 44.26 m3 (45.5 t) and at the
@@ -68,17 +67,17 @@ BMAX = 3.43 / 2.0       # m, waterline half-breadth (Poitiers model)
 # trial mass. The real hull's lateral plane, CLR and J are now computed
 # from the offsets (Stream C B1), superseding the parametric hull_form.
 LWL_REAL = 32.35
-ZWL_TRIAL = 1.10        # trial draft for turn physics (Table 31.1)
-ZWL_DESIGN = 1.15       # design WL for hydrostatics (workbook row 218)
+ZWL_TRIAL = 1.10  # trial draft for turn physics (Table 31.1)
+ZWL_DESIGN = 1.15  # design WL for hydrostatics (workbook row 218)
 
 # the fitted turn-closure set (the audit's references)
-OMEGA_FITTED = 3.2e6    # kg·m² — the reconciled quadratic damper (C1)
-CLR_FITTED = 0.8        # m forward of the c.g. (the sway calibration)
-A_LAT_TAYLOR = 35.0     # m² — Taylor Table 31.1 lateral plane
+OMEGA_FITTED = 3.2e6  # kg·m² — the reconciled quadratic damper (C1)
+CLR_FITTED = 0.8  # m forward of the c.g. (the sway calibration)
+A_LAT_TAYLOR = 35.0  # m² — Taylor Table 31.1 lateral plane
 
 # the ram addendum [?] (not in the parametric hull; Coates Plan 20)
-RAM_LEN = 2.0           # m, projecting forward of the bow
-RAM_DEPTH = 0.9         # m, mean depth below the waterline
+RAM_LEN = 2.0  # m, projecting forward of the bow
+RAM_DEPTH = 0.9  # m, mean depth below the waterline
 
 
 def draft_at(x: float, fuller: bool = False) -> float:
@@ -167,7 +166,13 @@ def strips(n: int = 400, nr: int = 100):
 # ------------------------------------------------------------------
 # Real hull from basis_hull_offsets.tsv (Stream C B1) — the grounded values
 # ------------------------------------------------------------------
-_BASIS_TSV = Path(__file__).resolve().parents[2] / "research" / "sources" / "galley-sizing-xlsm" / "basis_hull_offsets.tsv"
+_BASIS_TSV = (
+    Path(__file__).resolve().parents[2]
+    / "research"
+    / "sources"
+    / "galley-sizing-xlsm"
+    / "basis_hull_offsets.tsv"
+)
 _REAL_CACHE: dict = {}
 
 
@@ -177,6 +182,7 @@ def _load_real_offsets():
     X is assigned equally spaced 0..LWL_REAL by station number
     (the header X values are cached Transform values, not the basis hull's)."""
     import re
+
     text = _BASIS_TSV.read_text(encoding="utf-8")
     stations = []
     cur = None
@@ -256,24 +262,51 @@ def _real_hydrostatics(z_wl: float = ZWL_TRIAL):
     areas = [sectional_area(p, z_wl) for _, p in offsets]
     ywls = [interp_y(p, z_wl) for _, p in offsets]
     # Simpson
-    vol = dx / 3 * (areas[0] + areas[-1] + 4 * sum(areas[1:-1:2]) + 2 * sum(areas[2:-1:2]))
-    a_lat = dx / 3 * (drafts[0] + drafts[-1] + 4 * sum(drafts[1:-1:2]) + 2 * sum(drafts[2:-1:2]))
+    vol = (
+        dx
+        / 3
+        * (areas[0] + areas[-1] + 4 * sum(areas[1:-1:2]) + 2 * sum(areas[2:-1:2]))
+    )
+    a_lat = (
+        dx
+        / 3
+        * (drafts[0] + drafts[-1] + 4 * sum(drafts[1:-1:2]) + 2 * sum(drafts[2:-1:2]))
+    )
     x_d = [x * d for x, d in zip(xs, drafts)]
-    x_clr = dx / 3 * (x_d[0] + x_d[-1] + 4 * sum(x_d[1:-1:2]) + 2 * sum(x_d[2:-1:2])) / a_lat if a_lat else 0.0
+    x_clr = (
+        dx
+        / 3
+        * (x_d[0] + x_d[-1] + 4 * sum(x_d[1:-1:2]) + 2 * sum(x_d[2:-1:2]))
+        / a_lat
+        if a_lat
+        else 0.0
+    )
     bwl = 2 * max(ywls) if ywls else 0.0
     wp = [2 * y for y in ywls]
     wp_area = dx / 3 * (wp[0] + wp[-1] + 4 * sum(wp[1:-1:2]) + 2 * sum(wp[2:-1:2]))
     cw = wp_area / (LWL_REAL * bwl) if bwl else 0.0
+
     # J for X_CG at LCB (15.67 from AP) — the workbook's even-keel CG
     # and also for the parametric X_CG 17.5 for reference
     def J_for(x_cg):
         j = [d * abs(x - x_cg) ** 3 for x, d in zip(xs, drafts)]
         return dx / 3 * (j[0] + j[-1] + 4 * sum(j[1:-1:2]) + 2 * sum(j[2:-1:2]))
+
     J_1567 = J_for(15.67)
     J_175 = J_for(17.5)
-    J_lcb = J_for(x_clr)  # about own centroid, not used
-    res = dict(A_lat=a_lat, x_clr=x_clr, J_1567=J_1567, J_175=J_175, Vol=vol,
-               BWL=bwl, Cw=cw, drafts=drafts, xs=xs, ywls=ywls)
+    J_for(x_clr)  # about own centroid, not used
+    res = {
+        "A_lat": a_lat,
+        "x_clr": x_clr,
+        "J_1567": J_1567,
+        "J_175": J_175,
+        "Vol": vol,
+        "BWL": bwl,
+        "Cw": cw,
+        "drafts": drafts,
+        "xs": xs,
+        "ywls": ywls,
+    }
     _REAL_CACHE[key] = res
     return res
 
@@ -298,7 +331,9 @@ def yaw_moment_integral_real(z_wl: float = ZWL_TRIAL, x_cg: float = 15.67):
     return dx / 3 * (j[0] + j[-1] + 4 * sum(j[1:-1:2]) + 2 * sum(j[2:-1:2]))
 
 
-def omega_crossflow_real(cd: float = 0.30, z_wl: float = ZWL_TRIAL, x_cg: float = 15.67):
+def omega_crossflow_real(
+    cd: float = 0.30, z_wl: float = ZWL_TRIAL, x_cg: float = 15.67
+):
     """Real hull Omega = ½ρC_DJ."""
     return 0.5 * RHO * cd * yaw_moment_integral_real(z_wl, x_cg)
 
@@ -317,9 +352,9 @@ def clr_offset_real(z_wl: float = ZWL_TRIAL, x_cg: float = 15.67):
 # (the rectangular vs tapered reference-area reconciliation, DECODE.md C9).
 # Flagged [?] until the VBA CN 0.4/0.8 collapse is closed.
 _REAL_TRIAL = _real_hydrostatics(ZWL_TRIAL)
-A_LAT_REAL = _REAL_TRIAL["A_lat"]          # 30.09 m² at trial draft 1.10
-X_CLR_REAL = _REAL_TRIAL["x_clr"]          # 16.60 m from AP
-J_REAL = _REAL_TRIAL["J_1567"]             # 23217 m⁵ (x_cg 15.67)
+A_LAT_REAL = _REAL_TRIAL["A_lat"]  # 30.09 m² at trial draft 1.10
+X_CLR_REAL = _REAL_TRIAL["x_clr"]  # 16.60 m from AP
+J_REAL = _REAL_TRIAL["J_1567"]  # 23217 m⁵ (x_cg 15.67)
 # Grounded Omega: C_D 0.252 (=3.00e6) holds the W5 gates (G1/F1/
 # tightest) within the bands; C_D 0.27 (=3.21e6) is the lower edge of the
 # 0.30–0.60 drag-crisis band and gives F1 +8.7% (just over the 7% gate).
@@ -327,12 +362,12 @@ J_REAL = _REAL_TRIAL["J_1567"]             # 23217 m⁵ (x_cg 15.67)
 # the fitted 3.20e6 implied C_D 0.30 on the parametric hull (register C1),
 # 0.25 on the real hull — the 16% shift is the fuller ends. Grounded at
 # 0.252 to hold the gate; 0.27 is kept as the band-edge reference.
-OMEGA_REAL = 0.5 * RHO * 0.252 * J_REAL    # 3.00e6  (C_D 0.252, passes)
-CLR_OFFSET_REAL = X_CLR_REAL - 15.67       # 0.93 m forward (even keel)
+OMEGA_REAL = 0.5 * RHO * 0.252 * J_REAL  # 3.00e6  (C_D 0.252, passes)
+CLR_OFFSET_REAL = X_CLR_REAL - 15.67  # 0.93 m forward (even keel)
 # Design WL values for reference (full load)
 _REAL_DESIGN = _real_hydrostatics(ZWL_DESIGN)
-A_LAT_DESIGN = _REAL_DESIGN["A_lat"]      # 31.70 m²
-J_DESIGN = _REAL_DESIGN["J_1567"]         # 24938 m⁵
+A_LAT_DESIGN = _REAL_DESIGN["A_lat"]  # 31.70 m²
+J_DESIGN = _REAL_DESIGN["J_1567"]  # 24938 m⁵
 # Mass / inertia from the real hull (Stream C B3) — the workbook's
 # hydrostatics at the two WLs give the grounded masses; the LL's
 # trial mass was 42.0 t (param), now 41.0 t (real trial WL 1.10).
@@ -349,27 +384,35 @@ M_APP_REAL = M_APP_REAL_TRIAL
 IZ_REAL = IZ_REAL_TRIAL
 
 
-
 def main() -> None:
-    print(f"Anchors: LWL {LWL} m, c.g. {X_CG} m from stern, draft {DMAX} m, "
-          f"fitted Omega {OMEGA_FITTED:.2e}, clr {CLR_FITTED} m, "
-          f"Taylor A_lat {A_LAT_TAYLOR} m²\n")
+    print(
+        f"Anchors: LWL {LWL} m, c.g. {X_CG} m from stern, draft {DMAX} m, "
+        f"fitted Omega {OMEGA_FITTED:.2e}, clr {CLR_FITTED} m, "
+        f"Taylor A_lat {A_LAT_TAYLOR} m²\n"
+    )
     print("1. The lateral plane and the CLR")
-    print(f"   {'variant':28s} {'A_lat m²':>9s} {'vs Taylor':>9s} "
-          f"{'x_clr m':>8s} {'clr_off m':>9s}")
+    print(
+        f"   {'variant':28s} {'A_lat m²':>9s} {'vs Taylor':>9s} "
+        f"{'x_clr m':>8s} {'clr_off m':>9s}"
+    )
     for fuller in (False, True):
         for ram in (False, True):
             a, xc = lateral_plane(fuller, ram)
             co = clr_offset(fuller, ram)
-            tag = ("parametric, " if not fuller else "fuller,    ") + \
-                  ("ram" if ram else "no ram")
-            print(f"   {tag:28s} {a:9.1f} {100*a/A_LAT_TAYLOR-100:+8.0f}% "
-                  f"{xc:8.2f} {co:+9.2f}")
-    print(f"   fitted reference: A_lat {A_LAT_TAYLOR} m², clr_offset "
-          f"{CLR_FITTED} m forward  ->  the fitted CLR is FORWARD of the "
-          f"c.g.; the computed centroid is AFT on the parametric hull "
-          f"(the fine ends + the missing ram) — the real lines (Wolfson "
-          f"archive, Plan 7 / the Eliav CAD) are the named path [?]")
+            tag = ("parametric, " if not fuller else "fuller,    ") + (
+                "ram" if ram else "no ram"
+            )
+            print(
+                f"   {tag:28s} {a:9.1f} {100 * a / A_LAT_TAYLOR - 100:+8.0f}% "
+                f"{xc:8.2f} {co:+9.2f}"
+            )
+    print(
+        f"   fitted reference: A_lat {A_LAT_TAYLOR} m², clr_offset "
+        f"{CLR_FITTED} m forward  ->  the fitted CLR is FORWARD of the "
+        f"c.g.; the computed centroid is AFT on the parametric hull "
+        f"(the fine ends + the missing ram) — the real lines (Wolfson "
+        f"archive, Plan 7 / the Eliav CAD) are the named path [?]"
+    )
 
     print("\n2. The yaw-moment integral and the Omega audit")
     for fuller in (False, True):
@@ -377,15 +420,20 @@ def main() -> None:
             j = yaw_moment_integral(fuller, ram)
             cd = implied_cd(fuller=fuller, ram=ram)
             om = omega_crossflow(0.3, fuller=fuller, ram=ram)
-            tag = ("parametric, " if not fuller else "fuller,    ") + \
-                  ("ram" if ram else "no ram")
-            print(f"   {tag:28s} J={j:9.0f} m⁵  C_D_implied={cd:5.2f}  "
-                  f"Omega_cf(C_D=0.3)={om:9.2e}")
+            tag = ("parametric, " if not fuller else "fuller,    ") + (
+                "ram" if ram else "no ram"
+            )
+            print(
+                f"   {tag:28s} J={j:9.0f} m⁵  C_D_implied={cd:5.2f}  "
+                f"Omega_cf(C_D=0.3)={om:9.2e}"
+            )
     print("   the physical C_D band at our Re (~1e6, past the drag crisis):")
     print("     0.3–0.6 (smooth circular sections) · 0.8–1.2 (classical,")
     print("     pre-crisis) · 1.8 (flat-plate limit, not applicable)")
-    print(f"   fitted Omega = {OMEGA_FITTED:.2e} -> the implied C_D sits "
-          f"{'inside' if implied_cd() >= 0.3 else 'BELOW'} the 0.3–0.6 band")
+    print(
+        f"   fitted Omega = {OMEGA_FITTED:.2e} -> the implied C_D sits "
+        f"{'inside' if implied_cd() >= 0.3 else 'BELOW'} the 0.3–0.6 band"
+    )
 
     print("\n3. The consistent total-moment check (the audit's core)")
     print("   M_cf(C_D=0.3) vs the fitted total (q_hull + Omega·omega²) at")
@@ -393,8 +441,10 @@ def main() -> None:
     print("   the parametric-hull estimate: M_cf ≈ ½·rho·0.3·omega²·J")
     j = yaw_moment_integral(False, True)
     om3 = 0.5 * RHO * 0.3 * j
-    print(f"   J(parametric+ram) = {j:.0f} m⁵ -> Omega_cf(0.3) = {om3:.2e}"
-          f" kg·m²  (vs fitted {OMEGA_FITTED:.2e} — the difference is the")
+    print(
+        f"   J(parametric+ram) = {j:.0f} m⁵ -> Omega_cf(0.3) = {om3:.2e}"
+        f" kg·m²  (vs fitted {OMEGA_FITTED:.2e} — the difference is the"
+    )
     print("   sway-restoring share the fitted clr_offset carries — the two")
     print("   fitted terms together are the cross-flow distribution)")
 

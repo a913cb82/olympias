@@ -19,7 +19,7 @@ from __future__ import annotations
 import math
 from pathlib import Path
 
-from common.chain import CN, KT, RHO, RIGS, VESSELS
+from common.chain import CN, KT, RHO, RIGS
 from ll.rower import HOLD_FRAC, P_CRIT, PRESSURE, TAU, W_MAX
 
 # ---------------------------------------------------------------------------
@@ -31,10 +31,21 @@ from ll.rower import HOLD_FRAC, P_CRIT, PRESSURE, TAU, W_MAX
 # V* over rate, kt: spoude, full W', 170 oars, hull = 1.0.
 # At cruise no cap binds, so spoude + full W' == the bare commanded oar that
 # ll.hull.equilibrium_speed simulates (its V* values, measured directly).
-VSTAR_RATES = [8.0, 12.0, 16.0, 20.0, 24.0, 25.5, 28.8, 32.3, 36.0, 40.0,
-               44.5, 50.0]
-VSTAR_KT = [5.07, 5.55, 5.97, 6.356, 6.742, 6.888, 7.216, 7.578, 7.981,
-            8.448, 8.540, 9.80]
+VSTAR_RATES = [8.0, 12.0, 16.0, 20.0, 24.0, 25.5, 28.8, 32.3, 36.0, 40.0, 44.5, 50.0]
+VSTAR_KT = [
+    5.07,
+    5.55,
+    5.97,
+    6.356,
+    6.742,
+    6.888,
+    7.216,
+    7.578,
+    7.981,
+    8.448,
+    8.540,
+    9.80,
+]
 
 # The pressure rows, kt — LL ship runs (settled, 1 Hz tail-mean over the
 # final 60 s — a single sample would be biased by the surge ripple ±0.1 kt):
@@ -93,7 +104,7 @@ TAU_TURN = 4.0
 # runs ~25 % faster than the estimate). The fast 32.3/36 drains and the
 # balanced 44.5 points recorded as measured.
 NET_RATES = [25.5, 28.8, 32.3, 36.0, 44.5]
-NET_SPOUDE = [37.0, 53.1, 68.4, 90.1, 130.4]   # 32.3 interpolated
+NET_SPOUDE = [37.0, 53.1, 68.4, 90.1, 130.4]  # 32.3 interpolated
 NET_STEADY = [-30.7, -16.8, -0.3, +17.9, 0.0]
 NET_FAST = [-20.3, -3.7, +16.0, +1.4, 0.0]
 
@@ -199,8 +210,7 @@ class Calibration:
         self._kick_w = list(nv.get("w", DRIFT_KICK_W))
         tl = t.get("tempo_loss") or {}
         self._tempo_rates = list(tl.get("rates", TEMPO_RATES))
-        self._tempo_empty = list(tl.get("empty_rate_eff",
-                                        self._tempo_rates))
+        self._tempo_empty = list(tl.get("empty_rate_eff", self._tempo_rates))
         dr = t.get("drift") or {}
         self._drift_rates = list(dr.get("rates", DRIFT_RATES))
         self._drift_sf = list(dr.get("spoude_full", DRIFT_SPOUDE_FULL))
@@ -215,12 +225,16 @@ class Calibration:
         dv = t.get("d_oar_v") or {}
         fp = dv.get("fp")
         if fp:
-            self._dov_fp = dict(deg=fp["deg"], p1=fp["p1"], p2=fp["p2"],
-                                coeffs=list(fp["coeffs"]))
+            self._dov_fp = {
+                "deg": fp["deg"],
+                "p1": fp["p1"],
+                "p2": fp["p2"],
+                "coeffs": list(fp["coeffs"]),
+            }
             self._dov_vp = float(dv.get("v_plateau", 3.0))
             self._dov_dp = float(dv.get("plateau_d", 103.5))
         else:
-            self._dov_fp = None       # the legacy binned cells' fallback
+            self._dov_fp = None  # the legacy binned cells' fallback
             self._dov_kt = list(dv.get("v_kt", [1.0, 1.5, 2.0, 2.5, 3.0]))
             self._dov_d = list(dv.get("d", [18.3, 25.7, 41.4, 55.2, 103.5]))
         mh = t.get("d_mixed_hold") or {}
@@ -242,10 +256,8 @@ class Calibration:
         self._net_back_steady = list(nb.get("steady", [0.0, 0.0, 8.0]))
         nf = t.get("net_fresh") or {}
         self._fresh_rates = list(nf.get("rates", self._net_rates))
-        self._fresh_spoude = list(nf.get("spoude",
-                                          [36.6, 51.8, 68.1, 70.1, 67.0]))
-        self._fresh_steady = list(nf.get("steady",
-                                          [0.0, 0.0, 0.0, 14.5, 64.3]))
+        self._fresh_spoude = list(nf.get("spoude", [36.6, 51.8, 68.1, 70.1, 67.0]))
+        self._fresh_steady = list(nf.get("steady", [0.0, 0.0, 0.0, 14.5, 64.3]))
         s = scalars or {}
         self.tau_surge = s.get("tau_surge", TAU_SURGE)
         self.tau_turn = s.get("tau_turn", TAU_TURN)
@@ -254,8 +266,8 @@ class Calibration:
         self.tau_w = s.get("tau_w", TAU)
         self.net_rest = s.get("net_rest", NET_REST)
         th = s.get("tau_hold") or {}
-        if isinstance(th, (int, float)):       # the legacy scalar: the
-            th = {"rates": [31.5, 44.0], "tau": [16.0, th]}   # 44-spm anchor
+        if isinstance(th, (int, float)):  # the legacy scalar: the
+            th = {"rates": [31.5, 44.0], "tau": [16.0, th]}  # 44-spm anchor
         self._tau_hold_rates = list(th.get("rates", [31.5, 44.0]))
         self._tau_hold_tau = list(th.get("tau", [18.0, 28.0]))
         self.turn_drag_extra = s.get("turn_drag_extra", 0.0)
@@ -272,12 +284,13 @@ class Calibration:
         if len(self._td_rates) != len(self._td_spoude):
             self._td_rates = [self._td_rates[0]] * len(self._td_spoude)
         yb = t.get("yaw_build") or {}
-        self._yb_helm = yb.get("helm", dict(A=0.6, tf=6.0, ts=10.0,
-                                          scale=[1.0, 1.0]))
-        self._yb_oar = yb.get("oar", dict(A=0.95, tf=3.0, ts=10.0,
-                                          scale=1.0))
-        self._yb_tightest = yb.get("tightest", dict(A=0.6, tf=6.0,
-                                                     ts=10.0, scale=1.0))
+        self._yb_helm = yb.get(
+            "helm", {"A": 0.6, "tf": 6.0, "ts": 10.0, "scale": [1.0, 1.0]}
+        )
+        self._yb_oar = yb.get("oar", {"A": 0.95, "tf": 3.0, "ts": 10.0, "scale": 1.0})
+        self._yb_tightest = yb.get(
+            "tightest", {"A": 0.6, "tf": 6.0, "ts": 10.0, "scale": 1.0}
+        )
         self.tau_exit = s.get("tau_exit", TAU_TURN)
         self.drift_tau_exp = s.get("drift_tau_exp", 0.0)
         rig = RIGS["Olympias"]
@@ -335,11 +348,13 @@ class Calibration:
         toward its ~3.36 kt settle); only the DRAINED back state uses
         the back rows (the collapsed multi-stable orbit, mean ~2.03)."""
         if state == "back" and empty:
-            v = self._asym_row(self._vback_rates, self._vback_kt,
-                               self._vback_steady, rate, pressure)
+            v = self._asym_row(
+                self._vback_rates, self._vback_kt, self._vback_steady, rate, pressure
+            )
         else:
-            v = self._asym_row(self.vasym_rates, self.vasym_kt,
-                               self._vasym_steady, rate, pressure)
+            v = self._asym_row(
+                self.vasym_rates, self.vasym_kt, self._vasym_steady, rate, pressure
+            )
         if empty:
             v = min(v, _pwl(self._vempty_rates, self._vempty_kt, rate))
         return v * KT
@@ -363,24 +378,36 @@ class Calibration:
         if asym:
             if helm_frac > 0.0:
                 b = self._yb_tightest
-                return dict(A=b["A"], tf=b["tf"] * b.get("scale", 1.0),
-                            ts=b["ts"], td=b.get("td", 0.0))
+                return {
+                    "A": b["A"],
+                    "tf": b["tf"] * b.get("scale", 1.0),
+                    "ts": b["ts"],
+                    "td": b.get("td", 0.0),
+                }
             b = self._yb_oar
-            return dict(A=b["A"], tf=b["tf"] * b.get("scale", 1.0),
-                        ts=b["ts"], td=b.get("td", 0.0))
+            return {
+                "A": b["A"],
+                "tf": b["tf"] * b.get("scale", 1.0),
+                "ts": b["ts"],
+                "td": b.get("td", 0.0),
+            }
         if helm_frac <= 0.0:
             b = self._yb_oar
-            return dict(A=b["A"], tf=b["tf"] * b.get("scale", 1.0),
-                        ts=b["ts"], td=b.get("td", 0.0))
+            return {
+                "A": b["A"],
+                "tf": b["tf"] * b.get("scale", 1.0),
+                "ts": b["ts"],
+                "td": b.get("td", 0.0),
+            }
         h = self._yb_helm
         if len(h.get("fracs", [])) >= 2:
-            return dict(A=_pwl(h["fracs"], h["A"], helm_frac),
-                        tf=_pwl(h["fracs"], h["tf"], helm_frac)
-                        * _pwl(h["fracs"], h.get("scale", [1.0, 1.0]),
-                               helm_frac),
-                        ts=_pwl(h["fracs"], h["ts"], helm_frac),
-                        td=_pwl(h["fracs"], h.get("td", [0.0, 0.0]),
-                                helm_frac))
+            return {
+                "A": _pwl(h["fracs"], h["A"], helm_frac),
+                "tf": _pwl(h["fracs"], h["tf"], helm_frac)
+                * _pwl(h["fracs"], h.get("scale", [1.0, 1.0]), helm_frac),
+                "ts": _pwl(h["fracs"], h["ts"], helm_frac),
+                "td": _pwl(h["fracs"], h.get("td", [0.0, 0.0]), helm_frac),
+            }
         return h
 
     def turn_drag(self, helm_frac, pressure=1.0, rate=19.9):
@@ -399,7 +426,9 @@ class Calibration:
         else:
             k0 = _pwl(self._td_fracs, rows[i0], helm_frac)
             k1 = _pwl(self._td_fracs, rows[i0 + 1], helm_frac)
-            f = (rate - self._td_rates[i0]) /                 (self._td_rates[i0 + 1] - self._td_rates[i0])
+            f = (rate - self._td_rates[i0]) / (
+                self._td_rates[i0 + 1] - self._td_rates[i0]
+            )
             k = k0 + f * (k1 - k0)
         return k
 
@@ -410,7 +439,7 @@ class Calibration:
         it); the HL has no sway DOF, so it carries the crab explicitly."""
         if asym:
             if helm_frac > 0.0:
-                return self._tb_tightest     # the helm + one-side-stopped
+                return self._tb_tightest  # the helm + one-side-stopped
             return self._tb_oar.get(oar_state, 0.0)
         return _pwl(self._tb_fracs, self._tb_helm, helm_frac)
 
@@ -450,6 +479,7 @@ class Calibration:
         vk = v / KT
         if self._dov_fp:
             from hl.curvesel import fp_eval
+
             if vk >= self._dov_vp:
                 return self._dov_dp
             return fp_eval(vk, self._dov_fp)
@@ -591,45 +621,62 @@ def _tables():
         "steady": {"rates": PRESSURE_RATES, "kt": VSTEADY_KT},
         "fast": {"rates": PRESSURE_RATES, "kt": VFAST_KT},
         "empty": {"rates": VEMPTY_RATES, "kt": VEMPTY_KT},
-        "hold": {"rates": VASYM_RATES, "kt": VASYM_KT,
-                 "steady_kt": VASYM_STEADY_KT},
-        "back": {"rates": VBACK_RATES, "kt": VBACK_KT,
-                  "steady_kt": VBACK_STEADY_KT},
+        "hold": {"rates": VASYM_RATES, "kt": VASYM_KT, "steady_kt": VASYM_STEADY_KT},
+        "back": {"rates": VBACK_RATES, "kt": VBACK_KT, "steady_kt": VBACK_STEADY_KT},
         "d_rudder": D_RUDDER,
         "d_oar": D_OAR,
-        "net": {"rates": NET_RATES, "spoude": NET_SPOUDE,
-                 "steady": NET_STEADY, "fast": NET_FAST},
-        "tempo_loss": {"rates": TEMPO_RATES, "full_rate_eff": TEMPO_RATES,
-                        "empty_rate_eff": TEMPO_EMPTY},
-        "drift": {"rates": DRIFT_RATES, "spoude_full": DRIFT_SPOUDE_FULL,
-                   "spoude_empty": DRIFT_SPOUDE_EMPTY,
-                   "steady_full": DRIFT_STEADY_FULL,
-                   "steady_empty": DRIFT_STEADY_EMPTY},
+        "net": {
+            "rates": NET_RATES,
+            "spoude": NET_SPOUDE,
+            "steady": NET_STEADY,
+            "fast": NET_FAST,
+        },
+        "tempo_loss": {
+            "rates": TEMPO_RATES,
+            "full_rate_eff": TEMPO_RATES,
+            "empty_rate_eff": TEMPO_EMPTY,
+        },
+        "drift": {
+            "rates": DRIFT_RATES,
+            "spoude_full": DRIFT_SPOUDE_FULL,
+            "spoude_empty": DRIFT_SPOUDE_EMPTY,
+            "steady_full": DRIFT_STEADY_FULL,
+            "steady_empty": DRIFT_STEADY_EMPTY,
+        },
         "tau_back": {"rates": TAU_BACK_RATES, "tau": TAU_BACK_TAU},
         "turn_drag": {"fracs": [1.0], "k": [0.28]},
     }
 
 
 def _scalars():
-    return dict(tau_surge=TAU_SURGE, tau_turn=TAU_TURN, w_max=W_MAX,
-                p_crit=P_CRIT, tau_w=TAU, net_rest=NET_REST,
-                tau_hold=TAU_SURGE, turn_drag_extra=0.0, tau_exit=TAU_TURN,
-                drift_tau_exp=0.0)
+    return {
+        "tau_surge": TAU_SURGE,
+        "tau_turn": TAU_TURN,
+        "w_max": W_MAX,
+        "p_crit": P_CRIT,
+        "tau_w": TAU,
+        "net_rest": NET_REST,
+        "tau_hold": TAU_SURGE,
+        "turn_drag_extra": 0.0,
+        "tau_exit": TAU_TURN,
+        "drift_tau_exp": 0.0,
+    }
 
 
 def bootstrap():
     """The provisional curve set (chain anchors + LL measurements)."""
     return Calibration(
-        meta=dict(
-            id="bootstrap-0",
-            source="validated chain anchors + direct LL measurements "
-                   "(HL build session); calibration pending — the protocol: simulation/AGENTS.md",
-            note="provisional: pressure rows measured at the anchor levels, "
-                 "numeric pressures interpolated; the oar-family helm blend "
-                 "and the tau fits land inside the Level-2 gates — refined "
-                 "in the calibration run",
-        ),
-        tables=_tables(), scalars=_scalars(),
+        meta={
+            "id": "bootstrap-0",
+            "source": "validated chain anchors + direct LL measurements "
+            "(HL build session); calibration pending — the protocol: simulation/AGENTS.md",
+            "note": "provisional: pressure rows measured at the anchor levels, "
+            "numeric pressures interpolated; the oar-family helm blend "
+            "and the tau fits land inside the Level-2 gates — refined "
+            "in the calibration run",
+        },
+        tables=_tables(),
+        scalars=_scalars(),
     )
 
 
@@ -637,6 +684,7 @@ def load(path=None):
     """Load a calibration file (hl/calibration/calib_*.json or a path).
     The file schema is the tables/scalars structure above."""
     import json
+
     if path is None:
         path = Path(__file__).resolve().parent / "calibration" / "latest.json"
     with open(path, encoding="utf-8") as fh:

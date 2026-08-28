@@ -23,8 +23,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from common.chain import KT
 from commands.parser import parse_file
+from common.chain import KT
 from harness.run_validation import SCRIPTS, TURNS
 from harness.script import run_both, turn_stream
 from ll.ship import rate_for_speed
@@ -41,15 +41,18 @@ TURN_LABELS = {
 }
 
 
-def write_log(id_: str, sim: str, label: str, meta: dict,
-              commands: list, rows: list) -> None:
+def write_log(
+    id_: str, sim: str, label: str, meta: dict, commands: list, rows: list
+) -> None:
     LOGS.mkdir(exist_ok=True)
-    payload = dict(
-        meta=dict(label=label, sim=sim, sim_label=SIM_LABEL[sim], **meta),
-        commands=[dict(time=c.time, verb=c.verb, args=list(c.args),
-                       lineno=c.lineno) for c in commands],
-        rows=rows,
-    )
+    payload = {
+        "meta": dict(label=label, sim=sim, sim_label=SIM_LABEL[sim], **meta),
+        "commands": [
+            {"time": c.time, "verb": c.verb, "args": list(c.args), "lineno": c.lineno}
+            for c in commands
+        ],
+        "rows": rows,
+    }
     path = LOGS / f"{id_}.{sim}.json"
     with open(path, "w", encoding="utf-8") as fh:
         json.dump(payload, fh, separators=(",", ":"))
@@ -69,20 +72,36 @@ def dump_script(entry: tuple, index: list, only: str | None) -> None:
     out = run_both(cmds, V0=v0, until=cmds[-1].time + 5.0)
     sims = []
     for sim in ("ll", "hl"):
-        write_log(id_, sim, label,
-                  meta=dict(script=path, v0_kt=round(v0 / KT, 3),
-                            sample=out["meta"]["sample"], dt=out["meta"][f"{sim}_dt"],
-                            t_end=out["meta"]["t_end"],
-                            calibration=out["meta"]["calibration"],
-                            n_commands=out["meta"]["n_commands"]),
-                  commands=cmds, rows=out[sim])
+        write_log(
+            id_,
+            sim,
+            label,
+            meta={
+                "script": path,
+                "v0_kt": round(v0 / KT, 3),
+                "sample": out["meta"]["sample"],
+                "dt": out["meta"][f"{sim}_dt"],
+                "t_end": out["meta"]["t_end"],
+                "calibration": out["meta"]["calibration"],
+                "n_commands": out["meta"]["n_commands"],
+            },
+            commands=cmds,
+            rows=out[sim],
+        )
         sims.append(sim)
-    index.append(dict(id=id_, label=label, sims=sims))
-    print(f"  {id_:16s} {time.time()-t0:5.0f} s wall ({label})")
+    index.append({"id": id_, "label": label, "sims": sims})
+    print(f"  {id_:16s} {time.time() - t0:5.0f} s wall ({label})")
 
 
-def dump_turn(name: str, v0_kt: float, n_oars: int, helm: tuple,
-              oar_state: tuple, index: list, only: str | None) -> None:
+def dump_turn(
+    name: str,
+    v0_kt: float,
+    n_oars: int,
+    helm: tuple,
+    oar_state: tuple,
+    index: list,
+    only: str | None,
+) -> None:
     if only and only != name:
         return
     rate = rate_for_speed("Olympias", v0_kt, n_oars=n_oars)
@@ -91,19 +110,29 @@ def dump_turn(name: str, v0_kt: float, n_oars: int, helm: tuple,
     out = run_both(cmds, V0=v0_kt * KT, until=600.0)
     sims = []
     for sim in ("ll", "hl"):
-        write_log(name, sim, TURN_LABELS[name],
-                  meta=dict(script=f"turn scenario {name}",
-                            v0_kt=v0_kt, rate_kt=round(rate, 2),
-                            n_oars=n_oars, helm=helm,
-                            sample=out["meta"]["sample"], dt=out["meta"][f"{sim}_dt"],
-                            t_end=out["meta"]["t_end"],
-                            calibration=out["meta"]["calibration"],
-                            n_commands=out["meta"]["n_commands"]),
-                  commands=cmds, rows=out[sim])
+        write_log(
+            name,
+            sim,
+            TURN_LABELS[name],
+            meta={
+                "script": f"turn scenario {name}",
+                "v0_kt": v0_kt,
+                "rate_kt": round(rate, 2),
+                "n_oars": n_oars,
+                "helm": helm,
+                "sample": out["meta"]["sample"],
+                "dt": out["meta"][f"{sim}_dt"],
+                "t_end": out["meta"]["t_end"],
+                "calibration": out["meta"]["calibration"],
+                "n_commands": out["meta"]["n_commands"],
+            },
+            commands=cmds,
+            rows=out[sim],
+        )
         sims.append(sim)
-    entry = dict(id=name, label=TURN_LABELS[name], sims=sims)
+    entry = {"id": name, "label": TURN_LABELS[name], "sims": sims}
     index.append(entry)
-    print(f"  {name:16s} {time.time()-t0:5.0f} s wall (turn @ {rate:.1f} spm)")
+    print(f"  {name:16s} {time.time() - t0:5.0f} s wall (turn @ {rate:.1f} spm)")
 
 
 def main() -> None:

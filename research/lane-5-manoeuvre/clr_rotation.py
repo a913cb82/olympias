@@ -21,10 +21,12 @@ Olympias LCG ~17.5 m from the stern post (ch.25) on LWL 32.2 m -> c.g. about
 14.7 m from the bow; with the ram and long lateral plane the CLR sits ~0.5-2 m
 further forward, so x in [0.5, 2.0] m.
 """
+
 import math
 import sys
-sys.path.insert(0, '.')
-from manoeuvre_model import olympias, mark_iib
+
+sys.path.insert(0, ".")
+from manoeuvre_model import mark_iib, olympias
 
 RAD2DEG = 180.0 / math.pi
 KT2MS = 0.514444
@@ -37,7 +39,9 @@ def steady_turn_about_clr(vessel, vkt, phi_deg, along_factor, one_side, x):
     Returns (diameter_m, yaw_rate_dps, drift_deg)."""
     L_rud = vessel.lever_rudder + x
     L_oar = abs(vessel.lever_oar - x)
-    f_rud = vessel.rudder_coeff(phi_deg) * vessel.rudder_drag(vkt, phi_deg, along_factor)
+    f_rud = vessel.rudder_coeff(phi_deg) * vessel.rudder_drag(
+        vkt, phi_deg, along_factor
+    )
     q_rud = f_rud * L_rud
     q_oar = 0.5 * vessel.thrust(vkt) * L_oar if one_side else 0.0
     omega = math.sqrt(max(q_rud + q_oar, 0.0) / vessel.Omega)
@@ -52,7 +56,9 @@ def steady_turn_about_clr(vessel, vkt, phi_deg, along_factor, one_side, x):
 if __name__ == "__main__":
     print("Richard's alternative (rotation about CLR) vs Taylor (rotation about c.g.)")
     print("=" * 100)
-    print(f"{'case':32s} {'x=c.g.':>13s} {'x=0.5':>12s} {'x=1.0':>12s} {'x=1.5':>12s} {'x=2.0':>12s}")
+    print(
+        f"{'case':32s} {'x=c.g.':>13s} {'x=0.5':>12s} {'x=1.0':>12s} {'x=1.5':>12s} {'x=2.0':>12s}"
+    )
     cases = [
         ("tightest Olympias [Oly]", olympias(), 6.5, 67.5, 1.4, True),
         ("fast anastrophe [MkIIb]", mark_iib(), 9.5, 22.5, 3.25, False),
@@ -62,7 +68,7 @@ if __name__ == "__main__":
     ]
     for label, ves, vkt, phi, fac, one in cases:
         d0, y0, _ = ves.steady_turn(vkt, phi, fac, one_side=one)
-        row = [f"{d0:6.1f}m/{y0*RAD2DEG:4.2f}"]
+        row = [f"{d0:6.1f}m/{y0 * RAD2DEG:4.2f}"]
         for x in (0.5, 1.0, 1.5, 2.0):
             d, y, _ = steady_turn_about_clr(ves, vkt, phi, fac, one, x)
             row.append(f"{d:6.1f}/{y:4.2f}")
