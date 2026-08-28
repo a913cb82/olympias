@@ -3,6 +3,34 @@ target-version = "py310"
 line-length = 88
 exclude = [".venv", ".git", "__pycache__", "research/sources/galley-sizing-xlsm/extracted", "research/sources/warship-evolution-6th-bc/extracted"]
 
+[tool.ty.environment]
+# Needed so ty can resolve the research modules that are imported via sys.path hacks.
+# (common/chain.py inserts research/lane-* into sys.path; ty needs explicit extra-paths.)
+extra-paths = [
+    "simulation",
+    "research/lane-4-oars",
+    "research/lane-5-manoeuvre",
+    "research/lane-3-hull",
+    "research/lane-6-validation",
+    "research/sources/recovery/wayback",
+]
+python-version = "3.10"
+
+[tool.ty.rules]
+# Initial minimal-change config: ignore all currently failing ty rules so `ty check` is green.
+# Will be reduced to no overrides (all error) in follow-up commits.
+invalid-argument-type = "ignore"
+not-subscriptable = "ignore"
+unsupported-operator = "ignore"
+unresolved-attribute = "ignore"
+invalid-return-type = "ignore"
+invalid-assignment = "ignore"
+unresolved-reference = "ignore"
+call-non-callable = "ignore"
+not-iterable = "ignore"
+no-matching-overload = "ignore"
+unresolved-import = "ignore"
+
 [tool.ruff.lint]
 # Initial minimal-change config: ignore all currently failing codes so `ruff check` is green.
 # Will be reduced to [] in follow-up commits.
