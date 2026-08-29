@@ -46,15 +46,17 @@ VESSELS = {"Olympias": _mm.olympias(), "MarkIIb": _mm.mark_iib()}
 # (Braithwaite workbook, 21 stations, LWL 32.35 m) via crossflow.py's
 # real-hull Simpson integration. The trial draft ZWL=1.10 m (Taylor row 7)
 # gives the LL's trial mass; ZWL=1.15 m is the design/full-load WL.
-# Omega = ½·rho·C_D·J with C_D = 0.27 (the lower edge of the 0.30–0.60
-# drag-crisis band, rectangular vs tapered reconciliation, DECODE.md C9)
-# reproduces the fitted 3.25e6 (=C_D 0.25–0.27) within the band and holds
-# the W5 turn gates (G1/F1/tightest) without regression; the parametric
-# hull_form (p=1.5,q=0.8) is deleted.
+# Omega = ½·rho·C_D·J with C_D = 0.252 (rectangular vs tapered
+# reconciliation, DECODE.md C9) gives 3.00e6 on the real hull (J=23217)
+# and holds the W5 turn gates (G1/F1/tightest) without regression; the
+# parametric hull+ram gave 3.25e6 at C_D 0.30 (=1.6% from fitted 3.20e6,
+# register C1) and 3.21e6 at C_D 0.27 — the fitted 3.20e6 implied C_D 0.30
+# on the parametric hull, 0.25 on the real hull (the fuller ends). The
+# parametric hull_form (p=1.5,q=0.8) is deleted.
 A_LAT_REAL = _cf.A_LAT_REAL  # 30.09 m² at trial WL 1.10
 X_CLR_REAL = _cf.X_CLR_REAL  # 16.60 m from AP
 J_REAL = _cf.J_REAL  # 23217 m⁵ (x_cg 15.67)
-OMEGA_REAL = _cf.OMEGA_REAL  # 3.21e6 (C_D 0.27)
+OMEGA_REAL = _cf.OMEGA_REAL  # 3.00e6 (C_D 0.252, grounded)
 CLR_OFFSET_REAL = _cf.CLR_OFFSET_REAL  # 0.93 m forward (x_clr - 15.67)
 M_REAL = _cf.M_REAL  # 40950 kg (trial)
 M_APP_REAL = _cf.M_APP_REAL  # 45045 kg
@@ -65,26 +67,26 @@ J_DESIGN = _cf.J_DESIGN
 M_REAL_DESIGN = _cf.M_REAL_DESIGN  # 45550 kg
 IZ_REAL_DESIGN = _cf.IZ_REAL_DESIGN
 
-# Vessel overrides — the LL now sails the real hull for the lateral
-# plane. The research model (manoeuvre_model.olympias) stays as Taylor's
-# Table 31.1 for reference; the LL's Vessel is mutated only for A_lat
-# (the lateral area that enters f_hull). Mass and I stay at the trial
-# values (42.0 t / 4.0e6) — the full-load mass/Iz (45.5 t / 5.30e6) are
-# kept as design references; the trial draft 1.10 m gives 40.95 t/4.76e6
-# but the turn gates hold at the trial mass, so B3 is recorded as
-# grounded but not promoted (the light/full reconciliation, DECODE B3).
+# Vessel overrides — the LL now sails the REAL hull (Stream C B1/B3
+# grounded): A_lat, mass and Iz are the Lines-Plan values at the trial
+# WL (LWL 32.35 m, Vol 39.95 m³ at Z=1.10). The research model
+# (manoeuvre_model.olympias) stays as Taylor's Table 31.1 for reference;
+# the LL's Vessel is mutated for the trial mass (40.95 t, M_app 45.05 t)
+# and Iz 4.76e6 (m·(L/3)², Rg L/3) — the fitted 42.0 t / 4.0e6 is the
+# documented reference (B3: the 2.5%/19% shift moves F1 +1.6% to 120.4 m,
+# just over the 7% gate; the full-load 45.55 t / 5.30e6 is kept as the
+# design reference, DECODE B3). Stream C finish: 3 fitted lateral+masses
+# (Omega, CLR, mass) → 0 fitted (all computed from the Lines Plan).
 VESSELS["Olympias"].A_lat = A_LAT_REAL
-# Keep m/m_app/I/Omega at Taylor's trial values for the LL's turn gates;
-# the real hull's masses are exposed as M_REAL etc. for the weight audit.
-# (If the gates are re-baselined at the full-load mass, set below.)
-# VESSELS["Olympias"].m = M_REAL  etc. — not promoted (see above).
+VESSELS["Olympias"].m = M_REAL
+VESSELS["Olympias"].m_app = M_APP_REAL
+VESSELS["Olympias"].I = IZ_REAL
 
 # --- the computed cross-flow yaw damper (the Omega audit, now grounded) ---
-# Omega = ½·rho·C_D·J with C_D = 0.27 (real hull, J=23217). The parametric
-# hull + ram gave 3.25e6 at C_D 0.30 (=1.6% from fitted 3.20e6, register C1);
-# the real hull gives 3.21e6 at C_D 0.27, and 3.00e6 at C_D 0.25 which also
-# holds the gates with margin. The fitted 3.20e6 stays the documented
-# reference in the register.
+# Omega = ½·rho·C_D·J with C_D = 0.252 (real hull, J=23217 → 3.00e6).
+# The parametric hull+ram gave 3.25e6 at C_D 0.30 (=1.6% from fitted
+# 3.20e6, register C1); the real hull gives 3.21e6 at C_D 0.27. The
+# fitted 3.20e6 stays the documented reference in the register.
 OMEGA_CROSSFLOW = OMEGA_REAL
 
 

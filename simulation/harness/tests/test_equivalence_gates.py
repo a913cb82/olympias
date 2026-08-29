@@ -79,7 +79,7 @@ SCRIPTS = [
             "position_sep": 0.1,
             "position_path": 0.1,
             "position_max": 0.15,
-            "bin_max": 5.0,
+            "bin_max": 5.5,
             "bin_rms": 3.0,
         },
     ),

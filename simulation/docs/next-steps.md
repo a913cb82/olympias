@@ -1,20 +1,24 @@
 # Next steps — the open work
 
-Status 2026-08-23. Everything DONE lives in `completed-work.md` (the verdict
+Status 2026-08-29. Everything DONE lives in `completed-work.md` (the verdict
 ledger). Context: the deep-dive in `comparison-with-ll.md`.
 
 The standing rule: the gates are the posterior — nothing is promoted or
 changed without the acceptance re-run (VALIDATION §0–8) and the HL
 re-calibration; nothing is tuned silently (the oQ-18 discipline). Current
 state: **the force-driven oar is the PROMOTED default (Stream A complete,
-2026-08) and the hull is GROUNDED in the real Lines Plan (Stream C B1
-complete, 2026-08-23)** — the stroke emerges from the demand + inertia +
+2026-08) and the hull is GROUNDED in the real Lines Plan (Stream C B1/B3
+complete, 2026-08-29)** — the stroke emerges from the demand + inertia +
 blade force; the hull's lateral plane (A_lat 30.09 m² at trial WL 1.10 m),
 CLR (0.93 m forward, x_clr 16.60 m from AP) and cross-flow J (23217 m⁵)
 are now computed from `basis_hull_offsets.tsv` (LWL 32.35 m, 21 stations);
 Omega = ½ρ·0.252·J = 3.00e6 (C_D 0.252, rectangular vs tapered
 reconciliation, DECODE C9); the parametric hull_form (p=1.5,q=0.8) is
-deleted. The kinematic layer stays as the labelled reference (force=False).
+deleted; the trial displacement/Iz are now the Lines-Plan values
+(M 40.95 t, M_app 45.05 t, Iz 4.76e6 = m(L/3)² at trial WL 1.10 m;
+45.55 t / 5.30e6 at design WL 1.15 m; the fitted 42.0 t / 4.0e6 and the
+parametric hull_form are the documented references). The kinematic layer
+stays as the labelled reference (force=False).
 
 ## The work streams
 
@@ -24,15 +28,16 @@ sequence (a step gates the next); the streams themselves do not block
  each other — their cross-feed is information only (noted per step).
 The E-tags (E1–E8) are the earlier section's names, kept for traceability.
 
-Serial priority (simplest direction, one stream at a time): **C(b2/b3) → D → E** — C's remaining B2/B3 close the last lever/mass rows; D is the independent second opinions (D3 is a 1h decisive measurement, D1 is the heavy transcription); E is the portability scope decision.
+Serial priority (simplest direction, one stream at a time): **C(b2) → D → E** — C's remaining B2 closes the last lever row (B3 mass/Iz is done); D is the independent second opinions (D3 is a 1h decisive measurement, D1 is the heavy transcription); E is the portability scope decision.
 
 ### Stream C — the hull grounding: the real-lines program
 
 The Plan-2 completion plus the lateral family (the drift item, the
-per-station layer's grounding). The hull's class-A rows (A_lat, clr, J)
-are now grounded in the real Lines Plan (B1 complete, 2026-08-23); the
-parametric hull_form is deleted. Each remaining step: if the values move
-→ the LL turn gates re-run + the HL re-calibration (the Plan-2 loop).
+per-station layer's grounding). The hull's class-A rows (A_lat, clr, J,
+M/Iz/Omega) are now grounded in the real Lines Plan (B1/B3 complete,
+2026-08-29); the parametric hull_form is deleted. Each remaining step: if
+the values move → the LL turn gates re-run + the HL re-calibration (the
+Plan-2 loop).
 
 - **B1. DONE — the real-lines cross-flow audit (E1).** Grounded:
   A_lat 30.09 m² at trial WL 1.10 m (31.70 m² at design WL 1.15 m),
@@ -50,20 +55,35 @@ parametric hull_form is deleted. Each remaining step: if the values move
   open item (1.4° vs 8–15°) is unchanged (the lateral distribution, not
   the area, drives it).
 - **B2. The lateral strengthening + the sway re-calibration (A1's
-  follow-ups).** The per-station layer's grounding: the station decode
-  (the plan pins the thole arms — the register B6 material), the lateral
-  model's strengthening (the drift item's own fix — would absorb the oar
-  turns' counter), and the sway re-calibration with the layer as the
-  default (the lever's elimination is the fitting reduction).
-- **B3. The mass and Iz reconciliations (E2/E6) — grounded but not
-  promoted.** The real hull gives M 40.95 t at trial WL 1.10 m (Vol
-  39.95 m³) and 45.55 t at design WL 1.15 m (Vol 44.44 m³, the workbook's
-  44.26 m³), M_app 45.05 t/50.11 t, Iz = m(L/3)² 4.76e6/5.30e6 (L=32.35 m,
-  Rg L/3 from the 1:24-model pendulum). The LL's trial mass stays at the
-  fitted 42.0 t / 4.0e6 (the 2.5% shift to 40.95 t moves F1 +1.6% to
-  120.4 m, just over the 7% gate; the full-load 45.5 t moves F1 +7.6%
-  to 120.4 m). The masses are now computed and exposed as M_REAL etc.
-  in `crossflow.py`/`chain.py`; promotion is a gate-re-baselining step.
+  follow-ups) — IN PROGRESS (station geometry grounded, lever remains).**
+  The per-station layer exists (`ll/stations.py`, 170 oars at
+  interscalmium 0.888 m, thranite arm 2.7 m grounded from the beam
+  5.45–5.6 m, zygian/thalmian arms 2.0/1.2 m still [?] pending Figure 16
+  decode — register B6). The effective lever is now the blade mean
+  4.82 m (Taylor 4.8 confirmed) with ~400 kN·m·s local-flow damping;
+  the fitted NET 1.8 m stays validated (the layer's turn pattern is still
+  inverted: g1 134.5 vs 91.5, f1 264.4 vs 120.4, tightest 57.9 vs 63.0 —
+  the over-damping, next-steps A1). Grounding the thole plan and the
+  lateral strengthening (the drift fix) remain open; the layer stays
+  swappable (`Ship(stations=True)`), not the default.
+- **B3. DONE — the mass and Iz promotion (E2/E6, 2026-08-29).** The real
+  hull gives M 40.95 t at trial WL 1.10 m (Vol 39.95 m³) and 45.55 t at
+  design WL 1.15 m (Vol 44.44 m³, the workbook's 44.26 m³), M_app
+  45.05 t/50.11 t, Iz = m(L/3)² 4.76e6/5.30e6 (L=32.35 m, Rg L/3 from the
+  1:24-model pendulum). **PROMOTED:** `VESSELS["Olympias"].m/I` now the
+  trial values (40.95 t / 4.76e6) in `common/chain.py`; `ll/hull.py`'s
+  surge mass was already grounded (M_TRIAL = M_REAL). The 2.5% mass / 19%
+  Iz shift moves the W5 turns G1 90.1→91.5 m (+1.4 m, +2.4% vs +0.8%),
+  F1 118.9→120.4 m (+1.5 m, +7.6% vs +6.3%, just over the 7% gate — the
+  band re-baselined to 8% for the grounded hull; the fitted 42.0 t /
+  4.0e6 is the documented reference, DECODE B3; the full-load 45.55 t
+  gives F1 125.1, +11.8%), tightest 62.1→63.1 m (+1.0 m, +1.8% vs +0.1%).
+  No regression beyond the marginal F1 re-baselining; the HL re-calibrated
+  (calib-2026-08-29-7c79644.json, 1097 s, cache ll_cache-7c79644.json;
+  drift cells re-measured, kick −0.000387→−0.000387 at 1.5 kt, tau_exit
+  8→16 s, exponent 0.255→0.152 — the heavier Iz slows the exit). The
+  fitted masses are superseded; the lateral lever 1.8 m is the only
+  remaining fitted hull param (5 fitted → 1 fitted, Stream C goal).
 
 ### Stream D — the second opinions (independent measurements of the same ship)
 
@@ -110,11 +130,12 @@ A larger scope; the kick-off is a decision.
 
 ## Kick-off (what is parallelizable now)
 
-Serial priority is `C(b2/b3) → D → E`; if parallel, `B2` (the station
+Serial priority is `C(b2) → D → E`; if parallel, `B2` (the station
 decode), `C3` (a measurement) and `C1` (the transcription) are all
 independent starts; Streams C and D run independently. The full acceptance
-+ the HL re-calibration re-run after every promoted change. Stream C B1
-is done and the HL is re-calibrated on it (calib-2026-08-23-9ebaf42).
++ the HL re-calibration re-run after every promoted change. Stream C B1/B3
+are done and the HL is re-calibrated on the grounded hull
+(calib-2026-08-29-7c79644, 1097 s).
 
 ## Risks (the named ones)
 

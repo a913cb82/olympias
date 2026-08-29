@@ -23,34 +23,37 @@ C = load(Path(__file__).resolve().parents[2] / "hl/calibration/latest.json")
 # the settled drift cells (rad/s, LL dt 0.05, measured in
 # calibrate.measure_drift_table — the 300-600 s settle; the 20-60 s
 # window is the sway transient and is NOT the anchor)
-# Grounded hull (Stream C, real offsets, LWL 32.35 m, trial WL 1.10 m):
-# re-measured 2026-08-23 (calib-2026-08-23-9ebaf42.json) — the drift bias
-# is still ~30x smaller and positive (force LL), but the kick and the
-# exit tau moved with the real lateral plane (A_lat 30.09 vs 35).
-DRIFT_SF = [0.00003826, 0.00005144, 0.00007146, 0.00014059]
-DRIFT_SE = [0.00003771, 0.00005132, 0.00007154, 0.00014073]
-DRIFT_TF = [0.00006199, 0.00007760, 0.00008622, 0.00014491]
-DRIFT_TE = [0.00006198, 0.00007751, 0.00008587, 0.00014080]
+# Grounded hull (Stream C B3, real offsets, LWL 32.35 m, trial WL 1.10 m,
+# mass 40.95 t / Iz 4.76e6): re-measured 2026-08-29
+# (calib-2026-08-29-7c79644.json) — the drift bias is still ~30x smaller
+# and positive (force LL); the kick softens (-0.000458→-0.000387 at
+# 1.5 kt) and the exit tau returns to 16 s (was 8 s on the fitted
+# 42.0 t / 4.0e6 hull, 19 s on the parametric) with exponent 0.152.
+DRIFT_SF = [0.00003923, 0.0000534, 0.00007257, 0.00014307]
+DRIFT_SE = [0.00003918, 0.00005304, 0.00007256, 0.00014317]
+DRIFT_TF = [0.00006318, 0.00007794, 0.00008625, 0.00014615]
+DRIFT_TE = [0.0000632, 0.00007797, 0.00008622, 0.00014327]
 DRIFT_RATES = [25.5, 28.8, 32.3, 44.5]
 
 KICK_V = [0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0]
 KICK_W = [
-    -0.000187,
-    -0.0004284,
-    -0.0004583,
-    -0.0003881,
-    -0.0003328,
-    0.0000972,
-    0.0000469,
-    -0.0000287,
+    -0.0001575,
+    -0.0003626,
+    -0.0003871,
+    -0.0003385,
+    -0.0002955,
+    0.0000956,
+    0.0000388,
+    -0.0000417,
 ]
 
-TAU_EXIT = 8.0
-DRIFT_TAU_EXP = 0.255
-# (grounded hull 2026-08-23 — the real hull's lateral plane 30.09 m²
-# and J 23217 give a faster exit decay (8 s vs 19 s) and a steeper
-# drift-tau exponent (0.255 vs 0.123); the force LL's yaw-ramp decay
-# is faster with the real hull's larger lateral damping; re-measured)
+TAU_EXIT = 16.0
+DRIFT_TAU_EXP = 0.152
+# (grounded hull 2026-08-29 — B3 mass/Iz 40.95 t / 4.76e6: the real hull's
+# lateral plane 30.09 m² and J 23217 give exit decay 16 s (was 8 s on
+# the fitted 42.0 t, 19 s on the parametric) and exponent 0.152 (was
+# 0.255); the force LL's yaw-ramp decay is slower with the heavier
+# Iz, re-measured)
 
 
 # ---------------------------------------------------------------------------

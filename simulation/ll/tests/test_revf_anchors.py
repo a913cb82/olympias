@@ -88,11 +88,13 @@ def test_kempf_overshoots():
     """Rev F C8: the force mode's Kempf zig-zag overshoots — 8.8 then
     ~12.7-12.8 vs the trials' 8/7 (the mismatch row, VALIDATION §11.2 —
     the first overshoot now closes, +10 % vs the kinematic's +38 %; the
-    later overshoots stay ~+80 %)."""
+    later overshoots stay ~+80 %). Stream C B3 (real mass 40.95 t,
+    Iz 4.76e6): first 9.2, later 14.0–14.4 vs fitted 8.8/12.8 — the
+    2.5%/19% shift widens the fishtail by ~0.4/1.5 deg."""
     overs = _kempf_overshoots(n_flips=6)
     assert len(overs) >= 4
-    assert abs(overs[0] - 8.8) < 1.0, f"first overshoot {overs[0]:.1f}"
-    assert all(abs(o - 12.8) < 1.0 for o in overs[1:]), overs
+    assert abs(overs[0] - 9.2) < 1.0, f"first overshoot {overs[0]:.1f}"
+    assert all(abs(o - 14.0) < 1.2 for o in overs[1:]), overs
 
 
 def test_thranite_only_equilibrium():

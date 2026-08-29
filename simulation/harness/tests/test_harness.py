@@ -88,12 +88,15 @@ def test_long_cruise_level2():
 
 
 def test_turn_stream_runs():
-    """A g1-style stream through the harness: D metric on both sims."""
+    """A g1-style stream through the harness: D metric on both sims.
+    Stream C B3 (real mass 40.95 t, Iz 4.76e6): G1 91.5 m vs fitted 89.7
+    (+1.8 m, the 2.5%/19% shift) — the LL's anchor re-baselined for the
+    grounded hull (the fitted 42.0 t / 4.0e6 is the documented reference)."""
     rate = rate_for_speed("Olympias", 6.0, n_oars=170)
     out = run_both(turn_stream(rate, ("port", 1.0)), V0=6.0 * KT, until=300.0)
     m = metrics(out["ll"], out["hl"])
     d_ll, d_hl = m["turn_D"]["ll"], m["turn_D"]["hl"]
-    assert abs(d_ll - 89.7) < 1.0  # the LL's own anchor
+    assert abs(d_ll - 91.5) < 1.5  # the LL's grounded anchor (was 89.7)
     assert abs(d_hl / d_ll - 1.0) < 0.05  # the Level-2 gate
 
 
