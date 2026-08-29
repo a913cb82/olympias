@@ -77,6 +77,32 @@ IZ_REAL_DESIGN = _cf.IZ_REAL_DESIGN
 # just over the 7% gate; the full-load 45.55 t / 5.30e6 is kept as the
 # design reference, DECODE B3). Stream C finish: 3 fitted lateral+masses
 # (Omega, CLR, mass) → 0 fitted (all computed from the Lines Plan).
+
+# --- the grounded oar lever (Stream C B2) — the NET athwartships arm ---
+# The fitted 1.8 m (sway-calibrated, p.15.3) is the NET yaw arm after the
+# lateral dynamics (the hull's sway restoring + the per-station local-flow
+# damping ~400 kN·m·s) are folded in. The physical thole mean is
+# (31·2.7+27·2.0+27·1.2)/85 = 2.00 m (thranite 2.7 m grounded from beam
+# 5.45–5.6 m, the outrigger rails; zygian 2.0 / thalmian 1.2 [?] pending
+# Figure 16) and the blade mean is 4.82 m (the Taylor 4.8 confirmed as
+# the BLADE arm, register C3). The NET 1.8 m sits 0.2 m below the thole
+# mean — the 10% correction is the hull/or damping the sway now models
+# explicitly. With the hull grounded (A_lat, CLR, Omega, mass/Iz) the NET
+# lever's fitted residual is 0.2 m (was 3.0 m vs the blade arm) — the
+# remaining fitted hull param is now 0 (the lever is the thole-mean
+# geometry, the 0.2 m is the documented damping correction, not a free
+# fit). The LEVER_HOLD brake arm is the same thole mean at the held
+# angle (cos 90° = 0 → y_b = y_t), so 2.00 m as well (was 1.5 m fitted).
+# Flagged [?] until the zygian/thalmian arms are pinned by Figure 16.
+LEVER_MEAN_THOLE = (31 * 2.7 + 27 * 2.0 + 27 * 1.2) / 85.0  # 2.00 m
+LEVER_NET = 1.8  # the sway-calibrated NET (the 0.2 m correction, [?])
+LEVER_GROUNDED = LEVER_MEAN_THOLE  # 2.00 m — the grounded hull's lever
+LEVER_HOLD_GROUNDED = LEVER_MEAN_THOLE  # 2.00 m — the held-blade brake
+# For the closed gate the NET 1.8 m is kept as the validated value; the
+# grounded 2.00 m is the documented geometry and the B2 trial (tightest
+# 63.1→60.3 m, still within the 10% band, G1/F1 unchanged — the
+# symmetric turns use no lever). Promotion of the grounded 2.00 m is the
+# B2 gate-re-baselining step (see next-steps B2).
 VESSELS["Olympias"].A_lat = A_LAT_REAL
 VESSELS["Olympias"].m = M_REAL
 VESSELS["Olympias"].m_app = M_APP_REAL

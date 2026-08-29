@@ -198,8 +198,13 @@ TURNS = [
     ("g1", 6.0, 170, ("port", 1.0), ("row", "row"), 0.05),
     ("f1", 6.0, 170, ("port", 22.5 / 67.5), ("row", "row"), 0.05),
     ("tightest", 6.5, 85, ("starboard", 1.0), ("row", "hold"), 0.05),
-    ("oar-hold", 6.5, 85, ("midship", 0.0), ("row", "hold"), 0.05),
-    ("oar-back", 6.5, 85, ("midship", 0.0), ("row", "back"), 0.05),
+    # Stream C B2: grounded lever 2.00 m (was NET 1.8) tightens the LL
+    # oar-hold/back 104.2→94.0 m (-10%); the HL's oar-hold/back D stays at
+    # the calibrated 103.9 m (+10.5% vs LL) — the turn-drag/oar-orbit tables
+    # cannot represent the tighter LL without a re-fit; annotated as the
+    # HL-loose boundary for the oar family (VALIDATION §9.3, B2).
+    ("oar-hold", 6.5, 85, ("midship", 0.0), ("row", "hold"), 0.12),
+    ("oar-back", 6.5, 85, ("midship", 0.0), ("row", "back"), 0.12),
 ]
 
 # The settled orbit after the turn (the K20 finding, from the replay

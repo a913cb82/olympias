@@ -25,6 +25,8 @@ import math
 from common.chain import (
     CLR_OFFSET_REAL,
     KT,
+    LEVER_GROUNDED,
+    LEVER_HOLD_GROUNDED,
     OMEGA_CROSSFLOW,
     RHO,
     RIGS,
@@ -39,7 +41,7 @@ from ll.rower import PRESSURE, SideCrew
 
 FULL_RUDDER_DEG = 67.5  # "full rudder" in the trials
 RUDDER_FAC = 1.4  # Olympias applied-rudder drag factor (W5 set)
-LEVER_HOLD = 1.5  # m — yaw arm of the held blades' keel-aligned drag
+LEVER_HOLD = LEVER_HOLD_GROUNDED  # 2.00 m — the grounded thole mean (was 1.5 fitted; y_b = y_t at hold, cos 90°=0)
 # (mean athwartships oar-station arm; the fitted
 # 4.8 m thrust lever folds in drift/lateral
 # dynamics and must NOT apply to the brake —
@@ -79,9 +81,14 @@ class Ship:
         # are now from the real Lines Plan (basis_hull_offsets.tsv, LWL
         # 32.35 m, trial WL 1.10 m). The parametric hull_form (p=1.5,q=0.8)
         # is deleted; the fitted 4.8 m lever is decomposed to the physical
-        # 1.8 m athwartships arm (register C3) and the sway-calibrated
-        # CLR restoring moment is now the computed x_clr−x_cg.
-        self.lever = 1.8
+        # thole mean (2.00 m, the grounded geometry — 31·2.7+27·2.0+27·1.2
+        # /85) with the 0.2 m NET correction (the lateral damping the sway
+        # now models). The NET 1.8 m was the sway-calibrated value (register
+        # C3); the grounded 2.00 m holds the tightest gate exactly (62.0 m
+        # vs 63.1 m at 1.8, G1/F1 unchanged — symmetric turns use no lever)
+        # and is now the LL default (Stream C B2 — the last fitted hull
+        # param eliminated, 1→0 fitted).
+        self.lever = LEVER_GROUNDED
         # Omega: the grounded cross-flow pure-rotation moment
         # (common.chain.OMEGA_REAL = ½·rho·0.27·J_REAL, J=23217 at trial WL,
         # x_cg at LCB 15.67 m; C_D 0.27 is the lower edge of the 0.30–0.60

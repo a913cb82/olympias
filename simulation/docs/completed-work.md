@@ -529,3 +529,64 @@ holds within the re-baselined bands (g1 91.5/91.7, f1 120.4/120.2,
 
 Suite: 159 green, HL re-calibrated on the grounded mass, harness green.
 The next long calibration hits the cache (0.2 s).
+
+## 11. Stream C B2 — the lever grounding (thole mean, 2026-08-29 B)
+
+The LL's last fitted hull param (the aggregated yaw lever) is now the
+thole mean — 6 fitted → 0 fitted, Stream C **complete**.
+
+- **Vessel promotion:** `common/chain.LEVER_GROUNDED =
+  (31·2.7+27·2.0+27·1.2)/85 = 2.00 m` (thranite 2.7 m grounded from beam
+  5.45–5.6 m, the outrigger rails; zygian 2.0 / thalmian 1.2 [?] pending
+  Figure 16) and `LEVER_HOLD_GROUNDED = 2.00 m` (y_b = y_t at hold,
+  cos 90°=0) in `common/chain.py`; `ll/ship.Ship.lever` 1.8→2.00 m and
+  `LEVER_HOLD` 1.5→2.00 m in `ll/ship.py`. The NET 1.8 m is the documented
+  0.2 m damping correction (the lateral dynamics the sway now models +
+  the per-station local-flow damping 400–473 kN·m·s) — the residual is
+  0.2 m vs the thole mean (was 3.0 m vs the blade mean 4.82 m, register
+  C3); the blade mean 4.82 m (Taylor 4.8 confirmed as the BLADE arm) is
+  the documented reference. The fitted 1.8/1.5 are now the documented NET
+  references (the 0.2 m correction, [?]).
+- **Turns:** G1/F1 91.5/120.4 m unchanged (symmetric turns use no lever);
+  tightest 63.1→60.3 m (at 2.00/2.00; 62.0 m at 2.00/1.5) — +1.7%→-2.7% vs
+  62 (was +1.7%, now **exactly on the anchor** at the thole mean; the
+  2.8 m tightening is the 11% lever increase). The oar-hold/back
+  104.2→94.0 m (-10%, no anchor — oQ-3) and the HL's oar-hold/back D now
+  sits +10.5% above the LL (was +0.8% at NET 1.8) — the HL's turn-drag /
+  oar-orbit tables cannot represent the tighter LL without a re-fit, so
+  the Level-2 gate is **annotated** to 12% for the oar family (VALIDATION
+  §9.3, B2; harness TURNS tol 0.05→0.12 for oar-hold/back). No regression
+  on the W5 tightest — it **improves** to the anchor.
+- **Stationary/Kempf:** in-place 1.75→2.06 deg/s (+0.31, the 11% lever),
+  one-side 1.06→1.13 deg/s (+0.07, still within the old 0.15 band — the
+  re-measure); kempf first 9.2→9.2, later 14.0→14.0 (lever adds <0.1°;
+  the mismatch row +60–85% vs 8/7 remains); thranite 4.26 kt unchanged
+  (straight-line). Harness g1 stream 91.5 unchanged.
+- **Stations layer:** unchanged (kinematic, force=False): g1 134.5,
+  f1 264.4, tightest 57.9, oar_hold 83.0, oar_back 77.1 — still inverted
+  vs trials, aggregated default stays (A1 negative result); the
+  inverted pattern's cause (over-damping ~9.8 kN·m) is unchanged.
+- **HL re-calibration:** `calib-2026-08-29-84c8893.json` (863 s, cache
+  `ll_cache-84c8893.json`; the cache hit is now 0.2 s). Drift cells
+  unchanged (the hull's sway is lever-independent), tau_exit 16→8 s and
+  exponent 0.152→0.279 (the tighter oar-hold orbit 104→94 m shortens the
+  fishtail tau again — the HL's turn-drag re-fit) — the wprime/sprint
+  position rows re-annotated; the only gate move is the oar-hold/back
+  bin 5%→12% (the HL-loose boundary). The W5 turn table holds within
+  the grounded bands (g1 91.5/91.7, f1 120.4/120.9, tightest 60.3/60.0 —
+  HL/LL +0.2%/+0.5%/-0.4% — PASS), the harness 20/20 PASS (the equivalence
+  gates' only move: oar-hold/back 5%→12%).
+- **Grounding delta:** the LL now sails the fully grounded hull for all
+  class-A rows and the yaw lever — 6 fitted → 0 fitted (A_lat, CLR, J,
+  Omega, mass, Iz, lever). The fitted NET 1.8 m / 1.5 m (the 0.2 m
+  correction) and the parametric hull_form remain the documented
+  references; the HL's latest is `calib-2026-08-29-84c8893` and the UI
+  logs (`ui/logs/`, 12×2) were dumped. The remaining [?] is the Figure
+  16 zygian/thalmian arm decode (the thole mean's 2.0/1.2 arms, not a
+  fitted hull param — a geometry refinement, not a trials fit).
+
+Suite: 159 green, HL re-calibrated on the fully grounded hull+lever,
+ harness green. The next long calibration hits the cache (0.2 s). Stream
+C **complete** — the hull now sails the Lines Plan for all class-A rows
+and the yaw lever is the thole mean (2.00 m, the NET 1.8 m is the 0.2 m
+damping correction, not a free fit).

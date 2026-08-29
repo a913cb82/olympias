@@ -23,12 +23,13 @@ C = load(Path(__file__).resolve().parents[2] / "hl/calibration/latest.json")
 # the settled drift cells (rad/s, LL dt 0.05, measured in
 # calibrate.measure_drift_table — the 300-600 s settle; the 20-60 s
 # window is the sway transient and is NOT the anchor)
-# Grounded hull (Stream C B3, real offsets, LWL 32.35 m, trial WL 1.10 m,
-# mass 40.95 t / Iz 4.76e6): re-measured 2026-08-29
-# (calib-2026-08-29-7c79644.json) — the drift bias is still ~30x smaller
-# and positive (force LL); the kick softens (-0.000458→-0.000387 at
-# 1.5 kt) and the exit tau returns to 16 s (was 8 s on the fitted
-# 42.0 t / 4.0e6 hull, 19 s on the parametric) with exponent 0.152.
+# Grounded hull+lever (Stream C B2/B3, real offsets, LWL 32.35 m, trial
+# WL 1.10 m, mass 40.95 t / Iz 4.76e6, lever 2.00 m): re-measured
+# 2026-08-29 (calib-2026-08-29-84c8893.json, B2 lever 2.00) — the drift
+# bias is still ~30x smaller and positive (force LL); the kick softens
+# (-0.000458→-0.000387 at 1.5 kt) and the exit tau is 8 s (was 16 s on
+# NET 1.8 m, 8 s on the fitted 42.0 t, 19 s on the parametric) with
+# exponent 0.279.
 DRIFT_SF = [0.00003923, 0.0000534, 0.00007257, 0.00014307]
 DRIFT_SE = [0.00003918, 0.00005304, 0.00007256, 0.00014317]
 DRIFT_TF = [0.00006318, 0.00007794, 0.00008625, 0.00014615]
@@ -47,13 +48,14 @@ KICK_W = [
     -0.0000417,
 ]
 
-TAU_EXIT = 16.0
-DRIFT_TAU_EXP = 0.152
-# (grounded hull 2026-08-29 — B3 mass/Iz 40.95 t / 4.76e6: the real hull's
-# lateral plane 30.09 m² and J 23217 give exit decay 16 s (was 8 s on
-# the fitted 42.0 t, 19 s on the parametric) and exponent 0.152 (was
-# 0.255); the force LL's yaw-ramp decay is slower with the heavier
-# Iz, re-measured)
+TAU_EXIT = 8.0
+DRIFT_TAU_EXP = 0.279
+# (grounded hull+lever 2026-08-29 — B2 lever 2.00 m / B3 mass/Iz 40.95 t /
+# 4.76e6: the real hull's lateral plane 30.09 m² and J 23217 give exit
+# decay 8 s (was 16 s on NET 1.8 m / 40.95 t, 8 s on the fitted 42.0 t,
+# 19 s on the parametric) and exponent 0.279 (was 0.152); the lever
+# 1.8→2.0 tightens the oar-hold orbit 104→94 m and the HL's turn-drag
+# re-fit shortens the fishtail tau again — re-measured)
 
 
 # ---------------------------------------------------------------------------

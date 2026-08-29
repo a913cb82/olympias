@@ -6,9 +6,11 @@ Omega·w^2 cannot represent. The grounded set (Stream C — real hull,
 basis_hull_offsets.tsv, LWL 32.35 m): Omega 3.00e6 (J=23217 at trial WL
 1.10 m, C_D 0.252; the fitted 3.20e6 at C_D 0.30 on the parametric hull is
 the documented reference, register C1), x_clr 0.93 m (x_clr 16.60 m from
-AP, CG at LCB 15.67 m), and the oar-race lever 1.8 m — the physical
-athwartships arm, the C3 decomposition completed (the fitted 4.8 m folded
-in the lateral dynamics the sway now models explicitly).
+AP, CG at LCB 15.67 m), and the oar-race lever 2.00 m — the grounded
+thole mean (31·2.7+27·2.0+27·1.2/85, thranite 2.7 grounded from beam
+5.45–5.6 m; zygian/thalmian 2.0/1.2 [?] pending Figure 16) with the 0.2 m
+NET correction (the lateral damping the sway now models; the NET 1.8 m
+is the documented sway-calibrated reference, register C3).
 
 Acceptance: the diameters held (G1/F1/tightest within the bands) AND the
 sprint-protocol t_360 = 98 s vs the trial's 128 — the ~23% residual is
@@ -86,18 +88,23 @@ def test_lateral_damping():
 
 
 def test_lever_decomposition():
-    """The C3 record: the ship's lever is now the physical athwartships arm
-    (1.8 m); the research LEVER_OAR (4.8 m) remains the steady model's
-    fitted value — the difference is the lateral dynamics the sway carries.
-    Omega: the grounded cross-flow value (Stream C — real hull, J=23217 at
-    trial WL 1.10 m, C_D 0.252 => 3.00e6; the parametric 3.25e6 at C_D 0.30
-    (=1.6% from fitted 3.20e6) is the documented reference, register C1)."""
-    from common.chain import OMEGA_CROSSFLOW
+    """The C3 record: the ship's lever is now the grounded thole mean
+    (2.00 m, 31·2.7+27·2.0+27·1.2/85 — thranite 2.7 grounded from beam
+    5.45–5.6 m; zygian/thalmian 2.0/1.2 [?] pending Figure 16) with the
+    0.2 m NET correction (the lateral damping the sway now models). The
+    research LEVER_OAR (4.8 m) remains the steady model's fitted blade arm
+    (register C3). Omega: the grounded cross-flow value (Stream C — real
+    hull, J=23217 at trial WL 1.10 m, C_D 0.252 => 3.00e6; the parametric
+    3.25e6 at C_D 0.30 (=1.6% from fitted 3.20e6) is the documented
+    reference, register C1). The NET 1.8 m is the documented sway-
+    calibrated reference (the 0.2 m correction)."""
+    from common.chain import LEVER_GROUNDED, OMEGA_CROSSFLOW
     from ll.rig import LEVER_OAR
 
     assert LEVER_OAR["Olympias"] == 4.8
     ship = Ship()
-    assert abs(ship.lever - 1.8) < 1e-9
+    assert abs(ship.lever - LEVER_GROUNDED) < 1e-9
+    assert abs(ship.lever - 2.00) < 0.02
     assert abs(ship.Omega - OMEGA_CROSSFLOW) < 1.0
     assert abs(ship.Omega - 3.00e6) < 0.3e6, (
         "the grounded Omega moved off the real-hull reconciliation (3.00e6)"

@@ -68,29 +68,31 @@ def _kempf_overshoots(n_flips=8, t_end=3600.0):
 
 def test_stationary_turn_in_place():
     """Rev F C7: one side's Z+T ahead vs the other's Z+T back at 27 spm —
-    the in-place reading. Locked at the FORCE mode's measured 1.75 deg/s
-    (the promoted default; the kinematic's was 2.32, the trial's anchor
-    3.5 — the mismatch row, VALIDATION §11.2, re-measured with the
-    force mode: the force layer's drives are tempo-limited at V ~ 0 —
-    the same family as its documented slow launch)."""
+    the in-place reading. Locked at the FORCE mode's measured 2.06 deg/s
+    (the grounded hull + lever 2.00 m: thole mean 31·2.7+27·2.0+27·1.2/85;
+    was 1.75 deg/s at NET 1.8 m, the trial's anchor 3.5 — the mismatch
+    row, VALIDATION §11.2, re-measured with the grounded lever + force
+    mode: the 0.31 deg/s increase is the 11% lever increase)."""
     om, v = _settled_turn(27.0, ("row", True), ("back", True))
-    assert abs(om - 1.75) < 0.15, f"in-place stationary turn {om:.2f} deg/s"
+    assert abs(om - 2.06) < 0.15, f"in-place stationary turn {om:.2f} deg/s"
     assert 1.0 < v < 3.0
 
 
 def test_stationary_turn_one_side():
-    """Rev F C7: one side's Z+T ahead vs rest — the 1.06 deg/s reading."""
+    """Rev F C7: one side's Z+T ahead vs rest — the 1.13 deg/s reading
+    (was 1.06 at NET 1.8 m; the grounded 2.00 m adds 0.07 deg/s, still
+    within the old 0.15 band — the re-measure)."""
     om, _v = _settled_turn(27.0, ("row", True), ("row", False))
-    assert abs(om - 1.06) < 0.15, f"one-side stationary turn {om:.2f} deg/s"
+    assert abs(om - 1.13) < 0.15, f"one-side stationary turn {om:.2f} deg/s"
 
 
 def test_kempf_overshoots():
-    """Rev F C8: the force mode's Kempf zig-zag overshoots — 8.8 then
-    ~12.7-12.8 vs the trials' 8/7 (the mismatch row, VALIDATION §11.2 —
+    """Rev F C8: the force mode's Kempf zig-zag overshoots — 9.2 then
+    ~14.0-14.4 vs the trials' 8/7 (the mismatch row, VALIDATION §11.2 —
     the first overshoot now closes, +10 % vs the kinematic's +38 %; the
-    later overshoots stay ~+80 %). Stream C B3 (real mass 40.95 t,
-    Iz 4.76e6): first 9.2, later 14.0–14.4 vs fitted 8.8/12.8 — the
-    2.5%/19% shift widens the fishtail by ~0.4/1.5 deg."""
+    later overshoots stay ~+80 %). Stream C B2 (grounded lever 2.00 m:
+    9.2→9.2 first, 14.0→14.0 later — the lever 1.8→2.0 adds <0.1 deg; B3
+    was 8.8/12.8 →9.2/14.0 for the mass shift)."""
     overs = _kempf_overshoots(n_flips=6)
     assert len(overs) >= 4
     assert abs(overs[0] - 9.2) < 1.0, f"first overshoot {overs[0]:.1f}"
@@ -99,15 +101,17 @@ def test_kempf_overshoots():
 
 def test_thranite_only_equilibrium():
     """Rev F D10: thranites only (62 oars) at 33.3 spm — the LL settles
-    4.19 kt (chain-law baseline) vs the record's loose 3.3 kt reading
-    [+?]; a lock on the measured state, not a gate."""
+    4.26 kt (grounded hull+lever: was 4.19 at NET 1.8, the lever does not
+    affect the straight-line equilibrium — the 0.06 kt is the grounded
+    mass/Iz re-measure, B3) vs the record's loose 3.3 kt reading [+?];
+    a lock on the measured state, not a gate."""
     s = Ship(rate=33.3, pressure=("spoude", "spoude"), oar_state=("row", "row"))
     for side in ("port", "star"):
         for t in ("zygian", "thalmian"):
             s.crew[side].tiers[t].set_pressure("rest")
     while s.t < 900.0:
         s.step(0.02)
-    assert abs(s.V / 0.514444 - 4.19) < 0.1
+    assert abs(s.V / 0.514444 - 4.26) < 0.1
 
 
 def test_rudder_drag_cross_check():
