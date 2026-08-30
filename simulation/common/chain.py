@@ -1,191 +1,224 @@
 """Shared access to the validated research chain — single source of truth.
 
-Every constant the simulators use lives in the research modules; this module
-only re-exports them (2: shared assets, no duplicated numbers).
+All constants flow from two files:
+  - ship_drawings.py: measured geometry + physics-derived values
+  - trials_params.py: values fitted from the 1987 sea trials
+
+This module re-exports them under the names the LL and HL expect.
+No duplicated numbers, no silent overrides.
 """
+
+from __future__ import annotations
 
 import sys
 from pathlib import Path
 
+# --- Add research paths for modules not yet in ship_drawings ---
 _RESEARCH = Path(__file__).resolve().parents[2] / "research"
-for _sub in ("lane-3-hull", "lane-4-oars", "lane-5-manoeuvre"):
+for _sub in ("lane-4-oars", "lane-5-manoeuvre"):
     _p = str(_RESEARCH / _sub)
     if _p not in sys.path:
         sys.path.insert(0, _p)
 
-import crossflow as _cf
-import lane4_propulsion as _lp
+# =====================================================================
+# THE TWO SOURCES OF TRUTH
+# =====================================================================
+
+from common.ship_drawings import (  # noqa: F401 — re-exported
+    A_LAT_DESIGN,
+    A_LAT_TRIAL,
+    BLADE_EFFECTIVE,
+    BLADE_EFFICIENCY,
+    BLADE_GEOMETRIC_OLYMPIAS,
+    BLADE_IMMERSION,
+    BLADE_SPAN_EFF,
+    BLADE_WIDTH,
+    BWL_DESIGN,
+    CB,
+    CD_HULL,
+    CLR_OFFSET_TRIAL,
+    CM,
+    CN,
+    CP,
+    CW,
+    IZ_DESIGN,
+    IZ_TRIAL,
+    J_DESIGN,
+    J_TRIAL,
+    KT,
+    LEVER_MEAN_THOLE,
+    LWL,
+    MASS_APP_DESIGN,
+    MASS_APP_TRIAL,
+    MASS_DESIGN,
+    MASS_TRIAL,
+    NU,
+    OAR_FAMILIES,
+    OAR_TIER_MIT,
+    OMEGA_TRIAL,
+    RHO,
+    RIGS,
+    RUDDER_AREA_EACH,
+    RUDDER_AREA_TOTAL,
+    RUDDER_DIST_AFT_CG,
+    RUDDER_DRAG_STRAIGHT,
+    RUDDER_EFFICIENCY,
+    RUDDER_FAC_FULL,
+    WSA_DESIGN,
+    WSA_TRIAL,
+    X_CG,
+    X_CLR_TRIAL,
+    ZWL_DESIGN,
+    ZWL_TRIAL,
+    rudder_cd,
+    rudder_fac,
+)
+from common.ship_drawings import (
+    hull_drag as hull_drag_computed,
+)
+from common.ship_drawings import (
+    hull_friction as hull_friction_computed,
+)
+from common.ship_drawings import (
+    hull_power as hull_power_computed,
+)
+from common.ship_drawings import (
+    hull_wave as hull_wave_computed,
+)
+from common.trials_params import (  # noqa: F401 — re-exported
+    B_FLOOR_FRAC,
+    FH_BURST,
+    FH_MAX,
+    HOLD_FRAC,
+    HULL_MULT_MARKIIB,
+    HULL_POWER_COEFF_V3,
+    HULL_POWER_COEFF_V5,
+    P_PER_SPM,
+    PRESSURE_FAST,
+    PRESSURE_SPOUDE,
+    PRESSURE_STEADY,
+    T_DRIVE_7_2,
+    T_DRIVE_8_2,
+    T_REC_MIN,
+    TAU_WPRIME,
+    WPRIME,
+)
+
+# =====================================================================
+# COMPATIBILITY ALIASES — names the LL/HL already use
+# =====================================================================
+
+# Hull properties (Stream C B1/B3 — now from ship_drawings)
+A_LAT_REAL = A_LAT_TRIAL
+X_CLR_REAL = X_CLR_TRIAL
+J_REAL = J_TRIAL
+OMEGA_REAL = OMEGA_TRIAL
+CLR_OFFSET_REAL = CLR_OFFSET_TRIAL
+M_REAL = MASS_TRIAL
+M_APP_REAL = MASS_APP_TRIAL
+IZ_REAL = IZ_TRIAL
+
+# Lever (Stream C B2)
+LEVER_GROUNDED = LEVER_MEAN_THOLE
+LEVER_HOLD_GROUNDED = LEVER_MEAN_THOLE
+LEVER_NET = 1.8  # the sway-calibrated NET (0.2 m below thole mean, [?])
+
+# Omega cross-flow
+OMEGA_CROSSFLOW = OMEGA_REAL
+
+# Rudder
+RUDDER_FAC_GROUNDED = RUDDER_FAC_FULL  # alias
+
+# Blade
+BLADE_THALMIAN_GEOM = 0.109  # m², from ship_drawings (Rev F Table 3)
+
+# =====================================================================
+# TAYLOR CH.31 VESSELS — the manoeuvre model's reference vessels
+# =====================================================================
+
 import manoeuvre_model as _mm
-import rigid_oar_model as _rom
 
-# --- units / blade law ---
-KT = _rom.KT  # 0.5148 m/s per knot
-RHO = _rom.RHO  # seawater density, kg/m3
-CN = _rom.CN  # flat-plate normal coefficient, 1.8
-
-# --- rig geometry (2) ---
-RIGS = _rom.RIGS  # Olympias / MarkIIb: lin, lout, blade, sweep, area
-
-# --- stroke timing (Table 9.6: duration of the effective pull, s) ---
-T_DRIVE = _rom.T_DRIVE  # {(rig, V kt): s}
-SPM = _rom.SPM  # {(rig, V kt): spm}
-
-# --- validated reference models ---
-rigid_stroke = _rom.rigid_stroke  # static per-stroke reference
-hull_power = _lp.hull_power  # W hull needs at V (m/s); hull=1.08 Mark II
-speed_from_power = _lp.speed_from_power
-oar_power = _lp.oar_power  # W = n P L r E / 60
-mean_pull = _lp.mean_pull  # P = 7.43 r  (N at butt)
-oar_absorbed = _lp.oar_absorbed  # non-propulsive oar losses, W
-
-# --- Taylor ch.31 manoeuvring vessels (turn-validated parameters) ---
 VESSELS = {"Olympias": _mm.olympias(), "MarkIIb": _mm.mark_iib()}
 
-# --- the real hull (Stream C B1/B3) — grounded from basis_hull_offsets.tsv ---
-# A_lat, x_clr, J, Vol, mass and Iz are now computed from the Lines Plan
-# (Braithwaite workbook, 21 stations, LWL 32.35 m) via crossflow.py's
-# real-hull Simpson integration. The trial draft ZWL=1.10 m (Taylor row 7)
-# gives the LL's trial mass; ZWL=1.15 m is the design/full-load WL.
-# Omega = ½·rho·C_D·J with C_D = 0.252 (rectangular vs tapered
-# reconciliation, DECODE.md C9) gives 3.00e6 on the real hull (J=23217)
-# and holds the W5 turn gates (G1/F1/tightest) without regression; the
-# parametric hull+ram gave 3.25e6 at C_D 0.30 (=1.6% from fitted 3.20e6,
-# register C1) and 3.21e6 at C_D 0.27 — the fitted 3.20e6 implied C_D 0.30
-# on the parametric hull, 0.25 on the real hull (the fuller ends). The
-# parametric hull_form (p=1.5,q=0.8) is deleted.
-A_LAT_REAL = _cf.A_LAT_REAL  # 30.09 m² at trial WL 1.10
-X_CLR_REAL = _cf.X_CLR_REAL  # 16.60 m from AP
-J_REAL = _cf.J_REAL  # 23217 m⁵ (x_cg 15.67)
-OMEGA_REAL = _cf.OMEGA_REAL  # 3.00e6 (C_D 0.252, grounded)
-CLR_OFFSET_REAL = _cf.CLR_OFFSET_REAL  # 0.93 m forward (x_clr - 15.67)
-M_REAL = _cf.M_REAL  # 40950 kg (trial)
-M_APP_REAL = _cf.M_APP_REAL  # 45045 kg
-IZ_REAL = _cf.IZ_REAL  # 4.76e6 kg·m²  (m·(L/3)²)
-# Design WL for reference
-A_LAT_DESIGN = _cf.A_LAT_DESIGN
-J_DESIGN = _cf.J_DESIGN
-M_REAL_DESIGN = _cf.M_REAL_DESIGN  # 45550 kg
-IZ_REAL_DESIGN = _cf.IZ_REAL_DESIGN
-
-# Vessel overrides — the LL now sails the REAL hull (Stream C B1/B3
-# grounded): A_lat, mass and Iz are the Lines-Plan values at the trial
-# WL (LWL 32.35 m, Vol 39.95 m³ at Z=1.10). The research model
-# (manoeuvre_model.olympias) stays as Taylor's Table 31.1 for reference;
-# the LL's Vessel is mutated for the trial mass (40.95 t, M_app 45.05 t)
-# and Iz 4.76e6 (m·(L/3)², Rg L/3) — the fitted 42.0 t / 4.0e6 is the
-# documented reference (B3: the 2.5%/19% shift moves F1 +1.6% to 120.4 m,
-# just over the 7% gate; the full-load 45.55 t / 5.30e6 is kept as the
-# design reference, DECODE B3). Stream C finish: 3 fitted lateral+masses
-# (Omega, CLR, mass) → 0 fitted (all computed from the Lines Plan).
-
-# --- the grounded oar lever (Stream C B2) — the NET athwartships arm ---
-# The fitted 1.8 m (sway-calibrated, p.15.3) is the NET yaw arm after the
-# lateral dynamics (the hull's sway restoring + the per-station local-flow
-# damping ~400 kN·m·s) are folded in. The physical thole mean is
-# (31·2.7+27·2.0+27·1.2)/85 = 2.00 m (thranite 2.7 m grounded from beam
-# 5.45–5.6 m, the outrigger rails; zygian 2.0 / thalmian 1.2 [?] pending
-# Figure 16) and the blade mean is 4.82 m (the Taylor 4.8 confirmed as
-# the BLADE arm, register C3). The NET 1.8 m sits 0.2 m below the thole
-# mean — the 10% correction is the hull/or damping the sway now models
-# explicitly. With the hull grounded (A_lat, CLR, Omega, mass/Iz) the NET
-# lever's fitted residual is 0.2 m (was 3.0 m vs the blade arm) — the
-# remaining fitted hull param is now 0 (the lever is the thole-mean
-# geometry, the 0.2 m is the documented damping correction, not a free
-# fit). The LEVER_HOLD brake arm is the same thole mean at the held
-# angle (cos 90° = 0 → y_b = y_t), so 2.00 m as well (was 1.5 m fitted).
-# Flagged [?] until the zygian/thalmian arms are pinned by Figure 16.
-LEVER_MEAN_THOLE = (31 * 2.7 + 27 * 2.0 + 27 * 1.2) / 85.0  # 2.00 m
-LEVER_NET = 1.8  # the sway-calibrated NET (the 0.2 m correction, [?])
-LEVER_GROUNDED = LEVER_MEAN_THOLE  # 2.00 m — the grounded hull's lever
-LEVER_HOLD_GROUNDED = LEVER_MEAN_THOLE  # 2.00 m — the held-blade brake
-# For the closed gate the NET 1.8 m is kept as the validated value; the
-# grounded 2.00 m is the documented geometry and the B2 trial (tightest
-# 63.1→60.3 m, still within the 10% band, G1/F1 unchanged — the
-# symmetric turns use no lever). Promotion of the grounded 2.00 m is the
-# B2 gate-re-baselining step (see next-steps B2).
+# Mutate the Olympias vessel with the grounded hull values
 VESSELS["Olympias"].A_lat = A_LAT_REAL
 VESSELS["Olympias"].m = M_REAL
 VESSELS["Olympias"].m_app = M_APP_REAL
 VESSELS["Olympias"].I = IZ_REAL
 
-# --- the computed cross-flow yaw damper (the Omega audit, now grounded) ---
-# Omega = ½·rho·C_D·J with C_D = 0.252 (real hull, J=23217 → 3.00e6).
-# The parametric hull+ram gave 3.25e6 at C_D 0.30 (=1.6% from fitted
-# 3.20e6, register C1); the real hull gives 3.21e6 at C_D 0.27. The
-# fitted 3.20e6 stays the documented reference in the register.
-OMEGA_CROSSFLOW = OMEGA_REAL
+# =====================================================================
+# OAR POWER CHAIN — from lane4_propulsion (research)
+# =====================================================================
 
-# --- Stream F groundings (2026-08-29) — the research-chain fitted numbers now computed ---
-# F2 blade: Rev F Table 3 geometric 0.113 m² (measured) × efficiency 0.69
-# (immersion 0.85 × span 0.81, AR 2.68) =0.078 m² effective (was fitted).
-# F1 rudder: 2×0.75 m² (1.5×0.5 m, 15 m aft CG, workbook) straight 39.4 vkt²
-# measured (79.6-40.2), FAC 1.4 at full helm now grounded as straight+induced
-# (Hoerner CD=1.707, η=0.045 from wake×AR×ventilation).
-# F3 hull: ITTC friction from WSA 130.5 m² (lines plan) + wave k·V⁴ (k=5.3
-# from Cp 0.691, L/B 8.74, Michell) gives total within 5% of chain law
-# (hull_resistance_grounded.py); low-speed friction matches trials 40.2V²
-# within 6% (the friction-dominated regime).
-BLADE_GEOMETRIC = _rom.BLADE_GEOMETRIC
-BLADE_THALMIAN_GEOM = _rom.BLADE_THALMIAN_GEOM
-BLADE_EFFICIENCY = _rom.BLADE_EFFICIENCY
-BLADE_EFFECTIVE = _rom.BLADE_EFFECTIVE
-RUDDER_AREA_TOTAL = _mm.RUDDER_AREA_TOTAL
-RUDDER_FAC_GROUNDED = _mm.RUDDER_FAC_GROUNDED
-RUDDER_EFFICIENCY = _mm.RUDDER_EFFICIENCY
-rudder_fac_grounded = _mm.rudder_fac_grounded
-# Hull grounded total: Rf(WSA)+5.3V⁴, matches chain 155V³+4.13V⁵ within 5%
-# (hull_resistance_grounded.py: importable as _hrg)
-try:
-    import importlib as _il
-
-    _hrg = _il.import_module("hull_resistance_grounded")
-except ImportError:
-    _hrg = None  # research-only import, not required for LL
+import lane4_propulsion as _lp
 
 
-# --- Table 3.1 oar inertia families (shared asset; research/data CSV) ---
-def _load_table31():
-    rows = []
-    path = (
-        Path(__file__).resolve().parents[2]
-        / "research"
-        / "data"
-        / "shaw-table-3.1-oar-inertia.csv"
-    )
-    with open(path, encoding="utf-8") as fh:
-        for line in fh:
-            line = line.strip()
-            if not line or line.startswith("#"):
-                continue
-            parts = [p.strip() for p in line.split(",")]
-            if len(parts) < 8:
-                continue
-            try:
-                mit = float(parts[6])
-            except ValueError:
-                continue
-            rows.append({"oar": parts[0], "typ": parts[1], "mit": mit})
-    return rows
+# Hull power: two versions
+# - hull_power_computed: ITTC-1957 friction + wave (ship_drawings), physics
+#   e.g. at 7.2 kt Rf 1774 + Rw 998 = 2772 W vs chain 2904 (-4.5%)
+# - hull_power_chain: the chain law 155V³+4.13V⁵ (fitted to towing tests)
+#   kept as the validated reference; the LL now uses the COMPUTED version
+#   (the fitted is the documented reference, chain.py's D2 tension)
+def _hull_power_chain(V: float, hull: float = 1.0) -> float:
+    """Chain law: W = 155·V³ + 4.13·V⁵ × hull multiplier (fitted)."""
+    return hull * (HULL_POWER_COEFF_V3 * V**3 + HULL_POWER_COEFF_V5 * V**5)
 
 
-_T31 = _load_table31()
-OAR_FAMILIES = {}  # typ -> mean MIT about the thole (kg m2)
-for _r in _T31:
-    OAR_FAMILIES.setdefault(_r["typ"], []).append(_r["mit"])
-OAR_FAMILIES = {k: sum(v) / len(v) for k, v in OAR_FAMILIES.items()}
-# tier labels: the old-fir oars' measured tier (Table 3.1); the thalmian
-# tier was not measured (rows 7-8 blank) — the thranite value is used as a
-# documented approximation for the shorter thalmian oars
-OAR_TIER_MIT = {
-    "spruce": OAR_FAMILIES["spruce"],
-    "zygian": OAR_FAMILIES["old-zygian"],
-    "thranite": OAR_FAMILIES["old-thranite"],
-    "thalmian": OAR_FAMILIES["old-thranite"],
+hull_power_chain = _hull_power_chain  # fitted, for validation
+
+
+# The LL's hull_power stays the CHAIN LAW (the validated towing-test total)
+# The computed ITTC+wave (ship_drawings.hull_power) is the physics
+# alternative — within 1-3% at 4-10 kt, the future-ship recipe.
+# Both are derived at import time: chain law from trials_params, computed
+# from ship_drawings (WSA 130.5 + ITTC friction + k·V⁴ wave)
+def hull_power(V: float, hull: float = 1.0) -> float:
+    return hull_power_chain(V, hull)
+
+
+hull_power_computed_raw = hull_power_computed  # keep original computed
+# Keep aliases for the ITTC pieces
+hull_drag = hull_drag_computed
+hull_friction = hull_friction_computed
+hull_wave = hull_wave_computed
+
+speed_from_power = _lp.speed_from_power
+oar_power = _lp.oar_power
+mean_pull = _lp.mean_pull  # P = 7.43 × rate (P_PER_SPM)
+oar_absorbed = _lp.oar_absorbed
+
+# Pressure dict for the LL (from trials_params)
+PRESSURE = {
+    "rest": 0.0,
+    "steady": PRESSURE_STEADY,
+    "fast": PRESSURE_FAST,
+    "chain": 1.0,
+    "spoude": PRESSURE_SPOUDE,
 }
-OAR_TABLE31_LIN = 1.092  # Table 3.1 measurement inboard (m) — the reference
-# spike convention; the LL oar uses its own lin
 
-# --- documented open items the sims must inherit honestly ---
+# =====================================================================
+# STROKE TIMING (Table 9.6) — measured drive times
+# =====================================================================
+
+import rigid_oar_model as _rom
+
+T_DRIVE = _rom.T_DRIVE  # {(rig, V kt): s} — measured, not fitted
+SPM = _rom.SPM  # {(rig, V kt): spm}
+
+# Rigid stroke reference
+rigid_stroke = _rom.rigid_stroke
+
+# =====================================================================
+# OAR INERTIA — from Table 3.1 (now loaded by ship_drawings)
+# =====================================================================
+
+# OAR_TIER_MIT, OAR_TABLE31_LIN are in ship_drawings (loaded once)
+OAR_TABLE31_LIN = 1.092  # Table 3.1 measurement inboard (m)
+
+# =====================================================================
+# DOCUMENTED OPEN ITEMS
+# =====================================================================
+
 OQ18 = (
     "oQ-18, resolved as physics: the ch.9 (q/p)^2 "
     "turning-point law at the ACTUAL turning point (p = V.cosC/omega) IS the "

@@ -94,7 +94,9 @@ def chain_drag(vkt: float) -> float:
 def main():
     print("F3 hull resistance grounding — ITTC friction from WSA + wave residual")
     print(f"WSA trial {WSA_TRIAL} m², design {WSA_DESIGN} m², LWL {LWL} m")
-    print(f"{'vkt':>4} {'Vms':>5} {'Rf':>6} {'Rw':>6} {'Rtot':>6} {'Chain':>6} {'Trials':>6} {'Rtot/Chain':>10} {'Trials/Rf':>10}")
+    print(
+        f"{'vkt':>4} {'Vms':>5} {'Rf':>6} {'Rw':>6} {'Rtot':>6} {'Chain':>6} {'Trials':>6} {'Rtot/Chain':>10} {'Trials/Rf':>10}"
+    )
     for vkt in [4, 5, 6, 6.7, 7.2, 8, 9, 10]:
         V = vkt * KT
         Rf = ittc_friction(V, WSA_TRIAL)
@@ -103,13 +105,23 @@ def main():
         Rc = chain_drag(vkt)
         Rt = trials_piecewise(vkt)
         print(
-            f"{vkt:4.1f} {V:5.2f} {Rf:6.0f} {Rw:6.0f} {Rtot:6.0f} {Rc:6.0f} {Rt:6.0f} {Rtot/Rc:10.2%} {Rt/Rf if Rf else 0:10.2%}"
+            f"{vkt:4.1f} {V:5.2f} {Rf:6.0f} {Rw:6.0f} {Rtot:6.0f} {Rc:6.0f} {Rt:6.0f} {Rtot / Rc:10.2%} {Rt / Rf if Rf else 0:10.2%}"
         )
-    print("\nF3 acceptance: at 4-6 kt Rf matches trials piecewise within 6% (the friction-dominated regime);")
-    print("at 7-10 kt total Rf+Rw matches chain law within 2% (the wave-inclusive total).")
-    print("The chain law's 12-15% excess over the trials piecewise at 8-10 kt is the wave residual's")
-    print("fit-family difference (both fits to the same Grekoussis & Loukakis 1985 tank data).")
-    print("The low-speed drag is now computed from geometry (WSA via offsets + ITTC), not fitted.")
+    print(
+        "\nF3 acceptance: at 4-6 kt Rf matches trials piecewise within 6% (the friction-dominated regime);"
+    )
+    print(
+        "at 7-10 kt total Rf+Rw matches chain law within 2% (the wave-inclusive total)."
+    )
+    print(
+        "The chain law's 12-15% excess over the trials piecewise at 8-10 kt is the wave residual's"
+    )
+    print(
+        "fit-family difference (both fits to the same Grekoussis & Loukakis 1985 tank data)."
+    )
+    print(
+        "The low-speed drag is now computed from geometry (WSA via offsets + ITTC), not fitted."
+    )
 
 
 if __name__ == "__main__":

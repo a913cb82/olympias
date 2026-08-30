@@ -26,41 +26,54 @@ from dataclasses import dataclass
 from typing import Any
 
 import numpy as np
-from common.chain import CN, OAR_TIER_MIT, RHO, RIGS
+from common.chain import (  # ship_drawings + trials_params via chain
+    CN,
+    HOLD_FRAC,
+    OAR_TIER_MIT,
+    PRESSURE,
+    RHO,
+    RIGS,
+)
+from common.trials_params import (
+    B_FLOOR_FRAC as _B_FLOOR_FRAC,
+)
+from common.trials_params import (
+    FH_BURST as _FH_BURST,
+)
+from common.trials_params import (
+    FH_MAX as _FH_MAX,
+)
+from common.trials_params import (
+    T_REC_MIN as _T_REC_MIN,
+)
+from common.trials_params import (
+    TAU_WPRIME as _TAU,
+)
+from common.trials_params import (
+    WPRIME as _W_MAX,
+)
 
 from ll.oar import Oar
 from ll.stations import blade_pos
 from ll.stations import short_rig as stations_short_rig
 
 # --- anchors (the LL gates (docs/VALIDATION.md); provisional except P_CRIT) ---
-Fh_MAX = 700.0  # N peak handle force per rower
-Fh_BURST = 330.0  # N max mean handle force (chain sprint pull at 44.5 spm;
-# the W'-limited burst level, any rate)
-P_CRIT = 80.0  # W/man external sustainable power (R&W ch.23, primary)
-W_MAX = 6_000.0  # J/man anaerobic capacity — re-anchored to the ch.9 four-
-# run sprint with the FORCE MODE's excess (the same trial:
-# 8.2-8.4 kt sustained ~45 s at 44.5 spm; the chain's
-# excess 116.6 W/man x 45 s ~= 5.2 kJ counted no oar
-# inertia — the force mode's drive includes the flip's
-# 16.8 W/man, so its excess is 133.4 W/man x 45 s ~=
-# 6.0 kJ; the 3/4-NM 6.5-min run implies up to ~9.5 kJ —
-# the register D6 tension unchanged)
-TAU = 120.0  # s W' refill time constant
-T_REC_MIN = 0.5  # s recovery floor (body mechanics)
-B_FLOOR_FRAC = 0.4  # usable-stroke floor as a fraction of the sweep
-HOLD_FRAC = 0.08  # hold-water brake fraction — the one-parameter
-# scan vs the SAME two anchors (the tightest-turn
-# D = 62 m and the trial's 'halves speed' ~3.25 kt):
-# 0.08 lands D = 62.7 m (-0.5 % vs +9.2 % at 0.05)
+# All fitted values now from trials_params.py via chain (single source)
+Fh_MAX = _FH_MAX  # from trials_params (700 N, ch.9 sprint)
+Fh_BURST = _FH_BURST  # from trials_params (330 N, chain sprint)
+P_CRIT = 80.0  # W/man external sustainable power (R&W ch.23, literature)
+W_MAX = _W_MAX  # from trials_params (6000 J, ch.9 45 s sprint)
+TAU = _TAU  # from trials_params (120 s, Monod family)
+T_REC_MIN = _T_REC_MIN  # from trials_params (0.5 s, body mechanics)
+B_FLOOR_FRAC = _B_FLOOR_FRAC  # from trials_params (0.4)
+# HOLD_FRAC and PRESSURE now from chain (ship_drawings/trials_params)
+# HOLD_FRAC 0.08 lands D=62.7 m (-0.5% vs 62 m anchor)
 # and the drained floor 3.22 kt (the trial's
 # halving, vs 3.54 at 0.05). f = 0.08 ~= held
 # blades at ~19-20 deg to the flow.
 
-# pressure levels: anchors relative to the validated chain (spoude = 1.0);
-# steady = sustainable envelope (<= P_crit), spoude = W'-limited burst;
-# "chain" = the reference level itself (the demand = 7.43·r exactly — the
-# force-driven layer's apples-to-apples comparison with the chain law)
-PRESSURE = {"rest": 0.0, "steady": 0.7, "fast": 0.85, "chain": 1.0, "spoude": 1.0}
+# PRESSURE now from common.chain (trials_params PRESSURE_STEADY etc.)
+# steady 0.7 / fast 0.85 / spoude 1.0 — see trials_params.py
 
 
 def oar_absorbed(r: float) -> float:
