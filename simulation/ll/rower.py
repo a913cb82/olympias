@@ -39,7 +39,10 @@ from common.chain import (  # ship_drawings + trials_params via chain
     PRESSURE,
     RHO,
     RIGS,
-    T_RISE,
+    T_RISE_BASE,
+)
+from common.chain import (
+    t_rise as t_rise_for_pressure,
 )
 from common.trials_params import (
     B_FLOOR_FRAC as _B_FLOOR_FRAC,
@@ -120,7 +123,7 @@ class TierCrew:
         state: str = "row",
         direction: int = 1,
         mit: float = 0.0,
-        t_rise: float = T_RISE,
+        t_rise: float = T_RISE_BASE,
         hold_frac: float = HOLD_FRAC,
         power_factor: float = 1.0,
         stations: list[Any] | None = None,
@@ -163,7 +166,9 @@ class TierCrew:
         self.pressure = pressure
         self.state = state
         self.mit = mit
-        self.t_rise = t_rise
+        # t_rise now pressure-dependent: T_RISE_BASE / pressure (rower flips
+        # at their rowing effort — sprint flips faster than cruise)
+        self.t_rise = t_rise_for_pressure(PRESSURE.get(pressure, 0.70))
         self.force = force  # Plan 1: the force-driven oar (ll/oar.py)
         self.hold_frac = hold_frac
         self.hold_k = hold_frac * self.k
@@ -734,6 +739,10 @@ class TierCrew:
 
     def set_pressure(self, level: str) -> None:
         self.pressure = level
+        # t_rise scales with pressure: sprint flips faster than cruise
+        self.t_rise = t_rise_for_pressure(PRESSURE.get(level, 0.70))
+        for o in self.oars:
+            o.t_rise = self.t_rise
         if level == "rest":
             self.plan = None
 
@@ -795,7 +804,7 @@ class SideCrew:
         state: str = "row",
         direction: int = 1,
         fleet: str = "spruce",
-        t_rise: float = T_RISE,
+        t_rise: float = T_RISE_BASE,
         hold_frac: float = HOLD_FRAC,
         stations: dict[str, list[Any]] | None = None,
         side: int = 1,

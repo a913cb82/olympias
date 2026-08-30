@@ -117,9 +117,11 @@ from common.trials_params import (  # noqa: F401 — re-exported
     T_DRIVE_8_2,
     T_REC_MIN,
     T_RISE,
+    T_RISE_BASE,
     TAU_WPRIME,
     TEMPO_CALLDOWN_SPM,
     WPRIME,
+    t_rise,
 )
 
 # =====================================================================

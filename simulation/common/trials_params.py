@@ -107,19 +107,19 @@ P_CRIT = 80.0  # W/man external sustainable power
 # speed (pinned at the catch, the spike force over t_rise).
 #
 # COMPUTED FROM PHYSICS (not fitted):
-#   T_RISE = MIT × (omega_drive + omega_recover) / (FH_BURST × lin)
+#   T_RISE = MIT × (omega_drive + omega_recover) / (F_flip × lin)
 #
-# At the design point (cruise, 28.8 spm, 7.2 kt):
+# At the design point (cruise, 28.8 spm, 7.2 kt, steady pressure 0.70):
 #   MIT = 9.74 kg·m² (spruce, Table 3.1)
 #   omega_drive = sweep/t_drive = 0.840/0.430 = 1.952 rad/s
 #   omega_recover = sweep/t_recovery = 0.840/1.653 = 0.508 rad/s
-#   FH_BURST = 330 N (max mean sprint force)
-#   lin = 0.957 m (Olympias inboard)
-#   T_RISE = 9.74 × 2.460 / (330 × 0.957) = 0.076 s
+#   F_flip = pressure × FH_BURST (rower flips at their rowing effort)
+#   At sprint (pressure=1.0): F_flip=330 N, T_RISE=0.076 s
+#   At steady (pressure=0.70): F_flip=231 N, T_RISE=0.109 s
+#   At fast (pressure=0.85): F_flip=281 N, T_RISE=0.089 s
 #
-# The flip force at this T_RISE equals FH_BURST (330 N) — the rower
-# applies their full burst capacity during the flip. The previous
-# estimate (0.15 s) had the rower flipping at only 167 N (half capacity).
+# The flip force at T_RISE_BASE (0.076 s, sprint) equals FH_BURST.
+# At cruise, the rower flips at 70% capacity (longer T_RISE).
 import math as _math
 
 from common.ship_drawings import (
@@ -136,9 +136,23 @@ _cycle_cruise = 60.0 / 28.8  # s at 28.8 spm
 _t_rec_cruise = _cycle_cruise - _t_drive_cruise
 _omega_drive = _sweep_rad / _t_drive_cruise
 _omega_recover = _sweep_rad / _t_rec_cruise
-T_RISE = (
+T_RISE_BASE = (
     _MIT["spruce"] * (_omega_drive + _omega_recover) / (330.0 * _rig["lin"])
-)  # 0.076 s
+)  # 0.076 s at sprint (pressure=1.0)
+
+
+def t_rise(pressure: float) -> float:
+    """Catch-flip duration for the current pressure level.
+
+    The flip force scales with the rowing effort: F_flip = pressure × FH_BURST.
+    At sprint (1.0): T_RISE=0.076 s; at steady (0.70): 0.109 s; at fast (0.85): 0.089 s.
+    """
+    p = max(0.1, pressure)  # avoid division by zero for 'rest' (0.0)
+    return T_RISE_BASE / p
+
+
+# Default: the steady value (the most common rowing pressure)
+T_RISE = t_rise(0.70)  # 0.109 s at steady cruise
 
 # =====================================================================
 # CREW COORDINATION — estimated
