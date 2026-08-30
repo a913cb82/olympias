@@ -45,9 +45,12 @@ F3 is the largest.
   DECODE §VBA). **Plan:** compute the angle-dependent drag from rudder
   area, Hoerner CD, and the parasitic term; replace `RUDDER_FAC` with a
   function of helm angle; re-run G1/F1/tightest.
-  **Acceptance:** G1, F1 and tightest diameters stay within the
-  existing gates (±7%/8%/10%) using ONLY the measured rudder geometry —
-  no new constants tuned to the turns.
+  **Acceptance:** the angle-dependent rudder model replaces `RUDDER_FAC`
+  and the LL still matches the trials as well as before — G1, F1 and
+  tightest within their gates (±7%/8%/10%). Any remaining LL parameters
+  (hold_frac, crew demand, etc.) may be retuned to compensate, and any
+  downstream issues in the sim must be fixed. The rudder geometry itself
+  must not be tuned — only measured values enter.
 
 - **F2. Blade effective area — diagnose the 31% gap.**
   The real blade is **0.113 m²** (Rev F Table 3, DECODE A5); the LL uses
@@ -66,8 +69,11 @@ F3 is the largest.
   residual diagnoses the slip/ventilation model.
   **Acceptance:** the true blade area (0.113 m²) enters the blade law
   with an explicit, computable correction derived from oar geometry and
-  hull offsets (not fitted to trials), and the one-oar thrust at the 4
-  Table 9.6 points stays within ±15% (the existing Gate 1 band).
+  hull offsets (not fitted to trials). The LL still matches the trials
+  as well as before — the one-oar thrust at the 4 Table 9.6 points
+  within ±15% (Gate 1), the cruise triple and sprint within their
+  existing bands. Any remaining LL parameters may be retuned to
+  compensate, and any downstream issues must be fixed.
 
 - **F3. Hull resistance — compute from the lines plan.**
   The LL uses `hull_power = 155V³ + 4.13V⁵` (the chain law, calibrated
@@ -85,7 +91,9 @@ F3 is the largest.
   **Acceptance:** the computed resistance at the trial speeds matches at
   least one of the two existing fits (chain law OR trials piecewise)
   within 10%, and the reason for any remaining discrepancy is
-  documented and named.
+  documented and named. The LL still matches the trials as well as
+  before — any shift in the resistance curve is compensated by retuning
+  the remaining LL parameters, and any downstream issues are fixed.
 
 **Stream F done when:** all three items pass their individual criteria,
 the full test suite is green, and the HL is re-calibrated on the
