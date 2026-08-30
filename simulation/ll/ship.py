@@ -24,13 +24,18 @@ import math
 
 from common.chain import (
     CLR_OFFSET_REAL,
+    FULL_RUDDER_DEG,
     KT,
     LEVER_GROUNDED,
     LEVER_HOLD_GROUNDED,
+    N_THALMIAN,
+    N_THRANITE,
+    N_ZYGIAN,
     OMEGA_CROSSFLOW,
     RHO,
     RIGS,
     RUDDER_FAC_FULL,
+    TEMPO_CALLDOWN_SPM,
     VESSELS,
     hull_power,
     rudder_fac,
@@ -41,20 +46,13 @@ from ll.oar import simulate
 from ll.rower import HOLD_FRAC as HOLD_FRAC_DEFAULT
 from ll.rower import PRESSURE, SideCrew
 
-FULL_RUDDER_DEG = 67.5  # "full rudder" in the trials
 # Rudder now from ship_drawings (computed at import):
 # 2×0.75 m² (1.5×0.5 m, 15 m aft CG), η=0.045, FAC 1.4 at full helm
 RUDDER_FAC = RUDDER_FAC_FULL
 RUDDER_FAC_GROUNDED = RUDDER_FAC_FULL
 rudder_fac_grounded = rudder_fac  # from ship_drawings
 
-
-LEVER_HOLD = LEVER_HOLD_GROUNDED  # 2.00 m — the grounded thole mean (was 1.5 fitted; y_b = y_t at hold, cos 90°=0)
-# (mean athwartships oar-station arm; the fitted
-# 4.8 m thrust lever folds in drift/lateral
-# dynamics and must NOT apply to the brake —
-# register C3 refinement)
-TEMPO_CALLDOWN_SPM = 2.0  # sustained per-side rate gap that triggers a call-down
+LEVER_HOLD = LEVER_HOLD_GROUNDED  # 2.00 m — the grounded thole mean
 
 
 class Ship:
@@ -111,11 +109,23 @@ class Ship:
         self.rate = rate
         self.fleet = fleet
         td, _ = t_drive_for(rig_name, rate)
-        self.mit = (
-            {"spruce": 9.7, "old-fir": 14.7, None: 0.0}[fleet]
-            if fleet in ("spruce", "old-fir", None)
-            else 9.7
-        )
+        # Fleet MIT: from OAR_TIER_MIT (ship_drawings, Table 3.1)
+        # 'spruce' = all tiers use spruce MIT (9.74);
+        # 'old-fir' = tier-weighted average (14.7 = (31×13.1+27×18.0+27×13.1)/85);
+        # None = massless oars (pre-Gate-5)
+        from common.chain import OAR_TIER_MIT
+
+        if fleet == "spruce":
+            self.mit = OAR_TIER_MIT["spruce"]
+        elif fleet == "old-fir":
+            # tier-weighted average for the fleet-level reference
+            self.mit = (
+                N_THRANITE * OAR_TIER_MIT["thranite"]
+                + N_ZYGIAN * OAR_TIER_MIT["zygian"]
+                + N_THALMIAN * OAR_TIER_MIT["thalmian"]
+            ) / (N_THRANITE + N_ZYGIAN + N_THALMIAN)
+        else:
+            self.mit = 0.0
         # the per-station layer (ll/stations.py — the Rev F A1 item):
         # 170 oars at their stations, the yaw moment from the per-oar
         # sums with the local (u, v, r) flow; swappable, the aggregated

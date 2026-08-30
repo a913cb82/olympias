@@ -55,7 +55,12 @@ from __future__ import annotations
 
 import math
 
-from common.chain import CN, RHO
+from common.chain import (
+    BLADE_CP_FROM_TIP,
+    CN,
+    RHO,
+    SHAW_D_MAX,
+)
 
 # The (q/p)^2 turning-point law's interpretation switch (the OQ18 note (common/chain.py), task I):
 #   "actual"   — the kinematic turning point (p = V·nx/omega): IDENTICAL to
@@ -86,7 +91,7 @@ def _d_turning_point(C: float, B: float) -> float:
     stroke symmetric about athwartships (C_shaw - A = B/2 - C):
     d = 0.953·cos(120·C/B) — 0.476 m at catch/finish, 0.953 m at mid.
     C, B in radians (the 120·C/B ratio is angle-unit-free)."""
-    return 0.953 * math.cos(120.0 * C / B)
+    return SHAW_D_MAX * math.cos(120.0 * C / B)
 
 
 def blade_consts(rig: dict) -> tuple:
@@ -97,7 +102,7 @@ def blade_consts(rig: dict) -> tuple:
     lin = rig["lin"]
     return (
         lin,
-        rig["lout"] - (rig["blade"] - 0.260),  # blade CP from thole
+        rig["lout"] - (rig["blade"] - BLADE_CP_FROM_TIP),  # blade CP from thole
         0.5 * RHO * rig["area"] * CN,
         math.cos(math.radians(rig.get("cant", 0.0))),
         rig.get("slip", 1.0),

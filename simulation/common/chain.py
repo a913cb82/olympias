@@ -27,6 +27,11 @@ for _sub in ("lane-4-oars", "lane-5-manoeuvre"):
 from common.ship_drawings import (  # noqa: F401 — re-exported
     A_LAT_DESIGN,
     A_LAT_TRIAL,
+    ARM_LAT_MARKIIB,
+    ARM_LAT_OLYMPIAS,
+    ARM_RUD_MARKIIB,
+    ARM_RUD_OLYMPIAS,
+    BLADE_CP_FROM_TIP,
     BLADE_EFFECTIVE,
     BLADE_EFFICIENCY,
     BLADE_GEOMETRIC_OLYMPIAS,
@@ -41,6 +46,9 @@ from common.ship_drawings import (  # noqa: F401 — re-exported
     CN,
     CP,
     CW,
+    FULL_RUDDER_DEG,
+    GM_MARKIIB,
+    GM_OLYMPIAS,
     IZ_DESIGN,
     IZ_TRIAL,
     J_DESIGN,
@@ -48,16 +56,22 @@ from common.ship_drawings import (  # noqa: F401 — re-exported
     KT,
     LEVER_MEAN_THOLE,
     LWL,
+    M_APP_FACTOR,
     MASS_APP_DESIGN,
     MASS_APP_TRIAL,
     MASS_DESIGN,
     MASS_TRIAL,
+    N_THALMIAN,
+    N_THRANITE,
+    N_TOTAL,
+    N_ZYGIAN,
     NU,
     OAR_FAMILIES,
     OAR_TIER_MIT,
     OMEGA_TRIAL,
     RHO,
     RIGS,
+    SHAW_D_MAX,
     RUDDER_AREA_EACH,
     RUDDER_AREA_TOTAL,
     RUDDER_DIST_AFT_CG,
@@ -70,29 +84,23 @@ from common.ship_drawings import (  # noqa: F401 — re-exported
     X_CLR_TRIAL,
     ZWL_DESIGN,
     ZWL_TRIAL,
+    hull_drag as hull_drag_computed,
+    hull_friction as hull_friction_computed,
+    hull_power as hull_power_computed,
+    hull_wave as hull_wave_computed,
     rudder_cd,
     rudder_fac,
 )
-from common.ship_drawings import (
-    hull_drag as hull_drag_computed,
-)
-from common.ship_drawings import (
-    hull_friction as hull_friction_computed,
-)
-from common.ship_drawings import (
-    hull_power as hull_power_computed,
-)
-from common.ship_drawings import (
-    hull_wave as hull_wave_computed,
-)
 from common.trials_params import (  # noqa: F401 — re-exported
     B_FLOOR_FRAC,
+    CALIBRATED_T_DRIVE_44_5,
     FH_BURST,
     FH_MAX,
     HOLD_FRAC,
     HULL_MULT_MARKIIB,
     HULL_POWER_COEFF_V3,
     HULL_POWER_COEFF_V5,
+    P_CRIT,
     P_PER_SPM,
     PRESSURE_FAST,
     PRESSURE_SPOUDE,
@@ -100,7 +108,9 @@ from common.trials_params import (  # noqa: F401 — re-exported
     T_DRIVE_7_2,
     T_DRIVE_8_2,
     T_REC_MIN,
+    T_RISE,
     TAU_WPRIME,
+    TEMPO_CALLDOWN_SPM,
     WPRIME,
 )
 

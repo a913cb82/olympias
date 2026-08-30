@@ -85,6 +85,40 @@ B_FLOOR_FRAC = 0.4
 HOLD_FRAC = 0.08  # brake fraction (~19-20° blade angle to flow)
 
 # =====================================================================
+# CALIBRATED DRIVE TIME — beyond Table 9.6 (register A8)
+# =====================================================================
+
+# t_drive(44.5 spm) = 0.371 s: calibrated so the LL reproduces the ch.9
+# four-run sprint (8.2-8.3 kt at 44.5 spm, ~130 effective rowers).
+# The Gate-2 bracket analysis pointed to this value, now pinned
+# (calibrate_tdrive.py).
+CALIBRATED_T_DRIVE_44_5 = 0.371  # s, at 44.5 spm sprint
+
+# =====================================================================
+# ROWER PHYSIOLOGY — literature values (not fitted to Olympias)
+# =====================================================================
+
+# Critical power: the sustainable aerobic ceiling (Rossiter & Whipp,
+# Rankov ch.23). Not fitted to Olympias — a general exercise-physiology
+# constant. Self-consistent with ch.7: 7 kt ≈ 79.5 W handle.
+P_CRIT = 80.0  # W/man external sustainable power
+
+# Catch-flip duration: the time to reverse the oar from recovery to drive
+# speed (pinned at the catch, the spike force over t_rise). Estimated
+# from the oar's rotational inertia and a plausible peak handle force;
+# not directly measured for the Olympias.
+T_RISE = 0.15  # s
+
+# =====================================================================
+# CREW COORDINATION — estimated
+# =====================================================================
+
+# Tempo call-down: the sustained per-side rate gap (spm) that triggers
+# the keleustes to call down both sides to the weaker rate. Estimated
+# from the crew's ability to maintain asymmetry; not directly measured.
+TEMPO_CALLDOWN_SPM = 2.0  # spm
+
+# =====================================================================
 # CHAIN LAW SLOPE — the reference rowing power
 # =====================================================================
 

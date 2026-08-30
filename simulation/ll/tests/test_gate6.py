@@ -88,10 +88,16 @@ def test_tier_structure():
     assert (
         abs(s2.crew["port"].tier_telemetry()["thalmian"]["power_factor"] - 0.6) < 1e-9
     )
-    # the aggregate MIT reference (tier-weighted) is preserved
-    assert abs(s.mit - 9.7) < 0.01  # spruce fleet
+    # the aggregate MIT reference (tier-weighted) is from OAR_TIER_MIT (Table 3.1)
+    from common.chain import OAR_TIER_MIT, N_THRANITE, N_ZYGIAN, N_THALMIAN
+    assert abs(s.mit - OAR_TIER_MIT["spruce"]) < 0.01  # spruce fleet
     old_fir = Ship(rate=28.8, fleet="old-fir")
-    assert abs(old_fir.mit - 14.7) < 0.1  # (31*13.1 + 27*18.0 + 27*13.1)/85
+    expected_old_fir = (
+        N_THRANITE * OAR_TIER_MIT["thranite"]
+        + N_ZYGIAN * OAR_TIER_MIT["zygian"]
+        + N_THALMIAN * OAR_TIER_MIT["thalmian"]
+    ) / (N_THRANITE + N_ZYGIAN + N_THALMIAN)
+    assert abs(old_fir.mit - expected_old_fir) < 0.1  # old-fir tier-weighted
 
 
 def test_feather_clamp_telemetry():

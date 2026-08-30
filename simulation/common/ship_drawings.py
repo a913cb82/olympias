@@ -104,6 +104,36 @@ RAKE_MIN = 4.0  # degrees, minimum rake
 RAKE_MAX = 9.0  # degrees, maximum rake
 RAKE_MEAN = 6.5  # degrees, average rake
 
+# Blade centre of pressure from tip (Rev F, measured)
+BLADE_CP_FROM_TIP = 0.260  # m
+
+# Full rudder angle (the trial's definition of "full rudder")
+FULL_RUDDER_DEG = 67.5  # degrees
+
+# Apparent-mass factor (Taylor ch.31 §2.1): m_app = factor × displacement
+# Potential-flow theory gives 1.0 for a slender body; 1.10 is the
+# measured/calibrated value for this hull form (the hull drags along
+# ~10% extra water mass). From Taylor Table 31.1: m_app/m = 1.10.
+M_APP_FACTOR = 1.10
+
+# Vertical lever arms from centre of gravity (Taylor Table 31.1 rows 13-14)
+ARM_LAT_OLYMPIAS = 1.46  # m, hull lateral resistance centre below CG
+ARM_RUD_OLYMPIAS = 1.16  # m, rudder centre below CG
+ARM_LAT_MARKIIB = 1.42  # m
+ARM_RUD_MARKIIB = 1.12  # m
+
+# Metacentric height (Taylor Table 31.1 row 15)
+GM_OLYMPIAS = 0.97  # m
+GM_MARKIIB = 0.9  # m
+
+# Shaw blade-force formula constants (Shaw 2012 ch.9, appendix d)
+# The turning-point formula: d = SHAW_D_MAX × cos(120 × C / B)
+# where d is the tip-to-turning-point distance in plan (m).
+SHAW_D_MAX = 0.953  # m, max distance (at mid-drive)
+SHAW_D_MIN = 0.476  # m, min distance (at catch/finish, = SHAW_D_MAX/2)
+SHAW_ANGLE_SCALE = 120.0  # degrees, the angular scaling factor
+SHAW_ANGLE_OFFSET = 30.0  # degrees, the phase offset
+
 
 # =====================================================================
 # HULL PROPERTIES — computed from offsets at import time

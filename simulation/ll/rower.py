@@ -27,29 +27,26 @@ from typing import Any
 
 import numpy as np
 from common.chain import (  # ship_drawings + trials_params via chain
+    BLADE_CP_FROM_TIP,
     CN,
     HOLD_FRAC,
+    N_THALMIAN,
+    N_THRANITE,
+    N_ZYGIAN,
     OAR_TIER_MIT,
+    P_CRIT,
+    P_PER_SPM,
     PRESSURE,
     RHO,
     RIGS,
+    T_RISE,
 )
 from common.trials_params import (
     B_FLOOR_FRAC as _B_FLOOR_FRAC,
-)
-from common.trials_params import (
     FH_BURST as _FH_BURST,
-)
-from common.trials_params import (
     FH_MAX as _FH_MAX,
-)
-from common.trials_params import (
     T_REC_MIN as _T_REC_MIN,
-)
-from common.trials_params import (
     TAU_WPRIME as _TAU,
-)
-from common.trials_params import (
     WPRIME as _W_MAX,
 )
 
@@ -61,7 +58,7 @@ from ll.stations import short_rig as stations_short_rig
 # All fitted values now from trials_params.py via chain (single source)
 Fh_MAX = _FH_MAX  # from trials_params (700 N, ch.9 sprint)
 Fh_BURST = _FH_BURST  # from trials_params (330 N, chain sprint)
-P_CRIT = 80.0  # W/man external sustainable power (R&W ch.23, literature)
+# P_CRIT now from chain (trials_params: 80 W/man, R&W ch.23 literature)
 W_MAX = _W_MAX  # from trials_params (6000 J, ch.9 45 s sprint)
 TAU = _TAU  # from trials_params (120 s, Monod family)
 T_REC_MIN = _T_REC_MIN  # from trials_params (0.5 s, body mechanics)
@@ -113,7 +110,7 @@ class TierCrew:
         state: str = "row",
         direction: int = 1,
         mit: float = 0.0,
-        t_rise: float = 0.15,
+        t_rise: float = T_RISE,
         hold_frac: float = HOLD_FRAC,
         power_factor: float = 1.0,
         stations: list[Any] | None = None,
@@ -137,7 +134,7 @@ class TierCrew:
         # effective pull scales the POWER,
         # not the kinematics
         self.lin = rig["lin"]
-        self.l_cp = rig["lout"] - (rig["blade"] - 0.260)
+        self.l_cp = rig["lout"] - (rig["blade"] - BLADE_CP_FROM_TIP)
         # k of the (q/p)^2 turning-point blade law (ll/blade.py): the closed
         # forms below are that law at the ACTUAL turning point — the
         # flat-plate identity (blade.TURNING_POINT == "actual", the default)
@@ -243,7 +240,7 @@ class TierCrew:
         cos_c = math.sin(a) / a
         if self.pressure == "spoude":
             return Fh_BURST * cos_c
-        return 7.43 * self.rate_cmd * PRESSURE[self.pressure] * cos_c
+        return P_PER_SPM * self.rate_cmd * PRESSURE[self.pressure] * cos_c
 
     def _fh_moments(
         self, V: float, omega: float, sweep: float, backing: bool = False
@@ -753,7 +750,8 @@ class TierCrew:
 
 
 # --- per-tier crew structure ---
-TIER_SPLIT = {"thranite": 31, "zygian": 27, "thalmian": 27}  # per side
+# Tier crew counts: from ship_drawings (N_THRANITE, N_ZYGIAN, N_THALMIAN)
+TIER_SPLIT = {"thranite": N_THRANITE, "zygian": N_ZYGIAN, "thalmian": N_THALMIAN}
 
 
 def thalmian_power_factor(rate: float) -> float:
@@ -787,7 +785,7 @@ class SideCrew:
         state: str = "row",
         direction: int = 1,
         fleet: str = "spruce",
-        t_rise: float = 0.15,
+        t_rise: float = T_RISE,
         hold_frac: float = HOLD_FRAC,
         stations: dict[str, list[Any]] | None = None,
         side: int = 1,

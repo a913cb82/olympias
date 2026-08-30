@@ -41,6 +41,7 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass
 
+from common.chain import CN, RHO
 from ll.blade import blade_consts, blade_force
 
 
@@ -67,7 +68,7 @@ class Oar:
         t_drive: float | None = None,
         direction: int = 1,
         mit: float = 0.0,
-        t_rise: float = 0.15,
+        t_rise: float = 0.15,  # default; callers pass T_RISE from trials_params
         sweep_factor: float = 1.0,
         station: tuple | None = None,
         force: bool = False,
@@ -99,7 +100,8 @@ class Oar:
         self.mit = mit
         self.t_rise = t_rise
         self.force = force
-        self._l_cp = rig["lout"] - (rig["blade"] - 0.260)  # blade CP
+        from common.chain import BLADE_CP_FROM_TIP
+        self._l_cp = rig["lout"] - (rig["blade"] - BLADE_CP_FROM_TIP)  # blade CP
         # the precomputed blade-law constants (blade_consts) — the
         # per-step hot path skips the per-call derivations
         self._bc = blade_consts(rig)
@@ -243,7 +245,7 @@ class Oar:
                 vn_eq = -self.dir * math.sqrt(
                     self.fh_demand
                     * self.rig["lin"]
-                    / (0.5 * 1025.0 * self.rig["area"] * 1.8 * self._l_cp)
+                    / (0.5 * RHO * self.rig["area"] * CN * self._l_cp)
                 )
                 self.omega_now = (
                     vn_eq - f["vn"] + self._l_cp * self.omega_now

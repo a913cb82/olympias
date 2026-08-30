@@ -24,26 +24,24 @@ from __future__ import annotations
 
 import itertools
 
-from common.chain import M_REAL, RIGS, SPM, T_DRIVE, hull_power
+from common.chain import (
+    CALIBRATED_T_DRIVE_44_5,
+    M_APP_FACTOR,
+    M_REAL,
+    N_TOTAL,
+    RIGS,
+    SPM,
+    T_DRIVE,
+    hull_power,
+)
 
 from ll.oar import Oar, simulate
 
-M_TRIAL = M_REAL  # kg — trial displacement, now grounded: 40.95 t
-# at trial WL 1.10 m (real hull, 44.44 m³ design
-# WL 45.55 t, Vol 39.95 m³ trial; the parametric
-# 41.35 t is the documented reference).
-M_APP_FACTOR = 1.10  # apparent-mass factor (2) — the 1.10× potential-
-# flow value; the real hull's added mass is kept
-# at 1.10× for B3 (full J-based added mass is a
-# separate refinement).
-N_OARS = 170  # Olympias oar count
+M_TRIAL = M_REAL  # kg — trial displacement, now grounded from ship_drawings
+N_OARS = N_TOTAL  # Olympias oar count, from ship_drawings
 
-
-# Calibrated entries beyond Table 9.6 (register A8):
-# t_drive(44.5) = 0.371 s chosen so the LL reproduces the ch.9 four-run
-# sprint (8.2-8.3 kt at 44.5 spm, ~130 effective rowers) — the value the
-# Gate-2 bracket analysis already pointed to, now pinned (calibrate_tdrive.py).
-CALIBRATED_T_DRIVE = {("Olympias", 44.5): 0.371}
+# Calibrated entries beyond Table 9.6 (register A8)
+CALIBRATED_T_DRIVE = {("Olympias", 44.5): CALIBRATED_T_DRIVE_44_5}
 
 
 def t_drive_for(rig_name: str, spm: float) -> tuple[float, str]:
