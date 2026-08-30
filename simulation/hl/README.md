@@ -74,7 +74,8 @@ The calibration file is committed to the repo (deterministic — same LL
 
 **What the HL doesn't model (honest loose spots):**
 - Stroke-by-stroke force variation (the ripple in the LL's speed)
-- Per-side W' tanks (the HL uses one shared tank; the LL has two)
+- Per-side W' tanks (both sims have per-side tanks, but the HL's
+  drain/refill rates are pre-measured averages)
 - Sway dynamics in turns (the LL models lateral velocity; the HL
   folds it into the calibrated diameter)
 - The catch-flip inertia spike (a per-stroke transient the LL captures)
@@ -158,4 +159,4 @@ cd simulation
 
 The HL's main validation is through the harness (`harness/`), which
 runs the same script on both sims and checks agreement. See
-`harness/README.md` for details.
+`../README.md` (the simulation overview) for the pair contract details.

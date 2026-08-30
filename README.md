@@ -42,7 +42,7 @@ to a research document, which traces back to a published source.
 
 ```
 research/                     the validated evidence base
-  lane-1-read … lane-6        one topic per lane (oars, hull, waves, manoeuvre…)
+  lane-1-read … lane-6-validation       one topic per lane (oars, hull, waves, manoeuvre…)
   data/                       decoded source tables (CSV, # comments allowed)
   sources/                    source PDFs + build logs
 

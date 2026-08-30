@@ -3,7 +3,7 @@
 This directory contains two computer simulators of the Olympias trireme.
 They share one command language — the same script runs on both.
 
-The ground truth they must satisfy: `../research/AGENTS.md` (the evidence
+The ground truth they must satisfy: `../research/README.md` (the evidence
 base). The acceptance record — every gate, every result, every honest
 mismatch — lives in [`docs/VALIDATION.md`](docs/VALIDATION.md).
 

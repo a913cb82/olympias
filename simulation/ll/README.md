@@ -56,7 +56,7 @@ slide sideways (sway), and rotate (yaw). The equations of motion are:
   (where V is speed in knots). This law was measured in tank tests and
   confirmed at sea. The hull also has "added mass" — it drags along some
   of the surrounding water, so the effective mass is 1.10× the actual
-  ship mass (41.0 tonnes).
+  ship mass (40.95 tonnes).
 
 - **Sway**: the oars' sideways forces and the rudder push the hull
   laterally. The water resists sideways motion through the hull's lateral
@@ -102,9 +102,9 @@ components:
 | Rudder area | 2 × 0.75 m² | Measured from the Olympias drawings |
 | Rudder η | 0.045 | Lift-to-drag ratio at 67.5° (Hoerner + wake + AR) |
 | Thole mean | 2.00 m | (31×2.7 + 27×2.0 + 27×1.2) / 85 from drawings |
-| Oar inboard | 1.092 m | Measured from the Olympias rig |
-| Oar outboard | 2.738 m | Measured from the Olympias rig |
-| Sweep angles | 48.1° / 48.4° / 55.6° | Per-tier from the rig geometry |
+| Oar inboard | 0.957 m | Thole to handle, in plan (Olympias rig) |
+| Oar outboard | 2.696 m | Thole to tip, in plan (Olympias rig) |
+| Sweep angle | 48.1° | Total sweep (athwartships), Olympias rig |
 | Oar MIT (spruce) | 9.74 kg·m² | Table 3.1 in the trial report |
 | P_crit | 80 W/man | Rossiter & Whipp (literature), Rankov ch.23 |
 | Fh_max | 700 N | Ch.9 sprint data |
@@ -170,8 +170,8 @@ cd simulation
 ../.venv/bin/python3 -m pytest ll/tests/test_gate1.py  # one gate
 ```
 
-Gate 1: the oar at cruise. Gate 2: surge-only hull. Gate 3: 170-oar
-ship turns. Gate 4: crew physiology. Gate 5: oar inertia. Gate 6:
-hull grounding (real geometry). Gate 7: grounded chain. Gate 8:
-cross-flow calibration. The full list with counts is in
-`docs/VALIDATION.md`.
+Gate 1: one-oar skeleton vs the validated chain. Gate 2: surge hull.
+Gate 3: 170-oar surge+yaw ship (turns). Gate 4: crew physiology.
+Gate 5: oar inertia. Gate 6: per-tier crews. Gate 7: cant term and
+slip assumptions. Gate 8: sway DOF (completes the LL). The full list
+with counts is in `docs/VALIDATION.md`.
