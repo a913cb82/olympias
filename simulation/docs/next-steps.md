@@ -19,8 +19,72 @@ as the labelled reference (force=False).
 Streams A (force-driven oar), B (performance) and C (hull grounding) are
 **complete** — see `completed-work.md §7`, `§8`, `§9` and `§10–11`.
 
-Serial priority: **D → E**. The full acceptance + the HL re-calibration
-re-run after every promoted change.
+Serial priority: **F → D → E**. F replaces three fitted research-chain
+numbers with physics computed from the ship's plans. D and E are
+independent. The full acceptance + the HL re-calibration re-run after
+every promoted change.
+
+### Stream F — the physics grounding (replace fitted chain numbers with plans-based physics)
+
+Three constants in the LL's chain are still fitted to trials data rather
+than computed from the ship's plans. Each is physically calculable from
+geometry we now hold. The goal: replace the fitted values with
+computations and validate against the trials. Each item is independent
+and can be done in any order; F1 is smallest, F2 is the most diagnostic,
+F3 is the largest.
+
+- **F1. Rudder drag — replace the fitted constant with geometry.**
+  The LL's rudder drag currently uses a fixed multiplier
+  `RUDDER_FAC = 1.4` on the straight-rudder drag (39.4/kt²) at all
+  helm angles. Taylor's text says the factor varies 0.6 (22.5°) to 3.25
+  (67.5°); our single constant was tuned to the W5 turns. The rudder
+  geometry is known: **2 rudders, 0.75 m² each (1.5×0.5 m), 15 m aft
+  of CG** (workbook Manoeuvring sheet). The VBA already uses Hoerner
+  flat-plate: `CL = sin(2α), CD = 2sin²(α)` plus a parasitic drag
+  `0.5·(137V² + 0.65V) · area/1.5` (the "half total ship drag" figure,
+  DECODE §VBA). **Plan:** compute the angle-dependent drag from rudder
+  area, Hoerner CD, and the parasitic term; replace `RUDDER_FAC` with a
+  function of helm angle; re-run G1/F1/tightest. If the angle-dependent
+  model gives the right diameters without tuning, the rudder is grounded.
+  If not, the gap diagnoses what the flat-plate model misses (flow
+  separation, stock interference, the rudder-hull interaction).
+
+- **F2. Blade effective area — diagnose the 31% gap.**
+  The real blade is **0.113 m²** (Rev F Table 3, DECODE A5); the LL uses
+  an "effective" area **0.078 m²** — 31% smaller. This absorbs slip,
+  partial immersion, and lift/drag effects into one number. The Rev F
+  report already has the blade polars (`CL = sin(2α), CD = 2sin²(α)`,
+  the macon blade — DECODE B2): at the trireme's 54–58° angles of
+  attack, `CL ≈ 0.90–0.95` and the lift is ~55% of total force. Using
+  the true 0.113 m² with the polar gives +40% mean thrust (locked in
+  `test_polar_variant_thrust`). **Plan:** compute the effective immersed
+  area from the oar geometry (sweep 48°, rake, the blade's submersion
+  at each station from the hull offsets at trial WL 1.10 m); the
+  projection of the blade area onto the plane perpendicular to the flow
+  gives the geometric effective area. Compare with 0.078 m². If the
+  geometric projection matches, the gap is pure geometry. If not, the
+  residual diagnoses the slip/ventilation model. Either way, the true
+  blade area (0.113 m²) should enter the blade law and the residual
+  should be explicit, not folded into an ad-hoc area.
+
+- **F3. Hull resistance — compute from the lines plan.**
+  The LL uses `hull_power = 155V³ + 4.13V⁵` (the chain law, calibrated
+  to the ¾-NM towing trials). The trials piecewise
+  (`40.2/75.2/88.6·V²` N at V in kt, "cf ref 1 p82") runs 12–15%
+  below the chain law at 8–10 kt — same data, two fits (D2).
+  The workbook already has a **full Holtrop-Mennen implementation**
+  (VBA `Holtrop`/`HoltropV`) and the ITTC-1957 friction line. We hold
+  the lines plan (`basis_hull_offsets.tsv`, 21 stations) and the
+  workbook hydrostatics: `LWL 32.35 m, BWL 3.704 m, WSA 130.5 m²,
+  Cb 0.321, Cp 0.691, Cm 0.465, Cw 0.768, Vol 44.26 m³`. **Plan:**
+  implement Holtrop-Mennen (or ITTC-1957 friction + form factor) from
+  the lines plan in Python; compute R(T) at the trial speeds; compare
+  with the trials piecewise AND the chain law. If Holtrop matches the
+  trials piecewise, the chain law's 12–15% excess is the scaling
+  discrepancy (loading condition, the ¾-NM vs towing context, the
+  rudder contribution). If Holtrop matches the chain law, the trials
+  piecewise is the outlier. Either way, the resistance becomes
+  computable from geometry, not a fitted polynomial.
 
 ### Stream D — the second opinions (independent measurements of the same ship)
 
@@ -36,7 +100,9 @@ re-run after every promoted change.
   (40.2/75.2/88.6·V²) runs 12–15 % below the chain law at 8–10 kt — same
   trials data, two fits. Document the cause (loading condition, rudder
   contribution, the fit families). Analysis only — the chain law is
-  trial-speed-validated and stays unless a gate says otherwise.
+  trial-speed-validated and stays unless a gate says otherwise. Overlaps
+  F3 — if F3 computes resistance from the lines plan, D2's question is
+  answered as a by-product.
 - **D3. The no-head-room sprint test — T1's decisive cheap
   measurement.** The workbook's 9.95 kt is all-170 at the trials thrust law
   with NO thalmian shortfall; our LL's sprint (force promoted: 7.65 kt
@@ -86,9 +152,12 @@ physics that remain unresolved.
 
 ## Kick-off
 
-D1 (the transcription) and D3 (the sprint test) are independent starts
-that can run in parallel. E1 (pentaconter) needs the remaining decode
-(E2) first. The full acceptance + HL re-calibration after every change.
+F1 (rudder geometry), F2 (blade area) and F3 (hull resistance) are
+independent starts. D1 (the transcription) and D3 (the sprint test) are
+also independent. E1 (pentaconter) needs the remaining decode (E2) first.
+The full acceptance + HL re-calibration after every change. F3 overlaps
+D2 — if F3 computes resistance from the lines plan, D2 is answered as a
+by-product.
 
 ## Risks
 
