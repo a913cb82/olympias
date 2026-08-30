@@ -44,10 +44,10 @@ F3 is the largest.
   `0.5·(137V² + 0.65V) · area/1.5` (the "half total ship drag" figure,
   DECODE §VBA). **Plan:** compute the angle-dependent drag from rudder
   area, Hoerner CD, and the parasitic term; replace `RUDDER_FAC` with a
-  function of helm angle; re-run G1/F1/tightest. If the angle-dependent
-  model gives the right diameters without tuning, the rudder is grounded.
-  If not, the gap diagnoses what the flat-plate model misses (flow
-  separation, stock interference, the rudder-hull interaction).
+  function of helm angle; re-run G1/F1/tightest.
+  **Acceptance:** G1, F1 and tightest diameters stay within the
+  existing gates (±7%/8%/10%) using ONLY the measured rudder geometry —
+  no new constants tuned to the turns.
 
 - **F2. Blade effective area — diagnose the 31% gap.**
   The real blade is **0.113 m²** (Rev F Table 3, DECODE A5); the LL uses
@@ -63,9 +63,11 @@ F3 is the largest.
   projection of the blade area onto the plane perpendicular to the flow
   gives the geometric effective area. Compare with 0.078 m². If the
   geometric projection matches, the gap is pure geometry. If not, the
-  residual diagnoses the slip/ventilation model. Either way, the true
-  blade area (0.113 m²) should enter the blade law and the residual
-  should be explicit, not folded into an ad-hoc area.
+  residual diagnoses the slip/ventilation model.
+  **Acceptance:** the true blade area (0.113 m²) enters the blade law
+  with an explicit, computable correction derived from oar geometry and
+  hull offsets (not fitted to trials), and the one-oar thrust at the 4
+  Table 9.6 points stays within ±15% (the existing Gate 1 band).
 
 - **F3. Hull resistance — compute from the lines plan.**
   The LL uses `hull_power = 155V³ + 4.13V⁵` (the chain law, calibrated
@@ -79,12 +81,15 @@ F3 is the largest.
   Cb 0.321, Cp 0.691, Cm 0.465, Cw 0.768, Vol 44.26 m³`. **Plan:**
   implement Holtrop-Mennen (or ITTC-1957 friction + form factor) from
   the lines plan in Python; compute R(T) at the trial speeds; compare
-  with the trials piecewise AND the chain law. If Holtrop matches the
-  trials piecewise, the chain law's 12–15% excess is the scaling
-  discrepancy (loading condition, the ¾-NM vs towing context, the
-  rudder contribution). If Holtrop matches the chain law, the trials
-  piecewise is the outlier. Either way, the resistance becomes
-  computable from geometry, not a fitted polynomial.
+  with the trials piecewise AND the chain law.
+  **Acceptance:** the computed resistance at the trial speeds matches at
+  least one of the two existing fits (chain law OR trials piecewise)
+  within 10%, and the reason for any remaining discrepancy is
+  documented and named.
+
+**Stream F done when:** all three items pass their individual criteria,
+the full test suite is green, and the HL is re-calibrated on the
+updated chain.
 
 ### Stream D — the second opinions (independent measurements of the same ship)
 
