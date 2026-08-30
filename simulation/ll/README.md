@@ -29,8 +29,12 @@ force that depends on:
   water.
 
 - **The ship's speed** — because the blade is mounted on a moving ship,
-  the water flow past the blade includes the ship's own speed. A faster
-  ship means more water flow, which means the blade meets more resistance.
+  the water flows past the hull in the same direction as the oar stroke
+  (the oars push water backward, the ship moves forward). A faster ship
+  means the water is already moving with the stroke, so the blade meets
+  *less* resistance — it sweeps through water that is already going the
+  right way. This is why there is a top speed: at some point the blade
+  can no longer push hard enough against the water to overcome drag.
 
 - **The oar angle** — the blade's orientation determines how much of the
   water force is thrust (pushing the ship forward) versus lateral force
