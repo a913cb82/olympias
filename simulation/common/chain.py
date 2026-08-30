@@ -35,6 +35,7 @@ from common.ship_drawings import (  # noqa: F401 — re-exported
     BLADE_EFFECTIVE,
     BLADE_EFFICIENCY,
     BLADE_GEOMETRIC_OLYMPIAS,
+    BLADE_HOLD_IMMERSED_FRAC,
     BLADE_IMMERSION,
     BLADE_SPAN_EFF,
     BLADE_WIDTH,
@@ -100,6 +101,7 @@ from common.ship_drawings import (
     hull_wave as hull_wave_computed,
 )
 from common.trials_params import (  # noqa: F401 — re-exported
+    ALPHA_HOLD_DEG,
     B_FLOOR_FRAC,
     CALIBRATED_T_DRIVE_44_5,
     FH_BURST,

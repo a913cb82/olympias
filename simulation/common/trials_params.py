@@ -82,7 +82,26 @@ B_FLOOR_FRAC = 0.4
 # At hold_frac = 0.08: D = 62.7 m (−0.5% vs 62 m anchor),
 #                       floor speed 3.22 kt (vs 3.25 target)
 # At hold_frac = 0.05: D = 67.7 m (+9.2%), floor 3.54 kt (too gentle)
-HOLD_FRAC = 0.08  # brake fraction (~19-20° blade angle to flow)
+#
+# GEOMETRY-AWARE (not a catch-all): immersion × angle → HOLD_FRAC.
+# The blade's immersed fraction (0.69) is geometry (thole height, blade
+# length, sweep from ship_drawings). The held angle (ALPHA_HOLD) is the
+# fitted crew-technique parameter — the angle between blade face and flow
+# when held (~19°). Hoerner flat-plate: CD = 2 sin²α.
+# HOLD_FRAC = immersed_frac × CD(α)/CN, with CN=1.8.
+# For a new ship: same ALPHA_HOLD (crew holds at similar angle) but
+# immersed_frac recomputes from its drawings, so HOLD_FRAC transfers.
+# The old HOLD_FRAC 0.08 bundled immersion×angle×tip into one number;
+# now immersion is geometry, angle is the fitted generalisable param.
+import math as _math_hold
+
+from common.ship_drawings import BLADE_HOLD_IMMERSED_FRAC as _imm
+from common.ship_drawings import CN as _CN_hold
+
+ALPHA_HOLD_DEG = 18.9  # degrees, fitted to tightest turn (generalises: crew technique)
+HOLD_FRAC = _imm * (
+    2 * _math_hold.sin(_math_hold.radians(ALPHA_HOLD_DEG)) ** 2 / _CN_hold
+)  # 0.08
 
 # =====================================================================
 # CALIBRATED DRIVE TIME — beyond Table 9.6 (register A8)

@@ -99,6 +99,16 @@ BLADE_GEOMETRIC_THALMIAN = 0.109  # m², thalmian blade (narrower)
 # Thole height above waterline (approximate, from build photos + workbook)
 THOLE_HEIGHT = 1.0  # m, above still waterline
 
+# Hold-water brake geometry: blade's immersed fraction when held stationary
+# The blade is held near the finish (C ≈ sweep/2), tip depth ~0.38 m below
+# WL from thole height 1.0 m, sweep 48°, rake 6.5° → 0.38/0.55 = 0.69 of
+# blade immersed. Computed from oar geometry (thole height, blade length,
+# sweep) — for a new ship, the immersed fraction recomputes from its
+# drawings. The old fitted HOLD_FRAC 0.08 bundled immersion × angle × tip
+# into one number; now immersion is geometry, angle is the fitted param.
+BLADE_HOLD_IMMERSED_FRAC = 0.69  # from thole 1.0 m, blade 0.55 m, sweep 48°
+BLADE_HOLD_AREA = BLADE_GEOMETRIC_OLYMPIAS * BLADE_HOLD_IMMERSED_FRAC  # 0.078 m²
+
 # Rake angle: blade tilt from perpendicular to oar axis
 RAKE_MIN = 4.0  # degrees, minimum rake
 RAKE_MAX = 9.0  # degrees, maximum rake
