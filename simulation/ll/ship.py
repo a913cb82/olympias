@@ -191,9 +191,20 @@ class Ship:
 
     # ------------------------------------------------------------------
     def step(self, dt: float) -> None:
-        ship_state = (self.v, self.omega) if self.stations else None
-        fx_p, _peak_p, br_p, fy_p = self.crew_p.step(dt, self.V, ship_state)
-        fx_s, _peak_s, br_s, fy_s = self.crew_s.step(dt, self.V, ship_state)
+        # Local flow at the oars: in a turn the inside oars see less flow
+        # (smaller V) and the outside see more. For the aggregated model
+        # (stations=False) we approximate V_local = V ∓ omega·lever
+        # (port y=+lever, starboard y=−lever, V_local = V − omega·y).
+        # For stations=True the per-oar (x,y) flow is already in blade_force.
+        if self.stations:
+            ship_state = (self.v, self.omega)
+            fx_p, _peak_p, br_p, fy_p = self.crew_p.step(dt, self.V, ship_state)
+            fx_s, _peak_s, br_s, fy_s = self.crew_s.step(dt, self.V, ship_state)
+        else:
+            Vp = self.V - self.omega * self.lever
+            Vs = self.V + self.omega * self.lever
+            fx_p, _peak_p, br_p, fy_p = self.crew_p.step(dt, Vp, None)
+            fx_s, _peak_s, br_s, fy_s = self.crew_s.step(dt, Vs, None)
         self.crew_p.end_of_step(dt)
         self.crew_s.end_of_step(dt)
         Fx = self.n_side * (fx_p + fx_s + br_p + br_s)
