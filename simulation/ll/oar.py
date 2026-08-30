@@ -42,6 +42,7 @@ import math
 from dataclasses import dataclass
 
 from common.chain import CN, RHO
+
 from ll.blade import blade_consts, blade_force
 
 
@@ -101,6 +102,7 @@ class Oar:
         self.t_rise = t_rise
         self.force = force
         from common.chain import BLADE_CP_FROM_TIP
+
         self._l_cp = rig["lout"] - (rig["blade"] - BLADE_CP_FROM_TIP)  # blade CP
         # the precomputed blade-law constants (blade_consts) — the
         # per-step hot path skips the per-call derivations

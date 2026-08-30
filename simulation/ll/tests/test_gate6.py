@@ -89,7 +89,8 @@ def test_tier_structure():
         abs(s2.crew["port"].tier_telemetry()["thalmian"]["power_factor"] - 0.6) < 1e-9
     )
     # the aggregate MIT reference (tier-weighted) is from OAR_TIER_MIT (Table 3.1)
-    from common.chain import OAR_TIER_MIT, N_THRANITE, N_ZYGIAN, N_THALMIAN
+    from common.chain import N_THALMIAN, N_THRANITE, N_ZYGIAN, OAR_TIER_MIT
+
     assert abs(s.mit - OAR_TIER_MIT["spruce"]) < 0.01  # spruce fleet
     old_fir = Ship(rate=28.8, fleet="old-fir")
     expected_old_fir = (

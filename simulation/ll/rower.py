@@ -43,10 +43,20 @@ from common.chain import (  # ship_drawings + trials_params via chain
 )
 from common.trials_params import (
     B_FLOOR_FRAC as _B_FLOOR_FRAC,
+)
+from common.trials_params import (
     FH_BURST as _FH_BURST,
+)
+from common.trials_params import (
     FH_MAX as _FH_MAX,
+)
+from common.trials_params import (
     T_REC_MIN as _T_REC_MIN,
+)
+from common.trials_params import (
     TAU_WPRIME as _TAU,
+)
+from common.trials_params import (
     WPRIME as _W_MAX,
 )
 

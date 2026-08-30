@@ -139,6 +139,7 @@ SHAW_ANGLE_OFFSET = 30.0  # degrees, the phase offset
 # HULL PROPERTIES — computed from offsets at import time
 # =====================================================================
 
+
 def _load_offsets() -> list[tuple[float, list[tuple[float, float]]]]:
     """Parse basis_hull_offsets.tsv → [(x, [(z, y), ...]), ...] stern→bow."""
     tsv_path = (
@@ -217,11 +218,10 @@ def _sectional_area(pairs: list[tuple[float, float]], z_wl: float) -> float:
 
 def _simpson(values: list[float], dx: float) -> float:
     """Simpson's 1/3 rule (n must be even, 21 stations → 20 intervals)."""
-    return dx / 3 * (
-        values[0]
-        + values[-1]
-        + 4 * sum(values[1:-1:2])
-        + 2 * sum(values[2:-1:2])
+    return (
+        dx
+        / 3
+        * (values[0] + values[-1] + 4 * sum(values[1:-1:2]) + 2 * sum(values[2:-1:2]))
     )
 
 
@@ -302,6 +302,7 @@ WSA_TRIAL = WSA_DESIGN  # 130.5 m²
 # BLADE — computed from oar geometry
 # =====================================================================
 
+
 def _blade_immersion() -> float:
     """Average fraction of blade submerged over the drive stroke.
 
@@ -344,6 +345,7 @@ BLADE_EFFECTIVE = BLADE_GEOMETRIC_OLYMPIAS * BLADE_EFFICIENCY  # 0.078 m²
 # =====================================================================
 # RUDDER — computed from rudder geometry
 # =====================================================================
+
 
 def rudder_cd(phi_deg: float) -> float:
     """Hoerner drag coefficient for a flat plate at angle phi: CD = 2 sin²φ."""
@@ -402,6 +404,7 @@ def rudder_fac(phi_deg: float) -> float:
 # HULL RESISTANCE — ITTC-1957 friction + wave residual
 # =====================================================================
 
+
 def hull_friction(Vms: float) -> float:
     """ITTC-1957 frictional resistance: Rf = 0.5·ρ·V²·WSA·Cf.
 
@@ -422,7 +425,7 @@ def hull_wave(Vms: float) -> float:
     Calibrated to the chain law at 7.2 kt: Rf 1774 N + Rw 998 N = 2772 N
     vs chain 2904 N (−4.5%). k = 5.3 ± 4% over 4-10 kt."""
     K_WAVE = 5.3  # N·s⁴/m⁴, wave-making coefficient
-    return K_WAVE * Vms ** 4
+    return K_WAVE * Vms**4
 
 
 def hull_drag(Vms: float) -> float:
@@ -503,6 +506,7 @@ RIGS = {
 # =====================================================================
 # SUMMARY — printed on import if VERBOSE
 # =====================================================================
+
 
 def summary() -> str:
     """One-line summary of the ship's geometry for logging."""

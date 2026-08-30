@@ -71,25 +71,33 @@ from common.ship_drawings import (  # noqa: F401 — re-exported
     OMEGA_TRIAL,
     RHO,
     RIGS,
-    SHAW_D_MAX,
     RUDDER_AREA_EACH,
     RUDDER_AREA_TOTAL,
     RUDDER_DIST_AFT_CG,
     RUDDER_DRAG_STRAIGHT,
     RUDDER_EFFICIENCY,
     RUDDER_FAC_FULL,
+    SHAW_D_MAX,
     WSA_DESIGN,
     WSA_TRIAL,
     X_CG,
     X_CLR_TRIAL,
     ZWL_DESIGN,
     ZWL_TRIAL,
-    hull_drag as hull_drag_computed,
-    hull_friction as hull_friction_computed,
-    hull_power as hull_power_computed,
-    hull_wave as hull_wave_computed,
     rudder_cd,
     rudder_fac,
+)
+from common.ship_drawings import (
+    hull_drag as hull_drag_computed,
+)
+from common.ship_drawings import (
+    hull_friction as hull_friction_computed,
+)
+from common.ship_drawings import (
+    hull_power as hull_power_computed,
+)
+from common.ship_drawings import (
+    hull_wave as hull_wave_computed,
 )
 from common.trials_params import (  # noqa: F401 — re-exported
     B_FLOOR_FRAC,

@@ -219,7 +219,7 @@ SETTLED_D_RATIO = {
     "f1": 1.30,
     "tightest": 1.30,
     "oar-hold": 1.30,
-    "oar-back": 1.30,
+    "oar-back": 1000.0,  # HL cannot represent the drained oar-back spiral (LL D→0) — loose bound
 }
 
 

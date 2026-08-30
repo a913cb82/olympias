@@ -104,10 +104,41 @@ CALIBRATED_T_DRIVE_44_5 = 0.371  # s, at 44.5 spm sprint
 P_CRIT = 80.0  # W/man external sustainable power
 
 # Catch-flip duration: the time to reverse the oar from recovery to drive
-# speed (pinned at the catch, the spike force over t_rise). Estimated
-# from the oar's rotational inertia and a plausible peak handle force;
-# not directly measured for the Olympias.
-T_RISE = 0.15  # s
+# speed (pinned at the catch, the spike force over t_rise).
+#
+# COMPUTED FROM PHYSICS (not fitted):
+#   T_RISE = MIT × (omega_drive + omega_recover) / (FH_BURST × lin)
+#
+# At the design point (cruise, 28.8 spm, 7.2 kt):
+#   MIT = 9.74 kg·m² (spruce, Table 3.1)
+#   omega_drive = sweep/t_drive = 0.840/0.430 = 1.952 rad/s
+#   omega_recover = sweep/t_recovery = 0.840/1.653 = 0.508 rad/s
+#   FH_BURST = 330 N (max mean sprint force)
+#   lin = 0.957 m (Olympias inboard)
+#   T_RISE = 9.74 × 2.460 / (330 × 0.957) = 0.076 s
+#
+# The flip force at this T_RISE equals FH_BURST (330 N) — the rower
+# applies their full burst capacity during the flip. The previous
+# estimate (0.15 s) had the rower flipping at only 167 N (half capacity).
+import math as _math
+
+from common.ship_drawings import (
+    OAR_TIER_MIT as _MIT,
+)
+from common.ship_drawings import (
+    RIGS as _RIGS,
+)
+
+_rig = _RIGS["Olympias"]
+_sweep_rad = _math.radians(_rig["sweep"])
+_t_drive_cruise = 0.430  # s at 7.2 kt (Table 9.6)
+_cycle_cruise = 60.0 / 28.8  # s at 28.8 spm
+_t_rec_cruise = _cycle_cruise - _t_drive_cruise
+_omega_drive = _sweep_rad / _t_drive_cruise
+_omega_recover = _sweep_rad / _t_rec_cruise
+T_RISE = (
+    _MIT["spruce"] * (_omega_drive + _omega_recover) / (330.0 * _rig["lin"])
+)  # 0.076 s
 
 # =====================================================================
 # CREW COORDINATION — estimated
@@ -149,6 +180,7 @@ HULL_MULT_MARKIIB = 1.08
 # =====================================================================
 # SUMMARY
 # =====================================================================
+
 
 def summary() -> str:
     """One-line summary of the fitted parameters for logging."""
