@@ -52,9 +52,9 @@ has three degrees of freedom — it can move forward/backward (surge),
 slide sideways (sway), and rotate (yaw). The equations of motion are:
 
 - **Surge**: the oars' forward thrust fights the hull's drag. Hull drag
-  follows the trial-validated power law: `W = 155V³ + 4.13V⁵` watts
-  (where V is speed in knots). This law was measured in tank tests and
-  confirmed at sea. The hull also has "added mass" — it drags along some
+  follows the hull-power law: `W = 155V³ + 4.13V⁵` watts
+  (where V is speed in knots). This is a fitted curve from tank towing
+  tests, confirmed against the sea trial speeds (Rankov 2012 ch.7). The hull also has "added mass" — it drags along some
   of the surrounding water, so the effective mass is 1.10× the actual
   ship mass (40.95 tonnes).
 
