@@ -260,19 +260,22 @@ no CLI: `from commands.parser import parse_file, parse_script` — errors raise
 
 ## Status (current state)
 
-All three phases are complete and the force-driven oar is the **promoted
-default** (completed-work §7 — `Ship(force=True)`; kinematic is the
-labelled reference `force=False`): the LL is the validated oracle
-(VALIDATION §1–§8 — the honest mismatch ledger §7, now §5a promoted),
-the HL is the machine-calibrated fast ship
-(`calib-2026-08-22-0bdd860.json`), and the pair harness produces the Level-2
-equivalence tables (VALIDATION §9) with the annotated script run in
-`harness/equivalence-annotated.md`. The suite is green (159 checks; the
-per-gate count lives in VALIDATION §8). The coverage map
-(VALIDATION §10) shows only validated / open-with-locked-test /
-annotated (documented HL-loose) rows; the open items, their quantified
-causes and the regression locks: VALIDATION §11.
+Streams A (force-driven oar), B (performance) and C (hull grounding) are
+**complete**. The force-driven oar is the promoted default (`Ship(force=True)`; kinematic is the labelled reference `force=False`). The hull
+is fully grounded in the real Lines Plan — 6 fitted hull params → 0 fitted
+(`completed-work.md §7`/`§8`/`§9–11`).
 
-Remaining: Phase 4 (crew & environment) and Phase 5 (oar-manoeuvres).
-The loop discipline after any LL/HL change: `hl/calibrate.py` →
+- **LL**: the validated oracle (VALIDATION §1–§8). The hull's class-A rows
+  (A_lat, CLR, Omega, mass, inertia) and the yaw lever are all computed
+  from `basis_hull_offsets.tsv` (LWL 32.35 m, 21 stations). The remaining
+  fitted params are crew physiology (t_drive, W', hold_frac) and the
+  rudder drag multiplier (6 crew-tuned, 0 hull-tuned).
+- **HL**: the machine-calibrated fast ship (`calib-2026-08-29-84c8893.json`),
+  the pair harness produces the Level-2 equivalence tables (VALIDATION §9).
+- **Suite**: 159 checks green. Coverage map (VALIDATION §10) shows only
+  validated / open-with-locked-test / annotated rows; the open items,
+  their quantified causes and regression locks: VALIDATION §11.
+
+Remaining: Stream D (second opinions) and Stream E (portability). The
+loop discipline after any LL/HL change: `hl/calibrate.py` →
 `harness/run_validation.py` → the full suite → the docs → commit.
