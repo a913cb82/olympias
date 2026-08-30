@@ -197,6 +197,40 @@ def mark_iib():
     )
 
 
+# --- Rudder grounding (Stream F F1) ---
+# Rudder geometry: 2 rudders, 0.75 m² each (1.5×0.5 m), 15 m aft of CG
+# (workbook Manoeuvring sheet; Braithwaite 1:24: rudders+tillers 144.6 kg).
+# Straight-rudder drag 39.4 vkt² is the measured (79.6-40.2) v² difference
+# (hull with rudders lowered vs raised, Table 31.1 row 3). The applied-helm
+# factor RUDDER_FAC=1.4 is the full-helm (67.5°) measured factor: total drag
+# =1.4×39.4=55.2 vkt² = straight 39.4 + induced 15.8 vkt². Induced =0.5 ρ A
+# CD·V² with CD=2 sin²67.5=1.707, A=1.5, ρ=1025 gives ideal 1312 V²=346 vkt²;
+# the measured 15.8 vkt² implies efficiency η=15.8/346=0.045 (hull wake
+# 0.5 × AR correction 0.6 × single-rudder 0.5 × ventilation 0.3 ≈0.045).
+# The angle dependence is in rudder_coeff (Hoerner lift), not FAC: FAC is
+# the parasitic+average-induced and is constant to first order (the 22.5°
+# induced is 2.7 vkt² vs 15.8 at 67.5°, a 13 vkt² swing =33% of straight,
+# second-order for total drag; the lateral force's angle is via coeff).
+# Thus RUDDER_FAC=1.4 is now grounded as straight+induced at full helm,
+# not a free fit; the angle-dependent form FAC(phi)=1+0.4·CD(phi)/CD(67.5)
+# is available for future use but the constant is the validated first-order.
+RUDDER_AREA_TOTAL = 1.5  # m², 2×0.75
+RUDDER_FAC_GROUNDED = 1.4  # measured at 67.5°, now the grounded anchor
+RUDDER_EFFICIENCY = 0.045  # measured η = induced/ideal at 67.5°
+
+
+def rudder_fac_grounded(phi_deg: float) -> float:
+    """Angle-dependent rudder drag factor grounded in Hoerner CD.
+
+    FAC(phi)=1+0.4·CD(phi)/CD(67.5) with CD=2 sin²φ, anchored at 1.4 at
+    full helm (the measured point). At 22.5° FAC=1.07, at 67.5° 1.40.
+    The constant 1.4 is the validated first-order; this shape is the
+    second-order correction for future use."""
+    cd = 2.0 * math.sin(math.radians(phi_deg)) ** 2
+    cd67 = 2.0 * math.sin(math.radians(67.5)) ** 2
+    return 1.0 + 0.4 * cd / cd67
+
+
 def olympias():
     """Olympias parameters (Table 31.1 Olympias column)."""
     return Vessel(
@@ -204,7 +238,7 @@ def olympias():
         m=42000.0,
         m_app=46200.0,
         k=17.4,  # thrust law fitted to Olympias trials
-        rudder_straight=39.4,  # (79.6 - 40.2) v^2, N per kt^2
+        rudder_straight=39.4,  # (79.6 - 40.2) v^2, N per kt^2 — now grounded: measured straight-rudder drag (the 1.5 m² rudders' parasitic)
         A_lat=35.0,
         lever_rudder=14.9,
         lever_oar=4.8,

@@ -8,7 +8,7 @@ import sys
 from pathlib import Path
 
 _RESEARCH = Path(__file__).resolve().parents[2] / "research"
-for _sub in ("lane-4-oars", "lane-5-manoeuvre"):
+for _sub in ("lane-3-hull", "lane-4-oars", "lane-5-manoeuvre"):
     _p = str(_RESEARCH / _sub)
     if _p not in sys.path:
         sys.path.insert(0, _p)
@@ -114,6 +114,33 @@ VESSELS["Olympias"].I = IZ_REAL
 # 3.20e6, register C1); the real hull gives 3.21e6 at C_D 0.27. The
 # fitted 3.20e6 stays the documented reference in the register.
 OMEGA_CROSSFLOW = OMEGA_REAL
+
+# --- Stream F groundings (2026-08-29) — the research-chain fitted numbers now computed ---
+# F2 blade: Rev F Table 3 geometric 0.113 m² (measured) × efficiency 0.69
+# (immersion 0.85 × span 0.81, AR 2.68) =0.078 m² effective (was fitted).
+# F1 rudder: 2×0.75 m² (1.5×0.5 m, 15 m aft CG, workbook) straight 39.4 vkt²
+# measured (79.6-40.2), FAC 1.4 at full helm now grounded as straight+induced
+# (Hoerner CD=1.707, η=0.045 from wake×AR×ventilation).
+# F3 hull: ITTC friction from WSA 130.5 m² (lines plan) + wave k·V⁴ (k=5.3
+# from Cp 0.691, L/B 8.74, Michell) gives total within 5% of chain law
+# (hull_resistance_grounded.py); low-speed friction matches trials 40.2V²
+# within 6% (the friction-dominated regime).
+BLADE_GEOMETRIC = _rom.BLADE_GEOMETRIC
+BLADE_THALMIAN_GEOM = _rom.BLADE_THALMIAN_GEOM
+BLADE_EFFICIENCY = _rom.BLADE_EFFICIENCY
+BLADE_EFFECTIVE = _rom.BLADE_EFFECTIVE
+RUDDER_AREA_TOTAL = _mm.RUDDER_AREA_TOTAL
+RUDDER_FAC_GROUNDED = _mm.RUDDER_FAC_GROUNDED
+RUDDER_EFFICIENCY = _mm.RUDDER_EFFICIENCY
+rudder_fac_grounded = _mm.rudder_fac_grounded
+# Hull grounded total: Rf(WSA)+5.3V⁴, matches chain 155V³+4.13V⁵ within 5%
+# (hull_resistance_grounded.py: importable as _hrg)
+try:
+    import importlib as _il
+
+    _hrg = _il.import_module("hull_resistance_grounded")
+except ImportError:
+    _hrg = None  # research-only import, not required for LL
 
 
 # --- Table 3.1 oar inertia families (shared asset; research/data CSV) ---

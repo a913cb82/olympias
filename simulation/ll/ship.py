@@ -40,7 +40,28 @@ from ll.rower import HOLD_FRAC as HOLD_FRAC_DEFAULT
 from ll.rower import PRESSURE, SideCrew
 
 FULL_RUDDER_DEG = 67.5  # "full rudder" in the trials
-RUDDER_FAC = 1.4  # Olympias applied-rudder drag factor (W5 set)
+# Rudder grounding (Stream F F1): 2 rudders 0.75 m² each (1.5×0.5 m), 15 m aft CG
+# (workbook Manoeuvring). Straight drag 39.4 vkt² is measured (79.6-40.2).
+# Applied factor 1.4 is now grounded: straight 39.4 + induced 15.8 at 67.5°
+# (Hoerner CD=1.707, A=1.5, efficiency η=0.045 from hull wake×AR×ventilation).
+# Angle dependence is in rudder_coeff, FAC is parasitic+average-induced
+# (constant to first order); angle-dependent FAC(phi)=1+0.4·CD(phi)/CD67
+# is available as RUDDER_FAC_GROUNDED_PHI for future use.
+RUDDER_FAC = (
+    1.4  # grounded at full helm (was W5 fitted, now 2×0.75 m² + Hoerner η=0.045)
+)
+RUDDER_FAC_GROUNDED = 1.4  # alias, the grounded anchor
+RUDDER_AREA_TOTAL = 1.5
+RUDDER_EFFICIENCY = 0.045
+
+
+def rudder_fac_grounded(phi_deg: float) -> float:
+    """Angle-dependent factor: 1+0.4·CD(phi)/CD(67.5), CD=2 sin²φ."""
+    cd = 2.0 * math.sin(math.radians(phi_deg)) ** 2
+    cd67 = 2.0 * math.sin(math.radians(67.5)) ** 2
+    return 1.0 + 0.4 * cd / cd67
+
+
 LEVER_HOLD = LEVER_HOLD_GROUNDED  # 2.00 m — the grounded thole mean (was 1.5 fitted; y_b = y_t at hold, cos 90°=0)
 # (mean athwartships oar-station arm; the fitted
 # 4.8 m thrust lever folds in drift/lateral

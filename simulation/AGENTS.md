@@ -260,16 +260,22 @@ no CLI: `from commands.parser import parse_file, parse_script` — errors raise
 
 ## Status (current state)
 
-Streams A (force-driven oar), B (performance) and C (hull grounding) are
-**complete**. The force-driven oar is the promoted default (`Ship(force=True)`; kinematic is the labelled reference `force=False`). The hull
-is fully grounded in the real Lines Plan — 6 fitted hull params → 0 fitted
-(`completed-work.md §7`/`§8`/`§9–11`).
+Streams A (force-driven oar), B (performance), C (hull grounding) and F
+(physics grounding) are **complete**. The force-driven oar is the promoted
+default (`Ship(force=True)`; kinematic is the labelled reference
+`force=False`). The hull is fully grounded in the real Lines Plan — 6
+fitted hull params → 0 fitted (`completed-work.md §7`/`§8`/`§9–11`); the
+rudder/blade/hull research chain is now grounded in geometry
+(`completed-work.md §12` — 9 fitted → 6 fitted: rudder 2×0.75 m²/
+η=0.045, blade 0.113×0.69, hull ITTC+wave k=5.3).
 
 - **LL**: the validated oracle (VALIDATION §1–§8). The hull's class-A rows
   (A_lat, CLR, Omega, mass, inertia) and the yaw lever are all computed
-  from `basis_hull_offsets.tsv` (LWL 32.35 m, 21 stations). The remaining
-  fitted params are crew physiology (t_drive, W', hold_frac) and the
-  rudder drag multiplier (6 crew-tuned, 0 hull-tuned).
+  from `basis_hull_offsets.tsv` (LWL 32.35 m, 21 stations). The blade's
+  0.078 m² is now 0.113×0.69, the rudder's 1.4 is straight+induced at
+  full helm, the hull's drag is ITTC friction + wave. The remaining
+  fitted params are crew physiology (t_drive, W', hold_frac, steady/fast)
+  and the chain slope P=7.43r (6 crew-tuned, 0 hull-tuned, 1 chain).
 - **HL**: the machine-calibrated fast ship (`calib-2026-08-29-84c8893.json`),
   the pair harness produces the Level-2 equivalence tables (VALIDATION §9).
 - **Suite**: 159 checks green. Coverage map (VALIDATION §10) shows only

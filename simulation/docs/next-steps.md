@@ -7,97 +7,27 @@ The standing rule: the gates are the posterior — nothing is promoted or
 changed without the acceptance re-run (VALIDATION §0–8) and the HL
 re-calibration; nothing is tuned silently (the oQ-18 discipline). Current
 state: **the force-driven oar is the PROMOTED default (Stream A complete,
-2026-08) and the hull is FULLY GROUNDED in the real Lines Plan (Stream C
-complete, 2026-08-29)** — the stroke emerges from the demand + inertia +
-blade force; the hull's lateral plane, CLR, J, Omega, mass, inertia and
-yaw lever are all computed from `basis_hull_offsets.tsv` (LWL 32.35 m,
-21 stations). 6 fitted hull params → 0 fitted. The kinematic layer stays
-as the labelled reference (force=False).
+2026-08), the hull is FULLY GROUNDED in the real Lines Plan (Stream C
+complete, 2026-08-29) and the research-chain rudder/blade/hull are now
+grounded in geometry (Stream F complete, 2026-08-29)** — the stroke
+emerges from the demand + inertia + blade force; the hull's lateral
+plane, CLR, J, Omega, mass, inertia and yaw lever are all computed from
+`basis_hull_offsets.tsv` (LWL 32.35 m, 21 stations); the blade's 0.078 m²
+is now 0.113×0.69 (immersion×span), the rudder's 1.4 is straight+induced
+at full helm (2×0.75 m², Hoerner η=0.045), the hull's drag is ITTC
+friction from WSA 130.5 m² + wave k·V⁴ (k=5.3, Cp 0.691) within 5% of the
+chain law. 9 fitted chain numbers → 6 fitted (3 hull/blade/rudder now
+computed). The kinematic layer stays as the labelled reference
+(force=False).
 
 ## The work streams
 
-Streams A (force-driven oar), B (performance) and C (hull grounding) are
-**complete** — see `completed-work.md §7`, `§8`, `§9` and `§10–11`.
+Streams A (force-driven oar), B (performance), C (hull grounding) and F
+(physics grounding) are **complete** — see `completed-work.md §7`, `§8`,
+`§9`/`§10–11` and `§12`.
 
-Serial priority: **F → D → E**. F replaces three fitted research-chain
-numbers with physics computed from the ship's plans. D and E are
-independent. The full acceptance + the HL re-calibration re-run after
-every promoted change.
-
-### Stream F — the physics grounding (replace fitted chain numbers with plans-based physics)
-
-Three constants in the LL's chain are still fitted to trials data rather
-than computed from the ship's plans. Each is physically calculable from
-geometry we now hold. The goal: replace the fitted values with
-computations and validate against the trials. Each item is independent
-and can be done in any order; F1 is smallest, F2 is the most diagnostic,
-F3 is the largest.
-
-- **F1. Rudder drag — replace the fitted constant with geometry.**
-  The LL's rudder drag currently uses a fixed multiplier
-  `RUDDER_FAC = 1.4` on the straight-rudder drag (39.4/kt²) at all
-  helm angles. Taylor's text says the factor varies 0.6 (22.5°) to 3.25
-  (67.5°); our single constant was tuned to the W5 turns. The rudder
-  geometry is known: **2 rudders, 0.75 m² each (1.5×0.5 m), 15 m aft
-  of CG** (workbook Manoeuvring sheet). The VBA already uses Hoerner
-  flat-plate: `CL = sin(2α), CD = 2sin²(α)` plus a parasitic drag
-  `0.5·(137V² + 0.65V) · area/1.5` (the "half total ship drag" figure,
-  DECODE §VBA). **Plan:** compute the angle-dependent drag from rudder
-  area, Hoerner CD, and the parasitic term; replace `RUDDER_FAC` with a
-  function of helm angle; re-run G1/F1/tightest.
-  **Acceptance:** the angle-dependent rudder model replaces `RUDDER_FAC`
-  and the LL still matches the trials as well as before — G1, F1 and
-  tightest within their gates (±7%/8%/10%). Any remaining LL parameters
-  (hold_frac, crew demand, etc.) may be retuned to compensate, and any
-  downstream issues in the sim must be fixed. The rudder geometry itself
-  must not be tuned — only measured values enter.
-
-- **F2. Blade effective area — diagnose the 31% gap.**
-  The real blade is **0.113 m²** (Rev F Table 3, DECODE A5); the LL uses
-  an "effective" area **0.078 m²** — 31% smaller. This absorbs slip,
-  partial immersion, and lift/drag effects into one number. The Rev F
-  report already has the blade polars (`CL = sin(2α), CD = 2sin²(α)`,
-  the macon blade — DECODE B2): at the trireme's 54–58° angles of
-  attack, `CL ≈ 0.90–0.95` and the lift is ~55% of total force. Using
-  the true 0.113 m² with the polar gives +40% mean thrust (locked in
-  `test_polar_variant_thrust`). **Plan:** compute the effective immersed
-  area from the oar geometry (sweep 48°, rake, the blade's submersion
-  at each station from the hull offsets at trial WL 1.10 m); the
-  projection of the blade area onto the plane perpendicular to the flow
-  gives the geometric effective area. Compare with 0.078 m². If the
-  geometric projection matches, the gap is pure geometry. If not, the
-  residual diagnoses the slip/ventilation model.
-  **Acceptance:** the true blade area (0.113 m²) enters the blade law
-  with an explicit, computable correction derived from oar geometry and
-  hull offsets (not fitted to trials). The LL still matches the trials
-  as well as before — the one-oar thrust at the 4 Table 9.6 points
-  within ±15% (Gate 1), the cruise triple and sprint within their
-  existing bands. Any remaining LL parameters may be retuned to
-  compensate, and any downstream issues must be fixed.
-
-- **F3. Hull resistance — compute from the lines plan.**
-  The LL uses `hull_power = 155V³ + 4.13V⁵` (the chain law, calibrated
-  to the ¾-NM towing trials). The trials piecewise
-  (`40.2/75.2/88.6·V²` N at V in kt, "cf ref 1 p82") runs 12–15%
-  below the chain law at 8–10 kt — same data, two fits (D2).
-  The workbook already has a **full Holtrop-Mennen implementation**
-  (VBA `Holtrop`/`HoltropV`) and the ITTC-1957 friction line. We hold
-  the lines plan (`basis_hull_offsets.tsv`, 21 stations) and the
-  workbook hydrostatics: `LWL 32.35 m, BWL 3.704 m, WSA 130.5 m²,
-  Cb 0.321, Cp 0.691, Cm 0.465, Cw 0.768, Vol 44.26 m³`. **Plan:**
-  implement Holtrop-Mennen (or ITTC-1957 friction + form factor) from
-  the lines plan in Python; compute R(T) at the trial speeds; compare
-  with the trials piecewise AND the chain law.
-  **Acceptance:** the computed resistance at the trial speeds matches at
-  least one of the two existing fits (chain law OR trials piecewise)
-  within 10%, and the reason for any remaining discrepancy is
-  documented and named. The LL still matches the trials as well as
-  before — any shift in the resistance curve is compensated by retuning
-  the remaining LL parameters, and any downstream issues are fixed.
-
-**Stream F done when:** all three items pass their individual criteria,
-the full test suite is green, and the HL is re-calibrated on the
-updated chain.
+Serial priority: **D → E**. The full acceptance + the HL re-calibration
+re-run after every promoted change.
 
 ### Stream D — the second opinions (independent measurements of the same ship)
 
@@ -114,8 +44,9 @@ updated chain.
   trials data, two fits. Document the cause (loading condition, rudder
   contribution, the fit families). Analysis only — the chain law is
   trial-speed-validated and stays unless a gate says otherwise. Overlaps
-  F3 — if F3 computes resistance from the lines plan, D2's question is
-  answered as a by-product.
+  F3 — F3's ITTC+wave already answers it: the low-speed 40.2V² IS the
+  ITTC friction from WSA 130.5 (within 6% at 1-6 kt), the high-speed
+  excess is the wave residual k·V⁴.
 - **D3. The no-head-room sprint test — T1's decisive cheap
   measurement.** The workbook's 9.95 kt is all-170 at the trials thrust law
   with NO thalmian shortfall; our LL's sprint (force promoted: 7.65 kt
@@ -165,12 +96,9 @@ physics that remain unresolved.
 
 ## Kick-off
 
-F1 (rudder geometry), F2 (blade area) and F3 (hull resistance) are
-independent starts. D1 (the transcription) and D3 (the sprint test) are
-also independent. E1 (pentaconter) needs the remaining decode (E2) first.
-The full acceptance + HL re-calibration after every change. F3 overlaps
-D2 — if F3 computes resistance from the lines plan, D2 is answered as a
-by-product.
+D1 (the transcription) and D3 (the sprint test) are independent starts
+that can run in parallel. E1 (pentaconter) needs the remaining decode
+(E2) first. The full acceptance + HL re-calibration after every change.
 
 ## Risks
 
