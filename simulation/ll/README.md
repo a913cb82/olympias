@@ -134,14 +134,19 @@ measurements. All 86 LL tests pass right now.
 Known open items (documented, locked by regression tests):
 - **Turn time** (t_360): LL gives ~95 s vs the trial's 128 s (−26%).
   No linear damper closes this without pushing every diameter >20%
-  out of its gate.
+  out of its gate. A heel-coupled spike (lean → sideways push →
+  extra drag) can reach 128 s but breaks the diameter gates — see
+  `investigation/06-step3-spike.md`.
 - **Drift angle**: LL gives ~1.4° vs the trials' 8–15° in hard turns.
   The trials reported two numbers for the same turns — 15°±2° and 7.8°
   (3 s delay × 2.6°/s). The LL was re-measured both ways: steady
   β and the trial's delay method agree (~1.6° for G1). The gap is
   real even at the conservative 7.8° — about 5×. Needs a missing
   lateral force to close (lean, wind, or a tilt of the hull — see
-  `investigation/02-drift-angle.md`).
+  `investigation/02-drift-angle.md`). The same heel-coupled spike
+  moves drift 1.7°→3.5° at extreme settings — not enough to close
+  the gap cleanly; the three gaps are not trivially coupled through
+  heel alone.
 - **Cruise triple**: at the *fair* comparison (Olympias rig vs
   Olympias chain — same pull length, same hull) the LL lands exactly at
   25.5 spm (+0.0%) but falls behind at higher rates (−2.2% at 28.8,

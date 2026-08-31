@@ -10,6 +10,7 @@ measured trying to close each gap. Read in order; 04 ties the threads.
 | [03](03-cruise-triple.md) | Why is the speed-vs-rate curve flat (−2.4→−6.0%)? | Growing with rate | Half is rig mismatch; half is rate-dependent blade efficiency |
 | [04](04-synthesis.md) | How do the three connect? | — | Drift→time coupling is the best cross-gap fix |
 | [05](05-experiments.md) | What did we actually measure? | — | Raw experiment outputs for every claim in 01–04 |
+| [06](06-step3-spike.md) | Does heel coupling close drift+time? | Spike | No — heel at 1.6° is too small; time CAN reach 128 s but breaks diameters |
 
 ## How to reproduce the experiments
 
@@ -75,5 +76,8 @@ for f in [1.0,0.5,0.3,0.2]:
 
 ## Status
 
-No model changes. No gates changed. This is a research investigation —
-the open items stay open with better-measured causes.
+- Steps 1 and 2: model unchanged, gates tightened (the triple now has a
+  fair lock; drift now has a delay-method lock).
+- Step 3: one new module (`simulation/ll/experimental_coupling.py`, OFF
+  by default) wired behind `Ship(heel_coupling=True)`. No existing gate
+  is affected. See [06](06-step3-spike.md) for the negative result.

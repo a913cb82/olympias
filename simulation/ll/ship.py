@@ -41,6 +41,11 @@ from common.chain import (
     rudder_fac,
 )
 
+# Step 3 spike — heel-coupled drift+drag (OFF by default):
+# ll/experimental_coupling.py — see that module's docstring.
+from ll.experimental_coupling import extra_drag as _extra_drag
+from ll.experimental_coupling import heel_angle as _heel_angle
+from ll.experimental_coupling import heel_lateral_force as _heel_lateral_force
 from ll.hull import t_drive_for
 from ll.oar import simulate
 from ll.rower import HOLD_FRAC as HOLD_FRAC_DEFAULT
@@ -68,6 +73,8 @@ class Ship:
         hold_frac: float | None = None,
         stations: bool = False,
         force: bool = True,
+        heel_coupling: bool = False,
+        heel_params: dict | None = None,
     ):
         # hold_frac default: the calibrated value (ll/rower.HOLD_FRAC)
         """fleet: 'spruce' (all tiers, MIT 9.7 — the 1994 setup) or
@@ -188,6 +195,10 @@ class Ship:
         # Simpson), x_cg at LCB 15.67 m (even keel) => 0.93 m forward.
         # The fitted 0.8 m (calibrate_sway.py) is the documented reference.
         self.clr_offset = CLR_OFFSET_REAL
+        # Step 3 spike: heel-coupled drift+drag (OFF by default).
+        self.heel_coupling = heel_coupling
+        self.heel_params = heel_params or {}
+        self.heel_deg: float = 0.0  # last computed heel, for telemetry
 
     # ------------------------------------------------------------------
     def step(self, dt: float) -> None:
@@ -262,11 +273,35 @@ class Ship:
         f_hull = RHO * self.vessel.A_lat * abs(u) * v  # Taylor: rho A_lat u^2 sin(beta)
         q_hull = f_hull * self.clr_offset  # restoring (+ = port)
         omega_drag = self.Omega * self.omega * abs(self.omega)
-        v_dot = (Fy_oars + f_rud - f_hull) / self.m_app - u * self.omega
+        # Step 3 spike: heel-coupled drift+drag (OFF by default).
+        # When ON: heel from the roll balance adds a sideways push
+        # (closing drift) and extra drag from drift+heel (slowing the turn).
+        f_heel = 0.0
+        d_extra = 0.0
+        if self.heel_coupling:
+            gm = self.heel_params.get("GM", self.vessel.GM)
+            arm_lat = self.heel_params.get(
+                "arm_lat",
+                self.vessel.arm_lat if hasattr(self.vessel, "arm_lat") else 1.46,
+            )
+            arm_rud = self.heel_params.get(
+                "arm_rud",
+                self.vessel.arm_rud if hasattr(self.vessel, "arm_rud") else 1.16,
+            )
+            k_heel = self.heel_params.get("K_heel", 80000.0)
+            k_drag = self.heel_params.get("K_drag", 4.0)
+            heel = _heel_angle(f_rud, f_hull, self.vessel.m, gm, arm_lat, arm_rud)
+            self.heel_deg = math.degrees(heel)
+            f_heel = _heel_lateral_force(heel, k_heel)
+            # drift angle for the drag term
+            beta = math.atan2(v, u) if abs(u) > 0.1 else 0.0
+            base_drag = hull_power(abs(u)) / max(abs(u), 1e-6) if abs(u) > 0.1 else 0.0
+            d_extra = _extra_drag(u, beta, heel, k_drag, base_drag)
+        v_dot = (Fy_oars + f_rud + f_heel - f_hull) / self.m_app - u * self.omega
         omega_dot = (Q + q_hull - omega_drag) / self.I
         abs(u) / KT
         drag = hull_power(abs(u)) / max(abs(u), 1e-6)
-        drag += rud_drag
+        drag += rud_drag + d_extra
         u_dot = (Fx - drag) / self.m_app + v * self.omega
         self.V += u_dot * dt
         self.v += v_dot * dt
