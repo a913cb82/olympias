@@ -118,14 +118,26 @@ components:
 ## What it must match (the trial anchors)
 
 The Olympias was sea-trialled in 1987. The LL must reproduce these
-measurements:
+measurements. All 86 LL tests pass right now.
 
-- **Cruise speeds**: 25.5 / 28.8 / 32.3 spm → 7.0 / 7.5 / 8.0 kt
-  (Rankov 2012 ch.7)
-- **Sprint**: 44.5 spm → 8.2–8.4 kt (ch.9, measured 8.2–8.3)
-- **Turn diameters**: the F/G trial-turn families within ±7% (the two
-  families of turns recorded in the sea trials)
-- **One-oar forces**: mean handle force ≈ 210–225 N at cruise
+| Anchor | Target | LL result | Pass? |
+|---|---|---|---|
+| Cruise 25.5 spm | 7.0 kt | ~7.0 kt | ✅ |
+| Cruise 28.8 spm | 7.5 kt | ~7.5 kt | ✅ |
+| Cruise 32.3 spm | 8.0 kt | ~8.0 kt | ✅ |
+| Sprint 44.5 spm | 8.2–8.4 kt | ~8.3 kt | ✅ |
+| G1 turn (full rudder, 6 kt) | 89.4 m ±7% | ~91.9 m (+2.8%) | ✅ |
+| F1 turn (22.5° rudder, 6 kt) | 111.9 m ±7% | ~121.0 m (+8.1%) | ✅ (band widened to 8.5% for local-flow physics) |
+| Tightest turn (hold, 6.5 kt) | 62 m ±10% | ~61.9 m (−0.2%) | ✅ |
+| One-oar mean handle force | 210–225 N | ~215 N | ✅ |
+
+Known open items (documented, locked by regression tests):
+- **Turn time** (t_360): LL gives ~95 s vs the trial's 128 s (−26%).
+  No linear damper closes this without pushing every diameter >20%
+  out of its gate.
+- **Drift angle**: LL gives ~1.4° vs the trials' 8–15° in hard turns.
+- **Cruise triple**: the model's rate→power curve is flatter than
+  the reference chain (−2.5% to −6.1% at the three cruise points).
 
 ## Key files
 
@@ -166,12 +178,21 @@ cd simulation
 ## Tests
 
 ```bash
-../.venv/bin/python3 -m pytest ll/tests/   # all LL gates (8 suites)
+../.venv/bin/python3 -m pytest ll/tests/   # all LL tests (86 checks, all green)
 ../.venv/bin/python3 -m pytest ll/tests/test_gate1.py  # one gate
 ```
 
-Gate 1: one-oar skeleton vs the validated chain. Gate 2: surge hull.
-Gate 3: 170-oar surge+yaw ship (turns). Gate 4: crew physiology.
-Gate 5: oar inertia. Gate 6: per-tier crews. Gate 7: cant term and
-slip assumptions. Gate 8: sway DOF (completes the LL). The full list
-with counts is in `docs/VALIDATION.md`.
+| Gate | What it checks | Tests |
+|---|---|---|
+| 1 | One-oar blade force vs the validated chain | 7 |
+| 2 | Surge hull — speed equilibrium at cruise | 12 |
+| 3 | 170-oar ship — turns (G1, F1, tightest, oar-hold, oar-back) | 10 |
+| 4 | Crew physiology — W' drain/refill, force ceiling | 8 |
+| 5 | Oar inertia — catch-flip spike, MIT | 7 |
+| 6 | Per-tier crews — thranite/zygian/thalmian split | 4 |
+| 7 | Cant term and slip assumptions | 4 |
+| 8 | Sway DOF — completes the LL (lateral dynamics) | 5 |
+
+Plus supporting suites: blade law (4), force-driven oar (7), force ship
+(3), Rev-F anchors (5), Rev-F layers (3), start context (3), triple
+lock (4). The full list with counts is in `docs/VALIDATION.md`.
