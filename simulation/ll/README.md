@@ -136,6 +136,12 @@ Known open items (documented, locked by regression tests):
   No linear damper closes this without pushing every diameter >20%
   out of its gate.
 - **Drift angle**: LL gives ~1.4° vs the trials' 8–15° in hard turns.
+  The trials reported two numbers for the same turns — 15°±2° and 7.8°
+  (3 s delay × 2.6°/s). The LL was re-measured both ways: steady
+  β and the trial's delay method agree (~1.6° for G1). The gap is
+  real even at the conservative 7.8° — about 5×. Needs a missing
+  lateral force to close (lean, wind, or a tilt of the hull — see
+  `investigation/02-drift-angle.md`).
 - **Cruise triple**: at the *fair* comparison (Olympias rig vs
   Olympias chain — same pull length, same hull) the LL lands exactly at
   25.5 spm (+0.0%) but falls behind at higher rates (−2.2% at 28.8,
@@ -196,7 +202,7 @@ cd simulation
 | 5 | Oar inertia — catch-flip spike, MIT | 7 |
 | 6 | Per-tier crews — thranite/zygian/thalmian split | 4 |
 | 7 | Cant term and slip assumptions | 4 |
-| 8 | Sway DOF — completes the LL (lateral dynamics) | 5 |
+| 8 | Sway DOF — completes the LL (lateral dynamics) | 6 |
 
 Plus supporting suites: blade law (4), force-driven oar (7), force ship
 (3), Rev-F anchors (5), Rev-F layers (3), start context (3), triple
