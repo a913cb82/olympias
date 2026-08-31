@@ -46,9 +46,9 @@ ch.7/ch.9 power chain.
 
 | Rate | LL equilibrium | Anchor | Match |
 | --- | --- | --- | --- |
-| 25.5 spm | 6.89 kt | 7.0 kt (ch.7 ref, Mark II hull) | −1.6 % |
+| 25.5 spm | 6.89 kt | 7.0 kt (ch.7 ref, Mark II hull) | −1.6 % — but vs the Olympias chain (L=0.89, hull×1.0) the chain predicts 6.89 kt: **+0.0%** (fair comparison, §11.2 T1) |
 | 28.8 spm | **7.22 kt** | **7.2 kt (Table 9.6 / S6 anchor)** | **+0.3 %** |
-| 32.3 spm | 7.58 kt | 8.0 kt (ch.7 ref) | −5.3 % |
+| 32.3 spm | 7.58 kt | 8.0 kt (ch.7 ref) | −5.3 % — but vs the Olympias chain the chain predicts 7.87 kt: **−3.6%** (fair; the Mark II table adds a constant rig-mismatch offset) |
 | 36.0 spm | **7.98 kt** | **8.2 kt (Table 9.6)** | **−2.7 %** |
 | 44.5 spm, 130 oars | 7.9–8.8 kt bracket | 8.2–8.4 kt trial | trial inside the bracket `[x]` |
 | 44.5 spm, 170 oars | ~7.9 kt burst | (trial ~130 effective; the thalmians 'ineffective' at sprint) | overshoot closed by the per-tier head-room (Gate 6) `[x]` |
@@ -426,7 +426,7 @@ Every exit criterion included its regression lock; the suite is green
 
 | Task | Verdict |
 | --- | --- |
-| T1 — the ch.7 triple | open-with-locked-test — the cause named: the LL's rate→power shape (per-man gross 110/129/152 W vs the chain's 115/145/180, the gap growing with rate; E_g flat 51.5–52.3 % vs the 53–55 % band — the blade/kinematics chain, not the hull factor; the speed-dependent uplift moves the reference the wrong way). Lock: `ll/tests/test_triple_lock.py`. **Plan 1 measured (the force layer, labelled): the emerging triple 6.55/7.03/7.50 kt — a FLAT −6.3 % — the deficit's rate-dependence is gone (the force-driven drive's equilibrium self-balances the demand), its size ~unchanged — the named suspects stand; locked in `ll/tests/test_force_ship.py` (F2-2)** |
+| T1 — the ch.7 triple | **half-closed by the fair-rig correction (2026-08)**: the quoted −2.5/−4.6/−6.1% mixes the Olympias rig (arc 0.80 m) against a Mark II design table (L=0.99, hull×1.08 — a longer, canted ship). Fair comparison (Olympias rig vs Olympias chain, L=0.89, hull×1.0): **+0.0 / −2.2 / −3.6%** — at 25.5 spm the LL lands exactly; the rate-dependent growth is the remaining gap (per-man gross 110/129/152 W vs chain's 115/145/180, E_g flat 51.5–52.3% vs 53–55% — blade/kinematics, not hull; M3 audit). The extra ~−2.5% constant offset is the rig/hull mismatch, not a model error. Locks: `ll/tests/test_triple_lock.py` (legacy Mark II + fair Olympias gates; see `investigation/03-cruise-triple.md`). **Plan 1 measured (the force layer, labelled): the emerging triple 6.55/7.03/7.50 kt — a FLAT −6.3 % — the deficit's rate-dependence is gone (the force-driven drive's equilibrium self-balances the demand), its size ~unchanged — the named suspects stand; locked in `ll/tests/test_force_ship.py` (F2-2)** |
 | T2 — the tightest turn + t_360 | part-closed — the hold_frac re-measurement (0.05 → 0.08) closes the tightest D (62.6 m, +1.0 %, was +9.2 %) and lands the drained floor (3.22 kt ≈ the halved 3.25); the t_360 stays open with the cause quantified: the turn-time = π·D/V̄ is the surge problem (the LL's turn-mean 3.8 kt vs the trial's 2.91; every mechanism measured and excluded — the W′ drain, the rudder drag, the hold brake, the linear yaw damping). The Rev F stationary-turn anchor adds the SECOND direction (register C7): the trials' partial-crew turn from rest at 27 spm = 3.5°/s vs the LL's 2.32°/s in-place (−34 %) / 1.06°/s one-side (−70 %) — the model is now too SLOW at low-speed partial crew (the t_360 is too FAST at full crew); the turn-speed family's envelope is measured, the mechanisms still open (the yaw build's reversal + the sway damping at low V) |
 | T3 — the turn timing | the t180 row is gated at ±20 % (the measured timing-loose band: the HL systematically fast in the D-matched turns, the worst row −6 % after the K29 hold-decay re-measurement at the tightest's true usage (the HL's hold-state V collapsed too slowly — the wss = 2V/d ran 1.4× high in the first 10 s; the τ_hold is now a rate table 18.0 s @ 31.5 / 28.0 s @ 44); the K27: the oar-only d_oar_v is scaled by the rowing side's pressure — the LL's oar orbit grows as the effort falls (measured ~1/p_row), so the cruise's steady-rowed back leg no longer runs ~2× fast in yaw) |
 | T4 — the turn-state drag | landed — the per-helm × per-pressure × per-rate curve (the k falls with rate) + the settled-orbit asym nets; the sprint_turn mean +1.0 % → +0.7 % |
@@ -443,7 +443,7 @@ LL's ~3.2) + the Rev F stationary-turn second direction (−34/−70 %
 at partial crew, low speed), the zig-zag overshoots (11–13° vs the
 trials' 8/7 — the fishtail's too-long reversal), the drift angle
 (1.4° vs 7.8–15°, the quantified gap), the ch.7 triple
-(−2.5/−4.6/−6.1 %, the rate→power shape), and the Level-2
+(−0/−2.2/−3.6 % fair; −2.5/−4.6/−6.1 % vs the Mark II design table — half is the rig/hull mismatch, §11.2 T1), and the Level-2
 annotated boundaries (measured, named, locked): the cruise_turn back-tail
 (mean −1.9 %, fatigue −0.142 — the multi-stable low-speed state: the
 orbits 0.83–1.38 kt, the ±40 % per-stroke ripple, the V-dependent

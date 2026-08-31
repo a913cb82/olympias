@@ -136,8 +136,13 @@ Known open items (documented, locked by regression tests):
   No linear damper closes this without pushing every diameter >20%
   out of its gate.
 - **Drift angle**: LL gives ~1.4° vs the trials' 8–15° in hard turns.
-- **Cruise triple**: the model's rate→power curve is flatter than
-  the reference chain (−2.5% to −6.1% at the three cruise points).
+- **Cruise triple**: at the *fair* comparison (Olympias rig vs
+  Olympias chain — same pull length, same hull) the LL lands exactly at
+  25.5 spm (+0.0%) but falls behind at higher rates (−2.2% at 28.8,
+  −3.6% at 32.3). The widely quoted −2.5%→−6.1% includes an extra
+  constant offset from comparing the Olympias rig against a Mark II
+  design table (a longer, heavier, canted ship). See
+  `investigation/03-cruise-triple.md` for the full breakdown.
 
 ## Key files
 
