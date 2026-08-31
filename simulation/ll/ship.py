@@ -46,7 +46,6 @@ from common.chain import (
 from ll.experimental_coupling import extra_drag as _extra_drag
 from ll.experimental_coupling import heel_angle as _heel_angle
 from ll.experimental_coupling import heel_lateral_force as _heel_lateral_force
-from ll.hull import t_drive_for
 from ll.oar import simulate
 from ll.rower import HOLD_FRAC as HOLD_FRAC_DEFAULT
 from ll.rower import PRESSURE, SideCrew
@@ -450,6 +449,248 @@ def _crew_oar(rig_name: str, rate: float, td: float):
     from ll.oar import Oar
 
     return Oar(RIGS[rig_name], rate, td)
+
+
+# =====================================================================
+# =====================================================================
+# Surge-only helpers — burst equilibrium + time-stepped surge
+#
+# Forward-only equivalents of the Ship's 3-DOF hull.  The blade and
+# hull law are the same physics as Ship uses; the surge hull is Ship
+# with v=omega=0 — straight-line special case.  For the burst
+# equilibrium: "what speed at this rate, no crew?"  For the crewed
+# and turning case, use Ship directly.
+# =====================================================================
+# =====================================================================
+
+import itertools as _itertools
+
+from common.chain import (
+    CALIBRATED_T_DRIVE_44_5 as _CAL_TD_44_5,
+)
+from common.chain import (
+    M_APP_FACTOR as _M_APP_FACTOR,
+)
+from common.chain import (
+    M_REAL as _M_REAL,
+)
+from common.chain import (
+    N_TOTAL as _N_TOTAL,
+)
+from common.chain import (
+    SPM as _SPM,
+)
+from common.chain import (
+    T_DRIVE as _T_DRIVE,
+)
+
+_M_TRIAL = _M_REAL
+_N_OARS = _N_TOTAL
+
+# Public aliases (kept for the Gate 2 call sites).
+M_TRIAL = _M_TRIAL
+N_OARS = _N_OARS
+
+_CAL_T_DRIVE: dict[tuple[str, float], float] = {("Olympias", 44.5): _CAL_TD_44_5}
+CALIBRATED_T_DRIVE = _CAL_T_DRIVE
+
+
+def t_drive_for(rig_name: str, spm: float) -> tuple[float, str]:
+    """Pull time for rate spm (Table 9.6): exact at measured points,
+    calibrated beyond (CALIBRATED_T_DRIVE), linear interpolation /
+    extrapolation otherwise, flagged."""
+    if (rig_name, spm) in _CAL_T_DRIVE:
+        return _CAL_T_DRIVE[(rig_name, spm)], "calibrated"
+    pts = sorted(
+        (_SPM[rn][vkt], td) for (rn, vkt), td in _T_DRIVE.items() if rn == rig_name
+    )
+    for r, td in pts:
+        if abs(r - spm) < 0.01:
+            return td, "exact"
+    if spm < pts[0][0]:
+        (r1, td1), (r2, td2) = pts[0], pts[1]
+        kind = "extrapolated"
+    elif spm > pts[-1][0]:
+        (r1, td1), (r2, td2) = pts[-2], pts[-1]
+        kind = "extrapolated"
+    else:
+        for (r1, td1), (r2, td2) in _itertools.pairwise(pts):
+            if r1 <= spm <= r2:
+                break
+        kind = "interpolated"
+    return td1 + (td2 - td1) * (spm - r1) / (r2 - r1), kind
+
+
+def drag_force(V: float, hull: float = 1.0) -> float:
+    """Resistance force (N) from the chain's power law W(V)/V."""
+    return 0.0 if V < 0.05 else hull_power(V, hull) / V  # type: ignore[arg-type]
+
+
+_EQ_LAST: dict[tuple, tuple[float, float]] = {}
+
+
+def equilibrium_speed(
+    rig_name: str,
+    spm: float,
+    n_oars: int = _N_OARS,
+    hull: float = 1.0,
+    t_drive: float | None = None,
+) -> dict:
+    """Burst mean-force equilibrium: n·T̄(V) = D(V) by bisection.
+
+    T̄(V) is the bare-oar cycle-mean thrust at fixed V (Gate-1 oar) —
+    the burst equilibrium, no crew, no stamina.  For the crewed /
+    turning case, run a Ship and measure its settled V instead.
+    t_drive: override the Table 9.6 schedule (calibration use, A8)."""
+    from ll.oar import Oar as _Oar
+
+    td, _ = t_drive_for(rig_name, spm) if t_drive is None else (t_drive, "override")
+
+    def g(V: float) -> float:
+        res = simulate(_Oar(RIGS[rig_name], spm, td), V, td / 600, n_cycles=4)
+        return n_oars * res["mean_thrust"] - drag_force(V, hull)
+
+    key = (rig_name, hull, n_oars)
+    lo, hi = 0.5, 6.5
+    n_iter = 50
+    if key in _EQ_LAST:
+        prev_spm, prev_Ve = _EQ_LAST[key]
+        if abs(spm - prev_spm) < 6.0:
+            lo = max(0.5, prev_Ve - 0.8)
+            hi = min(6.5, prev_Ve + 0.8)
+            if g(lo) <= 0:
+                lo = 0.5
+            if g(hi) >= 0:
+                hi = 6.5
+            n_iter = 40
+    for _ in range(n_iter):
+        mid = 0.5 * (lo + hi)
+        if g(mid) > 0:
+            lo = mid
+        else:
+            hi = mid
+    Ve = 0.5 * (lo + hi)
+    res = simulate(_Oar(RIGS[rig_name], spm, td), Ve, td / 600, n_cycles=4)
+    _EQ_LAST[key] = (spm, Ve)
+    return {
+        "V": Ve,
+        "thrust_oar": res["mean_thrust"],
+        "mean_fh": res["mean_fh"],
+        "t_drive": td,
+    }
+
+
+class SurgeHull:
+    """Forward-only hull — the Ship's surge hull with v=omega=0.
+
+    Used by Gate 2's time-stepped coupling test.  The surge EOM is
+    identical to Ship.hull_advance's surge term when sway/yaw are zero:
+    m_app·dV/dt = N·F_oars(t,V) − D(V).  Kept here so the LL has one
+    burst-equilibrium path (this class) and one crewed path (Ship).
+    """
+
+    def __init__(
+        self,
+        m_trial: float = _M_TRIAL,
+        m_app_factor: float = _M_APP_FACTOR,
+        hull: float = 1.0,
+        n_oars: int = _N_OARS,
+        fh_max: float | None = None,
+    ) -> None:
+        self.m = m_app_factor * m_trial
+        self.hull = hull
+        self.n_oars = n_oars
+        self.fh_max = fh_max
+        self.V = 0.0
+
+    def run(  # type: ignore[no-untyped-def]
+        self,
+        oar,  # Oar, not typed here to avoid circular dep
+        V0: float,
+        t_end: float,
+        dt: float,
+        sample_dt: float = 0.1,  # Oar, not imported here to avoid circular dep
+    ) -> dict:
+        """Integrate from V0 for t_end s at step dt.  Returns the fine
+        timeline, settled speed, ripple, settle time, and peak Fh."""
+        from ll.oar import Oar as _Oar  # noqa: F401 — type hint only
+
+        self.V = V0
+        oar.reset()
+        t = next_s = 0.0
+        ts: list[float] = []
+        Vs: list[float] = []
+        peak_fh = 0.0
+        while t < t_end:
+            s = oar.step(dt, self.V)
+            fx, fh = s.Fx, s.Fh
+            if self.fh_max is not None and fh > self.fh_max and s.immersed:
+                scale = self.fh_max / fh
+                fx *= scale
+                fh *= scale
+            peak_fh = max(peak_fh, fh)
+            self.V += (self.n_oars * fx - drag_force(self.V, self.hull)) / self.m * dt
+            t += dt
+            if t >= next_s:
+                ts.append(t)
+                Vs.append(self.V)
+                next_s += sample_dt
+        cyc = oar.cycle
+        tail = [v for t, v in zip(ts, Vs) if t >= t_end - cyc]
+        V_settled = sum(tail) / len(tail) if tail else Vs[-1] if Vs else 0.0
+        ripple = (max(tail) - min(tail)) if tail else 0.0
+        win = max(1, int(10.0 / sample_dt))
+        wmean = [
+            sum(Vs[max(0, i - win + 1) : i + 1]) / min(i + 1, win)
+            for i in range(len(Vs))
+        ]
+        smin, smax = [0.0] * len(wmean), [0.0] * len(wmean)
+        mn = mx = wmean[-1] if wmean else 0.0
+        for i in range(len(wmean) - 1, -1, -1):
+            mn = min(mn, wmean[i])
+            mx = max(mx, wmean[i])
+            smin[i], smax[i] = mn, mx
+        tol = 0.005 * V_settled if V_settled else 1e-9
+        settle_time = None
+        for i, t in enumerate(ts):
+            if (
+                t >= 20.0
+                and smax[i] - smin[i] < tol
+                and abs(wmean[i] - V_settled) < tol
+            ):
+                settle_time = t
+                break
+        return {
+            "ts": ts,
+            "Vs": Vs,
+            "V_settled": V_settled,
+            "ripple": ripple,
+            "settle_time": settle_time,
+            "peak_fh": peak_fh,
+            "wmean": wmean,
+        }
+
+
+def run_cruise(
+    rig_name: str,
+    spm: float,
+    t_end: float = 600.0,
+    dt: float = 0.02,
+    fh_max: float | None = None,
+    n_oars: int = _N_OARS,
+    v0: float | None = None,
+) -> dict:
+    """Burst equilibrium then a full surge run from 0.9·V* — Gate 2 helper."""
+    from ll.oar import Oar as _Oar
+
+    eq = equilibrium_speed(rig_name, spm, n_oars=n_oars)
+    td, tsrc = t_drive_for(rig_name, spm)
+    oar = _Oar(RIGS[rig_name], spm, td)
+    hull = SurgeHull(n_oars=n_oars, fh_max=fh_max)
+    out = hull.run(oar, v0 if v0 is not None else 0.9 * eq["V"], t_end, dt)
+    out["eq"] = eq
+    out["t_drive_src"] = tsrc
+    return out
 
 
 def run_turn(

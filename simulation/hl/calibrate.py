@@ -29,9 +29,8 @@ import itertools
 
 from commands.parser import Command, parse_file
 from common.chain import KT
-from ll.hull import equilibrium_speed
 from ll.ship import Ship as LLShip
-from ll.ship import rate_for_speed
+from ll.ship import equilibrium_speed, rate_for_speed
 
 from hl.curves import Calibration, _scalars, _tables
 
@@ -138,7 +137,7 @@ def _save_cache(commit: str, cells: dict) -> None:
 # ---------------------------------------------------------------------------
 def measure_vstar(rates):
     """V* over rate (spoude, full W', 170 oars) — the bare commanded oar's
-    mean-force equilibrium (ll.hull.equilibrium_speed)."""
+    mean-force equilibrium (ll.ship.equilibrium_speed)."""
     kt, t0 = [], time.time()
     for r in rates:
         kt.append(equilibrium_speed("Olympias", r)["V"] / KT)
@@ -1263,7 +1262,7 @@ def main() -> None:
         "date": date,
         "config": {"rig": "Olympias", "fleet": "spruce", "hull": 1.0, "n_oars": 170},
         "protocols": {
-            "vstar": "ll.hull.equilibrium_speed",
+            "vstar": "ll.ship.equilibrium_speed",
             "pressure_rows": "LL ship 420-s settle, 60-s tail mean",
             "empty": "LL ship, tiers' W preset 0, settle",
             "asym": "LL ship (row, hold / row, back), spoude + steady, settle",

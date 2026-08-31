@@ -26,7 +26,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 import pytest
-from ll.hull import equilibrium_speed
+from ll.ship import equilibrium_speed
 
 # Legacy: Olympias rig at Mark II hull — Shaw's ch.7 table reference
 TRIPLE_LEGACY = [(25.5, 6.83), (28.8, 7.15), (32.3, 7.51)]  # kt @ hull=1.08

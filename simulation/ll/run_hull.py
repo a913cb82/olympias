@@ -22,7 +22,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from common.chain import KT, OQ18
 
-from ll.hull import equilibrium_speed, run_cruise
+from ll.ship import equilibrium_speed, run_cruise
 
 TARGETS = {
     25.5: (7.0, "ch.7 ref (Mark II hull)"),

@@ -26,8 +26,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 import itertools
 
 from common.chain import KT, OQ18, RIGS
-from ll.hull import SurgeHull, equilibrium_speed, run_cruise, t_drive_for
 from ll.oar import Oar
+from ll.ship import SurgeHull, equilibrium_speed, run_cruise, t_drive_for
 
 # --- 1. equilibrium at the anchored points ---
 
@@ -43,8 +43,8 @@ def test_table96_36():
 
 
 def _v_star(spm, n_oars, t_drive):
-    from ll.hull import drag_force
     from ll.oar import simulate
+    from ll.ship import drag_force
 
     def g(V):
         res = simulate(

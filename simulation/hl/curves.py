@@ -30,7 +30,7 @@ from ll.rower import HOLD_FRAC, P_CRIT, PRESSURE, TAU, W_MAX
 
 # V* over rate, kt: spoude, full W', 170 oars, hull = 1.0.
 # At cruise no cap binds, so spoude + full W' == the bare commanded oar that
-# ll.hull.equilibrium_speed simulates (its V* values, measured directly).
+# ll.ship.equilibrium_speed simulates (its V* values, measured directly).
 VSTAR_RATES = [8.0, 12.0, 16.0, 20.0, 24.0, 25.5, 28.8, 32.3, 36.0, 40.0, 44.5, 50.0]
 VSTAR_KT = [
     5.07,

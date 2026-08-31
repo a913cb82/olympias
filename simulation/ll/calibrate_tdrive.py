@@ -17,7 +17,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from common.chain import KT
 
-from ll.hull import equilibrium_speed
+from ll.ship import equilibrium_speed
 
 TARGET = 8.3  # kt — the ch.9 four-run sprint mean (8.2-8.3)
 

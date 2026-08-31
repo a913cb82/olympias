@@ -188,7 +188,7 @@ ll/          the LL model
   blade.py       blade force law (how the blade pushes water)
   oar.py         one oar's motion and forces
   ship.py        the 170-oar ship (forward + sideways + turning)
-  clarke.py      an alternative hull model (kept for reference, not used)
+  experimental_coupling.py  heel+drag spike (OFF by default, step 3)
   rower.py       the crew (how hard they pull, how they tire)
   tests/         tests for each group
 hl/          the HL model

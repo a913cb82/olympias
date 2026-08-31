@@ -22,8 +22,8 @@ import pytest
 from commands.parser import parse_file
 from common.chain import KT
 from hl.ship import Ship as HLShip
-from ll.hull import equilibrium_speed
 from ll.ship import Ship as LLShip
+from ll.ship import equilibrium_speed
 
 LL_TURN_D = {"g1": 89.7, "f1": 117.4, "tightest": 67.7, "oar-hold": 126.6}
 

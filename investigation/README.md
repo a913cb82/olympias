@@ -11,6 +11,9 @@ These notes explain each gap, what causes it, and what was tried.
 | [04](04-synthesis.md) | How do the three relate? | — | Fixing the lean could add drag that also slows the turn — one fix, two gaps. |
 | [05](05-experiments.md) | What did we measure? | — | Raw numbers for every claim in 01–04 (all reproducible). |
 | [06](06-step3-spike.md) | Does hull tilt fix lean + time? | Experiment | No — tilt at 1.6° is too small. Time CAN reach 128 s but breaks turn sizes. |
+| [07](07-ship-cruise-gap.md) | Why can't Ship reach cruise? | 5–11% slow burst | Ship burst 5–11% slow vs bare blade; settled at P_crit ~6.1 kt at any rate. Burst vs sustained are different questions. |
+| [08](08-straight-vs-turn.md) | Are straight and turning the same code? | Unified | All forward helpers now live in `ship.py`; `hull.py` + `clarke.py` deleted. One blade law, one hull law, one drag. |
+| [07](07-ship-cruise-gap.md) | Why can't Ship reach cruise speed? | 5–11% slow | Ship's burst is 5–11% slow vs hull.py; settled is 16–29% slow (W' drains at cruise). |
 
 ## How to reproduce the key numbers
 

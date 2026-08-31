@@ -152,10 +152,9 @@ silently get worse.
 |---|---|
 | `blade.py` | How the blade pushes water |
 | `oar.py` | One oar's swing and forces |
-| `ship.py` | The 170-oar ship (adds up oar forces, moves the hull, steers) |
+| `ship.py` | The ship — all hull physics lives here: the 170-oar 3-direction ship (surge + sway + yaw) plus the forward-only burst helpers (`t_drive_for`, `drag_force`, `equilibrium_speed`, `SurgeHull`) that Gate 2 and calibration use. One hull law, one blade law, one place. |
 | `rower.py` | The crew (force limit, stamina, stroke timing) |
-| `hull.py` | Forward-only hull motion (for cruising calculations) |
-| `clarke.py` | An alternative hull model (kept for reference, not used) |
+| `experimental_coupling.py` | Hull-tilt experiment (OFF by default — the step-3 spike) |
 
 ## Two ways to row
 
