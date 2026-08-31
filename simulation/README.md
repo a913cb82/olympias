@@ -1,31 +1,31 @@
-# simulation — the two simulators
+# simulation — the two trireme models
 
-This directory contains two computer simulators of the Olympias trireme.
-They share one command language — the same script runs on both.
+Two computer models of the Olympias trireme. They share one command
+language — the same script runs on both.
 
-The ground truth they must satisfy: `../research/README.md` (the evidence
-base). The acceptance record — every gate, every result, every honest
-mismatch — lives in [`docs/VALIDATION.md`](docs/VALIDATION.md).
+The evidence they must match is in `../research/README.md`.
+The full acceptance record — every test, every result, every known gap —
+is in [`docs/VALIDATION.md`](docs/VALIDATION.md).
 
-## How the two simulators relate
+## How the two models relate
 
 ```
                   ┌──────────┐
-  command script →│   LL     │→ telemetry (speed, position, forces)
+  command script →│   LL     │→ results (speed, position, forces)
                   │ (oracle) │
                   └──────────┘
                        │
-                       │  machine-calibrates
+                       │  builds the HL's lookup tables
                        ▼
                   ┌──────────┐
-  command script →│   HL     │→ telemetry (same format as LL)
+  command script →│   HL     │→ results (same format as LL)
                   │  (fast)  │
                   └──────────┘
                        │
                        │  harness compares
                        ▼
                   ┌──────────┐
-                  │ agreement│→ pass/fail per gate
+                  │ agreement│→ pass or fail per test
                   │  check   │
                   └──────────┘
 ```
@@ -33,66 +33,65 @@ mismatch — lives in [`docs/VALIDATION.md`](docs/VALIDATION.md).
 **LL** (`ll/`): Simulates 170 individual oars with real blade forces.
 Slow (minutes per run) but physically accurate. Must match trial data.
 
-**HL** (`hl/`): Treats the ship as one object with pre-measured response
-curves (speed vs stroke rate, turn diameter vs helm angle, etc.). Fast
-(seconds per run). Its curves are generated automatically from LL runs,
-never hand-edited.
+**HL** (`hl/`): Treats the ship as one object with lookup tables (speed
+at each stroke rate, turn size at each helm angle, and so on). Fast
+(seconds per run). Its tables are made automatically from LL runs — never
+edited by hand.
 
-**Harness** (`harness/`): Runs the same command script on both sims and
-checks they agree within documented tolerances.
+**Harness** (`harness/`): Runs the same script on both models and checks
+they agree within set limits.
 
 ## Command language
 
 Scripts are one command per line. `#` lines are comments. Format:
 `<time_s> <verb> [args...]`
 
-The four crew verbs:
+Four verbs:
 
 | Verb | What it does | Example |
 |---|---|---|
-| `rate` | Set the stroke rate (spm) for the whole ship | `30 rate 28.8` |
+| `rate` | Set the stroke rate (strokes per minute) for the whole ship | `30 rate 28.8` |
 | `oars` | Set what the oars are doing (per side or both) | `60 oars hold port` |
-| `pressure` | Set effort level (per side or both) | `0 pressure steady` |
+| `pressure` | Set how hard the crew pulls (per side or both) | `0 pressure steady` |
 | `helm` | Set the steering oar angle | `0 helm port 1.0` |
 
-Rates accept aliases: `slow` (24), `working` (30), `racing` (44).
-Oar states: `row` (normal), `hold` (brake), `back` (reverse), `bank`
-(raised out of water). Pressure levels: `rest`, `steady`, `fast`,
-`spoude` (maximum burst).
+Shorthand for rates: `slow` (24), `working` (30), `racing` (44).
+Oar states: `row` (normal rowing), `hold` (blades held still as brakes),
+`back` (rowing backwards), `bank` (oars lifted out of the water).
+Effort levels: `rest`, `steady`, `fast`, `spoude` (all-out burst).
 
-Full-rudder turn example:
+Full-rudder turn:
 ```
-0 helm port 1.0        # hard to port, full deflection
+0 helm port 1.0        # hard to port, full rudder
 0 rate 30
 0 pressure steady
 ```
 
-One-side-hold tightest turn:
+Tightest turn (one side holds water, other rows):
 ```
-0 oars hold starboard   # hold water on starboard side only
+0 oars hold starboard   # starboard blades held as brakes
 0 rate 44
 0 pressure spoude
 0 helm starboard 1.0
 ```
 
-The schema is at `commands/schema.json`.
+The full rules are in `commands/schema.json`.
 
 ## Running things
 
-All commands from the `simulation/` directory. Python is always
+All commands from the `simulation/` folder. Python is always
 `.venv/bin/python3` (from `simulation/`, that's `../.venv/bin/python3`).
 
 ### Tests
 
 ```bash
 V=../.venv/bin/python3
-$V -m pytest                       # all tests, one command
+$V -m pytest                       # all tests
 $V -m pytest -v                    # with test names
-$V -m pytest ll/tests/test_gate5.py  # one suite
+$V -m pytest ll/tests/test_gate5.py  # one group of tests
 ```
 
-The test count and per-gate breakdown live in `docs/VALIDATION.md`,
-not here.
+How many tests and what each group checks is in `docs/VALIDATION.md`.
 
 ### LL runners
 
@@ -105,117 +104,121 @@ $V ll/run_hull.py --table          # speed curve over stroke rates
 ### HL runners
 
 ```bash
-$V hl/run_hl.py --turn table       # fast ship turn scenarios
-$V hl/calibrate.py                 # regenerate HL curves from LL (~4 min)
+$V hl/run_hl.py --turn table       # fast model turn scenarios
+$V hl/calibrate.py                 # rebuild HL lookup tables from LL (~4 min)
 ```
 
 ### Harness
 
 ```bash
-$V harness/run_validation.py       # HL vs LL equivalence tables
+$V harness/run_validation.py       # HL vs LL comparison tables
 ```
 
-### Replay UI
+### Replay in the browser
 
 ```bash
-$V ui/serve.py                     # opens browser — replays computed runs
+$V ui/serve.py                     # opens in your browser — replays computed runs
 ```
 
-No install, no build. The viewer is a single HTML file. Regenerate logs
-after any LL/HL change: `$V ui/dump.py` (~1 min, 12 runs × 2 sims).
+Nothing to install. The viewer is a single web page. After any LL or HL
+change, rebuild the replay data: `$V ui/dump.py` (~1 min, 12 runs × 2 models).
 
-## The pair contract (what each simulator must match)
+## What each model must match
 
-### LL vs reality
+### LL vs the real trials
 
-The LL must reproduce the trial data within its stated bands:
+The LL must reproduce what was measured at sea, within set limits:
 
-- **Cruise**: 25.5 / 28.8 / 32.3 spm → 7 / 7.5 / 8 kt (Rankov 2012 ch.7)
-- **Sprint**: 44.5 spm → 8.2–8.4 kt (sea trials, ch.9)
-- **Turns**: the F/G trial-turn families (F1–F6, G1–G5) within ±7 %
-- **One-oar**: mean handle force ≈ 210–225 N; catch-flip inertia spike
+- **Cruising**: 25.5 / 28.8 / 32.3 strokes/min → 7 / 7.5 / 8 knots
+  (Rankov 2012 ch.7)
+- **Sprint**: 44.5 strokes/min → 8.2–8.4 knots (trials, ch.9)
+- **Turns**: the F/G trial turn families (F1–F6, G1–G5) within ±7%
+- **One oar**: average handle force about 210–225 newtons; the sharp
+  force spike when the oar flips at the catch
 
-These are tested in `ll/tests/test_gate*.py` (8 gates).
+These are checked in `ll/tests/test_gate*.py` (8 groups).
 
-### HL vs LL
+### HL vs the LL
 
 The HL must agree with the LL on:
 
-- Mean speed over a 10-min script: within 1 %
-- Settled stroke rate: within 1 spm
-- Time to 3 nautical miles: within 1 %
-- Turn diameters (G1, F1): within 5 %
-- Crew fatigue (W'): within 5 %
-- Final position after course changes: within ~0.1 NM
-- Path gap (mean per-sample separation): within 0.1 NM
+- Average speed over a 10-minute script: within 1%
+- Stroke rate: within 1 stroke/min
+- Time to cover 3 nautical miles: within 1%
+- Turn sizes (G1, F1): within 5%
+- Crew energy (W'): within 5%
+- Final position after course changes: within 0.1 nautical miles
+- Path shape (average gap between the two tracks): within 0.1 nautical miles
 
-Every HL result carries its tolerance source ("±X% of LL, calibration
-run #N"). These are tested in `harness/tests/`.
+Every HL result notes which LL run it was checked against.
+These are checked in `harness/tests/`.
 
-### The honesty rule
+### Keeping it honest
 
-The HL stays loose only where documented (in `docs/VALIDATION.md §9.3`).
-It is never hand-tuned to match its own old output — when the LL changes,
-the HL is re-calibrated to the LL's new truth.
+The HL is only allowed to be loose where `docs/VALIDATION.md §9.3`
+says so. It is never hand-tuned to match old output — when the LL
+changes, the HL is rebuilt from the LL's new numbers.
 
-## Calibration (how the HL gets its curves)
+## Calibration (how the HL gets its tables)
 
-`hl/calibrate.py` runs a standard set of LL scenarios and writes the
-results to `hl/calibration/calib_<id>.json`. The latest file is always
-symlinked as `latest.json`.
+`hl/calibrate.py` runs a set of LL scenarios and saves the results to
+`hl/calibration/calib_<id>.json`. The newest file is always linked as
+`latest.json`.
 
-The measured tables include: speed vs stroke rate, pressure effects,
-hold/back modes, W' drain/refill, turn diameters at various helm angles,
-drift angles, and time constants for the approach/decay curves.
+The tables cover: speed at each stroke rate, how effort level changes
+speed, what happens when one side holds water, how fast the crew tires
+and recovers, turn sizes at each helm angle, sideways drift, and how
+quickly the ship speeds up or slows down.
 
 After any LL change:
-1. Run `$V hl/calibrate.py` (generates new curves, ~4 min)
+1. Run `$V hl/calibrate.py` (makes new tables, ~4 min)
 2. Run `$V harness/run_validation.py` (checks HL vs LL)
-3. Run `$V -m pytest` (full suite)
+3. Run `$V -m pytest` (full test suite)
 4. Commit the new calibration file
 
-The calibration file is committed (deterministic — same LL = same curves).
+The calibration file is saved in the repo — same LL always gives same
+tables.
 
-## Layout detail
+## What's in each folder
 
 ```
-commands/    schema + script parser
-common/      chain.py — shared constants (the single source of truth)
-ll/          the LL simulator
-  blade.py       flat-plate blade force law
-  oar.py         one-oar kinematics + cycle averages
-  ship.py        170-oar ship (surge + sway + yaw)
-  clarke.py      Clarke hull damping module (kept for reference, not wired)
-  rower.py       crew physiology (W' energy, fatigue)
-  tests/         per-gate acceptance suites
-hl/          the HL simulator
-  ship.py        the whole simulator (same command API as LL)
-  curves.py      calibration loader + bootstrap
-  calibrate.py   machine calibration from LL
-  calibration/   committed calibration files
+commands/    the command language (rules + script reader)
+common/      chain.py — shared numbers (the single source of truth)
+ll/          the LL model
+  blade.py       blade force law (how the blade pushes water)
+  oar.py         one oar's motion and forces
+  ship.py        the 170-oar ship (forward + sideways + turning)
+  clarke.py      an alternative hull model (kept for reference, not used)
+  rower.py       the crew (how hard they pull, how they tire)
+  tests/         tests for each group
+hl/          the HL model
+  ship.py        the whole model (same commands as LL)
+  curves.py      table loader + defaults
+  calibrate.py   builds tables from LL runs
+  calibration/   saved calibration files
   run_hl.py      demo runner
-  tests/         HL basics
-harness/     the pair comparison harness
-  script.py      runs both sims on one command stream
-  comparator.py  Level-2 metrics + equivalence table
-  run_validation.py  the script set + turn scenarios
-  tests/         equivalence gates
-ui/          browser replay UI
-  dump.py        generates telemetry logs
-  viewer.html    self-contained viewer (vanilla JS + SVG)
-  serve.py       stdlib HTTP server
-  logs/          committed replay logs
-docs/        VALIDATION.md (acceptance record)
-             CALIBRATION.md (tuning ledger)
-             next-steps.md (open work)
-             completed-work.md (verdict ledger)
+  tests/         HL tests
+harness/     the comparison harness
+  script.py      runs both models on one script
+  comparator.py  comparison numbers + pass/fail table
+  run_validation.py  the full script set + turn checks
+  tests/         comparison tests
+ui/          browser replay
+  dump.py        makes the replay data
+  viewer.html    the viewer (plain web page)
+  serve.py       a tiny web server
+  logs/          saved replay data
+docs/        VALIDATION.md (what passes, what doesn't, and why)
+             CALIBRATION.md (tuning notes)
+             next-steps.md (what's still to do)
+             completed-work.md (what's done)
 ```
 
-## Conventions
+## Rules
 
-- **No duplicated numbers**: every constant comes from `common/chain.py`.
-  A new constant lands in research first, then chain.py exports it.
-- **Fail-fast scripts**: unknown verbs or out-of-range arguments raise
-  `ScriptError` with the line number, before any simulation runs.
-- **Deterministic**: fixed time step (dt), seeded RNG, logged command
-  stream. The same script always produces the same output.
+- **One copy of every number**: every constant comes from `common/chain.py`.
+  A new number goes into the research first, then into chain.py.
+- **Bad scripts fail fast**: unknown commands or bad arguments raise an
+  error with the line number, before anything is simulated.
+- **Same input → same output**: fixed time step, seeded random numbers,
+  logged commands. The same script always gives the same answer.

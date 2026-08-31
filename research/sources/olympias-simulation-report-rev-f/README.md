@@ -1,57 +1,46 @@
-# Olympias Simulation Report Rev F — provenance
+# Olympias Simulation Report Rev F — what it is
 
-Source document: `Olympias-Simulation-Report-Rev-F.docx` (the repo's original
-`Olympias Simulation Report Rev F (1).docx`, moved here on 2026-08-16).
-
-## Document metadata (docProps/core.xml)
+Source file: `Olympias-Simulation-Report-Rev-F.docx` by Richard Braithwaite
+(22 Nov 2019, 30th revision).
 
 | Field | Value |
 |---|---|
-| Creator | RICHARD BRAITHWAITE |
-| Last modified by | RICHARD BRAITHWAITE |
-| Created | 2019-11-22 10:41 UTC |
-| Modified | 2026-03-16 15:52 UTC |
-| Revision | 30 |
-| Title page | "A 2-D Rowing Model Applied to the Manoeuvring of the Trireme Reconstruction Olympias", R Braithwaite, 22 Nov 2019, Rev E → the file is Rev F (30th revision) |
+| Author | RICHARD BRAITHWAITE |
+| Created | 2019-11-22 |
+| Last modified | 2026-03-16 |
+| Title | "A 2-D Rowing Model Applied to the Manoeuvring of the Trireme Reconstruction Olympias" |
 
-## The extraction
+## What's in this folder
 
-- `report.md` — the converted document: paragraphs, tables, captions, image
-  references (media/), and all 115 OMML equations inlined as linear text
-  (`x_0 = x_OG + x cos ψ − y sin ψ` style; fractions as `(a)/(b)`, indices as
-  `x_i`, powers as `x^2`). The Word table-of-contents field is skipped; the
-  bibliography (`w:sdt` — the 17 references) is included after the body.
-- `equations.txt` — the equations alone, for grep-able reference.
+- `report.md` — the document converted to text: paragraphs, tables,
+  captions, image references, and all 115 equations written as plain text
+  (`x_0 = x_OG + x cos ψ − y sin ψ` style). The table of contents and
+  bibliography are included.
+- `equations.txt` — just the equations, easy to search.
 - `media/` — the 22 embedded images (jpeg/png/emf/wmf).
-- `comparison-with-ll.md` — the deep-dive comparison with the low-level
-  simulator's methodology. The follow-on plan and the verdict ledger
-  moved to `simulation/docs/` (next-steps.md, completed-work.md) with
-  the 2026-08 restructure.
+- `comparison-with-ll.md` — how this report's model compares to the
+  project's LL model (notably: the stationary-turn 3.5°/s anchor, blade
+  area 0.113 m² vs the chain's 0.078, inboard 1.05 vs 1.092 m).
 
-Conversion route (no external tools; the venv has no docx library): the docx
-is a ZIP; `word/document.xml` parsed with stdlib `xml.etree` (paragraphs,
-styles, tables, images), plus an OMML→linear-text converter for the math.
-Cross-checked against an independent plain-text dump (all 16 key numeric
-probes matched in both routes).
+How the conversion was done: the docx file is a ZIP; `word/document.xml`
+was parsed with Python's built-in XML tools (paragraphs, styles, tables,
+images), plus a math converter for the equations. Checked against a second
+independent text dump — all 16 key numbers matched both ways.
 
-## Known conversion caveats
+## Things to know about the conversion
 
-- The equations are LINEAR approximations of the 2-D layout (no square-root
-  bars, no big operators' geometry); accents/dots show as `[̇]`/`[̈]`
-  suffixed markers; matrix rows are `[a b; c d]`.
-- The source-code appendix is EMPTY in this docx — the heading
-  "APPENDIX SOURCE CODE" has no content under it; the OLE objects
-  (oleObject1-3.bin — old equation-editor compounds) are not decoded.
-- Sections 6 (VALIDATION) and 7 (SOFTWARE ARCHITECTURE) are one-line stubs
-  in the source; the report's validation was never written.
-- Scanned-in figures (image1, image22…) are at their native resolution.
+- Equations are written flat (no square-root bars, no big-operator shapes);
+  accents show as `[̇]`/`[̈]` markers; matrices are `[a b; c d]`.
+- The source-code appendix is empty in the original file — the heading
+  exists but nothing is under it.
+- Sections 6 (VALIDATION) and 7 (SOFTWARE ARCHITECTURE) are one-line
+  stubs in the original.
+- Scanned figures (image1, image22…) are at their original resolution.
 
-## The report's role in this project
+## How this report relates to the project
 
-The report is the author's own 2-D rowing/manoeuvring model of Olympias — the
-same author whose archived build log lives in `recovery/`. It is NOT one of
-the trial-data sources the validated chain is built on (Rankov 2012, the 1988
-trials report); it is a sibling model. Its numbers that bear on the chain are
-compared in `comparison-with-ll.md` (notably: the stationary-turn 3.5°/s at
-27 spm anchor vs the t_360 open item, blade area 0.113 m² vs the chain's
-0.078, inboard 1.05 vs 1.092 m).
+This is the author's own 2-D rowing and turning model of Olympias — the
+same author whose build log is in `recovery/`. It is NOT one of the
+trial-data sources the research chain is built on (Rankov 2012, the 1988
+trials report); it is a sibling model. Numbers from it that affect the
+chain are compared in `comparison-with-ll.md`.

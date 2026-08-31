@@ -1,25 +1,28 @@
-# Repeatable task playbooks (how-to guides)
+# How-to guides for repeated tasks
 
-Short guides for tasks we repeat while extracting data from sources. Read the relevant playbook
-*before* starting the task — each one records the pitfalls and the exact working recipe so a later
-session doesn't re-learn them the hard way.
+Short guides for jobs we do again and again while getting data out of
+source documents. Read the right guide *before* starting the job — each
+one lists the pitfalls and the exact steps so you don't re-learn them.
 
-| Playbook | When to read |
+| Guide | When to read |
 |---|---|
-| [pdf-ocr-table-decoding.md](pdf-ocr-table-decoding.md) | You need the **numbers inside a table** in a PDF where text extraction fails (subset/custom fonts, e.g. Rankov 2012 Tables 8.x, 31.1). |
-| [pdf-subset-font-decode.md](pdf-subset-font-decode.md) | You need the **running prose text** of a PDF rendered with embedded subset TT (TrueType) fonts that `get_text()` returns as PUA (Private-Use-Area) characters / `?`. |
-| [verify-decoded-tables.md](verify-decoded-tables.md) | You decoded numbers from a table and need to **independently check they are right** (reconstruction vs source equations). |
-| [pdf-text-extraction.md](pdf-text-extraction.md) | Simple case: PDF text extracts fine — pull clean text/pages quickly. |
+| [pdf-ocr-table-decoding.md](pdf-ocr-table-decoding.md) | You need **numbers from a table** in a PDF where copy-paste gives garbage (custom fonts, e.g. Rankov 2012 Tables 8.x, 31.1). |
+| [pdf-subset-font-decode.md](pdf-subset-font-decode.md) | You need the **text** of a PDF whose embedded fonts make copy-paste return wrong characters. |
+| [verify-decoded-tables.md](verify-decoded-tables.md) | You decoded numbers from a table and need to **check they are right** (re-derive from the source equations). |
+| [pdf-text-extraction.md](pdf-text-extraction.md) | Simple case: the PDF's text copies cleanly — just grab it quickly. |
 
-Working notes (persistent across sessions):
-- Sources: `../sources/rankov2012.pdf` (+ `rankov2012.txt` full text dump), Carter 1982 PDF in
-  `../sources/carter/`. Promoted deliverables live in this repo.
-- **Venv: `.venv` at the repo root** (Python 3.10.12) has pymupdf + numpy + PIL + scipy +
-  matplotlib — everything except OCR. Render/extract with `.venv/bin/python3`.
-- **OCR (easyocr + torch) is on-demand only** — heavy; not installed into `.venv`. Recipe:
-  `python3 -m venv .venv-ocr && .venv-ocr/bin/pip install easyocr torch` (render with
-  `.venv`, OCR with `.venv-ocr`). The old `/tmp/opencode` venv pair is deprecated.
-- Rankov 2012 page numbering: **PDF page index = printed book page + 12** (e.g. book p.72 = PDF page 84;
-  book p.70 = PDF page 82). `decode_shaw.py` numbers by PDF page index (0-based pymupdf page).
-- The glyph-cache (`../tools/.cache/glyph_map3.json`, gitignored) and the reconstructed fonts in
-  `../tools/` are the accumulated decode state — keep them when re-running decodes.
+Working notes:
+
+- Sources: `../sources/rankov2012.pdf` (+ `rankov2012.txt` text dump),
+  Carter 1982 PDF in `../sources/carter/`.
+- **Python**: `.venv` at the repo root (Python 3.10.12) has pymupdf, numpy,
+  PIL, scipy, matplotlib — everything except OCR. Use `.venv/bin/python3`.
+- **OCR** (easyocr + torch) is heavy and not in `.venv`. To use it:
+  `python3 -m venv .venv-ocr && .venv-ocr/bin/pip install easyocr torch`
+  (render with `.venv`, run OCR with `.venv-ocr`).
+- Rankov 2012 page numbers: **PDF page = printed book page + 12** (e.g.
+  book p.72 = PDF page 84). `decode_shaw.py` counts by PDF page index
+  (0-based, as pymupdf does).
+- The glyph cache (`../tools/.cache/glyph_map3.json`, not saved in git)
+  and the rebuilt fonts in `../tools/` are the accumulated decode state —
+  keep them when re-running decodes.
