@@ -21,6 +21,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from ll.rower import TierCrew
+from common.chain import KT
 
 RATES = [19.8, 25.5, 28.8, 32.3, 38.75, 44.5, 50.0]
 PRESSURES = {
@@ -102,3 +103,30 @@ def test_hill_demand_contract():
     assert s.crew_p.tiers["thranite"].hill_demand is False
     s2 = Ship(rate=28.8, hill_demand=True)
     assert s2.crew_p.tiers["zygian"].hill_demand is True
+
+
+def test_hill_flag_survives_commands():
+    """Rate/pressure/state changes preserve the flag and it modulates
+    demand (spot-checked vs flag-off at the same state)."""
+    from ll.ship import Ship
+
+    s = Ship(rate=28.8, hill_demand=True)
+    s.V = 5.0 * KT
+    for _ in range(500):
+        s.step(0.02)
+    s._set_rate(32.3)
+    s.crew_p.set_pressure("fast")
+    s.crew_s.set_pressure("fast")
+    s.crew_p.set_state("row")
+    for _ in range(500):
+        s.step(0.02)
+    for side in (s.crew_p, s.crew_s):
+        for tier in side.tiers.values():
+            assert tier.hill_demand is True
+    s2 = Ship(rate=32.3, pressure=("fast", "fast"))
+    s2.V = s.V
+    t = s.crew_p.tiers["thranite"]
+    t2 = s2.crew_p.tiers["thranite"]
+    p1 = t._plan_force(s.V, t.sweep_cmd, t.lin, t.l_cp, t.k)
+    p2 = t2._plan_force(s2.V, t2.sweep_cmd, t2.lin, t2.l_cp, t2.k)
+    assert p1.fh_mean > p2.fh_mean  # V < 7.2 kt: Hill boosts demand
