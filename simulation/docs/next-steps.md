@@ -54,7 +54,11 @@ re-run after every promoted change.
   8.2-8.3 — bundles configuration with crew/law differences (LL rows
   148-effective vs Shaw's 130; (0.5, 148) and (~0.25, 130) both land on
   8.2, and the report's minimum-drag-near-quarter favours the latter
-  pairing — corrected 2026-09, primary source ch.9). What stands: no
+  pairing — corrected 2026-09, primary source ch.9). Rig caveat: the
+  8.2–8.3 anchor is original-rig (narrow thalmian blades, ch.9's own
+  attribution); the LL sails as-rowed common blades — cross-rig comparison
+  is directional (as-rowed should be faster), so the sprint constrains
+  combinations, not components. What stands: no
   unexplained residual inside EITHER consistent accounting; the chain law
   itself is the partly-raised curve (Shaw graph reading) while its P
   calibration was rudders-down (mixed conditions, validates within 1%). The thalmian head-room stays load-bearing
