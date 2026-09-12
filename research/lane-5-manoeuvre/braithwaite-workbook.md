@@ -154,3 +154,22 @@ sheet radians; tightest: the stored port-0/starboard-1 protocol, U0 = 4):
 Protocols differ (sheet full-load 45.38 t vs LL trial 40.95 t; lever 5.2
 vs thole-mean 2.00; helm 67.0 vs 67.5 deg; no brake/sway-oar-force) —
 verdicts directional. D1 COMPLETE (statics + trajectories).
+
+## Rudder-drag three-way tension (2026-09-12, from the Rev-F text decode)
+
+The Rev-F report quotes the Ref (1) towing fits verbatim (p74 lineage):
+bare hull 40.2v² (0–6.7 kt) vs rudders-lowered 76.6v² — increment **36.4
+N/kt²**. Two other lines give: VBA drag2 law 0.5·(137V²+0.65V)·(2A/1.5),
+V in m/s → per-rudder ×2 = **36.6 N/kt²** (0.5% apart — same analysis);
+Taylor Table 31.1 row 3 lineage: 79.6−40.2 = **39.4 N/kt²** (the LL's
+value, turn-validated). So 2-vs-1 at ~36.5 vs 39.4 (8% tension).
+Plausible cause for part of it: different conditions — Rev-F Table 2
+uses draught 1.08 m / 46 t (incl. added mass) / LWL 33 m (GA drawing) /
+beam 3.6 m (midship section), vs the LL's trial-WL lines (1.10 m,
+40.95 t, LWL 32.35 m, BWL 3.704 m); a 4% drag-level difference between
+conditions is unsurprising, and the LWL/beam/draught discrepancies are
+their own evidence tension (lane-3 territory).
+Verdict: LL stays at 39.4 — it is the turn-validated set (G1/F1/tightest
+close on it in OUR condition); the 8% source tension is recorded, needs
+Ref (1) p74 vs p82 to resolve. The D1 straight-drag lock (8%) now reads
+as this same tension, not a shortfall.
