@@ -96,6 +96,10 @@ physics that remain unresolved.
   restore; the closest approach, 7.0° at 160k, blows every diameter
   +30–50%; runaway past ~200k) — see `ll/experimental_coupling.py`
   verdict; the missing term is a yaw moment from heel (Bonjean path).
+  Heel itself is measured (3.5° stated, crew moved inside; 3° oar-rig
+  limit) and its documented turn effect is thrust loss past the limit,
+  not a side push (ch.31 §2.3 / G-turns notes) — consistent with the
+  exclusion.
 - **The ch.7 cruise triple (−2.5/−4.6/−6.1 %).** The model's rowers
   deliver less power per stroke at high rates. The blade/kinematics chain
   is the named suspect.

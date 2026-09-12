@@ -69,6 +69,11 @@ oar-system efficiency 63/115 ≈ **55%** (S6 quoted ~54%). Agreement. `[x]`
 - Gross mechanical power per man: **114 W @ 7 kt, 142 W @ 7.5 kt, 176 W @ 8 kt** (model; Shaw
   115/145/180). Compare against S5/S6 sustainable-power envelope (80 W fixed-seat / 115–145 W
   ordinary-labourer long-endurance) to assess feasibility of the Heraclea passage.
+- G-turns thrust shape (Taylor ch.31 fitting notes, via lane-5 manoeuvre.md):
+  measured oar thrust FLAT over 4–7 kts, assumed constant through the turn
+  (F-turns: reduced for long duration); thrust–speed line 17.4−0.967·v(kts)
+  (Shaw 1990, 25). Tension vs blade-slip laws (LL/VBA fall ~20% over 4–7
+  kts at constant effort): needs Ref (1); held-effort rowing may compensate.
 
 ## 7. Sources
 - Shaw (2012) ch.7 (pp.63–67) and ch.9 (pp.76–81) in Rankov (ed.) *Trireme Olympias: The Final Report*.
