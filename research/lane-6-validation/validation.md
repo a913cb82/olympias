@@ -137,6 +137,20 @@ lives at crew/technique level (facing away, timing). Modeling it needs
 universal push/pull or command-efficiency evidence (single number now);
 LL covers brake/decay (G4-4), not sustained astern.
 
+### 1.6 Turn crew protocols — inside-eased turns (Coates Notes 3–4, via GB snippets) [?]
+
+Note 3: rudders partly raised for this trial. Note 4: only outside rowers
+used, inside 'easied' = blades OFF the water (shipped, zero force+drag);
+the turn shown in Fig. 45; consistency of turning trials noted. Scope
+UNKNOWN (which table/turns — needs Coates Table F/G).
+Sensitivity probe, LL (no model change): port turn, outside spoude,
+inside {spoude, fast, steady} → G1 D 92.2/85.7/84.8 (anchor 89.4),
+F1 D 121.4/109.0/107.3 (anchor 111.9); floors fall with easing (t_360
+direction). The anchors sit BETWEEN spoude and fast (~0.9 inside
+if all else equal) — brackets, doesn't target. Protocols UNCHANGED
+(G-turns documented full-crew flat thrust; gates+HL validated as-is;
+Degenerate without per-turn data).
+
 ### 1.5 Sea-state tier knockout thresholds (Rankov ch.8) [x]
 
 Waves knock tiers out progressively (read 2026-09): 0.4 m+ → thalmian
