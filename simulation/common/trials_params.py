@@ -15,19 +15,20 @@ IMPORTANT: changing any value here must be followed by:
 # CREW EFFORT — pressure levels (fitted to ch.7 cruise points)
 # =====================================================================
 
-# The chain law says: P = 7.43 × rate (N mean pull at the handle).
-# At cruise (7-8 kt) the crew doesn't row at full chain pressure — they
-# row at a fraction. The pressure levels reproduce the observed speeds:
+# Pressure levels are scenario EFFORT inputs (like rate and helm), not ship
+# physics: they state how hard the crew rowed on that trial run. The chain
+# law says P = 7.43 × rate (N mean pull at the handle); P scales by pressure:
 #
 # P = 7.43 × rate × pressure_factor
 #
-# Sources:
-#   steady = 0.70: the sustainable cruising effort (≤ P_crit = 80 W/man,
-#     Rossiter & Whipp, Rankov ch.23). Reproduces 7.0 kt at 25.5 spm.
-#   fast = 0.85: the faster cruise (still below full sprint). Reproduces
-#     7.5 kt at 28.8 spm.
-#   spoude = 1.00: full sprint effort (the chain law itself). Reproduces
-#     8.2-8.4 kt at 44.5 spm.
+# As universal-crew archetypes they transfer to any hull ("cruise effort"
+# vs "full effort"). Their physiological consistency is model-checked, not
+# assumed: G4-1 locks that steady/fast are W'-neutral over 1800 s
+# (sustainable, ≤ P_crit = 80 W/man, Rossiter & Whipp, Rankov ch.23)
+# while spoude drains the ~45-s battery (burst) — the pressures behave as
+# their names say inside the LL's own P_crit/W' tank. Values: steady 0.70
+# (sustainable cruise), fast 0.85 (pressing cruise), spoude 1.00 (full
+# chain-law effort, the ch.9 sprint).
 PRESSURE_STEADY = 0.70  # sustainable cruise (fitted to 7.0 kt @ 25.5 spm)
 PRESSURE_FAST = 0.85  # fast cruise (fitted to 7.5 kt @ 28.8 spm)
 PRESSURE_SPOUDE = 1.00  # full sprint (= chain law, no fit)

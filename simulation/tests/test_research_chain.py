@@ -75,11 +75,13 @@ def test_oar_absorbed():
 # --- rigid-oar model (the four Table 9.6 points) ---
 
 REF_MEANS = {
-    ("Olympias", 7.2): (17.46, 223.7, 76.2),  # cant 0 — unchanged
-    ("Olympias", 8.2): (18.37, 207.9, 79.1),
+    # re-measured after the independent blade grounding (immersion
+    # 1−0.08/0.55 + Hoerner span from AR: area +0.5%, thrust/Fh +~1%):
+    ("Olympias", 7.2): (17.63, 225.7, 76.2),  # cant 0 — unchanged
+    ("Olympias", 8.2): (18.55, 210.0, 79.0),
     # the Mark IIb WITH the 18.4-deg cant (plan 16.1): ~1.7x the thrust
-    ("MarkIIb", 7.5): (10.40, 105.5, 81.8),
-    ("MarkIIb", 9.7): (22.20, 181.3, 81.6),
+    ("MarkIIb", 7.5): (10.52, 106.6, 81.7),
+    ("MarkIIb", 9.7): (22.45, 183.2, 81.6),
 }
 
 

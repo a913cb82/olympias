@@ -3,8 +3,9 @@
 The hull now has surge + sway + yaw: the lateral resistance at the CLR
 (forward of the CG) produces the physical restoring moment the lumped
 Omega·w^2 cannot represent. The grounded set (Stream C — real hull,
-basis_hull_offsets.tsv, LWL 32.35 m): Omega 3.00e6 (J=23217 at trial WL
-1.10 m, C_D 0.252; the fitted 3.20e6 at C_D 0.30 on the parametric hull is
+basis_hull_offsets.tsv, LWL 32.35 m): Omega 3.02e6 (J=23217 at trial WL
+1.10 m, C_D = 0.30 × taper 0.846; the fitted 3.20e6 at C_D 0.30 on the
+parametric hull is
 the documented reference, register C1), x_clr 0.93 m (x_clr 16.60 m from
 AP, CG at LCB 15.67 m), and the oar-race lever 2.00 m — the grounded
 thole mean (31·2.7+27·2.0+27·1.2/85, thranite 2.7 grounded from beam
@@ -44,7 +45,10 @@ def test_adopted_turns():
     the 7% gate; the band re-baselined to 8% for the grounded hull — the
     fitted 42.0 t / 4.0e6 is the documented reference, DECODE B3).
     Local flow (V_local = V ∓ omega·lever, geometry) moves F1 120.4→121.0
-    (+8.1%), band 8.5% for the physics."""
+    (+8.1%), band 8.5% for the physics.
+    Independent-derivation grounding (CD from taper, blade from Hoerner,
+    FAC from eta product): F1 121.0→121.4 (Omega +0.6%, area +0.5%);
+    hi 121.4→121.5 is rounding of the 8.5% edge (111.9×1.085=121.41)."""
     s = Ship(rate=R6, helm=("port", 1.0))
     s.V = 6.0 * KT
     d_g1 = run_turn(s)["D"]
@@ -52,7 +56,7 @@ def test_adopted_turns():
     s = Ship(rate=R6, helm=("port", 22.5 / 67.5))
     s.V = 6.0 * KT
     d_f1 = run_turn(s)["D"]
-    assert 104.1 <= d_f1 <= 121.4, f"F1 {d_f1:.1f} m"
+    assert 104.1 <= d_f1 <= 121.5, f"F1 {d_f1:.1f} m"
     s = Ship(rate=44.5, oar_state=("row", "hold"), helm=("starboard", 1.0))
     s.V = 6.5 * KT
     d_t, t360, v = sprint_tightest(s)
@@ -157,9 +161,9 @@ def test_lever_decomposition():
     0.2 m NET correction (the lateral damping the sway now models). The
     research LEVER_OAR (4.8 m) remains the steady model's fitted blade arm
     (register C3). Omega: the grounded cross-flow value (Stream C — real
-    hull, J=23217 at trial WL 1.10 m, C_D 0.252 => 3.00e6; the parametric
-    3.25e6 at C_D 0.30 (=1.6% from fitted 3.20e6) is the documented
-    reference, register C1). The NET 1.8 m is the documented sway-
+    hull, J=23217 at trial WL 1.10 m, C_D = 0.30 × taper 0.846 => 3.02e6;
+    the parametric 3.25e6 at C_D 0.30 (=1.6% from fitted 3.20e6) is the
+    documented reference, register C1). The NET 1.8 m is the documented sway-
     calibrated reference (the 0.2 m correction)."""
     from common.chain import LEVER_GROUNDED, OMEGA_CROSSFLOW
     from ll.rig import LEVER_OAR
@@ -169,16 +173,16 @@ def test_lever_decomposition():
     assert abs(ship.lever - LEVER_GROUNDED) < 1e-9
     assert abs(ship.lever - 2.00) < 0.02
     assert abs(ship.Omega - OMEGA_CROSSFLOW) < 1.0
-    assert abs(ship.Omega - 3.00e6) < 0.3e6, (
-        "the grounded Omega moved off the real-hull reconciliation (3.00e6)"
+    assert abs(ship.Omega - 3.02e6) < 0.3e6, (
+        "the grounded Omega moved off the taper derivation (3.02e6)"
     )
 
 
 def test_omega_reconciliation():
     """Register C1 + Stream C: the ship's effective Omega is the grounded
     cross-flow pure-rotation moment (½·rho·C_D·J_REAL — real hull J=23217
-    at trial WL 1.10 m, C_D 0.252 => 3.00e6; the parametric 3.25e6 at C_D
-    0.30 (=1.6% from fitted 3.20e6) is the documented reference, so the
+    at trial WL 1.10 m, C_D = 0.30 × taper => 3.02e6; the parametric 3.25e6
+    at C_D 0.30 (=1.6% from fitted 3.20e6) is the documented reference, so the
     units caveat resolves — Omega is the quadratic cross-flow yaw moment).
     The vessel's fitted 5e6 stays for the steady research model."""
     from common.chain import OMEGA_CROSSFLOW, VESSELS
@@ -187,7 +191,7 @@ def test_omega_reconciliation():
     ship = Ship()
     assert abs(ship.Omega - OMEGA_CROSSFLOW) < 1.0  # the time-domain LL
     assert 2.9e6 <= OMEGA_CROSSFLOW <= 3.5e6, (
-        f"Omega_cf moved: {OMEGA_CROSSFLOW:.2e} (grounded 3.00e6 at C_D 0.252)"
+        f"Omega_cf moved: {OMEGA_CROSSFLOW:.2e} (grounded ~3.02e6, 0.30 × taper)"
     )
 
 

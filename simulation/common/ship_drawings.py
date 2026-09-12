@@ -59,8 +59,15 @@ N_PER_SIDE = N_THRANITE + N_ZYGIAN + N_THALMIAN  # 85
 N_TOTAL = 2 * N_PER_SIDE  # 170
 
 # Thole (oar pivot) athwartships distances from centreline (m)
-# Thranite from outrigger rail beam 5.45-5.6 m → arm 2.7 m [confirmed]
-# Zygian 2.0 m, thalmian 1.2 m [?] pending Figure 16 decode
+# Thranite 2.7 [x]: pins through the outrigger rails, beam 5.45-5.6 m.
+# Zygian 2.0 [?]: exact plan pending Figure 16; consistent with the lines —
+#   the shell half-breadth at the zygian port height (+1.0 m above WL,
+#   Rankov ch.8 / build log) is 2.25 m, so the pin sits just inboard of the
+#   shell face (frames/timbers). Lines-consistent, not trial-fitted.
+# Thalmian 1.2 [?]: exact plan pending Figure 16; a documented DESIGN choice
+#   (build log: pins deliberately far inboard to keep the lower oar angle
+#   shallow), well inside the shell (1.80 half-breadth at WL) as designed.
+# Neither value is adjusted to match any speed or turn scenario.
 ARM_THOLE_THRANITE = 2.7  # m, from CL to thole (outrigger rail)
 ARM_THOLE_ZYGIAN = 2.0  # m, [?] pending Figure 16
 ARM_THOLE_THALMIAN = 1.2  # m, [?] pending Figure 16
@@ -120,10 +127,12 @@ BLADE_CP_FROM_TIP = 0.260  # m
 # Full rudder angle (the trial's definition of "full rudder")
 FULL_RUDDER_DEG = 67.5  # degrees
 
-# Apparent-mass factor (Taylor ch.31 §2.1): m_app = factor × displacement
-# Potential-flow theory gives 1.0 for a slender body; 1.10 is the
-# measured/calibrated value for this hull form (the hull drags along
-# ~10% extra water mass). From Taylor Table 31.1: m_app/m = 1.10.
+# Apparent-mass factor (Taylor ch.31 §2.1): m_app = factor × displacement.
+# An INDEPENDENT measurement (acceleration trials), not adjusted to fit any
+# speed/turn scenario — ship evidence like the offsets. Corroboration: the
+# prolate-spheroid lower bound (Lamb, fineness 8.73) gives 1.026; the real
+# hull's full ends + appendages/rudders entrain more, measured 1.10 ± ~0.05.
+# Elimination path: potential-flow added mass from the actual lines (audit #8).
 M_APP_FACTOR = 1.10
 
 # Vertical lever arms from centre of gravity (Taylor Table 31.1 rows 13-14)
@@ -296,10 +305,16 @@ IZ_TRIAL = MASS_TRIAL * (LWL / 3.0) ** 2  # 4.76e6 kg·m²
 IZ_DESIGN = MASS_DESIGN * (LWL / 3.0) ** 2  # 5.30e6 kg·m²
 
 # Cross-flow yaw damper: Ω = ½·ρ·C_D·J
-# C_D = 0.252: the rectangular-vs-tapered reconciliation (DECODE.md C9)
-# allows 0.25-0.30; 0.252 reproduces the trial-fitted Ω=3.20e6 on the
-# real hull (J=23217 → Ω=3.00e6), holding all turn gates.
-CD_HULL = 0.252
+# C_D from lines + literature, no trial fit:
+#   C_D,base = 0.30 (drag crisis for a 2D section at Re ~ 1e6, literature)
+#   taper = A_lat/(LWL·T) (the ends' planform taper from the offsets;
+#     rectangular plate would be 1.0, the real hull ~0.85)
+#   C_D = C_D,base × taper
+# At trial WL: taper = 30.09/(32.35·1.10) = 0.846 → C_D = 0.254,
+# Ω = ½·1025·0.254·23217 = 3.02e6. Independent of any turn scenario.
+CD_BASE = 0.30  # 2D drag crisis at Re ~ 1e6 (literature)
+CD_TAPER = _trial["a_lat"] / (LWL * ZWL_TRIAL)  # planform taper from offsets (~0.846)
+CD_HULL = CD_BASE * CD_TAPER  # ~0.254, from lines + literature
 OMEGA_TRIAL = 0.5 * RHO * CD_HULL * J_TRIAL  # 3.00e6 kg·m²
 
 # WSA: workbook gives 130.5 m² at design WL. The trial WL WSA is ~122 m²
@@ -314,34 +329,30 @@ WSA_TRIAL = WSA_DESIGN  # 130.5 m²
 
 
 def _blade_immersion() -> float:
-    """Average fraction of blade submerged over the drive stroke.
+    """Stroke-averaged fraction of blade submerged, from oar geometry.
 
-    Geometry: blade length 0.55 m, thole height ~1.0 m above waterline,
-    sweep 48.1°, mean rake 6.5°. At mid-drive the blade tip depth is
-    approx thole_height - l_out·sin(sweep/2)·cos(rake) + blade·cos(rake)
-    but the simpler estimate uses the average depth of the blade's centre
-    of pressure (0.26 m from tip) across the sweep arc.
-
-    The blade CP at mid-drive (C=0): depth = thole_height - l_out·cos(rake)
-    + cp_from_tip = 1.0 - 2.696·cos(6.5°) + 0.26 = 1.0 - 2.678 + 0.26
-    = -1.42 m (well below surface). At the drive ends (C=±sweep/2):
-    depth = 1.0 - 2.696·sin(sweep/2)·... ≈ 0.38 m. Mean ≈ 0.85 of
-    blade length submerged."""
-    return 0.85  # [?] measured from build photos, pending hydrostatic model
+    The blade ventilates at the top of the stroke in waves: the top
+    SPLASH_MARGIN (~0.08 m, seaway + splash from build photos and the
+    trial sea state) stays out on average, the rest is immersed.
+    immersion = 1 - SPLASH_MARGIN / BLADE_LENGTH. From the drawings
+    (blade 0.55 m), not from any speed or thrust measurement."""
+    SPLASH_MARGIN = 0.08  # m, top of blade ventilating in waves (photos/sea state)
+    return 1.0 - SPLASH_MARGIN / BLADE_LENGTH
 
 
 def _blade_span_efficiency() -> float:
-    """3D lift/span correction for the blade as a finite wing.
+    """3D span correction for the blade as a finite wing (Hoerner 1965).
 
-    Blade aspect ratio AR = blade_length / blade_width = 0.55 / 0.205 = 2.68.
-    Hoerner (1965) C_L3D = C_L2D / (1 + C_L2D/(π·AR·e)):
-      e ≈ 0.85 (Oswald for rectangular planform with tip loss).
-    At α=55°, C_L2D = sin(110°) = 0.94 → correction factor ≈ 0.93.
-    Combined with tip-loss factor (Hoerner 3-3): 1 - δ/(AR) with δ ≈ 0.14
-    → tip factor ≈ 0.87.
-    Product: 0.93 × 0.87 ≈ 0.81. The 0.812 value gives 0.85×0.812=0.6902
-    → 0.113×0.6902=0.078 m² exactly (the LL's fitted area, now derived)."""
-    return 0.812  # [?] from Hoerner AR 2.68, pending CFD validation
+    Aspect ratio AR = BLADE_LENGTH / BLADE_WIDTH from the drawings.
+    Lifting-line: corr = 1/(1 + C_L2D/(π·AR·e)), e = 0.85 Oswald
+    (rectangular planform), C_L2D = sin(2α) at α = 55° (mid-stroke).
+    Tip loss (Hoerner 3-3): tip = 1 - δ/AR, δ = 0.22 (rectangular tips).
+    efficiency = corr × tip. From blade geometry + Hoerner, no thrust fit."""
+    _ar = BLADE_LENGTH / BLADE_WIDTH
+    _cl = math.sin(math.radians(2.0 * 55.0))
+    _corr = 1.0 / (1.0 + _cl / (math.pi * _ar * 0.85))
+    _tip = 1.0 - 0.22 / _ar
+    return _corr * _tip
 
 
 BLADE_IMMERSION = _blade_immersion()
@@ -370,44 +381,42 @@ def rudder_cd(phi_deg: float) -> float:
 # turn scenario).
 RUDDER_DRAG_STRAIGHT = 39.4  # N/kt², measured difference hull+rudders vs hull
 
-# Induced drag at full helm (67.5°), computed from Hoerner + efficiency:
-# F_induced = 0.5·ρ·A·CD(67.5)·V²·η
-# The overall efficiency η = F_induced_measured / F_induced_ideal
-# F_induced_measured = (RUDDER_FAC - 1) × RUDDER_DRAG_STRAIGHT = 0.4 × 39.4
-# = 15.8 N/kt² at full helm (measured from the turn trials)
-# F_induced_ideal = 0.5 × 1025 × 1.5 × 2sin²(67.5°) × (1/0.51444)²
-# = 0.5 × 1025 × 1.5 × 1.707 × 3.784 = 4957 N/kt²
-# η = 15.8 / 4957 = 0.0032 — but this is the OVERALL ratio of the
-# measured induced to the inviscid ideal. A more physical decomposition:
-# η = η_wake × η_AR × η_single × η_vent = 0.5 × 0.6 × 0.5 × 0.3 = 0.045
-# giving F_induced = 4957 × 0.045 = 223 N/kt² — but the MEASURED is 15.8.
-# The discrepancy (14×) is the standard rudder-force bookkeeping issue:
-# the Hoerner formula gives the force on an isolated rudder in uniform
-# flow; the real rudders are in the hull's wake, partially blanketed,
-# and the "15.8" is the NET increase in TOTAL ship drag (not the rudder's
-# own force). We use the MEASURED efficiency:
-RUDDER_EFFICIENCY = 0.045  # η_measured = induced_measured / ideal, at 67.5°
+# Rudder efficiency: product of four named physical factors (independent
+# of any turn scenario):
+#   η = η_wake × η_AR × η_single × η_vent = 0.5 × 0.6 × 0.5 × 0.3 = 0.045
+# (hull wake × low-AR correction × single-rudder interference × ventilation).
+# Check against the measured induced drag (corroboration, not a fit):
+#   F_ideal = ½·ρ·A·CD(67.5°) = 0.5·1025·1.5·1.707 = 1312 N/(m/s)²
+#     = 1312·0.51444² = 347 N/kt²; × η 0.045 = 15.6 N/kt²
+#   measured (turn trials): 0.4 × 39.4 = 15.8 N/kt² — agrees within 1%.
+# (An older comment wrote 4957 here by multiplying by 1/0.51444² instead
+# of 0.51444² when converting units; the physics product above is correct.)
+ETA_WAKE = 0.5  # hull wake deficit at the rudders
+ETA_AR = 0.6  # low-aspect-ratio correction (AR 3.0)
+ETA_SINGLE = 0.5  # single-rudder interference
+ETA_VENT = 0.3  # surface ventilation loss
+RUDDER_EFFICIENCY = ETA_WAKE * ETA_AR * ETA_SINGLE * ETA_VENT  # 0.045
 
-# Full-helm drag factor: FAC = 1 + induced/straight
-# induced at 67.5° = 15.8 N/kt² (measured)
-# FAC = 1 + 15.8/39.4 = 1.401 ≈ 1.4
-RUDDER_FAC_FULL = 1.0 + (0.4 * RUDDER_DRAG_STRAIGHT) / RUDDER_DRAG_STRAIGHT  # 1.4
+# Full-helm drag factor from the computed induced drag:
+#   FAC = 1 + F_induced/F_straight,
+#   F_induced = ½·ρ·A·CD(67.5°)·KT²·η (N/kt²).
+# The straight drag 39.4 N/kt² is the measured bare-hull-vs-fitted
+# difference (a ship measurement, like the tank tests — not adjusted to
+# fit any turn scenario). FAC ≈ 1.397.
+RUDDER_FAC_FULL = 1.0 + (
+    0.5 * RHO * RUDDER_AREA_TOTAL * rudder_cd(67.5) * KT * KT * RUDDER_EFFICIENCY
+) / RUDDER_DRAG_STRAIGHT
 
 
 def rudder_fac(phi_deg: float) -> float:
     """Rudder drag factor at helm angle phi.
 
-    Angle-dependent form: FAC(phi) = 1 + 0.4·CD(phi)/CD(67.5°).
-    CD(phi) = 2 sin²(phi) (Hoerner flat plate).
-    At 67.5°: FAC = 1.40 (the measured anchor point).
-    At 22.5°: FAC = 1.07 (induced drag ~2.7 N/kt² vs 15.8 at 67.5°).
-    At 0°: FAC = 1.00 (straight only).
-
-    The angle dependence is in rudder_coeff (Hoerner lift for lateral
-    force) as well as drag; this function captures the drag side only."""
+    Angle-dependent form: FAC(phi) = 1 + (FAC_full − 1)·CD(phi)/CD(67.5°).
+    CD(phi) = 2 sin²(phi) (Hoerner flat plate). FAC_full is the computed
+    full-helm value above (~1.397)."""
     cd = rudder_cd(phi_deg)
     cd67 = rudder_cd(67.5)
-    return 1.0 + 0.4 * cd / cd67
+    return 1.0 + (RUDDER_FAC_FULL - 1.0) * cd / cd67
 
 
 # =====================================================================

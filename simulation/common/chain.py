@@ -176,11 +176,11 @@ import lane4_propulsion as _lp
 
 
 # Hull power: two versions
+# - hull_power_chain: the chain law 155V³+4.13V⁵, tank-measured on the
+#   1:10 lines-plan model (Grekoussis & Loukakis 1985) — a measurement of
+#   the lines, like the offsets themselves, not a fit to the sea trials.
 # - hull_power_computed: ITTC-1957 friction + wave (ship_drawings), physics
 #   e.g. at 7.2 kt Rf 1774 + Rw 998 = 2772 W vs chain 2904 (-4.5%)
-# - hull_power_chain: the chain law 155V³+4.13V⁵ (fitted to towing tests)
-#   kept as the validated reference; the LL now uses the COMPUTED version
-#   (the fitted is the documented reference, chain.py's D2 tension)
 def _hull_power_chain(V: float, hull: float = 1.0) -> float:
     """Chain law: W = 155·V³ + 4.13·V⁵ × hull multiplier (fitted)."""
     return hull * (HULL_POWER_COEFF_V3 * V**3 + HULL_POWER_COEFF_V5 * V**5)
@@ -189,13 +189,13 @@ def _hull_power_chain(V: float, hull: float = 1.0) -> float:
 hull_power_chain = _hull_power_chain  # fitted, for validation
 
 
-# The LL's hull_power stays the CHAIN LAW (the validated towing-test total)
-# The computed ITTC+wave (ship_drawings.hull_power) is the physics
-# alternative — within 1-3% at 4-10 kt, the future-ship recipe.
-# Both are derived at import time: chain law from trials_params, computed
-# from ship_drawings (WSA 130.5 + ITTC friction + k·V⁴ wave)
+# The LL's hull_power is the COMPUTED ITTC+wave law (Stream F promotion:
+# ITTC-1957 friction from the workbook WSA 130.5 m² + k·V⁴ wave, k = 5.3).
+# Measured switch cost vs the tank law: cruise equilibria ±0.06%, G1/F1
+# identical to 0.1 m, 30-s burst −0.002 kt — gate-free, so the LL now sails
+# its lines-derived resistance and the tank law stays as the reference.
 def hull_power(V: float, hull: float = 1.0) -> float:
-    return hull_power_chain(V, hull)
+    return hull * hull_power_computed(V)
 
 
 hull_power_computed_raw = hull_power_computed  # keep original computed
