@@ -131,7 +131,13 @@ physics that remain unresolved.
   theory (potential flow from the offsets — the audit-#5 manoeuvring
   coefficients path); B1's removed matrix double-counted with scalar
   m_app and its CGH numbers are galley-inapplicable, so this needs a
-  from-lines rebuild, not a resurrection.
+  from-lines rebuild, not a resurrection. Companion tension (2026-09,
+  Lamb formulae via Fossen imlay61): LL borrows surge m_app (45 t) for
+  sway inertia, but potential flow says sway added ~70 t (CGH Yvdot and
+  beam-spheroid agree) — true value needs strips (beam-spheroid sections
+  are 5.7× too full; tri-axial tables unheld). Sway inertia touches only
+  transients (settled balances unaffected): zigzag/Kempf-entry-relevant,
+  diameter-irrelevant.
 - **The drift angle (1.4–2.9° vs 7.8°).** The model doesn't lean
   sideways enough. Register C5 holds both trial values: the stated
   15°±2° is scattered (its own method gives 3 s × 2.6°/s = 7.8°);
