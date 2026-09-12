@@ -173,3 +173,10 @@ Verdict: LL stays at 39.4 — it is the turn-validated set (G1/F1/tightest
 close on it in OUR condition); the 8% source tension is recorded, needs
 Ref (1) p74 vs p82 to resolve. The D1 straight-drag lock (8%) now reads
 as this same tension, not a shortfall.
+
+Fourth estimate (weak, same note): 1992 log 6/8/92 — both rudders down
+7.4 kt avg vs one out + one half-immersed 7.9 kt avg. Under equal-effort
++ equal-conditions (big ifs for 2-min weak-crew pieces) this implies
+full-rudder ≈ 27 N/kt² — below all three above. Directionally consistent
+(less rudder = faster) but assumption-loaded; kept as an outlier bound,
+not evidence.
