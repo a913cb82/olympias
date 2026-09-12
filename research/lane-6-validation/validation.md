@@ -89,6 +89,39 @@ Acceleration data (0→7 kt in 32 s, 1988) should be validated against the rotat
   with gusts; rowed 28.33 NM in 9h38m @ **2.9 kt avg into ~20 kt headwind**. [x]
 - 1 hr of non-stop "firm" rowing was a notable short-pressure (battle-like) demonstration. [x]
 
+### 1.4 1994 weak-crew sprints (Table 4.2, Rankov ch.4) + stern-hold drops (1992 log) [x]
+
+Source: Rankov 2012 ch.4 (pp.52–54), read off the PDF pages 2026-09 (Table 4.2
+rendered; PUA text layer unusable).
+
+28 July 1994 maximal sprints (weak crew, ~120 rowing, common wide blades):
+
+| | Run A | Run B | Run C |
+|---|---|---|---|
+| rest before | 8 min | 6 min | 3 min |
+| duration | 4:50 | 3:18 | 5:15 |
+| rate, last 45 s | 44 spm | 42 spm | 43 spm |
+| mean speed, last 45 s | 7.0 kn | 6.3 kn | 6.3 kn |
+| oar power (resistance) | 14.1 kW | 9.9 kW | 9.9 kW |
+| peak GPS | 7.1 kn | 6.4 kn | 6.3 kn |
+
+(Run A had 10–15 kn tailwind; B/C calm opposite directions.) Ergometer:
+1994 6-min fixed-seat avg **160 W/man** (range 83–328, 18% > 200 W) — weak
+vs elite. Total 22.8 kW for ~10 kW effective → **43% overall transfer**,
+vs 39% (1990 crew, Shaw 1993b): transfer coefficient STABLE across fitness.
+
+Designed universality study (not run): specify the weak crew SOLELY from
+ergometer + N (45 s power from 6-min via literature mapping — needs elite
+erg table (Shaw 1993b, unheld) to close), predict B/C sprints with NO
+sprint-fitted numbers. Would test universal crew physiology directly.
+
+Hold-brake independent corroboration (8/8/92 log): turns with the inside
+stern section holding water drop speed 2.5–2.9 kn vs 0.5–1.0 kn without.
+LL differentials at 180°: full-side hold 6.5→4.14 (2.36 kn) vs helm-only
+6.0→5.42 (0.58 kn) — same order despite protocol gaps (crew 170 vs ~121,
+full-side vs section hold, rate unknown). Corroborates HOLD_FRAC physics
+across crew sizes, independent of the tightest-diameter fit (audit #4).
+
 ---
 
 ### 2. Stability / displacement anchors — ch.25 (John Coates, bilge water) [x]
