@@ -45,6 +45,9 @@ MEASURED VERDICT (2026-09, K sweep — heel EXCLUDED in this form):
   move t_360 at these magnitudes (~38 N vs kN balances).
   Criterion (pre-registered): drift in [8, 15] with diameters held — NOT
   MET anywhere: +1.2 deg drift already costs F1 +12 m; +4 deg costs +52%.
+  (Re-anchored 2026-09 per register C5: the method-backed target is 7.8°,
+  15±2° scattered — exclusion stands a fortiori: the closest approach,
+  7.0° at 160k, blows every diameter +30–50%.)
   Mechanism: any pure-sway heel push raises v, which raises f_hull, which
   raises the CLR restoring moment — diameters widen with the WRONG SIGN
   for a lateral-force fix. The missing term is a YAW MOMENT from heel

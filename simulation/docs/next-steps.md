@@ -86,12 +86,16 @@ physics that remain unresolved.
 - **The zig-zag overshoots (11–13° vs 8/7°).** The model's heading
   carries ~5–6° too far past the ±20° targets. Same yaw-reversal family
   as the t_360.
-- **The drift angle (1.4° vs 8–15°).** The model doesn't lean sideways
-  enough. No A_lat/CLR adjustment holds the turns AND the wprime closure.
-  Heel-spike exclusion (2026-09): a lateral-force heel formulation cannot
-  reconcile drift with diameters (wrong-sign via CLR restore; runaway past
-  ~200k) — see `ll/experimental_coupling.py` verdict; the missing term is
-  a yaw moment from heel (Bonjean path).
+- **The drift angle (1.4–2.9° vs 7.8°).** The model doesn't lean
+  sideways enough. Register C5 holds both trial values: the stated
+  15°±2° is scattered (its own method gives 3 s × 2.6°/s = 7.8°);
+  Taylor takes the lower, method-backed 7.8° — so does this item (was
+  quoted 8–15°). No A_lat/CLR adjustment holds the turns AND the wprime
+  closure. Heel-spike exclusion (2026-09): a lateral-force heel
+  formulation cannot reconcile drift with diameters (wrong-sign via CLR
+  restore; the closest approach, 7.0° at 160k, blows every diameter
+  +30–50%; runaway past ~200k) — see `ll/experimental_coupling.py`
+  verdict; the missing term is a yaw moment from heel (Bonjean path).
 - **The ch.7 cruise triple (−2.5/−4.6/−6.1 %).** The model's rowers
   deliver less power per stroke at high rates. The blade/kinematics chain
   is the named suspect.
