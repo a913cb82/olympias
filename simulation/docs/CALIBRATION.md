@@ -125,7 +125,7 @@ hull-law switch, audit #9). Revisit with the drift fix.
 | --- | --- | --- |
 | `t_rise` | the catch's force-reversal time | COMPUTED from oar physics: T_RISE_BASE = MIT·(ω_drive+ω_recover)/(F_flip·lin) at the design point (Table 3.1 MIT, sweep, FH_BURST demand), pressure-scaled (rowers flip at rowing effort: sprint 0.076 s, steady 0.109 s). Instrumented force traces would validate the flip profile, not pin the value |
 | `Fh_MAX` | the peak handle-force ceiling (a demo-only clamp) | provisional, model-implied (oQ-13 clamp, demos only) |
-| `YAW_LIN_DAMP` | the linear yaw-damping coefficient (the tested t_360 hypothesis) | REMOVED — tested and FAILED (breaks every diameter); the negative result: VALIDATION §7.2 + this table |
+| `YAW_LIN_DAMP` | the linear yaw-damping coefficient (the tested t_360 hypothesis) | REMOVED — tested and FAILED (breaks every diameter); the negative result: VALIDATION §7.2 + this table. Structural reason (2026-09): settled turns and zigzag reversals share yaw rates (~0.04–0.07 rad/s), so NO instantaneous function of ω — linear or quadratic — separates them (Omega holds the quadratic slot, validated); halving zigzag amplitude needs ~2× damping, which moves D ~25–50%. Only history-dependent (unsteady/memory) or drift-coupled structure can (cross-flow is already β-aware, but A1's net magnitude breaks settled turns) — CFD-or-measurements, not lines. |
 
 ## 5. The honest bottom line
 
