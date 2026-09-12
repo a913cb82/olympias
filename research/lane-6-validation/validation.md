@@ -151,6 +151,16 @@ if all else equal) — brackets, doesn't target. Protocols UNCHANGED
 (G-turns documented full-crew flat thrust; gates+HL validated as-is;
 Degenerate without per-turn data).
 
+Fig-45 advance finding (2026-09, LL scratch runs): trials shipped-inside
+turn: advance 63 m + D 62 m. LL hold-inside: helm 67.5/45/22.5° →
+advance 51.8/53.2/58.3 m with D 62.0/63.6/69.8 m; trail-inside: advance
+63.6 m with D 78.7 m. The (63, 62) combo is UNREACHABLE along helm
+(advance and D co-move; trials sits off the curve) and V0 can't split
+them either — entry/settle differentiation is structurally missing
+(wake-establishment type: weak early bite + full late bite). It conflicts
+with zigzag (establishment weakens reversals), so no promotion path;
+recorded as the mechanism that would need a zigzag-compatible form.
+
 ### 1.5 Sea-state tier knockout thresholds (Rankov ch.8) [x]
 
 Waves knock tiers out progressively (read 2026-09): 0.4 m+ → thalmian
