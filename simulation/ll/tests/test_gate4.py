@@ -74,6 +74,16 @@ def rudder_q(ship):
 
 
 # --- G4-1 sustained cruise ---
+# Band basis (audited 2026-09 — do NOT read these as MarkII-anchored!):
+# the ch.7 7.0/7.5 kt at 25.5/28.8 spm is Shaw's MARK II table (L=0.99);
+# the fair Olympias-rig chain (L=0.78, E=0.756, hull 1.0) gives burst
+# 6.65/7.13/7.62 (F2-2, bare hull, full pressure, fresh W') and
+# sustained-steady fair values ~5.7/6.2 (0.7 power). The LL settles below
+# fair-static by rudder drag (straight, full-down: chain already carries
+# the partly-raised content — ambiguous split, T1/D3), flip-duration duty
+# (~4.6%), thalmian 0.9 and EOM transients (~8% combined). Band tops
+# (6.5/7.0) are the fair-chain speeds; the floors admit the EOM total.
+# Burst-vs-sustained and MarkII-vs-fair must not be conflated here.
 
 
 def test_sustained():
