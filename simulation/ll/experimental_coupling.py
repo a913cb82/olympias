@@ -33,6 +33,26 @@ Usage:
 To measure: run the G1/F1/tightest turns + the 360° time and compare
 drift and t_360 against the OFF baseline. The flag is OFF by default
 so no existing gate is affected.
+
+MEASURED VERDICT (2026-09, K sweep — heel EXCLUDED in this form):
+  tightest protocol (44.5, row/hold, starboard full, V0 6.5; beta @60s):
+  Kh/Kd | beta | heel | G1 (83-96) | F1 (104-121) | T (56-68)
+  0 (OFF) | +2.85 | +1.41 | 92.2 | 121.4 | 62.0
+  80k / * | +4.02 | +1.99 | 99.0 | 133.9 | 65.5  (F1 breaks)
+  160k /* | +7.0 | +3.4 | 126.6 | 184.3 | 81.1  (all blown)
+  320k /* | -15..-24 | -31..-36 | 64/44/40 | 67/45/41 | 43/39/37 (runaway)
+  K_drag 0/4/8 moves nothing (4th digit) — the extra-drag path cannot
+  move t_360 at these magnitudes (~38 N vs kN balances).
+  Criterion (pre-registered): drift in [8, 15] with diameters held — NOT
+  MET anywhere: +1.2 deg drift already costs F1 +12 m; +4 deg costs +52%.
+  Mechanism: any pure-sway heel push raises v, which raises f_hull, which
+  raises the CLR restoring moment — diameters widen with the WRONG SIGN
+  for a lateral-force fix. The missing term is a YAW MOMENT from heel
+  (canted-hull force has an arm; this spike applies none) — needs
+  heel-dependent hydrostatics (workbook Bonjean curves), not fitted K.
+  Above ~200k the quasi-static balance runs away (heel-v feedback, no
+  roll dynamics): valid only for heel <~ 4 deg. K_heel/K_drag stay swept
+  placeholders; DO NOT promote on fitted gains.
 """
 
 from __future__ import annotations

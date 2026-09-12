@@ -88,6 +88,10 @@ physics that remain unresolved.
   as the t_360.
 - **The drift angle (1.4° vs 8–15°).** The model doesn't lean sideways
   enough. No A_lat/CLR adjustment holds the turns AND the wprime closure.
+  Heel-spike exclusion (2026-09): a lateral-force heel formulation cannot
+  reconcile drift with diameters (wrong-sign via CLR restore; runaway past
+  ~200k) — see `ll/experimental_coupling.py` verdict; the missing term is
+  a yaw moment from heel (Bonjean path).
 - **The ch.7 cruise triple (−2.5/−4.6/−6.1 %).** The model's rowers
   deliver less power per stroke at high rates. The blade/kinematics chain
   is the named suspect.
