@@ -80,6 +80,13 @@ class Ship:
         """fleet: 'spruce' (all tiers, MIT 9.7 — the 1994 setup) or
         'old-fir' (thranites 13.1, zygians 18.0, thalmians 8.6 scaled —
         Table 3.1 tier labels). None: massless oars (pre-Gate-5).
+        Rig-mixing note (2026-09): the default spruce fleet is the 1994
+        oars, but the 1987-88 gate trials rowed original fir (Table 3:
+        inboard 1.050 vs 1.105, fir MITs, narrow thalmian blades). Effects:
+        inboard +5% (~+1.5% speed, inside bands), flip overhead +36%
+        (absorbed in the W' fit), blades dwarfed by head-room factor.
+        A full original-rig variant (Table-3 geometry + fir) is declined:
+        sub-band effects for a W5+HL re-validation storm.
 
         force: the PROMOTED default (Stream A, P1.6 — the force-driven
         oar): the stroke emerges from the rower's demand + the oar's
