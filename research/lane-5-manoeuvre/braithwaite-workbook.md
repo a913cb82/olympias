@@ -172,7 +172,18 @@ their own evidence tension (lane-3 territory).
 Verdict: LL stays at 39.4 — it is the turn-validated set (G1/F1/tightest
 close on it in OUR condition); the 8% source tension is recorded, needs
 Ref (1) p74 vs p82 to resolve. The D1 straight-drag lock (8%) now reads
-as this same tension, not a shortfall.
+as this same tension, not a shortfall. Reframed 2026-09 (Table 31.1 in
+print, Rankov p232): the 79.6 row is literal — so this is
+measurement-vs-measurement (both towing-derived), not fit-vs-measured;
+turns decide for our condition. Same page fixes: LWL three-way (Taylor
+32.2 / Braithwaite offsets 32.35 / GA 33 — hierarchy offsets > table >
+sketch; ±2% LWL moves J ∓8%, inside bands); the 18 kt zero-thrust
+intercept is Taylor-published (Fig 31.1 caption — VBA's 9.252 m/s
+backstopped); Kempf increments read as TOTALS 2.4/1.6/1.2× straight
+(not 0.6–3.25 multipliers) — adopting them is mixed (G1 tighter toward
+anchor, F1 wider away) and circular (turn-fit ↔ turn-fit), so they stay
+a reference; the drift-drag half-angle form (lateral × sin(β/2), cross
+section ≈ wetted hull) is recorded as literature for future drift models.
 
 Fourth estimate (weak, same note): 1992 log 6/8/92 — both rudders down
 7.4 kt avg vs one out + one half-immersed 7.9 kt avg. Under equal-effort

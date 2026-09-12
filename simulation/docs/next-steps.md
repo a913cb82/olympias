@@ -98,11 +98,16 @@ physics that remain unresolved.
   time (needs absurd ×8–10); stations oar-surge is −33% (wrong sign);
   drift/heel/K_drag drags all negligible or wrong-signed. W'-empty planner
   gives ~31 N/oar rate-invariantly — still ~2× the ~13 N/oar the 2.9 kt
-  floor implies. Prime suspect reframed: the rate→spoude-pressure link —
-  a 128 s turn cannot average above sustainable output (45 s W' battery),
-  so turn pressure must sit near steady, not spoude; LL rows turns at
-  sprint pressure by protocol. Needs per-turn effort data (Trials 1988
-  F/G tables, item 3.5) or a universal sustained-turn easing rule. W'
+  floor implies. Turn protocol EXONERATED (2026-09, Taylor tactical text,
+  Rankov pp.236–237): fast turns assume FULL thrust throughout (crews
+  counter-balance heel to enable it) with inside braking to drop speed —
+  exactly the LL's protocol (spoude + hold states); pushing harder would
+  widen G1 past its anchor, easing below sustainable needs F/G effort
+  data. So the floor gap is NOT protocol-fixable: the W'-capped level is
+  proven immovable within the (cruise, sprint) anchors (~3.1 minimum),
+  and no moment-free drag candidate survives. Remaining: voluntary
+  sub-sustainable easing (behavioral, item 3.5) or drag with yaw structure
+  that holds D (unknown). W'
   accounting audited and CLOSED (2026-09): absorbed cancels both sides
   (drain exactly p_ext+flip > 80 W); the (P_crit, W') pair is uniquely
   pinned by cruise-sustainable + 45 s-sprint anchors. Turn-pressure
