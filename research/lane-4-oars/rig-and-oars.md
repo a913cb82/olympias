@@ -266,6 +266,15 @@ Verification: all **7 complete spruce rows and old thranite C verify internally 
 - Hull power law (Olympias): **W = 155·V³ + 4.13·V⁵** (V m/s); **Mark II hulls ×1.08**. `[x]`
 - Calibration: Olympias sprint trial — 116 rowers, 6.8 kt (3.50 m/s), W = 12,100 W (rudders down, 4–5 kt tailwind), r = 38.75 spm, E = 0.719 → **mean pull P = 288 N (64.7 lbf)**. `[x]`
 - Mean pull assumed ∝ rate: **P = 7.43·r**. `[x]`
+- Chain/rudder-condition mixing (read off the primary, 2026-09): the
+  155V³+4.13V⁵ law is Shaw's fit to the Lowry&Squire graph's
+  *partly-raised-rudder* curve (stated twice, ch.7 §2.5/ch.9), while the
+  116-crew P calibration (12100 W) was computed *rudders-down* with
+  tailwind — mixed conditions that validate within 1% (8.32 vs 8.2–8.3).
+  The LL adds full-down rudder drag on top; the chain's own rudder
+  content (bare vs partly-raised fraction) is ambiguous in Shaw — the
+  sprint protocol carries an explicit fraction as scenario input (T1/D3),
+  turns sail the validated total.
 - **Validation vs 4 Olympias sprint runs** (~130 effective rowers, 44.5 spm, E = 0.730): predicted 130×0.78×7.43×44.5²×0.730/60 = **18,152 W → 4.285 m/s = 8.32 kts**; measured 8.2–8.3 kts. **Theory ↔ experiment agreement.** `[x]` (Rankov ch.9 p.81)
 - **Table 9.6 — duration of effective pull (s)**: `[x]` (OCR `research/data/t96_ocr.txt`)
   - Olympias: 0.428 (7.5 kt), 0.392 (8.2 kt); Mark IIa: 0.512 / 0.469 / 0.396 (9.7 kt); Mark IIb: 0.612 / 0.560 / 0.472.

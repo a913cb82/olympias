@@ -47,13 +47,17 @@ re-run after every promoted change.
   F3 — F3's ITTC+wave already answers it: the low-speed 40.2V² IS the
   ITTC friction from WSA 130.5 (within 6% at 1-6 kt), the high-speed
   excess is the wave residual k·V⁴.
-- **D3. The no-head-room sprint test — CLOSED as configuration (2026-09).**
+- **D3. The no-head-room sprint test — configuration entangled (2026-09).**
   The trials sprinted with rudders partly raised; the LL sailed full-down.
   Rudder-fraction sweep (scenario input, production Ship untouched): frac
   1.0 → V30 7.68 (rudders-down prediction), 0.5 → 8.21 (inside trials
-  8.2-8.3 — inferred trial state, half-raised +-0.1), 0.0 → 8.85 (within
-  1% of the VBA rudders-down 8.77). The sprint deficit was the trial
-  condition, not the blade law. The thalmian head-room stays load-bearing
+  8.2-8.3 — bundles configuration with crew/law differences (LL rows
+  148-effective vs Shaw's 130; (0.5, 148) and (~0.25, 130) both land on
+  8.2, and the report's minimum-drag-near-quarter favours the latter
+  pairing — corrected 2026-09, primary source ch.9). What stands: no
+  unexplained residual inside EITHER consistent accounting; the chain law
+  itself is the partly-raised curve (Shaw graph reading) while its P
+  calibration was rudders-down (mixed conditions, validates within 1%). The thalmian head-room stays load-bearing
   on the crew side (8.21 needs it at frac 0.5); the workbook 9.95 ideal
   (170 full, rudders up) vs LL-up 8.85 keeps the T1 effective-rower
   question open. Locked: `test_sprint_partly_raised_config`.
@@ -94,9 +98,17 @@ physics that remain unresolved.
   a 128 s turn cannot average above sustainable output (45 s W' battery),
   so turn pressure must sit near steady, not spoude; LL rows turns at
   sprint pressure by protocol. Needs per-turn effort data (Trials 1988
-  F/G tables, item 3.5) or a universal sustained-turn easing rule; next
-  lead: the p_crit_gross vs external accounting (oar_absorbed) that sets
-  the W'-empty floor.
+  F/G tables, item 3.5) or a universal sustained-turn easing rule. W'
+  accounting audited and CLOSED (2026-09): absorbed cancels both sides
+  (drain exactly p_ext+flip > 80 W); the (P_crit, W') pair is uniquely
+  pinned by cruise-sustainable + 45 s-sprint anchors. Turn-pressure
+  protocol excluded too: spoude-with-fade ≈ steady-sustained in total
+  impulse (W' conservation — t360 95→98 s only). Rudder-angular drag
+  (Taylor §5.1 0.6–3.25, lift decoupled): floors −8–18% with D held —
+  viable SHAPE but MarkIIb-sized (needs Olympias foil, A3). Live lead:
+  demand-law shape (P=7.43r assumed linear vs Table 3.2 couples falling
+  215→172 N·m over 30–38 spm at fixed speed — different protocols,
+  needs careful reading).
 - **The zig-zag overshoots (11–13° vs 8/7°).** The model's heading
   carries ~5–6° too far past the ±20° targets. Same yaw-reversal family
   as the t_360.
