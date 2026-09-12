@@ -237,7 +237,7 @@ def olympias():
         name="Olympias",
         m=42000.0,
         m_app=46200.0,
-        k=17.4,  # thrust law fitted to Olympias trials
+        k=17.4,  # §5.2 MarkIIb-optimised line (skilled crew, optimised rig) — kept for the steady-model reference, NOT an Olympias-trials fit
         rudder_straight=39.4,  # (79.6 - 40.2) v^2, N per kt^2 — now grounded: measured straight-rudder drag (the 1.5 m² rudders' parasitic)
         A_lat=35.0,
         lever_rudder=14.9,

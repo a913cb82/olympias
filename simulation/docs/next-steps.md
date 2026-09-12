@@ -117,7 +117,10 @@ physics that remain unresolved.
   viable SHAPE but MarkIIb-sized (needs Olympias foil, A3). Live lead:
   demand-law shape (P=7.43r assumed linear vs Table 3.2 couples falling
   215→172 N·m over 30–38 spm at fixed speed — different protocols,
-  needs careful reading).
+  needs careful reading). Thrust-vs-V slopes (28.8 spoude, 5–9 kt):
+  kinematic −17.3 (3× too steep), force −2.07 (2.7× too flat) vs Taylor
+  −5.69 N/kt/oar (levels differ: MarkIIb-optimised vs trials crew).
+  A Hill force-velocity demand would steepen force-mode toward measured.
 - **The zig-zag overshoots (9 then 14° vs 8/7°).** Reframed 2026-09:
   the first overshoot is ENTRY-SENSITIVE (9.1 at 22.5° entry vs 12.7 at
   45° — the trials entry is unheld, Taylor modeled both phases — so its
@@ -157,7 +160,9 @@ physics that remain unresolved.
   is the named suspect.
 - **The per-station inverted pattern (g1 134 vs 91, f1 264 vs 120).**
   The per-station layer's turn pattern is inverted vs trials. The
-  over-damping (~9.8 kN·m) is the measured gap. The layer stays swappable
+  over-damping (~9.8 kN·m) is the measured gap (plus kinematic thrust-vs-V
+  3× too steep, −17.3 vs −5.69 N/kt/oar — same direction on oar-turns).
+  The layer stays swappable
   (`Ship(stations=True)`), not default.
 - **The stationary turns (in-place 2.1–3.0 vs 3.5°/s; one-side 1.1–1.5
   vs 3.5).** Halved 2026-09 by protocol, not physics: the locked
