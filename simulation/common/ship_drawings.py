@@ -238,7 +238,7 @@ def _sectional_area(pairs: list[tuple[float, float]], z_wl: float) -> float:
 
 
 def _simpson(values: list[float], dx: float) -> float:
-    """Simpson's 1/3 rule (n must be even, 21 stations → 20 intervals)."""
+    """Simpson's 1/3 rule (even interval count)."""
     return (
         dx
         / 3
@@ -246,11 +246,28 @@ def _simpson(values: list[float], dx: float) -> float:
     )
 
 
-def _compute_hull(z_wl: float) -> dict:
-    """Compute hull properties at waterline z_wl from the offsets."""
-    offsets = _load_offsets()
+def hull_taper(a_lat: float, lwl: float, draft: float) -> float:
+    """Lateral-plane taper: A_lat/(LWL·T) (1.0 = rectangular plate).
+    Hull-generic; the cross-flow C_D scales with it (ends contribute less)."""
+    return a_lat / (lwl * draft)
+
+
+def _compute_hull(
+    offsets: list[tuple[float, list[tuple[float, float]]]],
+    lwl: float,
+    x_cg: float,
+    z_wl: float,
+) -> dict:
+    """Hull properties at waterline z_wl from ANY offsets list.
+
+    Hull-generic machinery (the portability path: a new ship's offsets go
+    here): Simpson integration of drafts (lateral plane), sectional areas
+    (volume), waterplane breadths, and the J moment about x_cg. The
+    Olympias calls below pass _load_offsets(); outputs are unchanged."""
     xs = [x for x, _ in offsets]
-    dx = LWL / 20.0
+    n = len(xs)
+    assert n >= 3 and n % 2 == 1, "Simpson needs an odd station count"
+    dx = (xs[-1] - xs[0]) / (n - 1)
 
     drafts = [_draft_at_station(p, z_wl) for _, p in offsets]
     areas = [_sectional_area(p, z_wl) for _, p in offsets]
@@ -264,9 +281,9 @@ def _compute_hull(z_wl: float) -> dict:
     bwl = 2 * max(ywls) if ywls else 0.0
     wp = [2 * y for y in ywls]
     wp_area = _simpson(wp, dx)
-    cw = wp_area / (LWL * bwl) if bwl else 0.0
+    cw = wp_area / (lwl * bwl) if bwl else 0.0
 
-    j = [d * abs(x - X_CG) ** 3 for x, d in zip(xs, drafts)]
+    j = [d * abs(x - x_cg) ** 3 for x, d in zip(xs, drafts)]
     J = _simpson(j, dx)
 
     return {
@@ -281,8 +298,8 @@ def _compute_hull(z_wl: float) -> dict:
     }
 
 
-_trial = _compute_hull(ZWL_TRIAL)
-_design = _compute_hull(ZWL_DESIGN)
+_trial = _compute_hull(_load_offsets(), LWL, X_CG, ZWL_TRIAL)
+_design = _compute_hull(_load_offsets(), LWL, X_CG, ZWL_DESIGN)
 
 # Lateral area (m²)
 A_LAT_TRIAL = _trial["a_lat"]  # 30.09 m² at Z=1.10
@@ -315,7 +332,7 @@ IZ_DESIGN = MASS_DESIGN * (LWL / 3.0) ** 2  # 5.30e6 kg·m²
 # At trial WL: taper = 30.09/(32.35·1.10) = 0.846 → C_D = 0.254,
 # Ω = ½·1025·0.254·23217 = 3.02e6. Independent of any turn scenario.
 CD_BASE = 0.30  # 2D drag crisis at Re ~ 1e6 (literature)
-CD_TAPER = _trial["a_lat"] / (LWL * ZWL_TRIAL)  # planform taper from offsets (~0.846)
+CD_TAPER = hull_taper(_trial["a_lat"], LWL, ZWL_TRIAL)  # planform taper (~0.846)
 CD_HULL = CD_BASE * CD_TAPER  # ~0.254, from lines + literature
 OMEGA_TRIAL = 0.5 * RHO * CD_HULL * J_TRIAL  # 3.00e6 kg·m²
 
