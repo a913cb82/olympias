@@ -78,7 +78,7 @@ class Ship:
     ):
         # hold_frac default: the calibrated value (ll/rower.HOLD_FRAC)
         """fleet: 'spruce' (all tiers, MIT 9.7 — the 1994 setup) or
-        'old-fir' (thranites 13.1, zygians 18.0, thalmians 13.1 approx —
+        'old-fir' (thranites 13.1, zygians 18.0, thalmians 8.6 scaled —
         Table 3.1 tier labels). None: massless oars (pre-Gate-5).
 
         force: the PROMOTED default (Stream A, P1.6 — the force-driven
@@ -118,7 +118,7 @@ class Ship:
         td, _ = t_drive_for(rig_name, rate)
         # Fleet MIT: from OAR_TIER_MIT (ship_drawings, Table 3.1)
         # 'spruce' = all tiers use spruce MIT (9.74);
-        # 'old-fir' = tier-weighted average (14.7 = (31×13.1+27×18.0+27×13.1)/85);
+        # 'old-fir' = tier-weighted average (13.2 = (31×13.1+27×18.0+27×8.6)/85);
         # None = massless oars (pre-Gate-5)
         from common.chain import OAR_TIER_MIT
 

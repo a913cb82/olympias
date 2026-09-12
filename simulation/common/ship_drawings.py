@@ -517,7 +517,14 @@ OAR_TIER_MIT = {
     "spruce": _OAR_FAMILIES["spruce"],
     "zygian": _OAR_FAMILIES["old-zygian"],
     "thranite": _OAR_FAMILIES["old-thranite"],
-    "thalmian": _OAR_FAMILIES["old-thranite"],  # [?] not measured, approx
+    # thalmian: no Table 3.1 rows — scaled from Rev-F Table 3 (thole→CG
+    # 0.280/0.320/0.250 m + weights 17/17/14 kg, thranite/zygian/thalmian):
+    # MIT ∝ m·d² gives zygian 17.1 vs measured 18.0 (validates scaling
+    # within 5%), hence thalmian = thranite×(14×0.25²)/(17×0.28²) ≈ 8.6.
+    # Old-fir fleet only (spruce uses the measured 9.74 for all tiers).
+    "thalmian": _OAR_FAMILIES["old-thranite"]
+    * (14 * 0.25**2)
+    / (17 * 0.28**2),
 }
 
 
