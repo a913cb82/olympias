@@ -80,9 +80,23 @@ These are not parameters to fit; they are open questions about the
 physics that remain unresolved.
 
 - **The 360° turn time (98 s vs 128 s, −23 %).** The turn *size*
-  matches (60 m ✓); the *speed* doesn't. Every suspect was measured and
-  excluded. Named cause: the turn-speed floor — the model's ~3.2 kt vs
-  the trial's ~2.9 kt.
+  matches (60 m ✓); the *speed* doesn't. Floor arithmetic: fixed D +
+  longer time ⟺ lower V AND lower yaw rate together (62 m / 128 s ⟺
+  2.9 kt and 2.81°/s — the yaw balance closes consistently there, so the
+  whole gap is the surge floor: 3.5 vs 2.9 kt, i.e. ~40% excess turn
+  thrust/drag-equivalent). Measured exclusions (2026-09, no LL change):
+  turn-rate protocol −30% rate → +7% time only (stiff floor); uniform drag
+  ×2.5 shrinks D 62→42 m (wrong direction); hull-only drag ×3 buys +7%
+  time (needs absurd ×8–10); stations oar-surge is −33% (wrong sign);
+  drift/heel/K_drag drags all negligible or wrong-signed. W'-empty planner
+  gives ~31 N/oar rate-invariantly — still ~2× the ~13 N/oar the 2.9 kt
+  floor implies. Prime suspect reframed: the rate→spoude-pressure link —
+  a 128 s turn cannot average above sustainable output (45 s W' battery),
+  so turn pressure must sit near steady, not spoude; LL rows turns at
+  sprint pressure by protocol. Needs per-turn effort data (Trials 1988
+  F/G tables, item 3.5) or a universal sustained-turn easing rule; next
+  lead: the p_crit_gross vs external accounting (oar_absorbed) that sets
+  the W'-empty floor.
 - **The zig-zag overshoots (11–13° vs 8/7°).** The model's heading
   carries ~5–6° too far past the ±20° targets. Same yaw-reversal family
   as the t_360.
