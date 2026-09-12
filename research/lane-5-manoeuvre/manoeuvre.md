@@ -363,7 +363,12 @@ Scenario behaviour matches ch.31 §3 qualitatively: [x]
       ISBN 0946897212).  Leads: Wolfson College archive (Trireme Trust
       papers), Oxbow out-of-print copies, university libraries (U. Crete
       catalogue record exists).  This is the same physical-archive path as
-      the Taylor Excel workbook (Part 2 §2.2).
+      the Taylor Excel workbook (Part 2 §2.2). Remote mining 2026-09:
+      Google Books snippet endpoint works on the volume (prose/protocols/
+      glossary extractable — Notes 3–4, advance/transfer defs, 45°/105 m
+      datum) but tables and per-turn rates are unscraped (no 'spm' hits);
+      Open Library/Archive.org/HathiTrust yield nothing usable; Trust site
+      is a catalog (TT:8/9/13/19/34/50 confirm holdings, no content).
 - [x] Independent anchors used here are logged in the main doc §6.2 and
       lane-6 `validation.md` Part 1 where relevant.
 
