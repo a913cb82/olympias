@@ -140,7 +140,10 @@ physics that remain unresolved.
   theory (potential flow from the offsets — the audit-#5 manoeuvring
   coefficients path); B1's removed matrix double-counted with scalar
   m_app and its CGH numbers are galley-inapplicable, so this needs a
-  from-lines rebuild, not a resurrection. Companion tension (2026-09,
+  from-lines rebuild, not a resurrection. Scope bound (2026-09): panels
+  give inertia only — the gap also needs unsteady separated-flow yaw
+  dissipation (no linear steady term: tested, breaks diameters), which is
+  CFD-or-measurements territory, not computable from lines. Companion tension (2026-09,
   Lamb formulae via Fossen imlay61): LL borrows surge m_app (45 t) for
   sway inertia, but potential flow says sway added ~70 t (CGH Yvdot and
   beam-spheroid agree) — true value needs strips (beam-spheroid sections
