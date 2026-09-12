@@ -59,6 +59,15 @@ model; likely his intermediate rounding, **flag for uncertainty register** (smal
 Olympias ~7.2 kt, 170 men: W = 10,782 W → **63 W/man propulsive** (S6 quoted ~62 W);
 oar-system efficiency 63/115 ≈ **55%** (S6 quoted ~54%). Agreement. `[x]`
 
+Universal-physiology context (Kleshnev, elite sliding-seat — direction only,
+different rig): efficiency FALLS with stroke rate (supports investigating
+rate-dependent E, not assuming it); power split 52.8% handle / 47.2%
+stretcher (B5-consistent: stretcher forces internal to hull+crew — net
+thrust unaffected); legs 45% of metabolic total. No body-swing term in
+the W' books BY ACCOUNTING IDENTITY: any symmetric overhead cancels
+(cost and budget both, like oar_absorbed); an asymmetric one needs
+aerobic/anaerobic partitioning evidence that doesn't exist (killed 2026-09).
+
 ## 6. Notes for the simulation
 
 - Use **W_hull = 1.08·(155V³+4.13V⁵)** for Mark II (or 1.0 for Olympias) as the primary
