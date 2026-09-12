@@ -88,6 +88,17 @@ gearing **2.8**, C of G 0.544 m outboard of fulcrum, radius of gyration² 1.488 
 - Consequence: **the thalmian tier's power contribution fell sharply at higher speeds** — the main
   real deficiency of the Olympias rig and the primary motivation for Mark II (0.98 m interscalmium +
   canted/skewed rig). `[x]` (Rankov ch.9 p.77; Gifford's critique ch.12)
+- Attribution correction (primary source ch.4 p.64, 2026-09): the 1987-88
+  shortfall cause was NARROW BLADES (equipment) — 1994 wide blades gave
+  thalmian rowers the SAME EFFICIENCY as other levels, and ergometer tests
+  showed NO body-power difference between tiers (1990 and 1994). So: (a)
+  the LL's uniform teardrop blades already remove the equipment cause;
+  (b) the fitted 0.6 endpoint (from the equipment era) OVERSTATES the
+  spatial-only shortfall, whose measured anchor is just the static 0.9
+  (720/800) with unknown rate shape — as-rowed factor ∈ (?, 0.9];
+  (c) universal physiology per tier (same P_crit/W') is trials-confirmed.
+  The LL keeps 0.6 (degenerate with rudder fraction and oar law at the
+  sprint — changing it alone is tuning, not grounding).
 - Measured shipboard strokes (total butt travel): **1992 average 82–85 cm** (1988: 75–77 cm); two
   triads reached **100 cm+**. `[x]` (Rankov ch.1)
 
