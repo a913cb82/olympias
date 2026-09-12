@@ -102,9 +102,11 @@ that can run in parallel. E1 (pentaconter) needs the remaining decode
 
 ## Risks
 
-The force-mode profile shape (Figure 10 block — the constant demand is
-the documented minimum-shape start; a catch-concentrated profile would
-change the emerging drive times); the catch flip at low ship speed (the
+The force-mode profile shape (Figure 10 block — decoded 2026-09: the image
+is a schematic, intercept/gradient values unpublished; the Hill
+force-velocity structure corroborates force-driven demand conceptually —
+the constant demand is the documented minimum-shape start; a
+catch-concentrated profile would change the emerging drive times); the catch flip at low ship speed (the
 start-from-rest); the numerical stiffness at catch; the kinematic
 recovery `[?]` (the force recovery is unanchored); the sprint's residual
 (the midship's straight-rudder drag — the trials' "partly raised" state —

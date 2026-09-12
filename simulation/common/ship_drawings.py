@@ -60,11 +60,13 @@ N_TOTAL = 2 * N_PER_SIDE  # 170
 
 # Thole (oar pivot) athwartships distances from centreline (m)
 # Thranite 2.7 [x]: pins through the outrigger rails, beam 5.45-5.6 m.
-# Zygian 2.0 [?]: exact plan pending Figure 16; consistent with the lines —
-#   the shell half-breadth at the zygian port height (+1.0 m above WL,
-#   Rankov ch.8 / build log) is 2.25 m, so the pin sits just inboard of the
-#   shell face (frames/timbers). Lines-consistent, not trial-fitted.
-# Thalmian 1.2 [?]: exact plan pending Figure 16; a documented DESIGN choice
+# Zygian 2.0 [?]: exact plan pending Figure 16/Coates Plan 8; consistent
+#   with the lines — the shell half-breadth at the zygian port height
+#   (+1.0 m above WL, Rankov ch.8 / build log) is 2.25 m, so the pin sits
+#   just inboard of the shell face (frames/timbers). Figure 16 (midship
+#   section, decoded 2026-09) shows the same arrangement within ~0.2 m at
+#   raster resolution (no dimension lines survive) — bounded, not retired.
+# Thalmian 1.2 [?]: exact plan pending (same); a documented DESIGN choice
 #   (build log: pins deliberately far inboard to keep the lower oar angle
 #   shallow), well inside the shell (1.80 half-breadth at WL) as designed.
 # Neither value is adjusted to match any speed or turn scenario.

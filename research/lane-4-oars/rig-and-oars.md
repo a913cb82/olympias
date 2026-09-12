@@ -421,3 +421,63 @@ Energy check (propulsive power/oar from the rigid model vs. hull requirement):
 - Rankov 2012 ch.9 (Table 9.1 oar dims, Table 9.6 pull durations), ch.1 §1.4.2
   (blade CP 260 mm), ch.10 p.85 (blade area 0.078 m²); **ch.3 Table 3.1 (p.48,
   decoded) loaded per-row in `oar_inertia.py`**; Part 1 of this file (rig geometry).
+
+## Rev-F report figures decode (Figs 9/10/16 + Table 3, 2026-09-12)
+
+Source: `research/sources/olympias-simulation-report-rev-f/` (report.md +
+media/). Read directly off the images (no text layer needed).
+
+### Table 3 — oar properties (original rig; transcribed verbatim)
+
+| | Thranite | Zygian | Thalmian | Short Zyg. | Short Thal. |
+|---|---|---|---|---|---|
+| Length overall (m) | 4.220 | 4.220 | 4.220 | 4.000 | 4.000 |
+| Length inboard (m) | 1.050 | 1.050 | 1.050 | 0.889 | 0.889 |
+| Handgrip (m) | 0.230 | 0.230 | 0.230 | 0.230 | 0.230 |
+| Thole→CG (m) | 0.280 | 0.320 | 0.250 | — | — |
+| Blade centre from blade end (m) | 0.297 | 0.330 | 0.363 | 0.330 | 0.363 |
+| Outboard to blade centre (m) | 2.873 | 2.840 | 2.807 | 2.781 | 2.748 |
+| Inboard to handle centre (m) | 0.935 | 0.935 | 0.935 | 0.774 | 0.774 |
+| MOI about thole (kg m²) | — | 30 | — | — | — |
+| Weight (kg) | 17 | 17 | 14 | — | — |
+| Blade area (m²) | 0.113 | 0.113 | 0.109 | 0.113 | 0.109 |
+| Rake (deg) | 4 | 8 | 9 | 8 | 9 |
+| Angle θ (deg, Figure 16) | 32 | 24 | 13 | — | — |
+
+Notes: blade areas confirm the chain's 0.113/0.109 `[x]`; rakes confirm
+4–9° `[x]`; MOI 30 (zygian) is the register-A5 Table-3.1-A-family value
+in the wild; weights 17/17/14 kg are the ORIGINAL fir oars (cf. §2.3
+1994 spruce measurements — different rig, do not mix). Inboard 1.050 vs
+as-rowed Table 3.1 1.092/1.105 — original vs as-rowed rigs differ.
+
+### Figure 9 — oar handle force function (image11.jpeg, catchFactor = 1)
+
+Symmetric parabola, relative load 0→1→0 over oar angle ±0.45 rad
+(±25.8° ≈ sweep/2 24°). Confirms the force-curve school uses
+peaked mid-stroke targets; A2's verdict stands (available data cannot
+determine OUR profile — constant demand stays the minimum-shape start).
+
+### Figure 10 — max handle-force function (image12.png, SCHEMATIC)
+
+Straight line, "Maximum force (N)" vs "Ship speed (m/s)", labelled only
+"intercept" and "-gradient" — NO axis numbers. The intercept/gradient
+VALUES are model inputs, unpublished in the report: the B3 quantitative
+block stands. Structure recovered: target blade moment = parabola in
+relative oar angle (catchFactor continuity catch→mid, plain parabola
+mid→finish); max force linear in ship speed, explicitly a Hill
+muscle force-velocity law ("greater load at slower strain rates").
+Corroborates the force-driven demand CONCEPT from an independent model
+(two schools converge on force + Hill); MODE_STOP caps the parked blade
+at the intercept (feathering — cf. LL back-hold degeneration).
+
+### Figure 16 — oar configuration (image21.jpeg, midship section + metre bar)
+
+Measurement verdict (raster photogrammetry, stated limits): the metre
+bar gives ~193 px/m IF the drawing is isotropic (unverified — no second
+in-plane reference survives at raster resolution); M.L. identified; the
+pin features are ambiguous at this resolution (busy left half, 1-px
+dashed lines). Consistency verdict: the drawn thranite rail / zygian
+shell-port / thalmian inboard arrangement is consistent with arms
+2.7 / 2.0 / 1.2 m within ~0.2 m; thranite 2.7 stays beam-confirmed.
+Exact pin coordinates need Coates Plan 8 (register B6) — the [?] stands,
+now bounded: Figure 16 rules out anything outside ±0.2 m.
