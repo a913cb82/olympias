@@ -189,13 +189,22 @@ def _hull_power_chain(V: float, hull: float = 1.0) -> float:
 hull_power_chain = _hull_power_chain  # fitted, for validation
 
 
-# The LL's hull_power is the COMPUTED ITTC+wave law (Stream F promotion:
-# ITTC-1957 friction from the workbook WSA 130.5 m² + k·V⁴ wave, k = 5.3).
-# Measured switch cost vs the tank law: cruise equilibria ±0.06%, G1/F1
-# identical to 0.1 m, 30-s burst −0.002 kt — gate-free, so the LL now sails
-# its lines-derived resistance and the tank law stays as the reference.
+# The LL's hull_power stays the CHAIN LAW (the validated towing-test total:
+# tank-measured on the 1:10 lines-plan model — lines evidence, not a trial
+# fit). The computed ITTC+wave (ship_drawings.hull_power: friction from WSA
+# 130.5 m² + k·V⁴ wave, k = 5.3) is kept as the cross-check.
+#
+# SWITCH ATTEMPTED AND REVERTED (goal work): sailing the computed law moves
+# LL trial gates by ~nothing (cruise equilibria ±0.06%, G1/F1 +0.0/+0.01 m,
+# burst −0.002 kt) BUT destabilises the HL drift channel: the LL drift cells
+# (a small residual, the open drift item) swing ±10% on ±0.06% surge change,
+# the recal lands tau_exit 8→19 s and exponent 0.279→0.105, and the HL
+# zigzag/wprime bins exceed tol (bin_rms 3.57 > 3.0, bin_max 6.17 > 5.5).
+# The promotion is BLOCKED until the drift open item (1.4° vs 8–15°)
+# resolves — the switch itself is gate-free on every LL-vs-trial gate.
+# Trial-WSA variant (~122) also evaluated: F1 lands on the band edge.
 def hull_power(V: float, hull: float = 1.0) -> float:
-    return hull * hull_power_computed(V)
+    return hull_power_chain(V, hull)
 
 
 hull_power_computed_raw = hull_power_computed  # keep original computed

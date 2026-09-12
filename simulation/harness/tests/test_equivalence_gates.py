@@ -295,7 +295,9 @@ def test_three_nm_gate_first_number():
     """The 3-NM crossing time, the Level-2 gate's first number (task D):
     the LL 1718.0 s vs the HL 1717.5 s — the chain-law baseline
     (2026-08): the LL's 1791.8 s (the tank-tested drag law exposes the
-    LL's cruise deficit, the T1 family) — locked against the original."""
+    LL's cruise deficit, the T1 family) — locked against the original.
+    (Computed-hull promotion attempted and reverted — 1776.1 s measured
+    under it — see chain.hull_power note.)"""
     cmds = parse_file(EXAMPLES / "three_nm_cruise.txt")
     out = run_both(cmds, V0=0.0)
     m = metrics(out["ll"], out["hl"])
