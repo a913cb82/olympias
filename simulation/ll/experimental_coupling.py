@@ -56,6 +56,14 @@ MEASURED VERDICT (2026-09, K sweep — heel EXCLUDED in this form):
   Above ~200k the quasi-static balance runs away (heel-v feedback, no
   roll dynamics): valid only for heel <~ 4 deg. K_heel/K_drag stay swept
   placeholders; DO NOT promote on fitted gains.
+
+  Documented heel-turn couplings (Rankov ch.4, primary): turns roll to the
+  OUTSIDE; heel develops fully within ~one stroke of helm application
+  (quasi-static treatment OK); below ~100 m diameter the inside blades
+  lift out (immersion asymmetry, thrust-side — distinct from the excluded
+  lateral-force path above; unmodeled, gate-safe to omit only while
+  G1/F1 hold their bands). Roll to fractions of a degree was never
+  instrumented (one-off wale readings only) — no dynamic heel data exists.
 """
 
 from __future__ import annotations
