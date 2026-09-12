@@ -109,9 +109,18 @@ physics that remain unresolved.
   demand-law shape (P=7.43r assumed linear vs Table 3.2 couples falling
   215→172 N·m over 30–38 spm at fixed speed — different protocols,
   needs careful reading).
-- **The zig-zag overshoots (11–13° vs 8/7°).** The model's heading
-  carries ~5–6° too far past the ±20° targets. Same yaw-reversal family
-  as the t_360.
+- **The zig-zag overshoots (9 then 14° vs 8/7°).** Reframed 2026-09:
+  the FIRST overshoot nearly closes (9.2 vs 8) but the LIMIT CYCLE sits
+  at ~14 vs 7 (2×) — the entry transient matches by luck; the fishtail's
+  settled reversal is under-damped. Wake/inflow-lag direction measured
+  and EXCLUDED as the fix (helm delay 0→2→4 s grows overshoots
+  9/14→14/20→19/25°: later counter-torque can only worsen it). Missing:
+  reversal-only damping (settled-turn linear damping was tested and broke
+  diameters). Lead: transient sway-yaw added-mass couplings from strip
+  theory (potential flow from the offsets — the audit-#5 manoeuvring
+  coefficients path); B1's removed matrix double-counted with scalar
+  m_app and its CGH numbers are galley-inapplicable, so this needs a
+  from-lines rebuild, not a resurrection.
 - **The drift angle (1.4–2.9° vs 7.8°).** The model doesn't lean
   sideways enough. Register C5 holds both trial values: the stated
   15°±2° is scattered (its own method gives 3 s × 2.6°/s = 7.8°);
