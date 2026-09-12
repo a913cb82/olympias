@@ -90,7 +90,6 @@ Acceleration data (0→7 kt in 32 s, 1988) should be validated against the rotat
 - 1 hr of non-stop "firm" rowing was a notable short-pressure (battle-like) demonstration. [x]
 
 ### 1.4 1994 weak-crew sprints (Table 4.2, Rankov ch.4) + stern-hold drops (1992 log) [x]
-
 Source: Rankov 2012 ch.4 (pp.52–54), read off the PDF pages 2026-09 (Table 4.2
 rendered; PUA text layer unusable).
 
@@ -121,6 +120,19 @@ LL differentials at 180°: full-side hold 6.5→4.14 (2.36 kn) vs helm-only
 6.0→5.42 (0.58 kn) — same order despite protocol gaps (crew 170 vs ~121,
 full-side vs section hold, rate unknown). Corroborates HOLD_FRAC physics
 across crew sizes, independent of the tightest-diameter fit (audit #4).
+
+Poros tier-ablation (Table 4.1, 28–29 July 1994): same crew rowing 2-level
+(119, 4.5 kn) vs 3-level (111, 4.2 kn) — no perceptible difference in
+propulsive ability. Tiers don't matter at low speed/effort: independent
+support for the head-room 0.9 plateau (deficit only at high rates).
+
+Sustained astern propulsion (Rankov ch.4 §5, 1994): backing thrust 80% of
+forward, 9.4 kn max astern, full stop from 9.9 kn in <20 s / 170 m,
+8–12 s command-to-reverse lag. LL oar law is mirror-symmetric (measured
+1.00 backing/forward at matched ±V) — correct at blade level; the 0.8
+lives at crew/technique level (facing away, timing). Modeling it needs
+universal push/pull or command-efficiency evidence (single number now);
+LL covers brake/decay (G4-4), not sustained astern.
 
 ---
 
