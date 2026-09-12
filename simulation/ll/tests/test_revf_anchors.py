@@ -99,6 +99,43 @@ def test_kempf_overshoots():
     assert all(abs(o - 14.0) < 1.2 for o in overs[1:]), overs
 
 
+def test_kempf_entry_invariance():
+    """The limit-cycle gap is robust to the unheld maneuver details: a 45°
+    first swing (Taylor modeled Kempf with 45 AND 22.5 helm phases — the
+    trials entry is unheld) changes the entry-sensitive first overshoot
+    (9.1 → 12.7) but leaves the settled limit cycle identical (14.1).
+    The 2× reversal gap does not hinge on entry assumptions."""
+    # 45-degree entry variant (first swing hotter, then the same zigzag)
+    # (baseline 22.5° entry covered by test_kempf_overshoots — not re-run)
+    s = Ship(rate=28.8, pressure=("steady", "steady"))
+    s.V = 0.0
+    while s.t < 600.0:
+        s.step(0.02)
+    s.helm_dir, s.helm_frac = "port", 45.0 / 67.5
+    TARGET = math.radians(20.0)
+    flips, overs, run_max, prev_psi = 0, [], 0.0, 0.0
+    start_t = s.t
+    while s.t < start_t + 3600.0 and flips < 6:
+        s.step(0.02)
+        p = s.psi
+        if s.helm_dir == "port" and prev_psi < TARGET and p >= TARGET:
+            flips += 1
+            if flips >= 2:
+                overs.append(math.degrees(run_max) - 20.0)
+            run_max = 0.0
+            s.helm_dir, s.helm_frac = "starboard", 22.5 / 67.5
+        elif s.helm_dir == "starboard" and prev_psi > -TARGET and p <= -TARGET:
+            flips += 1
+            if flips >= 2:
+                overs.append(math.degrees(run_max) - 20.0)
+            run_max = 0.0
+            s.helm_dir, s.helm_frac = "port", 22.5 / 67.5
+        run_max = max(run_max, abs(p))
+        prev_psi = p
+    assert abs(overs[0] - 12.7) < 1.5, overs  # hotter entry, bigger first carry
+    assert all(abs(o - 14.1) < 1.2 for o in overs[1:]), overs  # same limit cycle
+
+
 def test_thranite_only_equilibrium():
     """Rev F D10: thranites only (62 oars) at 33.3 spm — the LL settles
     4.26 kt (grounded hull+lever: was 4.19 at NET 1.8, the lever does not

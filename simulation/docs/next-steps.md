@@ -119,9 +119,11 @@ physics that remain unresolved.
   215→172 N·m over 30–38 spm at fixed speed — different protocols,
   needs careful reading).
 - **The zig-zag overshoots (9 then 14° vs 8/7°).** Reframed 2026-09:
-  the FIRST overshoot nearly closes (9.2 vs 8) but the LIMIT CYCLE sits
-  at ~14 vs 7 (2×) — the entry transient matches by luck; the fishtail's
-  settled reversal is under-damped. Wake/inflow-lag direction measured
+  the first overshoot is ENTRY-SENSITIVE (9.1 at 22.5° entry vs 12.7 at
+  45° — the trials entry is unheld, Taylor modeled both phases — so its
+  near-match of 8° is uninformative); the LIMIT CYCLE is entry-invariant
+  (14.1 both) and sits at ~14 vs 7 (2×, locked with the invariance in
+  `test_kempf_entry_invariance`). Wake/inflow-lag direction measured
   and EXCLUDED as the fix (helm delay 0→2→4 s grows overshoots
   9/14→14/20→19/25°: later counter-torque can only worsen it). Missing:
   reversal-only damping (settled-turn linear damping was tested and broke
