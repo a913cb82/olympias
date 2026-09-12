@@ -61,6 +61,11 @@ reproduced exactly (locked by test).
 
 ## 3. Gate 3 — 170-oar turns vs the W5 trial anchors `[x]` (9 checks)
 
+_snapshot note: diameters below are the B2/B3-era values; local-flow and
+the turns-1/2 groundings moved G1/F1 by ~+1 m (current executable values
+and their annotations live in `ll/tests/test_gate3.py` and
+`ll/tests/test_gate8.py`; all bands green)._
+
 | Scenario | LL diameter | Anchor | Match |
 | --- | --- | --- | --- |
 | G1 full rudder @ 6 kt | 91.5 m | 89.4 m | +2.4 % (grounded hull: 40.95 t / Iz 4.76e6 — was +0.3% at 42.0 t; F1 re-baselined to 8% — see §11.1) |
@@ -251,6 +256,9 @@ boundaries with named causes — §11.2.)
 | zig-zag (out-of-sample, task T10) | +1.3 % | −0.000 pts | — | 0.136 NM | **annotated** — the reversal-mix composition at the curve-selection calibration (the pair re-scan 8.0/0.552; the mean +1.3 % stays; §11.2) |
 
 ### 9.2 The turn scenarios — D = |y| at 180° within 5 %
+
+_snapshot note: LL column is B2/B3-era (see the §3 note); the HL column is
+the pinned `84c8893` calibration and stays current._
 
 | scenario | D LL | D HL | diff | t180 LL / HL |
 | --- | --- | --- | --- | --- |
