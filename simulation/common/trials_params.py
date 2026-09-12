@@ -181,6 +181,9 @@ T_RISE = t_rise(0.70)  # 0.109 s at steady cruise
 # Tempo call-down: the sustained per-side rate gap (spm) that triggers
 # the keleustes to call down both sides to the weaker rate. Estimated
 # from the crew's ability to maintain asymmetry; not directly measured.
+# INERT in validated regimes (W'-empty planning holds rate via sweep
+# shrink, so gaps stay ~0 — locked by test_keleustes_inert; any threshold
+# in [0.5, 50] behaves identically here): a guardrail, not a fit.
 TEMPO_CALLDOWN_SPM = 2.0  # spm
 
 # =====================================================================

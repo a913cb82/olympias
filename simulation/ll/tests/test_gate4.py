@@ -263,5 +263,42 @@ def test_impossible_rate():
     assert plan.rate_eff < 50.0, f"achieved rate {plan.rate_eff:.1f} (cmd 50)"
 
 
+def test_keleustes_inert():
+    """The keleustes calldown (2.0 spm gap) never fires in validated
+    scenarios: W'-empty planning holds rate via sweep-shrinking (B floor),
+    so side-to-side rate gaps stay ~0 and tempo is kept or lost per-side
+    (G4-5/G4-7), never by calldown. The 2.0 value is an unbinding
+    guardrail (any threshold in [0.5, 50] behaves identically here)."""
+    scenarios = [
+        dict(rate=40.0, drain_star=True, t_end=180.0, v0=5.0),  # G4-5
+        dict(rate=28.8, helm=("port", 22.5 / 67.5), t_end=300.0, v0=6.0),
+        dict(
+            rate=44.5,
+            oar_state=("row", "hold"),
+            helm=("starboard", 1.0),
+            v0=6.5,
+            t_end=300.0,
+        ),
+    ]
+    for kw in scenarios:
+        drain = kw.pop("drain_star", False)
+        t_end = kw.pop("t_end")
+        v0 = kw.pop("v0")
+        s = Ship(**kw)
+        if drain:
+            for t in s.crew["star"].tiers.values():
+                t.W = 0.0
+        r0, max_gap = s.rate, 0.0
+        s.V = v0 * KT
+        while s.t < t_end:
+            s.step(0.02)
+            max_gap = max(
+                max_gap, abs(s.crew_p.rate_eff - s.crew_s.rate_eff)
+            )
+        assert s.rate == r0, "keleustes called down"
+        assert s._tempo_violation == 0.0
+        assert max_gap < 1.0, f"rate gap {max_gap:.2f} near threshold"
+
+
 if __name__ == "__main__":
     raise SystemExit(pytest.main([__file__]))
