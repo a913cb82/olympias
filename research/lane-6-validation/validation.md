@@ -88,6 +88,9 @@ Acceleration data (0→7 kt in 32 s, 1988) should be validated against the rotat
 - 112-NM voyage Aegina→Corinth→Salamina→Poros; an 11-hour non-stop row into headwinds to 20 kt
   with gusts; rowed 28.33 NM in 9h38m @ **2.9 kt avg into ~20 kt headwind**. [x]
 - 1 hr of non-stop "firm" rowing was a notable short-pressure (battle-like) demonstration. [x]
+- Turn times at reduced crew (8/8/92 log, ~121 rowing with 49 empty seats):
+  180° to port in 63 s (starboard turn a knot faster, cut short by emergency
+  stop). Future validation material for crew-scaled turn dynamics. [x]
 
 ### 1.4 1994 weak-crew sprints (Table 4.2, Rankov ch.4) + stern-hold drops (1992 log) [x]
 Source: Rankov 2012 ch.4 (pp.52–54), read off the PDF pages 2026-09 (Table 4.2
