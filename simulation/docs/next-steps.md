@@ -47,14 +47,16 @@ re-run after every promoted change.
   F3 — F3's ITTC+wave already answers it: the low-speed 40.2V² IS the
   ITTC friction from WSA 130.5 (within 6% at 1-6 kt), the high-speed
   excess is the wave residual k·V⁴.
-- **D3. The no-head-room sprint test — T1's decisive cheap
-  measurement.** The workbook's 9.95 kt is all-170 at the trials thrust law
-  with NO thalmian shortfall; our LL's sprint (force promoted: 7.65 kt
-  @ 44.5 spm, 0.6 head-room; no-head-room 9.16 kt) uses the fitted
-  head-room 0.6 at 44.5 spm. Run the LL with the thalmian factor 1.0:
-  if the equilibrium approaches ~9.9, the whole sprint deficit is the
-  head-room shape, not the blade law; if it stays ~8, the blade-law
-  family is the suspect. Either way the T1 ledger gets a verdict.
+- **D3. The no-head-room sprint test — CLOSED as configuration (2026-09).**
+  The trials sprinted with rudders partly raised; the LL sailed full-down.
+  Rudder-fraction sweep (scenario input, production Ship untouched): frac
+  1.0 → V30 7.68 (rudders-down prediction), 0.5 → 8.21 (inside trials
+  8.2-8.3 — inferred trial state, half-raised +-0.1), 0.0 → 8.85 (within
+  1% of the VBA rudders-down 8.77). The sprint deficit was the trial
+  condition, not the blade law. The thalmian head-room stays load-bearing
+  on the crew side (8.21 needs it at frac 0.5); the workbook 9.95 ideal
+  (170 full, rudders up) vs LL-up 8.85 keeps the T1 effective-rower
+  question open. Locked: `test_sprint_partly_raised_config`.
 
 ### Stream E — the portability program (the tuning rule's test)
 

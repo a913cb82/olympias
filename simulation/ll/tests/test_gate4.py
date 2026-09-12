@@ -18,6 +18,7 @@ Gates (the LL gates — docs/VALIDATION.md):
         (achieved < commanded; oQ-14's answer: physical consequence).
 """
 
+import copy
 import math
 import sys
 from pathlib import Path
@@ -102,6 +103,23 @@ def test_sprint():
     # >7.8 under the 40.2v^2 proxy — the tank-tested law exposes the
     # LL's sprint deficit, the T1 family); the fade relationship holds
     assert s30.V / KT > 7.2, f"burst speed {s30.V / KT:.2f} kt"
+
+
+def test_sprint_partly_raised_config():
+    """T1 verdict (configuration, not blade law): the trials sprinted with
+    rudders partly raised; the LL's full-down V30 (7.68) is the rudders-down
+    prediction. At rudder fraction 0.5 the same physics gives 8.21 kt —
+    inside the trials 8.2-8.3: the sprint deficit is the trial condition,
+    inferred as half-raised (+-0.1). Fraction 0.0 (up) gives 8.85, within
+    1% of the VBA model's rudders-down 8.77 (two-model agreement). The
+    production Ship is untouched — the fraction is a scenario input, set
+    here by copying the vessel (never mutate the shared VESSELS)."""
+    for frac, lo, hi in ((0.5, 8.05, 8.35), (0.0, 8.7, 9.0)):
+        s = Ship(rate=44.5)
+        s.vessel = copy.copy(s.vessel)
+        s.vessel.rudder_straight *= frac
+        s = loop(s, 30, v0_kt=8.5)
+        assert lo <= s.V / KT <= hi, f"frac {frac}: V30 {s.V / KT:.2f} kt"
 
 
 def test_sprint_peak():
