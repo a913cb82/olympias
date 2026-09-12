@@ -331,7 +331,12 @@ IZ_DESIGN = MASS_DESIGN * (LWL / 3.0) ** 2  # 5.30e6 kg·m²
 #   C_D = C_D,base × taper
 # At trial WL: taper = 30.09/(32.35·1.10) = 0.846 → C_D = 0.254,
 # Ω = ½·1025·0.254·23217 = 3.02e6. Independent of any turn scenario.
-CD_BASE = 0.30  # 2D drag crisis at Re ~ 1e6 (literature)
+CD_BASE = 0.30  # 2D drag crisis at Re ~ 1e6 (literature). Cross-check:
+# the workbook's own cross-flow comment (vba_extracted.txt, in-repo primary
+# source) states Cdc ~ 0.5-1.5 with hull-form factor kf ~ 0.3-0.7; our
+# 0.254 sits inside kf*Cdc (e.g. kf 0.4 x Cdc 0.64) — a different
+# turn-anchored parameterization landing in the same band (structural
+# consistency, cf. D1 static verdicts — not an independent anchor).
 CD_TAPER = hull_taper(_trial["a_lat"], LWL, ZWL_TRIAL)  # planform taper (~0.846)
 CD_HULL = CD_BASE * CD_TAPER  # ~0.254, from lines + literature
 OMEGA_TRIAL = 0.5 * RHO * CD_HULL * J_TRIAL  # 3.00e6 kg·m²

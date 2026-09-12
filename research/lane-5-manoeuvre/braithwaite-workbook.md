@@ -98,7 +98,9 @@ OarForces / RudderForces, no re-interpretation); locks:
    LL 89k N·m/(m/s)) — the restoring moment is robust across derivations.
 3. Sway force **disagrees ~11x** (CGH Yv vs Taylor f_hull): CB 0.321 is
    far outside Clarke's regression range — the workbook's calibration
-   absorbs it. This independently rediscovers the drift open item: the
+   absorbs it. Regime evidence: the reference implementation (Fossen MSS
+   SIMclarke83) demonstrates on a 100 m, Cb 0.80 ship; the trireme (32 m,
+   Cb 0.32) is a different animal. This independently rediscovers the drift open item: the
    sway-force channel is THE uncertain channel. Locked as disagreement.
 4. Rudder straight drag **agrees 8%** (per-rudder x2 = 1307 N vs LL
    1418 N @ 6 kt) — live corroboration of register C3.
