@@ -153,6 +153,16 @@ physics that remain unresolved.
   The per-station layer's turn pattern is inverted vs trials. The
   over-damping (~9.8 kN·m) is the measured gap. The layer stays swappable
   (`Ship(stations=True)`), not default.
+- **The stationary turns (in-place 2.1–3.0 vs 3.5°/s; one-side 1.1–1.5
+  vs 3.5).** Halved 2026-09 by protocol, not physics: the locked
+  spoude/spoude setup sails away at 2.8 kt (backing can't match rowing),
+  but trials crews trimmed to V~0 by skill/feathering — easing starboard
+  backing to steady gives 3.00°/s at V 1.9 (was 1.94 at V 2.8). Structure
+  found: backing parks (full drag, no thrust) below ~3.6 kt (v_check),
+  so in-place moment is single-side thrust + parked-side drag. Remainder
+  ~15% joins the high-load blade-effectiveness family (in-place +
+  MarkIIb + ch.7 triple — all LL-low; needs Figure-10 aerodynamics +
+  chain re-derivation, NOT a local fit). No lock touched.
 
 ## Kick-off
 
