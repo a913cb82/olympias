@@ -108,6 +108,15 @@ LL automatically produces a new calibration (`hl/calibrate.py`, ~10 min)
 and re-locked gates. They are fitting, but never trial-fitting — the LL
 is their oracle.
 
+Recal currency (goal work, 2026-09): latest `84c8893` was fit to the
+pre-turns-1/2 LL; the turns-1/2 moves (blade +0.5%, Omega +0.6%) were
+accepted WITHOUT recal because every HL-equivalence gate holds: all 26
+`harness/tests` green, helm-turn D-diffs −0.5/−0.4/−2.9% (tol 5%). A fresh
+recal was evaluated and DECLINED: the turn-3 attempt flipped tau_exit
+8→19 s and exponent 0.279→0.105 on a ±0.06% LL move (drift-cell
+hypersensitivity) and broke two fatal bins — recalibration is destabilising until the drift open item resolves (same blocker as the
+hull-law switch, audit #9). Revisit with the drift fix.
+
 ## 4. Provisional placeholders `[?]` (no anchor)
 
 | Constant | What it does | Status |
