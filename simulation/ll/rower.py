@@ -129,6 +129,7 @@ class TierCrew:
         stations: list[Any] | None = None,
         side: int = 1,
         force: bool = False,
+        hill_demand: bool = False,
     ):
         rig = RIGS[rig_name]
         self.rig_name = rig_name
@@ -170,6 +171,7 @@ class TierCrew:
         # at their rowing effort — sprint flips faster than cruise)
         self.t_rise = t_rise_for_pressure(PRESSURE.get(pressure, 0.70))
         self.force = force  # Plan 1: the force-driven oar (ll/oar.py)
+        self.hill_demand = hill_demand  # Hill-demand spike (OFF default)
         self.hold_frac = hold_frac
         self.hold_k = hold_frac * self.k
         if stations:
@@ -340,6 +342,8 @@ class TierCrew:
         Figure 10) would concentrate the force at the catch — the constant
         demand is the documented start (plan 1, next-steps.md)."""
         fh = self.fh_demanded() * self.power_factor
+        if self.hill_demand and self.force:
+            fh *= hill_factor(V)
         if self.W <= 0.0:
             fh = min(
                 fh, self.P_crit * self.power_factor * 60.0 / (B * lin * self.rate_cmd)
@@ -773,6 +777,23 @@ class TierCrew:
 TIER_SPLIT = {"thranite": N_THRANITE, "zygian": N_ZYGIAN, "thalmian": N_THALMIAN}
 
 
+# Hill-demand spike (OFF by default) — VBA-linear force-velocity:
+# demand(V) = demand × hill_factor(V); hill_factor = 1.0 at HILL_VREF
+# (7.2 kt cruise — Gate-1 anchor preserved by construction, only the
+# slope changes: −2.07 toward measured −5.69 N/kt/oar).
+# HILL_V0 = 9.252 m/s (18 kt zero-thrust intercept, Taylor-published
+# Fig 31.1; the VBA OarForces law). True Hill is hyperbolic in
+# contraction velocity; this linear-in-V form tests the slope with one
+# evidence anchor (the intercept). See next-steps t_360.
+HILL_V0 = 9.252
+HILL_VREF = 7.2 * 0.51444
+
+
+def hill_factor(V: float) -> float:
+    """VBA-linear demand factor, 1.0 at cruise, clamped at 0.05."""
+    return max(0.05, (1 - abs(V) / HILL_V0) / (1 - HILL_VREF / HILL_V0))
+
+
 def thalmian_power_factor(rate: float) -> float:
     """Thalmian head-room factor (the ch.9 L-model: a reduced effective pull
     scales the POWER, not the kinematics): the manikin reaches 720 mm of the
@@ -809,6 +830,7 @@ class SideCrew:
         stations: dict[str, list[Any]] | None = None,
         side: int = 1,
         force: bool = False,
+        hill_demand: bool = False,
     ):
         self.rig_name = rig_name
         self.n = n_side
@@ -842,6 +864,7 @@ class SideCrew:
                 stations=stations["thranite"] if stations else None,
                 side=side,
                 force=force,
+                hill_demand=hill_demand,
             ),
             "zygian": TierCrew(
                 rig_name,
@@ -858,6 +881,7 @@ class SideCrew:
                 stations=stations["zygian"] if stations else None,
                 side=side,
                 force=force,
+                hill_demand=hill_demand,
             ),
             "thalmian": TierCrew(
                 rig_name,
@@ -874,6 +898,7 @@ class SideCrew:
                 stations=stations["thalmian"] if stations else None,
                 side=side,
                 force=force,
+                hill_demand=hill_demand,
             ),
         }
         self.rate_eff = rate

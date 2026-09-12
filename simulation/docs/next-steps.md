@@ -117,7 +117,13 @@ physics that remain unresolved.
   viable SHAPE but MarkIIb-sized (needs Olympias foil, A3). Live lead:
   demand-law shape (P=7.43r assumed linear vs Table 3.2 couples falling
   215→172 N·m over 30–38 spm at fixed speed — different protocols,
-  needs careful reading). Thrust-vs-V slopes (28.8 spoude, 5–9 kt):
+  needs careful reading). Hill-demand spike BUILT (OFF default,
+  `hill_demand` flag TierCrew→Ship; VBA-linear in V normalized to 1.0 at
+  7.2 kt so Gate-1 is untouched by construction; contract locked in
+  test_force_planner_bounds): planner slope −2.77 → −4.90 (target −5.69,
+  closes 75%); ship battery: cruise +1–5%, D held (+1%), sprint −0.8%,
+  t360 slightly WORSE (more low-V demand raises the floor). Verdict: slope
+  fidelity for t_360 cost — stays OFF (no regressions for response shape). Thrust-vs-V slopes (28.8 spoude, 5–9 kt):
   kinematic −17.3 (3× too steep), force −2.07 (2.7× too flat) vs Taylor
   −5.69 N/kt/oar (levels differ: MarkIIb-optimised vs trials crew).
   A Hill force-velocity demand would steepen force-mode toward measured.

@@ -84,3 +84,21 @@ def test_flip_cap_headroom():
         for vkt in (0.0, 2.0, 4.0, 6.0, 8.0)
     ]
     assert max(peaks) < 700.0  # measured 330; the clamp is pure guardrail
+
+
+def test_hill_demand_contract():
+    """Hill-demand spike contract (OFF by default): normalized to 1.0 at
+    the Gate-1 cruise point (7.2 kt) so the validated anchor is untouched
+    by construction; bounded static boost; clamped floor; decreasing in V;
+    default off everywhere (suite green with the code present proves it)."""
+    from ll.rower import HILL_V0, HILL_VREF, hill_factor
+    from ll.ship import Ship
+
+    assert hill_factor(HILL_VREF) == 1.0
+    assert abs(hill_factor(0.0) - 1 / (1 - HILL_VREF / HILL_V0)) < 1e-9
+    assert hill_factor(20.0) == 0.05  # clamped floor
+    assert hill_factor(3.0) > hill_factor(6.0) > 0.0
+    s = Ship(rate=28.8)
+    assert s.crew_p.tiers["thranite"].hill_demand is False
+    s2 = Ship(rate=28.8, hill_demand=True)
+    assert s2.crew_p.tiers["zygian"].hill_demand is True

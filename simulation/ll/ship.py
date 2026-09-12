@@ -72,6 +72,7 @@ class Ship:
         hold_frac: float | None = None,
         stations: bool = False,
         force: bool = True,
+        hill_demand: bool = False,
         heel_coupling: bool = False,
         heel_params: dict | None = None,
     ):
@@ -159,6 +160,7 @@ class Ship:
                 stations=side_layout["port"] if side_layout else None,
                 side=1,
                 force=force,
+                hill_demand=hill_demand,
             ),
             "star": SideCrew(
                 rig_name,
@@ -172,6 +174,7 @@ class Ship:
                 stations=side_layout["star"] if side_layout else None,
                 side=-1,
                 force=force,
+                hill_demand=hill_demand,
             ),
         }
         # cached refs — the per-step hot path (the dict stays for the
