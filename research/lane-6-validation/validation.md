@@ -134,6 +134,16 @@ lives at crew/technique level (facing away, timing). Modeling it needs
 universal push/pull or command-efficiency evidence (single number now);
 LL covers brake/decay (G4-4), not sustained astern.
 
+### 1.5 Sea-state tier knockout thresholds (Rankov ch.8) [x]
+
+Waves knock tiers out progressively (read 2026-09): 0.4 m+ → thalmian
+oars drawn in first (a third of oarpower); 1.0 m → thranites/zygians hit
+(the 1.2 m whole-crew claim discredited as overestimated); 1.3 m 3-hour
+wave → rowing impossible. Zygian sills 1.0 m above MWL; 1° pitch moves
+end oarports ±0.22 m. Qualifier: full-crew protocols assume calm water
+(sprint verified negligible breeze); cruise/turn sea states unrecorded —
+affected trials rowed short-handed aloft.
+
 ---
 
 ### 2. Stability / displacement anchors — ch.25 (John Coates, bilge water) [x]
