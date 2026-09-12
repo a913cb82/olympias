@@ -85,6 +85,10 @@ gearing **2.8**, C of G 0.544 m outboard of fulcrum, radius of gyration² 1.488 
   design stroke. Thalmians "tended to hit their heads at each end of the stroke", especially at the
   finish — mitigated on trials by putting the smallest rowers there and a neck-restraining rope. `[x]`
   (Rankov p.9 Fig. 24.2 caption; build log)
+- Coates Fig 10.2 (primary section, read 2026-09): 1.75 m man attempting
+  1.1 m handle travel (the Shaw rig-unrestricted max) under 0.85 m beam
+  spacing at 50° — the restriction drawn: attempted 1.1 m vs 0.85 m
+  available; the 720 mm manikin stroke sits between, head-hitting past it.
 - Consequence: **the thalmian tier's power contribution fell sharply at higher speeds** — the main
   real deficiency of the Olympias rig and the primary motivation for Mark II (0.98 m interscalmium +
   canted/skewed rig). `[x]` (Rankov ch.9 p.77; Gifford's critique ch.12)
