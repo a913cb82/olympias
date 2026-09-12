@@ -46,7 +46,11 @@ def test_cant_effect_measured():
 def test_identity_at_olympias():
     """The cant path is identity at phi = 0: the Olympias means unchanged
     (the four-point agreement with the reference already covers this; here
-    explicitly: a cant=0 rig copy gives identical means to the rig)."""
+    explicitly: a cant=0 rig copy gives identical means to the rig).
+    Plus the no-adoption lock: NEITHER production rig carries a slip key —
+    slip lives only in scenario-local dicts (G7-4), never in RIGS."""
+    assert "slip" not in RIGS["Olympias"]
+    assert "slip" not in RIGS["MarkIIb"]
     rig = RIGS["Olympias"]
     for (rig_name, vkt), td in T_DRIVE.items():
         if rig_name != "Olympias":
