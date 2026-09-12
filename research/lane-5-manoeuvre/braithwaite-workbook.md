@@ -85,3 +85,31 @@ same cross-flow yaw-damping physics as our Plan 2 audit.**
    cross-check for our rudder pair's drag.
 4. Iz = m(L/3)² = 5.28e6 is an independent inertia estimate — reconcile
    with the LL's Iz.
+
+## D1 stage-1 verdict (2026-09-12): static VBA-vs-LL reconciliation
+
+Port: `braithwaite_model.py` (this directory — faithful ManAcceleration /
+OarForces / RudderForces, no re-interpretation); locks:
+`simulation/ll/tests/test_vba_reconciliation.py`.
+
+1. Surge added mass: VBA `0.04+0.06·CB` = **1.059** — inside the
+   independent band [1.02, 1.12] (spheroid bound 1.026, LL measured 1.10).
+2. Yaw-due-to-sway (CLR physics) **agrees within 27%** (|Nv| 113k vs
+   LL 89k N·m/(m/s)) — the restoring moment is robust across derivations.
+3. Sway force **disagrees ~11x** (CGH Yv vs Taylor f_hull): CB 0.321 is
+   far outside Clarke's regression range — the workbook's calibration
+   absorbs it. This independently rediscovers the drift open item: the
+   sway-force channel is THE uncertain channel. Locked as disagreement.
+4. Rudder straight drag **agrees 8%** (per-rudder x2 = 1307 N vs LL
+   1418 N @ 6 kt) — live corroboration of register C3.
+5. Applied-helm rudder forces **diverge 2-7x** (VBA flat plate at helm vs
+   LL validated FAC/coeff; VBA lift is coincidentally equal at 22.5/67.5
+   by the sin2α symmetry) — stage 2 must run VBA turns: LL turns are
+   trial-validated, VBA's are not yet.
+6. Cross-flow statics: CN=0.4 → 2.56x LL Omega, CN=0.8 → 5.11x. The VBA
+   balance is linear-Nr-dominated (−2.0e6·r dwarfs Nr2 at turn rates);
+   the LL's is cross-flow + CLR. Static comparison CANNOT adjudicate the
+   CN [?] flag — the trajectory comparison (stage 2) can.
+
+Stage 2 (open): integrate the VBA sim (transfer/updata scheme), run
+G1/F1/tightest + top-speed curve vs the LL.
