@@ -172,10 +172,12 @@ their own evidence tension (lane-3 territory).
 Verdict: LL stays at 39.4 — it is the turn-validated set (G1/F1/tightest
 close on it in OUR condition); the 8% source tension is recorded, needs
 Ref (1) p74 vs p82 to resolve. The D1 straight-drag lock (8%) now reads
-as this same tension, not a shortfall. Reframed 2026-09 (Table 31.1 in
-print, Rankov p232): the 79.6 row is literal — so this is
-measurement-vs-measurement (both towing-derived), not fit-vs-measured;
-turns decide for our condition. Same page fixes: LWL three-way (Taylor
+as this same tension, not a shortfall. Corrected 2026-09 (Google Books
+mining): NEITHER 79.6 NOR 76.6 appears verbatim in Coates 1990's indexed
+text — both are downstream constructs (Table 31.1's row vs Rev-F's p74
+reading of the same towing data), so this is fit-vs-fit; suspected split
+is Coates p54 (towing, Taylor) vs p74 (parametric, Rev-F) — unmined.
+Turns decide for our condition. Same page fixes: LWL three-way (Taylor
 32.2 / Braithwaite offsets 32.35 / GA 33 — hierarchy offsets > table >
 sketch; ±2% LWL moves J ∓8%, inside bands); the 18 kt zero-thrust
 intercept is Taylor-published (Fig 31.1 caption — VBA's 9.252 m/s

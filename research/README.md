@@ -62,6 +62,16 @@ Units: spm = strokes per minute; kt = knots; t = tonnes.
   scipy, matplotlib, pymupdf, PIL, etc.). The heavy OCR tools (easyocr +
   torch) are installed separately when needed — recipe in `tasks/README.md`.
 - **Rankov 2012 pages**: printed book page + 12 = PDF page number.
+- **Coates 1990 (unheld) via Google Books snippet mining** (2026-09): the
+  volume is indexed — `books.google.com/books?jscmd=SearchWithinVolume2
+  &q=<terms>&vid=pZzfAAAAMAAJ` returns page IDs + snippets (page images
+  are sig-walled; Open Library/Archive.org yield nothing usable). Located
+  so far: p21 rudder-state power figure (fully immersed / one out+half /
+  both out / bare hull); pp.29–30 Hellenic Phase-One turn protocols
+  (varying helm + oar configs incl. thranite-only; 45°/105 m turn datum);
+  PA24 acceleration runs at ~38 spm, rudders not fully immersed. Still
+  needed: 79.6/76.6 verbatim (0 hits both — downstream constructs), F/G
+  per-turn rates, p54-vs-p74 rudder split.
 - When a finding changes the chain, update: the lane doc, the
   `uncertainties-register.md`, and — if a model uses it —
   `../simulation/common/chain.py` plus the affected tests.
