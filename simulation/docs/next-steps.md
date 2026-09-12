@@ -162,7 +162,13 @@ physics that remain unresolved.
   so in-place moment is single-side thrust + parked-side drag. Remainder
   ~15% joins the high-load blade-effectiveness family (in-place +
   MarkIIb + ch.7 triple — all LL-low; needs Figure-10 aerodynamics +
-  chain re-derivation, NOT a local fit). No lock touched.
+  chain re-derivation, NOT a local fit). Known approximation (not the gap):
+  the aggregated yaw lever averages over ALL tiers (2.00 m) including
+  resting/trailing ones (verified: SideCrew means dilute correctly, no bug);
+  pressure×power_factor-weighted active arms give 2.37 m one-side and
+  2.03–2.12 m full-crew — at most +6% moment (+3% rate), far short of
+  C7's several-× shortfall; implementing it would churn W5+HL for +9%.
+  No lock touched.
 
 ## Kick-off
 
