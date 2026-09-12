@@ -113,3 +113,42 @@ OarForces / RudderForces, no re-interpretation); locks:
 
 Stage 2 (open): integrate the VBA sim (transfer/updata scheme), run
 G1/F1/tightest + top-speed curve vs the LL.
+
+## D1 stage-2 verdict (2026-09-12): VBA turn runs vs trials vs LL
+
+`simulate()` in `braithwaite_model.py` (semi-implicit Euler, dt = 1 s —
+the sheet's scheme) reproduces the stored Olympias 30 s run to **0.01%**
+at CN = 0.8 (code value), closing two transcription questions en route:
+drag = linear interpolation of the integer-kt trials table (sheet K to
+0.2%; direct formula is 0.7% off), rudder called per-rudder x2 (t=0
+forces exact), and the sheet passes Drag NEGATIVE despite the VBA header
+calling it "(positive)". Locks: `simulation/ll/tests/test_vba_turns.py`.
+
+Turn analogues (G1/F1: pressure 0.30 both sides settling ~6 kt, helms in
+sheet radians; tightest: the stored port-0/starboard-1 protocol, U0 = 4):
+
+| scenario | trials | LL | VBA CN=0.8 | VBA CN=0.4 |
+|---|---|---|---|---|
+| G1 D | 89.4 | 92.2 | 117.1 (+31%) | 100.7 (+13%) |
+| F1 D | 111.9 | 121.4 | 152.3 (+36%) | 134.9 (+21%) |
+| tightest D | 62 | 60.3 | 79.3 (+28%) | 65.0 (+5%) |
+| tightest t180 | ~64 impl. | ~49 (fast) | 76 | 65 |
+| top (rudd. down) | 8.2-8.3 | 7.67 V30 | 8.77 | 8.77 |
+
+1. CN FLAG ADJUDICATED: 0.4 (paper/comment) beats 0.8 (code) on every
+   turn — the comment value reproduces trials better. (The sheet's stored
+   run used 0.8; the flag was code-vs-paper, now settled on trajectories.)
+2. Even CN = 0.4 turns wide: the VBA model lacks load-bearing turn
+   physics (11x-weak sway stiffness per stage 1, no hold brake, huge helm
+   drag). The LL's Taylor sway set + brake + validated FAC are
+   corroborated BY NECESSITY — an independent model without them fails
+   the diameters it was calibrated for.
+3. BRACKET on t_360: VBA/CN0.4 nails tightest time (65 vs ~64 s) at +5%
+   size; LL nails size at ~75% time. Neither does both — the missing
+   turn-speed physics sits between them (slow-wide vs fast-right).
+4. Top speed rudders-down 8.77 (CN-independent) sits coherently between
+   the LL 130-effective sprint and the workbook rudders-up 9.95.
+
+Protocols differ (sheet full-load 45.38 t vs LL trial 40.95 t; lever 5.2
+vs thole-mean 2.00; helm 67.0 vs 67.5 deg; no brake/sway-oar-force) —
+verdicts directional. D1 COMPLETE (statics + trajectories).

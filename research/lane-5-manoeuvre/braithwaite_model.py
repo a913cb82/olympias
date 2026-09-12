@@ -278,3 +278,128 @@ def _self_check() -> dict:
 if __name__ == "__main__":
     for k, val in _self_check().items():
         print(f"{k}: {val:.3f}")
+
+
+# =====================================================================
+# Stage 2 — time-domain simulation (sheet integration scheme)
+# =====================================================================
+# The Manoevering sheet integrates semi-implicit Euler at dt = 1 s
+# (verified: E139 = E138 + R138*1, positions advance with end-of-step
+# velocity). Drag = piecewise trials fit (DECODE Powering; sheet K column
+# matches it to 0.2-0.7% — table-lerp vs formula ambiguity, immaterial).
+
+def _trials_table_kt() -> list[float]:
+    """Integer-kt trials table (0..20 kt) from the documented piecewise fit
+    (DECODE Powering: 40.2V^2 (1-6), 75.2V^2-1560 (7-8), 88.6V^2-2640
+    (9-10), V in kt) — the sheet's G column matches these knot values
+    exactly, and its Drag column matches linear interpolation between
+    them to ~0.2% (table-lerp vs direct-formula ambiguity, immaterial)."""
+    table = []
+    for v in range(21):
+        if v <= 6:
+            table.append(40.2 * v * v)
+        elif v <= 8:
+            table.append(75.2 * v * v - 1560.0)
+        else:
+            table.append(88.6 * v * v - 2640.0)
+    return table
+
+
+_TRIALS_TABLE = _trials_table_kt()
+
+
+def trials_drag(u_ms: float) -> float:
+    """Bare-hull resistance (N, positive): linear interpolation of the
+    integer-kt trials table (the sheet's method)."""
+    vkt = abs(u_ms) / KT
+    if vkt >= 20.0:
+        return _TRIALS_TABLE[20]
+    lo = int(vkt)
+    frac = vkt - lo
+    return _TRIALS_TABLE[lo] * (1 - frac) + _TRIALS_TABLE[lo + 1] * frac
+
+
+# Sheet inputs (Manoevering B1-B37, Olympias block)
+SHEET_INPUTS = {
+    "lwl": 32.35,
+    "bwl": 3.7042357797642769,
+    "draft": 1.15,
+    "disp": 45376.946465736604,
+    "iz": 5276443.9397432031,
+    "cb": 0.32118549392675172,
+    "n_oars": 170,
+    "lever": 5.2,
+    "n_rudders": 2,
+    "rudder_area": 0.75,
+    "rudder_chord": 0.5,
+    "rudder_pos_x": -15.0,
+    "rudder_pos_y": 0.0,
+    "max_thrust": 80.645161290322577,
+}
+
+
+def simulate(
+    u0: float,
+    v0: float = 0.0,
+    r0: float = 0.0,
+    p_port: float = 0.0,
+    p_star: float = 1.0,
+    rudder_rad: float = -1.1693705988362009,
+    t_end: float = 120.0,
+    dt: float = 1.0,
+    cn: float = 0.8,
+    inputs: dict | None = None,
+) -> dict:
+    """Integrate the VBA model (semi-implicit Euler). Rudder called
+    per-rudder and doubled (matches the sheet to 0.6% at t=0).
+    Angles: VBA signs (Y starboard+, Z clockwise+). Returns timelines."""
+    inp = dict(SHEET_INPUTS, **(inputs or {}))
+    u, v, r = u0, v0, r0
+    x, y, psi = 0.0, 0.0, 0.0
+    ts, us, vs, rs, xs, ys, psis = [], [], [], [], [], [], []
+    t = 0.0
+    while t <= t_end + 1e-9:
+        ts.append(t)
+        us.append(u)
+        vs.append(v)
+        rs.append(r)
+        xs.append(x)
+        ys.append(y)
+        psis.append(psi)
+        of = oar_forces(
+            inp["n_oars"], inp["lever"], p_port, p_star,
+            inp["max_thrust"], u, r,
+        )
+        rf = rudder_forces(
+            inp["rudder_pos_x"], inp["rudder_pos_y"], inp["rudder_chord"],
+            inp["rudder_area"], rudder_rad, u, v, r,
+        )
+        oar = (of["surge"], of["sway"], of["yaw"])
+        rud = (
+            inp["n_rudders"] * rf["RX"],
+            inp["n_rudders"] * rf["RY"],
+            inp["n_rudders"] * rf["RZ"],
+        )
+        ax, ay, az = man_acceleration(
+            inp["lwl"], inp["bwl"], inp["draft"], inp["disp"], inp["iz"],
+            # the sheet passes Drag NEGATIVE (aft force, K column) despite
+            # the VBA header calling it "(positive)" — sheet rules here
+            inp["cb"], -trials_drag(u), u, v, r, oar, rud, cn,
+        )
+        u += ax * dt
+        v += ay * dt
+        r += az * dt
+        vx0 = u * math.cos(psi) - v * math.sin(psi)
+        vy0 = u * math.sin(psi) + v * math.cos(psi)
+        x += vx0 * dt
+        y += vy0 * dt
+        psi += r * dt
+        t += dt
+    return {
+        "t": ts, "u": us, "v": vs, "r": rs, "x": xs, "y": ys, "psi": psis,
+    }
+
+
+if __name__ == "__main__":
+    for k, val in _self_check().items():
+        print(f"{k}: {val:.3f}")
