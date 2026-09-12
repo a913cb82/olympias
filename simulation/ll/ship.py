@@ -86,7 +86,9 @@ class Ship:
         inboard +5% (~+1.5% speed, inside bands), flip overhead +36%
         (absorbed in the W' fit), blades dwarfed by head-room factor.
         A full original-rig variant (Table-3 geometry + fir) is declined:
-        sub-band effects for a W5+HL re-validation storm.
+        sub-band effects for a W5+HL re-validation storm. Measured 2026-09:
+        old-fir vs spruce sprint V30 7.64 vs 7.68 kt (−0.5%; W' drains a
+        touch faster) — rig-mixing moves the sprint gate by ±1%.
 
         force: the PROMOTED default (Stream A, P1.6 — the force-driven
         oar): the stroke emerges from the rower's demand + the oar's
