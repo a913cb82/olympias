@@ -68,6 +68,8 @@ MEASURED VERDICT (2026-09, K sweep — heel EXCLUDED in this form):
   4.5 m blade reach shifts immersion +-30-50 pct (vs the measured ~10 pct
   per deg from the K sweep) — rowers compensate ~3/4 by skill, and the
   compensation gain is unmeasured (fitting it to diameters = ship-fit).
+  Geometry cross-check: inside blades lift at ~0.28/4.5 = 3.6 deg
+  (thranite first, longest reach) ~= the stated 3-deg oar-rig limit.
   Needs instrumented heel + blade-depth data, not lines. Roll balance
   VALIDATED open-loop 2026-09 (K terms zeroed): g1/f1/tightest heel
   1.6/1.3/1.2 deg matches trials ~1-2 deg with outside-roll signs -
