@@ -133,3 +133,47 @@ def test_polar_variant_thrust():
     finally:
         ll.blade.BLADE_POLAR = False
     assert 1.25 < pol["mean_thrust"] / ref["mean_thrust"] < 1.55
+
+
+def test_stations_vectorized_matches_scalar():
+    """The vectorized kinematic-stations pass (_stations_step) matches the
+    scalar per-oar loop exactly (forces at pre-advance C, positions at
+    post-advance C, phase-locked): a full stroke cycle incl. catch/finish
+    crossings, with nonzero sway/yaw to exercise the rotation terms.
+    Guards future edits to either path."""
+    from common.chain import SPM, T_DRIVE
+    from ll.rower import TierCrew
+    from ll.stations import blade_pos, station_layout
+
+    vkt = 7.2
+    rate = SPM["Olympias"][vkt]
+    td = T_DRIVE[("Olympias", vkt)]
+    lay = station_layout()["thranite"]  # 31 stations, no shorts, pf 1.0
+    tier = TierCrew(
+        "Olympias", 31, rate, td, pressure="steady",
+        mit=9.74, stations=lay, side=1, force=False,
+    )
+    dt, V, flow0 = 0.02, vkt * KT, (0.1, 0.02)
+    scalars = [
+        Oar(rg, rate, td, direction=1, mit=9.74, t_rise=tier.t_rise,
+            force=False, station=(st[0], st[1], 1))
+        for rg, st in zip(tier._rigs, tier._stations_geom)
+    ]
+    # the tier replans at the first catch from the same V, reconfiguring
+    # its oars' stroke timing — pre-configure the scalars identically so
+    # both paths row the same stroke (same plan: V constant, W undrained)
+    p0 = tier.plan_stroke(V)
+    for o in scalars:
+        o.configure_stroke(p0.omega, p0.omega_recover, p0.sweep)
+    for _ in range(120):  # 2.4 s > one 2.08 s cycle
+        tier.step(dt, V, flow0)
+        fx = fy = 0.0
+        for o, rg, st in zip(scalars, tier._rigs, tier._stations_geom):
+            s = o.step(dt, V, flow0)
+            blade_pos(st[0], st[1], 1, rg["lout"], o.C)
+            fx += s.Fx
+            fy += s.Fy
+        vx = sum(f[0] for f in tier._stations)
+        vy = sum(f[1] for f in tier._stations)
+        assert abs(fx - vx) < 1e-9, f"{fx} vs {vx}"
+        assert abs(fy - vy) < 1e-9, f"{fy} vs {vy}"
