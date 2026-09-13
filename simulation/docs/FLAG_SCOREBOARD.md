@@ -18,7 +18,7 @@ Both halves required: complexity WITHOUT realism is rejected too.
 | Flag | Realistic target | Gap | Unblocker |
 |---|---|---|---|
 | `stations` → `True` | Per-station positions/flows | Helm +43/+116%, hold −12% (mode-independent; rotation-specific, translation agrees 2%) | Wake-rotation deficit data (surveys/CFD); polar-partial (~−10%, Figure-10); slip unfittable |
-| `hill_demand` → `True` | Force–velocity demand | F1 +0.9 m over band, t360 worse, sprint −0.8%; linear form VREF-insoluble | True hyperbolic Hill with published F0/vmax (unpublished); no compensator for F1 |
+| `hill_demand` → `True` | Force–velocity demand | F1 +0.8 m over band, t360 worse, sprint −0.8%; linear form VREF-insoluble | True hyperbolic Hill with published F0/vmax (unpublished); no compensator for F1 |
 | `heel_coupling` → `True` | Heel → yaw moment | Excluded: runaway >200k, wrong-sign lateral, diameters blown | Yaw-moment-from-heel via Bonjean (unbuilt, unvalidated) |
 | `BLADE_POLAR` → `True` | Angle-dependent blade force | +40% thrust (missing-stall artifact); chain flat-family calibration (A5) bars it | Stall-realistic Figure-10 polar + Shaw-level chain revision |
 
