@@ -108,8 +108,8 @@ physics that remain unresolved.
   data. So the floor gap is NOT protocol-fixable: the W'-capped level is
   proven immovable within the (cruise, sprint) anchors (~3.1 minimum),
   and no moment-free drag candidate survives. Remaining: voluntary
-  sub-sustainable easing (behavioral, item 3.5) or drag with yaw structure
-  that holds D (unknown). W'
+  sub-sustainable easing (behavioral — needs F/G per-turn effort data
+  to confirm/deny) or drag with yaw structure that holds D (unknown). W'
   accounting audited and CLOSED (2026-09): absorbed cancels both sides
   (drain exactly p_ext+flip > 80 W); the (P_crit, W') pair is uniquely
   pinned by cruise-sustainable + 45 s-sprint anchors. Turn-pressure
