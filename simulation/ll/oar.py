@@ -82,7 +82,12 @@ class Oar:
         recovery swing to the drive speed over t_rise (a handle-force spike);
         at the finish the oar's momentum assists (a release). The impulses
         are internal to the rower-oar system: the hull forces are unchanged.
-        mit = 0 disables the layer (exact pre-Gate-5 behaviour).
+        mit = 0 disables the layer (exact pre-Gate-5 behaviour). Deliberate
+        omission (2026-09): the blade's water added-mass (~6-10x wood in
+        ideal potential flow) — separated-flow reality is a fraction, the
+        ideal implies unphysical 4x catch energy, and as asymmetric drain
+        it slows start/sprint (wrong direction for every gap). Needs
+        unsteady measurements (same barrier as zigzag dissipation).
 
         force: the Plan-1 force-driven drive — the drive's kinematics emerge
         from the torque-balance EOM (the module docstring); the flip is a
