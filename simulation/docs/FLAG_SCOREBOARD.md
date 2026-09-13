@@ -30,6 +30,9 @@ Both halves required: complexity WITHOUT realism is rejected too.
 - Linear damping for zigzag (structurally impossible — same-ω theorem).
 - Symmetric body-overhead term (cancels by accounting identity).
 - Blade added-mass (ideal 6–10×, unphysical energy, wrong-direction gaps).
+- Blade ventilation at sprint blade speeds (Fr ~3 at the tip — likely real,
+  but reduces thrust, going the wrong way for the sprint gap; absorbed in
+  chain E).
 
 ## Declined implementations (correct, not worth it)
 
