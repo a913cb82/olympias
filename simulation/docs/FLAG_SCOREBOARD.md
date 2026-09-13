@@ -33,6 +33,10 @@ Both halves required: complexity WITHOUT realism is rejected too.
 - Blade ventilation at sprint blade speeds (Fr ~3 at the tip — likely real,
   but reduces thrust, going the wrong way for the sprint gap; absorbed in
   chain E).
+- Drive-end feather deficit (blades feathered at catch/finish would weaken
+  the damping-heavy end phases — but measured technique squares the blade
+  halfway up the recovery (fully square at catch), feather starts after
+  extraction; and the trireme thole/oarport rig cannot feather anyway).
 
 ## Declined implementations (correct, not worth it)
 
