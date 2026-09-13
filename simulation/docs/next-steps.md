@@ -178,8 +178,13 @@ physics that remain unresolved.
   and momentum slip (actuator-disk gives grip 0.97 vs the needed ~0.8 —
   oars are efficient, Ruina-consistent). Live hypotheses: the polar's
   angle-averaged force deficit (flat-plate CN overstates the stalled
-  part of the drive — converges on the Figure-10 family) and thole-arm
-  corrections (Plan 8, partial). Promotion BLOCKED until the physics is
+  part of the drive — converges on the Figure-10 family; Macon polars
+  exist but are the wrong blade (transfer risk), and the polar family's
+  +40% is likely area double-count (3D corrections live inside measured
+  polars already — needs area re-derivation, not a knob)) and thole-arm
+  corrections (Plan 8, partial). Drift 2026-09: stations +3.1 deg (both
+  modes) vs +2.4-2.8 default — the drift hope unfulfilled (2.5x from
+  7.8), no split-model case. Promotion BLOCKED until the physics is
   identified — no fitted scaling (goal rule). The layer stays swappable
   (`Ship(stations=True)`), not default.
 - **The stationary turns (in-place 2.1–3.0 vs 3.5°/s; one-side 1.1–1.5
