@@ -123,7 +123,13 @@ physics that remain unresolved.
   test_force_planner_bounds): planner slope −2.77 → −4.90 (target −5.69,
   closes 75%); ship battery: cruise +1–5%, D held (+1%), sprint −0.8%,
   t360 slightly WORSE (more low-V demand raises the floor). Verdict: slope
-  fidelity for t_360 cost — stays OFF (no regressions for response shape). Thrust-vs-V slopes (28.8 spoude, 5–9 kt):
+  fidelity for t_360 cost — stays OFF (no regressions for response shape).
+  New-goal adjudication (2026-09): Hill-linear also fails the REALISM half
+  (not just F1) — the single-parameter linear form cannot satisfy cruise
+  and turns together (VREF tradeoff insoluble: 7.2 neutral-cruise breaks
+  F1, 5.5 neutral-turns breaks cruise), the true form is hyperbolic with
+  unpublished F0/vmax, and the VBA law itself is trial-tuned (CN 0.4
+  uncertain). Complexity without realism — stays OFF under both goals. Thrust-vs-V slopes (28.8 spoude, 5–9 kt):
   kinematic −17.3 (3× too steep), force −2.07 (2.7× too flat) vs Taylor
   −5.69 N/kt/oar (levels differ: MarkIIb-optimised vs trials crew).
   A Hill force-velocity demand would steepen force-mode toward measured.
@@ -178,11 +184,11 @@ physics that remain unresolved.
   and momentum slip (actuator-disk gives grip 0.97 vs the needed ~0.8 —
   oars are efficient, Ruina-consistent). Live hypotheses: the polar's
   angle-averaged force deficit (flat-plate CN overstates the stalled
-  part of the drive — converges on the Figure-10 family; Macon polars
-  exist but are the wrong blade (transfer risk), and the polar family's
-  +40% is likely area double-count (3D corrections live inside measured
-  polars already — needs area re-derivation, not a knob)) and thole-arm
-  corrections (Plan 8, partial). Drift 2026-09: stations +3.1 deg (both
+  part of the drive — converges on the Figure-10 family; B2 as built is
+  analytic-2D (CL=sin2a, no stall — the +40% is missing-stall artifact,
+  not area double-count (2D needs the span factor); the stall-realistic
+  Figure-10 polar with lift-reversal handling is the unblocker) and
+  thole-arm corrections (Plan 8, partial). Drift 2026-09: stations +3.1 deg (both
   modes) vs +2.4-2.8 default — the drift hope unfulfilled (2.5x from
   7.8), no split-model case. Promotion BLOCKED until the physics is
   identified — no fitted scaling (goal rule). The layer stays swappable
