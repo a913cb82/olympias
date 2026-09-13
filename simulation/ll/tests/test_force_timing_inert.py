@@ -12,6 +12,11 @@ reference layer.
 This test proves it end-to-end: scaling every t_drive_for value by 1.5x
 (including the calibrated 44.5-spm branch) must leave force-mode
 trajectories byte-identical. If any leak is introduced, this fails.
+Scope note (2026-09): the lock covers trajectories GIVEN a commanded
+rate. Turn setup rates (R6/RT via the kinematic rate_for_speed helper)
+remain td-sensitive by construction (measured: td x1.5 moves R6 +23 spm)
+— small effect on diameters (D speed-independent to ~1-2%), but the
+fitted schedule is not dead on the setup path, only in the dynamics.
 """
 
 from common.chain import KT
