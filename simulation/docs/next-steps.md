@@ -171,7 +171,16 @@ physics that remain unresolved.
   The per-station layer's turn pattern is inverted vs trials. The
   over-damping (~9.8 kN·m) is the measured gap (plus kinematic thrust-vs-V
   3× too steep, −17.3 vs −5.69 N/kt/oar — same direction on oar-turns).
-  The layer stays swappable
+  Diagnosis (2026-09): the error is UNIFORM over-strength (~30-50% — all
+  five turn cells improve with a single force scaling), not structure.
+  Two candidate physics killed: hull boundary-layer wake (blades sit
+  1-2 m abeam of the hull, meters outside the BL — zero by geometry)
+  and momentum slip (actuator-disk gives grip 0.97 vs the needed ~0.8 —
+  oars are efficient, Ruina-consistent). Live hypotheses: the polar's
+  angle-averaged force deficit (flat-plate CN overstates the stalled
+  part of the drive — converges on the Figure-10 family) and thole-arm
+  corrections (Plan 8, partial). Promotion BLOCKED until the physics is
+  identified — no fitted scaling (goal rule). The layer stays swappable
   (`Ship(stations=True)`), not default.
 - **The stationary turns (in-place 2.1–3.0 vs 3.5°/s; one-side 1.1–1.5
   vs 3.5).** Halved 2026-09 by protocol, not physics: the locked
