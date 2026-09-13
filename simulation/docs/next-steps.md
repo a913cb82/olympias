@@ -212,7 +212,15 @@ physics that remain unresolved.
   itself. Geometry SWEPT 2026-09 and EXONERATED: arms x0.8-1.2 move helm
   turns +-2% (need -35/-58%), spacing +-7% moves nothing (would need
   unphysical x0.5 arms) — the Figure-16/Plan-8 [?] items are cosmetic,
-  not causal. Remainder unknown: promotion BLOCKED HARD. The layer
+  not causal. Remainder unknown: promotion BLOCKED HARD. Ablation
+  2026-09 localizes the defect to SWEEP resistance (not rotation flow):
+  zeroing r-terms moves helm only -10/-14% (wake-rotation demoted to
+  minor), while zeroing sweep collapses D to 18 m (sweep is the whole
+  yaw balance). But sweep Fn is over-constrained: k/lcp/omega all
+  grounded, Gate-1 validates the same law in translation — the defect
+  is sweep-specific (oscillating blade: dynamic stall / wake-return /
+  free-surface, all needing unsteady data or CFD). No lines-computable
+  fix exists. The layer
   stays swappable (`Ship(stations=True)`), not default.
 - **The stationary turns (in-place 2.1–3.0 vs 3.5°/s; one-side 1.1–1.5
   vs 3.5).** Halved 2026-09 by protocol, not physics: the locked
