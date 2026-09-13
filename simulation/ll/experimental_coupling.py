@@ -64,6 +64,11 @@ MEASURED VERDICT (2026-09, K sweep — heel EXCLUDED in this form):
   lateral-force path above; unmodeled, gate-safe to omit only while
   G1/F1 hold their bands). Roll to fractions of a degree was never
   instrumented (one-off wale readings only) — no dynamic heel data exists.
+  Naive immersion coupling KILLED 2026-09 (do not build): 1-2 deg heel at
+  4.5 m blade reach shifts immersion +-30-50 pct (vs the measured ~10 pct
+  per deg from the K sweep) — rowers compensate ~3/4 by skill, and the
+  compensation gain is unmeasured (fitting it to diameters = ship-fit).
+  Needs instrumented heel + blade-depth data, not lines.
 """
 
 from __future__ import annotations
