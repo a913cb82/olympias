@@ -95,7 +95,9 @@ physics that remain unresolved.
   thrust/drag-equivalent). Measured exclusions (2026-09, no LL change):
   turn-rate protocol −30% rate → +7% time only (stiff floor); uniform drag
   ×2.5 shrinks D 62→42 m (wrong direction); hull-only drag ×3 buys +7%
-  time (needs absurd ×8–10); stations oar-surge is −33% (wrong sign);
+  time (needs absurd ×8–10); stations oar-surge was −33% in the turn-
+  context measurement (wrong sign — since qualified: straight-line
+  translation agrees 2%, the defect is rotation-specific, see A1);
   drift/heel/K_drag drags all negligible or wrong-signed. W'-empty planner
   gives ~31 N/oar rate-invariantly — still ~2× the ~13 N/oar the 2.9 kt
   floor implies. Turn protocol EXONERATED (2026-09, Taylor tactical text,
@@ -177,8 +179,15 @@ physics that remain unresolved.
   The per-station layer's turn pattern is inverted vs trials. The
   over-damping (~9.8 kN·m) is the measured gap (plus kinematic thrust-vs-V
   3× too steep, −17.3 vs −5.69 N/kt/oar — same direction on oar-turns).
-  Diagnosis (2026-09): the error is UNIFORM over-strength (~30-50% — all
-  five turn cells improve with a single force scaling), not structure.
+  Diagnosis (2026-09, revised): the defect is ROTATION-specific, not
+  uniform — straight-line kinematic translation agrees within 2%
+  (101 vs 103 N/oar), while yaw damping over-delivers ~50% and brake
+  moments run strong. (An earlier uniform-scaling read was refuted:
+  scaling would trade turn cells against surge.) Prime suspect is
+  rotation-flow wake deficit (the yawing hull entrains nearby water,
+  shrinking blades' relative rotation-flow — needs wake surveys/CFD,
+  same barrier as zigzag dissipation), with polar-partial (~-10%) and
+  unfittable slip behind.
   Two candidate physics killed: hull boundary-layer wake (blades sit
   1-2 m abeam of the hull, meters outside the BL — zero by geometry)
   and momentum slip (actuator-disk gives grip 0.97 vs the needed ~0.8 —
