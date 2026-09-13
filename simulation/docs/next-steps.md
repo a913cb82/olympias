@@ -186,9 +186,12 @@ physics that remain unresolved.
   angle-averaged force deficit (flat-plate CN overstates the stalled
   part of the drive — converges on the Figure-10 family; B2 as built is
   analytic-2D (CL=sin2a, no stall — the +40% is missing-stall artifact,
-  not area double-count (2D needs the span factor); the stall-realistic
-  Figure-10 polar with lift-reversal handling is the unblocker) and
-  thole-arm corrections (Plan 8, partial). Drift 2026-09: stations +3.1 deg (both
+  not area double-count (2D needs the span factor); a stall-realistic 3D
+  polar is estimated ~10% UNDER const-1.8 at working angles (stalled-3D
+  deficit — partial, not the full 30%), and the chain's flat-family
+  calibration (A5) bars promotion before a Shaw-level chain revision;
+  the stall-realistic Figure-10 polar with lift-reversal handling is
+  the unblocker) and thole-arm corrections (Plan 8, partial). Drift 2026-09: stations +3.1 deg (both
   modes) vs +2.4-2.8 default — the drift hope unfulfilled (2.5x from
   7.8), no split-model case. Promotion BLOCKED until the physics is
   identified — no fitted scaling (goal rule). The layer stays swappable
