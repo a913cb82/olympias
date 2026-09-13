@@ -54,4 +54,7 @@ level switches are TURNING_POINT and BLADE_POLAR (both tabled above).
 No flag moves while any validation gate regresses. Band-widening to pass
 is gate-chasing, not promotion. Each blocked flag names its unblocker;
 when new sources arrive (Figure-10 numbers, Plan 8, foil data, per-turn
-effort, wake surveys), this table says exactly what to retry.
+effort, wake surveys), this table says exactly what to retry. Concrete
+address 2026-09: the Trust archive (Coates plans, trial docs, F/G
+report) sits catalogued at Wolfson College, Cambridge (moved from
+Henley) — the inquiry path for the drawing-blocked items.
