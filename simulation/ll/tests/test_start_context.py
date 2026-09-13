@@ -6,7 +6,7 @@ Measured 2026-08 (the M4 audit): the LL reaches 5.81 kt @ 30 s,
 References: Taylor's trained-crew bulk model 0->7 kt in ~14 s (register
 D5); the 1988 less-trained trial 0->7 kt in 32 s. The LL is the SLOWEST
 of the three — the physiology layer (the Fh<=700 N ceiling, the short
-stretched strokes, t_rise 0.15 s provisional, register D10) governs the
+stretched strokes, the computed pressure-scaled t_rise) governs the
 start and the 1988 comparison is a documented context gap, not a gate.
 The lock asserts the envelope so a physics change that shifts the start
 silently fails here.

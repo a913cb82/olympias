@@ -198,7 +198,10 @@ reference layer stays green (the full suite).
    observed 6.5 min sits inside the wind-uncertainty band (register D7).
 5. **F/G per-turn raw data** unavailable (1990 report is print-only) —
    diameters validated, not cell-by-cell.
-6. **t_rise = 0.15 s** provisional (register D10); **the C3 lever
+6. **t_rise** computed from physics (MIT·(ωd+ωr)/(F_flip·lin),
+   pressure-scaled 0.076–0.109 s — the D10 provisionality retired 2026-09;
+   the 0.15 s survives only as the direct-Oar-construction fallback (zero-
+   mean spikes, no gate); **the C3 lever
    decomposition is in** (4.8 → 1.8 m — the physical oar-race arm, with the
    drift component folded into the sway calibration, plan 15.3); **per-tier
    factors done** (Gate 6: the thalmian head-room power factor + the feather

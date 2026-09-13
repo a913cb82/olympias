@@ -39,7 +39,6 @@ from common.chain import (  # ship_drawings + trials_params via chain
     PRESSURE,
     RHO,
     RIGS,
-    T_RISE_BASE,
 )
 from common.chain import (
     t_rise as t_rise_for_pressure,
@@ -123,7 +122,7 @@ class TierCrew:
         state: str = "row",
         direction: int = 1,
         mit: float = 0.0,
-        t_rise: float = T_RISE_BASE,
+        t_rise: float | None = None,
         hold_frac: float = HOLD_FRAC,
         power_factor: float = 1.0,
         stations: list[Any] | None = None,
@@ -168,8 +167,13 @@ class TierCrew:
         self.state = state
         self.mit = mit
         # t_rise now pressure-dependent: T_RISE_BASE / pressure (rower flips
-        # at their rowing effort — sprint flips faster than cruise)
-        self.t_rise = t_rise_for_pressure(PRESSURE.get(pressure, 0.70))
+        # at their rowing effort — sprint flips faster than cruise). An
+        # explicit t_rise overrides (research use); None derives it.
+        self.t_rise = (
+            t_rise
+            if t_rise is not None
+            else t_rise_for_pressure(PRESSURE.get(pressure, 0.70))
+        )
         self.force = force  # Plan 1: the force-driven oar (ll/oar.py)
         self.hill_demand = hill_demand  # Hill-demand spike (OFF default)
         self.hold_frac = hold_frac
@@ -183,7 +187,7 @@ class TierCrew:
                     t_drive,
                     direction=direction,
                     mit=mit,
-                    t_rise=t_rise,
+                    t_rise=self.t_rise,
                     force=force,
                     station=(st[0], st[1], side),
                 )
@@ -198,7 +202,7 @@ class TierCrew:
                     t_drive,
                     direction=direction,
                     mit=mit,
-                    t_rise=t_rise,
+                    t_rise=self.t_rise,
                     force=force,
                 )
             ]
@@ -825,7 +829,7 @@ class SideCrew:
         state: str = "row",
         direction: int = 1,
         fleet: str = "spruce",
-        t_rise: float = T_RISE_BASE,
+        t_rise: float | None = None,
         hold_frac: float = HOLD_FRAC,
         stations: dict[str, list[Any]] | None = None,
         side: int = 1,
