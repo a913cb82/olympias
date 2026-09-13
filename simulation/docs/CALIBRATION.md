@@ -117,7 +117,9 @@ accepted WITHOUT recal because every HL-equivalence gate holds: all 26
 recal was evaluated and DECLINED: the turn-3 attempt flipped tau_exit
 8→19 s and exponent 0.279→0.105 on a ±0.06% LL move (drift-cell
 hypersensitivity) and broke two fatal bins — recalibration is destabilising until the drift open item resolves (same blocker as the
-hull-law switch, audit #9). Revisit with the drift fix.
+hull-law switch, audit #9). Revisit with the drift fix. Post-t_rise-fix
+agreement re-measured identical (helm −0.5/−0.4/−2.9%, hold/back +7.1%
+known) — the fix is HL-neutral (means/energy unchanged), no new urgency.
 
 ## 4. Provisional placeholders `[?]` (no anchor)
 
