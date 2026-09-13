@@ -199,7 +199,13 @@ physics that remain unresolved.
   degenerating to hold per G4-4): the inversion persists mode-
   independently, so the cause sits in the per-station geometry itself —
   promoting the [?] items to prime suspects (even spacing (Figure 16),
-  arms (Plan 8)) alongside the polar. The layer stays swappable
+  arms (Plan 8)) alongside the polar. Geometry SWEPT 2026-09: arms
+  x0.8-1.2 moves helm turns +-2% (need -35/-58%), spacing +-7% moves
+  nothing — geometry EXONERATED (would need unphysical x0.5 arms).
+  Last uniform knob is slip (vgeo 1.0; ~0.8 closes it) but slip is
+  underivable without the blade flow structure (Figure-10 family) —
+  unfittable per goal rule. Polar covers ~-10% (partial). Remainder
+  unknown: promotion BLOCKED HARD. The layer stays swappable
   (`Ship(stations=True)`), not default.
 - **The stationary turns (in-place 2.1–3.0 vs 3.5°/s; one-side 1.1–1.5
   vs 3.5).** Halved 2026-09 by protocol, not physics: the locked
