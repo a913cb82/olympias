@@ -194,7 +194,12 @@ physics that remain unresolved.
   the unblocker) and thole-arm corrections (Plan 8, partial). Drift 2026-09: stations +3.1 deg (both
   modes) vs +2.4-2.8 default — the drift hope unfulfilled (2.5x from
   7.8), no split-model case. Promotion BLOCKED until the physics is
-  identified — no fitted scaling (goal rule). The layer stays swappable
+  identified — no fitted scaling (goal rule). Force+stations measured
+  2026-09 (g1 127.7, f1 242.2, tightest 56.5, hold/back 79.8 — the back
+  degenerating to hold per G4-4): the inversion persists mode-
+  independently, so the cause sits in the per-station geometry itself —
+  promoting the [?] items to prime suspects (even spacing (Figure 16),
+  arms (Plan 8)) alongside the polar. The layer stays swappable
   (`Ship(stations=True)`), not default.
 - **The stationary turns (in-place 2.1–3.0 vs 3.5°/s; one-side 1.1–1.5
   vs 3.5).** Halved 2026-09 by protocol, not physics: the locked
