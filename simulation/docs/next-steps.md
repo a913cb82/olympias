@@ -187,7 +187,9 @@ physics that remain unresolved.
   rotation-flow wake deficit (the yawing hull entrains nearby water,
   shrinking blades' relative rotation-flow — needs wake surveys/CFD,
   same barrier as zigzag dissipation), with polar-partial (~-10%) and
-  unfittable slip behind.
+  unfittable slip behind. Ruled-out not-fixes (2026-09): hold-feathering
+  (circular — relocates the 0.08 fit geometrically); slip ~0.8 (uniform —
+  breaks the 2% surge agreement); surge-only stations (2% gain, 10x cost).
   Two candidate physics killed: hull boundary-layer wake (blades sit
   1-2 m abeam of the hull, meters outside the BL — zero by geometry)
   and momentum slip (actuator-disk gives grip 0.97 vs the needed ~0.8 —
