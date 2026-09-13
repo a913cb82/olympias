@@ -202,22 +202,18 @@ physics that remain unresolved.
   deficit — partial, not the full 30%), and the chain's flat-family
   calibration (A5) bars promotion before a Shaw-level chain revision;
   the stall-realistic Figure-10 polar with lift-reversal handling is
-  the unblocker) and thole-arm corrections (Plan 8, partial). Drift 2026-09: stations +3.1 deg (both
+  the unblocker). Drift 2026-09: stations +3.1 deg (both
   modes) vs +2.4-2.8 default — the drift hope unfulfilled (2.5x from
   7.8), no split-model case. Promotion BLOCKED until the physics is
   identified — no fitted scaling (goal rule). Force+stations measured
   2026-09 (g1 127.7, f1 242.2, tightest 56.5, hold/back 79.8 — the back
   degenerating to hold per G4-4): the inversion persists mode-
-  independently, so the cause sits in the per-station geometry itself —
-  promoting the [?] items to prime suspects (even spacing (Figure 16),
-  arms (Plan 8)) alongside the polar. Geometry SWEPT 2026-09: arms
-  x0.8-1.2 moves helm turns +-2% (need -35/-58%), spacing +-7% moves
-  nothing — geometry EXONERATED (would need unphysical x0.5 arms).
-  Last uniform knob is slip (vgeo 1.0; ~0.8 closes it) but slip is
-  underivable without the blade flow structure (Figure-10 family) —
-  unfittable per goal rule. Polar covers ~-10% (partial). Remainder
-  unknown: promotion BLOCKED HARD. The layer stays swappable
-  (`Ship(stations=True)`), not default.
+  independently, so the cause sits in the per-station rotation physics
+  itself. Geometry SWEPT 2026-09 and EXONERATED: arms x0.8-1.2 move helm
+  turns +-2% (need -35/-58%), spacing +-7% moves nothing (would need
+  unphysical x0.5 arms) — the Figure-16/Plan-8 [?] items are cosmetic,
+  not causal. Remainder unknown: promotion BLOCKED HARD. The layer
+  stays swappable (`Ship(stations=True)`), not default.
 - **The stationary turns (in-place 2.1–3.0 vs 3.5°/s; one-side 1.1–1.5
   vs 3.5).** Halved 2026-09 by protocol, not physics: the locked
   spoude/spoude setup sails away at 2.8 kt (backing can't match rowing),
