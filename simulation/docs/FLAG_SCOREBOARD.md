@@ -40,6 +40,10 @@ Both halves required: complexity WITHOUT realism is rejected too.
 
 ## Rule
 
+Inventory audited 2026-09 and complete: scenario inputs (helm, rate,
+pressure, state, n_oars, rig) and literature/data constants (CN, oar
+families, vessel tables) are not behavior switches; the only module-
+level switches are TURNING_POINT and BLADE_POLAR (both tabled above).
 No flag moves while any validation gate regresses. Band-widening to pass
 is gate-chasing, not promotion. Each blocked flag names its unblocker;
 when new sources arrive (Figure-10 numbers, Plan 8, foil data, per-turn
