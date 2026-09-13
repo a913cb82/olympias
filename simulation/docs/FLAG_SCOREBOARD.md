@@ -57,4 +57,8 @@ when new sources arrive (Figure-10 numbers, Plan 8, foil data, per-turn
 effort, wake surveys), this table says exactly what to retry. Concrete
 address 2026-09: the Trust archive (Coates plans, trial docs, F/G
 report) sits catalogued at Wolfson College, Cambridge (moved from
-Henley) — the inquiry path for the drawing-blocked items.
+Henley) — the inquiry path for the drawing-blocked items. Online, a
+summary-record search DB exists (triremetrust.org.uk search +
+Olymp-prefix image records) but needs form interaction + JS rendering
+(unattended extraction exhausted 2026-09: ASP POST + empty shells);
+physical visits arrangeable via the Contacts page.
