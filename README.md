@@ -84,3 +84,25 @@ $V hl/calibrate.py              # rebuild HL curves from LL (~4 min)
 $V harness/run_validation.py    # check HL vs LL agreement
 $V ui/serve.py                  # open the browser replay
 ```
+
+## Venv bootstrap
+
+```bash
+python3 -m venv .venv
+.venv/bin/pip install -e ".[test]"   # runtime deps + pytest (versions in pyproject.toml)
+```
+
+Always use `.venv/bin/python3`, never the system Python.
+
+## Regenerating `extracted/`
+
+The `extracted/` dirs under `research/sources/` are git-ignored unzip
+outputs of the Office source files (both `.xlsm`/`.docx` are zips).
+Recreate them with:
+
+```bash
+unzip -o -q "research/sources/galley-sizing-xlsm/Galley sizing Y.xlsm" \
+  -d research/sources/galley-sizing-xlsm/extracted/
+unzip -o -q "research/sources/warship-evolution-6th-bc/Warship Evolution in the 6th Century BC rev e.docx" \
+  -d research/sources/warship-evolution-6th-bc/extracted/
+```

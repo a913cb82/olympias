@@ -1,3 +1,22 @@
+[project]
+name = "olympias"
+version = "0.1.0"
+description = "LL/HL trireme performance models plus research evidence base"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy>=2.2.6",          # ll/rower.py, hl/curvesel.py, research/tools/decode_shaw.py
+    "scipy>=1.15.3",         # hl/curvesel.py least_squares, decode_shaw.py ndimage
+    "matplotlib>=3.10.9",    # research/tools/decode_shaw.py (ft2font)
+    "pymupdf>=1.28.2",       # research/tools/decode_shaw.py
+    "pillow>=12.3.0",        # research/tools/decode_shaw.py (PIL)
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest>=9.1.1",
+    "pytest-xdist>=3.8.0",
+]
+
 [tool.ruff]
 target-version = "py310"
 line-length = 88
