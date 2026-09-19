@@ -1,3 +1,12 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+# No installable package: scripts run in place (simulation/, research/tools/).
+# The empty package list lets `pip install -e .` just install dependencies.
+[tool.setuptools.packages.find]
+exclude = ["research*", "simulation*", "investigation*"]
+
 [project]
 name = "olympias"
 version = "0.1.0"
