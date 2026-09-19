@@ -1,12 +1,15 @@
-__pycache__/
+
+# Local agent scratch notes (never commit)
+# reproducible unzip outputs (recreate with: unzip -o -q <src> -d extracted/)
+*.egg-info/
 *.pyc
 *.pyo
-.venv/
-venv/
 .cache/
 .pytest_cache/
-tools/frontispiece_4x.png
-# reproducible unzip outputs (recreate with: unzip -o -q <src> -d extracted/)
+.subagents/
+.venv/
+__pycache__/
 research/sources/galley-sizing-xlsm/extracted/
 research/sources/warship-evolution-6th-bc/extracted/
-*.egg-info/
+tools/frontispiece_4x.png
+venv/
